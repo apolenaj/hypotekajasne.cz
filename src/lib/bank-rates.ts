@@ -16,6 +16,11 @@ export type BankRateRow = {
   rateWithoutInsurance: number | null;
   rpsnWithInsurance: number | null;
   rpsnWithoutInsurance: number | null;
+  americanRateWithInsurance: number | null;
+  americanRateWithoutInsurance: number | null;
+  americanRpsnWithInsurance: number | null;
+  americanRpsnWithoutInsurance: number | null;
+  americanSourceUrl: string | null;
   sourceUrl: string | null;
   updatedAt: string | null;
 };
@@ -29,7 +34,7 @@ export async function fetchBankRates(): Promise<BankRateRow[]> {
   const { data, error } = await supabase
     .from("bank_rates")
     .select(
-      "id, bank_name, rate, rpsn, rate_with_insurance, rate_without_insurance, rpsn_with_insurance, rpsn_without_insurance, source_url, updated_at"
+      "id, bank_name, rate, rpsn, rate_with_insurance, rate_without_insurance, rpsn_with_insurance, rpsn_without_insurance, american_rate_with_insurance, american_rate_without_insurance, american_rpsn_with_insurance, american_rpsn_without_insurance, american_source_url, source_url, updated_at"
     )
     .order("bank_name");
 
@@ -55,6 +60,17 @@ export async function fetchBankRates(): Promise<BankRateRow[]> {
         rateWithoutInsurance: toNumber(row.rate_without_insurance),
         rpsnWithInsurance: toNumber(row.rpsn_with_insurance),
         rpsnWithoutInsurance: toNumber(row.rpsn_without_insurance),
+        americanRateWithInsurance: toNumber(row.american_rate_with_insurance),
+        americanRateWithoutInsurance: toNumber(
+          row.american_rate_without_insurance
+        ),
+        americanRpsnWithInsurance: toNumber(row.american_rpsn_with_insurance),
+        americanRpsnWithoutInsurance: toNumber(
+          row.american_rpsn_without_insurance
+        ),
+        americanSourceUrl: row.american_source_url
+          ? String(row.american_source_url)
+          : null,
         sourceUrl: row.source_url ? String(row.source_url) : null,
         updatedAt: row.updated_at ? String(row.updated_at) : null,
       } satisfies BankRateRow;
@@ -98,6 +114,23 @@ export function pickBankRate(
     rate: row.rateWithoutInsurance ?? row.rate,
     rpsn: row.rpsnWithoutInsurance ?? row.rpsn,
   };
+}
+
+/** Sazba americké hypotéky; null pokud banka nemá vy-scrapovaná data. */
+export function pickAmericanBankRate(
+  row: BankRateRow,
+  hasInsurance: boolean
+): { rate: number; rpsn: number } | null {
+  if (hasInsurance) {
+    const rate = row.americanRateWithInsurance;
+    const rpsn = row.americanRpsnWithInsurance;
+    if (rate == null || rpsn == null) return null;
+    return { rate, rpsn };
+  }
+  const rate = row.americanRateWithoutInsurance;
+  const rpsn = row.americanRpsnWithoutInsurance;
+  if (rate == null || rpsn == null) return null;
+  return { rate, rpsn };
 }
 
 export function findBankRate(

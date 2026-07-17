@@ -307,6 +307,10 @@ export type ScrapedBankRateInput = {
   bankName: string;
   rate: number;
   rpsn: number;
+  /** Sazba americké hypotéky (pokud je k dispozici). */
+  americanRate?: number | null;
+  americanRpsn?: number | null;
+  americanSourceUrl?: string | null;
   updatedAt: string | null;
   sourceUrl: string | null;
 };
@@ -316,16 +320,27 @@ function buildOffersFromScraped(
   scrapedByName: Map<string, ScrapedBankRateInput>,
   loanAmount: number,
   termYears: number,
-  riskPremium: number
+  riskPremium: number,
+  options: { useAmerican?: boolean } = {}
 ): BankOffer[] {
   const offers: BankOffer[] = [];
+  const useAmerican = options.useAmerican === true;
 
   for (const bank of banks) {
     const scraped = scrapedByName.get(bank.name);
     if (!scraped) continue;
 
-    const adjustedRate = +scraped.rate.toFixed(2);
-    const rpsn = +scraped.rpsn.toFixed(2);
+    const rate = useAmerican
+      ? scraped.americanRate ?? null
+      : scraped.rate;
+    const rpsnValue = useAmerican
+      ? scraped.americanRpsn ?? null
+      : scraped.rpsn;
+
+    if (rate == null || rpsnValue == null) continue;
+
+    const adjustedRate = +rate.toFixed(2);
+    const rpsn = +rpsnValue.toFixed(2);
     const monthlyPayment = Math.round(
       calculateAnnuityPayment(loanAmount, adjustedRate, termYears)
     );
@@ -333,14 +348,16 @@ function buildOffersFromScraped(
     offers.push({
       bankName: bank.name,
       category: bank.category,
-      baseRate: scraped.rate,
+      baseRate: rate,
       adjustedRate,
       rpsn,
       monthlyPayment,
       riskPremium,
       best: false,
       updatedAt: scraped.updatedAt,
-      sourceUrl: scraped.sourceUrl,
+      sourceUrl: useAmerican
+        ? scraped.americanSourceUrl ?? scraped.sourceUrl
+        : scraped.sourceUrl,
     });
   }
 
@@ -392,7 +409,8 @@ export function getTripleBankOffers(
       scrapedByName,
       loanAmount,
       termYears,
-      riskPremium
+      riskPremium,
+      { useAmerican: true }
     ),
     // Zahraniční lokální / expat banky zatím nemají scraper → prázdné
     local: [],

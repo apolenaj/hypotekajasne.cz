@@ -325,3 +325,94 @@ export function ensureRpsn(
   if (rpsn != null && isValidMortgagePair(rate, rpsn)) return rpsn;
   return roundRate(rate + RPSN_FALLBACK_OFFSET);
 }
+
+/**
+ * Insider korekce KB: reálně dostupná klasická hypotéka bez pojištění 4,94 %.
+ * S pojištěním o 0,2 p.b. níže.
+ */
+export const KB_MARKET_CORRECTION = {
+  rateWithoutInsurance: 4.94,
+  rateWithInsurance: 4.74,
+} as const;
+
+export function applyKbMarketCorrection(
+  scraped: ExtractedMortgageRates
+): ExtractedMortgageRates {
+  const rpsnSpread =
+    scraped.rateWithInsurance != null && scraped.rpsnWithInsurance != null
+      ? roundRate(scraped.rpsnWithInsurance - scraped.rateWithInsurance)
+      : RPSN_FALLBACK_OFFSET;
+
+  const safeSpread =
+    rpsnSpread >= 0 && rpsnSpread <= 1.5 ? rpsnSpread : RPSN_FALLBACK_OFFSET;
+
+  const rateWith = KB_MARKET_CORRECTION.rateWithInsurance;
+  const rateWithout = KB_MARKET_CORRECTION.rateWithoutInsurance;
+
+  return {
+    rateWithInsurance: rateWith,
+    rpsnWithInsurance: roundRate(rateWith + safeSpread),
+    rateWithoutInsurance: rateWithout,
+    rpsnWithoutInsurance: roundRate(rateWithout + safeSpread),
+    withoutInsuranceEstimated: false,
+  };
+}
+
+const PENIZE_AMERICAN_BANK_ALIASES: Record<string, string[]> = {
+  "ceska-sporitelna": ["ČS -", "Česká spořitelna", "spořitelna"],
+  "komercni-banka": ["Komerční banka"],
+  "csob-hypotecni-banka": ["ČSOB -", "ČSOB Americká", "Hypoteční banka - Americká"],
+  "raiffeisen-bank": ["Raiffeisenbank", "UNIVERZÁL"],
+  "mbank": ["mBank", "mHypotéka Light"],
+  "unicredit-bank": ["UniCredit"],
+};
+
+/**
+ * Peníze.cz srovnání amerických hypoték — řádek „Banka - produkt … X,XX %“.
+ */
+export function extractPenizeAmericanRate(
+  html: string,
+  bankId: string
+): number | null {
+  const aliases = PENIZE_AMERICAN_BANK_ALIASES[bankId];
+  if (!aliases?.length) return null;
+
+  const $ = cheerio.load(html);
+  const candidates: number[] = [];
+
+  $("tr, li, div, td").each((_, el) => {
+    const rowText = $(el).text().replace(/\s+/g, " ").trim();
+    if (rowText.length > 280 || rowText.length < 10) return;
+    if (!/americk|neúčel|UNIVERZÁL|mHypotéka Light/i.test(rowText)) return;
+
+    const matchesAlias = aliases.some((alias) =>
+      rowText.toLowerCase().includes(alias.toLowerCase())
+    );
+    if (!matchesAlias) return;
+
+    const rateMatch = rowText.match(/(\d{1,2}[,.]\d{1,2})\s*%/);
+    if (!rateMatch) return;
+    const rate = parseCzechPercent(rateMatch[1], { mortgageOnly: true });
+    if (rate != null) candidates.push(rate);
+  });
+
+  // Fallback: plain text scan
+  if (!candidates.length) {
+    const text = htmlToPlainText(html);
+    for (const alias of aliases) {
+      const re = new RegExp(
+        `${alias.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}[^\\d]{0,80}?(\\d{1,2}[,.]\\d{1,2})\\s*%`,
+        "i"
+      );
+      const m = text.match(re);
+      if (m?.[1]) {
+        const rate = parseCzechPercent(m[1], { mortgageOnly: true });
+        if (rate != null) candidates.push(rate);
+      }
+    }
+  }
+
+  if (!candidates.length) return null;
+  return Math.min(...candidates);
+}
+

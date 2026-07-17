@@ -35,6 +35,7 @@ import {
 import {
   findBankRate,
   pickBankRate,
+  pickAmericanBankRate,
   useBankRates,
 } from "@/lib/bank-rates";
 import {
@@ -202,10 +203,14 @@ export function MortgageCalculator({
       const row = findBankRate(bankRates, bank.name);
       if (!row) return null;
       const picked = pickBankRate(row, hasInsurance);
+      const american = pickAmericanBankRate(row, hasInsurance);
       return {
         bankName: bank.name,
         rate: picked.rate,
         rpsn: picked.rpsn,
+        americanRate: american?.rate ?? null,
+        americanRpsn: american?.rpsn ?? null,
+        americanSourceUrl: row.americanSourceUrl,
         updatedAt: row.updatedAt,
         sourceUrl: row.sourceUrl,
       };

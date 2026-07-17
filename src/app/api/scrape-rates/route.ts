@@ -10,7 +10,6 @@ function getSupabaseAdmin() {
   let url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ?? "";
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
 
-  // Klient očekává project root, ne /rest/v1
   url = url.replace(/\/rest\/v1\/?$/, "").replace(/\/$/, "");
 
   if (!url || !key) {
@@ -52,7 +51,12 @@ function getErrorMessage(error: unknown): string {
     "message" in error &&
     typeof (error as { message: unknown }).message === "string"
   ) {
-    const e = error as { message: string; code?: string; details?: string; hint?: string };
+    const e = error as {
+      message: string;
+      code?: string;
+      details?: string;
+      hint?: string;
+    };
     return [e.message, e.code, e.details, e.hint].filter(Boolean).join(" | ");
   }
   try {
@@ -86,11 +90,11 @@ export async function GET(request: Request) {
 
     const scrapedAt = new Date().toISOString();
     let saved = 0;
+    let americanSaved = 0;
 
     if (validBanks.length > 0) {
       const supabase = getSupabaseAdmin();
 
-      // Diagnostika: ověř, že PostgREST vidí tabulku (po CREATE TABLE je často potřeba reload schema)
       const { error: probeError } = await supabase
         .from("bank_rates")
         .select("id")
@@ -102,7 +106,6 @@ export async function GET(request: Request) {
         );
       }
 
-      // Inzerovaná sazba = s pojištěním; bez pojištění z DOM nebo +0.2 % fallback
       const upserts = validBanks.map((row) => ({
         id: row.id,
         bank_name: row.bankName,
@@ -112,6 +115,11 @@ export async function GET(request: Request) {
         rate_without_insurance: row.rateWithoutInsurance,
         rpsn_with_insurance: row.rpsnWithInsurance,
         rpsn_without_insurance: row.rpsnWithoutInsurance,
+        american_rate_with_insurance: row.americanRateWithInsurance,
+        american_rate_without_insurance: row.americanRateWithoutInsurance,
+        american_rpsn_with_insurance: row.americanRpsnWithInsurance,
+        american_rpsn_without_insurance: row.americanRpsnWithoutInsurance,
+        american_source_url: row.americanSourceUrl,
         source_url: row.sourceUrl,
         updated_at: scrapedAt,
       }));
@@ -120,12 +128,18 @@ export async function GET(request: Request) {
         onConflict: "id",
       });
       if (error) {
+        const hint = /american_/i.test(error.message + (error.details ?? ""))
+          ? ` Spusťte migraci supabase/bank_rates_american_migration.sql a NOTIFY pgrst, 'reload schema';`
+          : "";
         throw new Error(
-          `Upsert bank_rates selhal: ${error.message}${error.code ? ` (${error.code})` : ""}${error.details ? ` — ${error.details}` : ""}`
+          `Upsert bank_rates selhal: ${error.message}${error.code ? ` (${error.code})` : ""}${error.details ? ` — ${error.details}` : ""}${hint}`
         );
       }
 
       saved = validBanks.length;
+      americanSaved = validBanks.filter(
+        (b) => b.americanRateWithInsurance != null
+      ).length;
 
       const primary = validBanks[0];
       const { error: aggregateError } = await supabase.from("current_rates").upsert(
@@ -148,6 +162,7 @@ export async function GET(request: Request) {
       success: true,
       scrapedAt,
       saved,
+      americanSaved,
       banks: validBanks,
       failures: allFailures,
     });
@@ -160,7 +175,6 @@ export async function GET(request: Request) {
   }
 }
 
-/** Manuální spuštění (stejná auth jako GET). */
 export async function POST(request: Request) {
   return GET(request);
 }
