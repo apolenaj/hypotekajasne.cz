@@ -47,11 +47,16 @@ function getErrorMessage(error: unknown): string {
     typeof error === "object" &&
     error !== null &&
     "message" in error &&
-    typeof error.message === "string"
+    typeof (error as { message: unknown }).message === "string"
   ) {
-    return error.message;
+    const e = error as { message: string; code?: string; details?: string; hint?: string };
+    return [e.message, e.code, e.details, e.hint].filter(Boolean).join(" | ");
   }
-  return "Neznámá chyba scrapování";
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return "Neznámá chyba scrapování";
+  }
 }
 
 export async function GET(request: Request) {

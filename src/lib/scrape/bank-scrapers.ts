@@ -62,9 +62,8 @@ export const BANK_SCRAPERS: BankScraperConfig[] = [
     id: "csob-hypotecni-banka",
     bankName: "ČSOB Hypoteční banka",
     // Oficiální csob.cz blokuje server-side fetch (TSPD).
-    // Primární zdroj: Měšec.cz produktová karta + RPSN z Fingo (reprezentativní příklad).
+    // Primární zdroj: Měšec.cz + RPSN z Fingo (viz scrapeCsobViaAggregators).
     url: "https://www.mesec.cz/produkty/hypoteky/hypoteka-csob/",
-    customScrape: scrapeCsobViaAggregators,
   },
   {
     id: "raiffeisen-bank",
@@ -151,7 +150,7 @@ function toScrapedBankRate(
 async function fetchHtml(url: string): Promise<string> {
   const response = await fetch(url, {
     headers: FETCH_HEADERS,
-    next: { revalidate: 0 },
+    cache: "no-store",
     signal: AbortSignal.timeout(25_000),
   });
 
@@ -260,9 +259,21 @@ async function scrapeCsobViaAggregators(): Promise<ScrapedBankRate> {
   return toScrapedBankRate(config, extracted, sourceUrl);
 }
 
+// Wire ČSOB custom scraper after declaration (avoids TDZ / init order issues)
+{
+  const csobConfig = BANK_SCRAPERS.find((c) => c.id === "csob-hypotecni-banka");
+  if (csobConfig) {
+    csobConfig.customScrape = scrapeCsobViaAggregators;
+  }
+}
+
 export async function scrapeBank(
   config: BankScraperConfig
 ): Promise<ScrapedBankRate> {
+  if (config.id === "csob-hypotecni-banka") {
+    return scrapeCsobViaAggregators();
+  }
+
   if (config.customScrape) {
     return config.customScrape();
   }
