@@ -7,7 +7,8 @@ create table if not exists public.bank_rates (
   id text primary key,
   bank_name text not null,
   rate numeric not null,
-  rpsn numeric not null,
+  -- RPSN může chybět, pokud ho zdroj neuveřejňuje (NULL = neznámé, ne 0)
+  rpsn numeric,
   rate_with_insurance numeric,
   rate_without_insurance numeric,
   rpsn_with_insurance numeric,

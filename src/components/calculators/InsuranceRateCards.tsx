@@ -3,17 +3,18 @@
 import { Shield, ShieldOff } from "lucide-react";
 import { CALCULATOR_DISCLAIMER } from "@/components/calculators/CalculatorDisclaimer";
 import { RpsnDisplay } from "@/components/calculators/RpsnDisplay";
+import { formatRateLabel } from "@/lib/rates";
 import { cn } from "@/lib/utils";
 
 type InsuranceRateCardsProps = {
   hasInsurance: boolean;
   onSelect: (hasInsurance: boolean) => void;
-  rateWithInsurance: number;
-  rateWithoutInsurance: number;
-  rpsnWithInsurance?: number;
-  rpsnWithoutInsurance?: number;
-  paymentWithInsurance?: string;
-  paymentWithoutInsurance?: string;
+  rateWithInsurance: number | null;
+  rateWithoutInsurance: number | null;
+  rpsnWithInsurance?: number | null;
+  rpsnWithoutInsurance?: number | null;
+  paymentWithInsurance?: string | null;
+  paymentWithoutInsurance?: string | null;
   loading?: boolean;
   className?: string;
 };
@@ -30,6 +31,15 @@ export function InsuranceRateCards({
   loading = false,
   className,
 }: InsuranceRateCardsProps) {
+  const withLabel =
+    rateWithInsurance != null
+      ? `aktuálně od ${formatRateLabel(rateWithInsurance)}`
+      : "Individuálně";
+  const withoutLabel =
+    rateWithoutInsurance != null
+      ? `aktuálně od ${formatRateLabel(rateWithoutInsurance)}`
+      : "Na vyžádání";
+
   return (
     <div className={cn("space-y-3", className)}>
       <div className="flex items-center justify-between gap-3">
@@ -70,7 +80,7 @@ export function InsuranceRateCards({
                 Měsíční splátka s pojištěním
               </p>
               <p className="mt-1 text-xs text-emerald-800 font-medium">
-                aktuálně od {rateWithInsurance.toFixed(2)} %
+                {withLabel}
               </p>
               {rpsnWithInsurance != null && (
                 <RpsnDisplay
@@ -118,7 +128,7 @@ export function InsuranceRateCards({
                 Měsíční splátka bez pojištění
               </p>
               <p className="mt-1 text-xs text-deep-teal font-medium">
-                aktuálně od {rateWithoutInsurance.toFixed(2)} %
+                {withoutLabel}
               </p>
               {rpsnWithoutInsurance != null && (
                 <RpsnDisplay

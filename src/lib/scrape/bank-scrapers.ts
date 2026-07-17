@@ -1,5 +1,6 @@
 /**
  * Konfigurace scraperů českých bank (klasická + americká hypotéka).
+ * Žádné umělé +0.2 % / RPSN dopočty — chybějící sazby = null.
  */
 
 import {
@@ -8,15 +9,16 @@ import {
 } from "@/lib/scrape/bank-ids";
 import {
   applyInsuranceVariants,
-  applyKbMarketCorrection,
-  ensureRpsn,
   extractMesecCsobRate,
   extractMortgageRates,
   extractFirstPercent,
+  extractInsuranceSurcharge,
+  extractMbankRatesFromConfig,
   extractPenizeAmericanRate,
   htmlToPlainText,
   isBotChallengePage,
   isValidMortgagePair,
+  isValidMortgageRate,
   RPSN_TEXT_PATTERNS,
   type ExtractedMortgageRates,
 } from "@/lib/scrape/parse-rate";
@@ -37,13 +39,13 @@ export type BankScraperConfig = {
 export type ScrapedBankRate = {
   id: BankScraperId;
   bankName: string;
-  /** Zrcadlí sazbu s pojištěním (hlavní inzerovaná sazba). */
-  rate: number;
-  rpsn: number;
-  rateWithInsurance: number;
-  rpsnWithInsurance: number;
-  rateWithoutInsurance: number;
-  rpsnWithoutInsurance: number;
+  /** Zrcadlí sazbu s pojištěním (hlavní inzerovaná sazba), pokud je známa. */
+  rate: number | null;
+  rpsn: number | null;
+  rateWithInsurance: number | null;
+  rpsnWithInsurance: number | null;
+  rateWithoutInsurance: number | null;
+  rpsnWithoutInsurance: number | null;
   withoutInsuranceEstimated: boolean;
   sourceUrl: string;
   /** Americká hypotéka — null pokud se nepodařilo scrapovat. */
@@ -116,6 +118,8 @@ const CSOB_FINGO_URL = "https://www.fingo.cz/hypoteky/csob/hypoteka-od-csob";
 const CSOB_PENIZE_URL =
   "https://www.penize.cz/hypoteky/402786-csob-hypotecni-banka-hypotecni-uver-do-80";
 const PENIZE_AMERICAN_URL = "https://www.penize.cz/srovnani/americke-hypoteky";
+const MBANK_CALC_CONFIG_URL =
+  "https://www.mbank.cz/.config/calc/mortgage-config.txt";
 
 const emptyAmerican = {
   americanRateWithInsurance: null as number | null,
@@ -144,18 +148,16 @@ function toScrapedBankRate(
     withoutInsuranceEstimated,
   } = extracted;
 
-  if (
-    rateWithInsurance == null ||
-    rpsnWithInsurance == null ||
-    rateWithoutInsurance == null ||
-    rpsnWithoutInsurance == null
-  ) {
+  if (rateWithInsurance == null || !isValidMortgageRate(rateWithInsurance)) {
     throw new Error(
-      `${config.bankName}: neúplné sazby (s pojištěním / bez pojištění)`
+      `${config.bankName}: nepodařilo se zjistit sazbu s pojištěním`
     );
   }
 
-  if (!isValidMortgagePair(rateWithInsurance, rpsnWithInsurance)) {
+  if (
+    rpsnWithInsurance != null &&
+    !isValidMortgagePair(rateWithInsurance, rpsnWithInsurance)
+  ) {
     throw new Error(
       `${config.bankName}: neplatná kombinace sazby ${rateWithInsurance}% a RPSN ${rpsnWithInsurance}%`
     );
@@ -200,9 +202,7 @@ function americanFromExtracted(
 ): typeof emptyAmerican {
   if (
     extracted.rateWithInsurance == null ||
-    extracted.rpsnWithInsurance == null ||
-    extracted.rateWithoutInsurance == null ||
-    extracted.rpsnWithoutInsurance == null
+    !isValidMortgageRate(extracted.rateWithInsurance)
   ) {
     return emptyAmerican;
   }
@@ -217,7 +217,7 @@ function americanFromExtracted(
   };
 }
 
-/** Scrapuje americkou hypotéku — oficiální URL, jinak Peníze.cz. */
+/** Scrapuje americkou hypotéku — oficiální URL, jinak Peníze.cz (bez vymýšlení RPSN). */
 async function scrapeAmericanRates(
   config: BankScraperConfig,
   penizeHtmlCache: { html: string | null }
@@ -225,81 +225,56 @@ async function scrapeAmericanRates(
   for (const url of config.americanUrls ?? []) {
     try {
       const html = await fetchHtml(url);
-      let extracted = extractMortgageRates(html);
-
-      // Preferuj sazbu v kontextu „úrokové sazbě X %“ (mBank jinak chytí spoření 4,21 %)
       const text = htmlToPlainText(html);
+      const fromPage = extractMortgageRates(html);
+
       const hypoRate = extractFirstPercent(
         text,
         [
           /úrokové\s+sazbě\s+(\d{1,2}[,.]\d{1,2})\s*%/i,
           /americk[áa]\s+hypot[ée]ka[^\d%]{0,40}od\s+(\d{1,2}[,.]\d{1,2})\s*%/i,
           /neúčelov[áa][^\d%]{0,40}(\d{1,2}[,.]\d{1,2})\s*%/i,
+          /úrokov[áa]\s+sazba\s+od\s+(\d{1,2}[,.]\d{1,2})\s*%/i,
         ],
         { mortgageOnly: true }
       );
-      const hypoRpsn =
-        extractFirstPercent(text, RPSN_TEXT_PATTERNS, { mortgageOnly: true }) ??
-        extracted.rpsnWithInsurance;
 
-      if (hypoRate != null && hypoRpsn != null && isValidMortgagePair(hypoRate, hypoRpsn)) {
-        extracted = applyInsuranceVariants(hypoRate, hypoRpsn);
-      } else if (
-        extracted.rateWithInsurance != null &&
-        extracted.rpsnWithInsurance != null &&
-        extracted.rpsnWithInsurance - extracted.rateWithInsurance > 1.0 &&
-        hypoRate != null
-      ) {
-        extracted = applyInsuranceVariants(
-          hypoRate,
-          ensureRpsn(hypoRate, extracted.rpsnWithInsurance)
-        );
-      }
+      const rateWith = hypoRate ?? fromPage.rateWithInsurance;
+      if (rateWith == null || !isValidMortgageRate(rateWith)) continue;
 
-      // ČS americká: často jen RPSN v textu „procentní sazba nákladů činí“
-      if (extracted.rateWithInsurance == null) {
-        const costRate = text.match(
-          /procentn[íi]\s+sazba\s+n[áa]klad[uů][^\d]{0,20}[cč]in[íi]\s+(\d{1,2}[,.]\d{1,2})\s*%/i
-        );
-        if (costRate?.[1]) {
-          const rpsn = Number(costRate[1].replace(",", "."));
-          const rate = +(rpsn - 0.3).toFixed(2);
-          if (isValidMortgagePair(rate, rpsn)) {
-            extracted = applyInsuranceVariants(rate, rpsn);
-          }
-        }
-      }
+      const hypoRpsn = extractFirstPercent(text, RPSN_TEXT_PATTERNS, {
+        mortgageOnly: true,
+      });
+      const rpsnCandidate = hypoRpsn ?? fromPage.rpsnWithInsurance;
+      const rpsnWith =
+        rpsnCandidate != null && isValidMortgagePair(rateWith, rpsnCandidate)
+          ? rpsnCandidate
+          : null;
 
-      if (
-        extracted.rateWithInsurance != null &&
-        extracted.rpsnWithInsurance != null
-      ) {
-        return americanFromExtracted(extracted, url);
-      }
+      const extracted = applyInsuranceVariants(rateWith, rpsnWith, {
+        rateWithoutInsurance: fromPage.rateWithoutInsurance,
+        rpsnWithoutInsurance: fromPage.rpsnWithoutInsurance,
+        surcharge:
+          fromPage.rateWithoutInsurance == null
+            ? extractInsuranceSurcharge(text)
+            : null,
+      });
 
-      // Jen sazba bez RPSN
-      if (extracted.rateWithInsurance != null) {
-        const rpsn = ensureRpsn(extracted.rateWithInsurance, null);
-        return americanFromExtracted(
-          applyInsuranceVariants(extracted.rateWithInsurance, rpsn),
-          url
-        );
-      }
+      return americanFromExtracted(extracted, url);
     } catch {
       // zkus další URL / agregátor
     }
   }
 
-  // Agregátor Peníze.cz
+  // Agregátor Peníze.cz — jen sazba; RPSN / bez pojištění = null
   try {
     if (!penizeHtmlCache.html) {
       penizeHtmlCache.html = await fetchHtml(PENIZE_AMERICAN_URL);
     }
     const rate = extractPenizeAmericanRate(penizeHtmlCache.html, config.id);
     if (rate != null) {
-      const rpsn = ensureRpsn(rate, null);
       return americanFromExtracted(
-        applyInsuranceVariants(rate, rpsn),
+        applyInsuranceVariants(rate, null),
         PENIZE_AMERICAN_URL
       );
     }
@@ -312,7 +287,7 @@ async function scrapeAmericanRates(
 
 /**
  * ČSOB: oficiální web blokuje boty → sazba z Měšec.cz,
- * RPSN z Fingo (reprezentativní příklad), fallback rate+0.2.
+ * RPSN z Fingo (reprezentativní příklad) — bez umělého RPSN.
  */
 async function scrapeCsobClassic(): Promise<{
   extracted: ExtractedMortgageRates;
@@ -325,12 +300,19 @@ async function scrapeCsobClassic(): Promise<{
 
   let rateWithInsurance: number | null = null;
   let rpsnWithInsurance: number | null = null;
+  let rateWithoutInsurance: number | null = null;
+  let rpsnWithoutInsurance: number | null = null;
   let sourceUrl = CSOB_MESEC_URL;
   const errors: string[] = [];
 
   try {
     const mesecHtml = await fetchHtml(CSOB_MESEC_URL);
     rateWithInsurance = extractMesecCsobRate(mesecHtml);
+    const fromPage = extractMortgageRates(mesecHtml);
+    if (fromPage.rateWithoutInsurance != null) {
+      rateWithoutInsurance = fromPage.rateWithoutInsurance;
+      rpsnWithoutInsurance = fromPage.rpsnWithoutInsurance;
+    }
     if (rateWithInsurance == null) {
       errors.push("Měšec: nenalezena základní sazba v tabulce");
     }
@@ -354,6 +336,11 @@ async function scrapeCsobClassic(): Promise<{
       rpsnWithInsurance = extractFirstPercent(text, RPSN_TEXT_PATTERNS, {
         mortgageOnly: true,
       });
+    }
+    const fromFingo = extractMortgageRates(fingoHtml);
+    if (rateWithoutInsurance == null && fromFingo.rateWithoutInsurance != null) {
+      rateWithoutInsurance = fromFingo.rateWithoutInsurance;
+      rpsnWithoutInsurance = fromFingo.rpsnWithoutInsurance;
     }
     if (rateWithInsurance == null) {
       const fromRates = [...text.matchAll(/od\s+(\d{1,2}[,.]\d{1,2})\s*%/gi)]
@@ -381,6 +368,14 @@ async function scrapeCsobClassic(): Promise<{
         rateWithInsurance = Number(threeYear[1].replace(",", "."));
         sourceUrl = CSOB_PENIZE_URL;
       }
+      const fromPenize = extractMortgageRates(penizeHtml);
+      if (
+        rateWithoutInsurance == null &&
+        fromPenize.rateWithoutInsurance != null
+      ) {
+        rateWithoutInsurance = fromPenize.rateWithoutInsurance;
+        rpsnWithoutInsurance = fromPenize.rpsnWithoutInsurance;
+      }
     } catch (err) {
       errors.push(
         `Peníze.cz: ${err instanceof Error ? err.message : "neznámá chyba"}`
@@ -394,17 +389,43 @@ async function scrapeCsobClassic(): Promise<{
     );
   }
 
-  rpsnWithInsurance = ensureRpsn(rateWithInsurance, rpsnWithInsurance);
   return {
-    extracted: applyInsuranceVariants(rateWithInsurance, rpsnWithInsurance),
+    extracted: applyInsuranceVariants(rateWithInsurance, rpsnWithInsurance, {
+      rateWithoutInsurance,
+      rpsnWithoutInsurance,
+    }),
     sourceUrl,
   };
+}
+
+/** mBank: oficiální kalkulační config (reálné sazby + sleva za pojištění). */
+async function scrapeMbank(): Promise<ScrapedBankRate> {
+  const config = {
+    id: "mbank" as const,
+    bankName: "mBank",
+  };
+  const raw = await fetchHtml(MBANK_CALC_CONFIG_URL);
+  const parsed = extractMbankRatesFromConfig(raw);
+  if (!parsed?.classic.rateWithInsurance) {
+    throw new Error("mBank: nepodařilo se načíst sazby z mortgage-config.txt");
+  }
+
+  return toScrapedBankRate(
+    config,
+    parsed.classic,
+    MBANK_CALC_CONFIG_URL,
+    americanFromExtracted(parsed.american, MBANK_CALC_CONFIG_URL)
+  );
 }
 
 export async function scrapeBank(
   config: BankScraperConfig,
   penizeHtmlCache: { html: string | null } = { html: null }
 ): Promise<ScrapedBankRate> {
+  if (config.id === "mbank") {
+    return scrapeMbank();
+  }
+
   let extracted: ExtractedMortgageRates;
   let sourceUrl: string;
 
@@ -427,11 +448,6 @@ export async function scrapeBank(
             `${config.bankName}: nepodařilo se najít úrokovou sazbu na ${url}`
           );
         }
-        if (parsed.rpsnWithInsurance == null) {
-          throw new Error(
-            `${config.bankName}: nepodařilo se najít RPSN na ${url}`
-          );
-        }
 
         found = { extracted: parsed, sourceUrl: url };
         break;
@@ -449,11 +465,6 @@ export async function scrapeBank(
 
     extracted = found.extracted;
     sourceUrl = found.sourceUrl;
-  }
-
-  // Insider korekce KB — reálná tržní sazba bez pojištění 4,94 %
-  if (config.id === "komercni-banka") {
-    extracted = applyKbMarketCorrection(extracted);
   }
 
   const american = await scrapeAmericanRates(config, penizeHtmlCache);

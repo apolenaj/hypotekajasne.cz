@@ -13,7 +13,7 @@ import {
   generateAmortizationData,
   type CountryId,
 } from "@/lib/calculators";
-import { pickRate, useCurrentRates } from "@/lib/rates";
+import { pickRate, formatRateLabel, useCurrentRates } from "@/lib/rates";
 
 interface AdvancedCalculatorProps {
   country: CountryId;
@@ -41,13 +41,12 @@ export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
     [loanAmount, rates.rateWithInsurance, years]
   );
 
-  const paymentWithoutInsurance = useMemo(
-    () =>
-      Math.round(
-        calculateAnnuityPayment(loanAmount, rates.rateWithoutInsurance, years)
-      ),
-    [loanAmount, rates.rateWithoutInsurance, years]
-  );
+  const paymentWithoutInsurance = useMemo(() => {
+    if (rates.rateWithoutInsurance == null) return null;
+    return Math.round(
+      calculateAnnuityPayment(loanAmount, rates.rateWithoutInsurance, years)
+    );
+  }, [loanAmount, rates.rateWithoutInsurance, years]);
 
   const foreignPayment = useMemo(
     () =>
@@ -64,7 +63,7 @@ export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
         : paymentWithoutInsurance
       : foreignPayment;
     const annualRentalIncome = price * config.defaultRentalYield;
-    const annualMortgageCost = monthlyPayment * 12;
+    const annualMortgageCost = (monthlyPayment ?? 0) * 12;
     const netAnnualCashFlow = annualRentalIncome - annualMortgageCost;
     const roi = capital > 0 ? (netAnnualCashFlow / capital) * 100 : 0;
 
@@ -81,15 +80,15 @@ export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
     paymentWithoutInsurance,
     foreignPayment,
     price,
+    config.defaultRentalYield,
     capital,
     loanAmount,
-    config.defaultRentalYield,
   ]);
 
-  const chartData = useMemo(
-    () => generateAmortizationData(price, capital, selectedRate, years),
-    [price, capital, selectedRate, years]
-  );
+  const chartData = useMemo(() => {
+    if (selectedRate == null) return [];
+    return generateAmortizationData(price, capital, selectedRate, years);
+  }, [price, capital, selectedRate, years]);
 
   const currency = config.currency;
 
@@ -136,10 +135,11 @@ export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
                 paymentWithInsurance,
                 currency
               )}
-              paymentWithoutInsurance={formatCurrency(
-                paymentWithoutInsurance,
-                currency
-              )}
+              paymentWithoutInsurance={
+                paymentWithoutInsurance != null
+                  ? formatCurrency(paymentWithoutInsurance, currency)
+                  : null
+              }
               loading={ratesLoading}
             />
           </div>
@@ -175,7 +175,7 @@ export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
           <div className="w-full rounded-xl bg-gradient-to-r from-deep-teal/5 to-muted-gold/5 p-4 ring-1 ring-gray-900/5">
             <p className="text-xs text-muted-foreground">Zvolená sazba</p>
             <p className="text-2xl font-bold text-deep-teal">
-              {selectedRate.toFixed(2)} %
+              {formatRateLabel(selectedRate)}
             </p>
           </div>
         </div>
@@ -187,7 +187,9 @@ export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
             Měsíční splátka
           </p>
           <p className="text-2xl font-bold text-emerald-900 whitespace-nowrap">
-            {formatCurrency(calculations.monthlyPayment, currency)}
+            {calculations.monthlyPayment != null
+              ? formatCurrency(calculations.monthlyPayment, currency)
+              : "Na vyžádání"}
           </p>
           <p className="text-xs text-emerald-700/70 mt-1">
             {isCzechMarket
@@ -195,7 +197,7 @@ export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
                 ? "S pojištěním (Supabase)"
                 : "Bez pojištění (Supabase)"
               : `Lokální sazba ${config.label}`}{" "}
-            · {selectedRate.toFixed(2)} %
+            · {formatRateLabel(selectedRate)}
           </p>
         </div>
         <div className="bg-blue-50 p-6 rounded-2xl">

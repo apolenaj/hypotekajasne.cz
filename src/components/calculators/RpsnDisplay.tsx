@@ -12,7 +12,7 @@ export const RPSN_TOOLTIP =
   "RPSN (Roční procentní sazba nákladů) ukazuje celkové náklady na úvěr za jeden rok. Zahrnuje nejen samotný úrok, ale i všechny související poplatky (za odhad nemovitosti, zpracování úvěru, vedení účtu atd.). Číslo je orientační a přesná hodnota závisí na finální výši úvěru.";
 
 type RpsnDisplayProps = {
-  rpsn: number;
+  rpsn: number | null | undefined;
   className?: string;
   /** Menší typografie v úzkých kartách nabídek */
   compact?: boolean;
@@ -23,6 +23,20 @@ export function RpsnDisplay({
   className,
   compact = false,
 }: RpsnDisplayProps) {
+  if (rpsn == null || !Number.isFinite(rpsn)) {
+    return (
+      <div
+        className={cn(
+          "text-gray-500",
+          compact ? "text-[11px] leading-snug" : "text-sm",
+          className
+        )}
+      >
+        RPSN: Na vyžádání
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(

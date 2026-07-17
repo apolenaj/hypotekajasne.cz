@@ -5,18 +5,21 @@ import { supabase } from "@/lib/supabase";
 
 export type CurrentRates = {
   rateWithInsurance: number;
-  rateWithoutInsurance: number;
-  rpsnWithInsurance: number;
-  rpsnWithoutInsurance: number;
+  rateWithoutInsurance: number | null;
+  rpsnWithInsurance: number | null;
+  rpsnWithoutInsurance: number | null;
   updatedAt: string | null;
 };
 
-/** Fallback jen když Supabase není dostupná (dev / výpadek). */
+/**
+ * Fallback jen když Supabase není dostupná (dev / výpadek).
+ * Bez pojištění záměrně null — neinventujeme +0.2 %.
+ */
 export const FALLBACK_RATES: CurrentRates = {
   rateWithInsurance: 4.29,
-  rateWithoutInsurance: 4.59,
+  rateWithoutInsurance: null,
   rpsnWithInsurance: 4.75,
-  rpsnWithoutInsurance: 5.15,
+  rpsnWithoutInsurance: null,
   updatedAt: null,
 };
 
@@ -41,23 +44,16 @@ export async function fetchCurrentRates(): Promise<CurrentRates> {
     }
 
     const withInsurance = toNumber(data.rate_with_insurance);
-    const withoutInsurance = toNumber(data.rate_without_insurance);
-    const rpsnWith =
-      toNumber(data.rpsn_with_insurance) ?? FALLBACK_RATES.rpsnWithInsurance;
-    const rpsnWithout =
-      toNumber(data.rpsn_without_insurance) ??
-      FALLBACK_RATES.rpsnWithoutInsurance;
-
-    if (withInsurance == null || withoutInsurance == null) {
+    if (withInsurance == null) {
       console.error("Neplatné sazby v current_rates:", data);
       return FALLBACK_RATES;
     }
 
     return {
       rateWithInsurance: withInsurance,
-      rateWithoutInsurance: withoutInsurance,
-      rpsnWithInsurance: rpsnWith,
-      rpsnWithoutInsurance: rpsnWithout,
+      rateWithoutInsurance: toNumber(data.rate_without_insurance),
+      rpsnWithInsurance: toNumber(data.rpsn_with_insurance),
+      rpsnWithoutInsurance: toNumber(data.rpsn_without_insurance),
       updatedAt: data.updated_at ?? null,
     };
   } catch (err) {
@@ -88,14 +84,26 @@ export function useCurrentRates() {
   return { rates, loading };
 }
 
-export function pickRate(rates: CurrentRates, hasInsurance: boolean): number {
+export function pickRate(
+  rates: CurrentRates,
+  hasInsurance: boolean
+): number | null {
   return hasInsurance
     ? rates.rateWithInsurance
     : rates.rateWithoutInsurance;
 }
 
-export function pickRpsn(rates: CurrentRates, hasInsurance: boolean): number {
+export function pickRpsn(
+  rates: CurrentRates,
+  hasInsurance: boolean
+): number | null {
   return hasInsurance
     ? rates.rpsnWithInsurance
     : rates.rpsnWithoutInsurance;
+}
+
+/** UI label pro chybějící / individuální sazbu. */
+export function formatRateLabel(rate: number | null | undefined): string {
+  if (rate == null || !Number.isFinite(rate)) return "Na vyžádání";
+  return `${rate.toFixed(2)} %`;
 }

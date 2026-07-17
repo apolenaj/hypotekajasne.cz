@@ -29,18 +29,38 @@ function authorize(request: Request): boolean {
 }
 
 function isValidScrapedBank(row: ScrapedBankRate): boolean {
-  return (
-    typeof row.rateWithInsurance === "number" &&
-    Number.isFinite(row.rateWithInsurance) &&
-    typeof row.rpsnWithInsurance === "number" &&
-    Number.isFinite(row.rpsnWithInsurance) &&
-    typeof row.rateWithoutInsurance === "number" &&
-    Number.isFinite(row.rateWithoutInsurance) &&
-    typeof row.rpsnWithoutInsurance === "number" &&
-    Number.isFinite(row.rpsnWithoutInsurance) &&
-    isValidMortgagePair(row.rateWithInsurance, row.rpsnWithInsurance) &&
-    row.rateWithoutInsurance >= row.rateWithInsurance
-  );
+  if (
+    typeof row.rateWithInsurance !== "number" ||
+    !Number.isFinite(row.rateWithInsurance)
+  ) {
+    return false;
+  }
+
+  if (
+    row.rpsnWithInsurance != null &&
+    !isValidMortgagePair(row.rateWithInsurance, row.rpsnWithInsurance)
+  ) {
+    return false;
+  }
+
+  if (row.rateWithoutInsurance != null) {
+    if (
+      !Number.isFinite(row.rateWithoutInsurance) ||
+      row.rateWithoutInsurance < row.rateWithInsurance
+    ) {
+      return false;
+    }
+  }
+
+  if (
+    row.rateWithoutInsurance != null &&
+    row.rpsnWithoutInsurance != null &&
+    !isValidMortgagePair(row.rateWithoutInsurance, row.rpsnWithoutInsurance)
+  ) {
+    return false;
+  }
+
+  return true;
 }
 
 function getErrorMessage(error: unknown): string {
@@ -167,7 +187,7 @@ export async function GET(request: Request) {
           id: "schema",
           bankName: "Supabase",
           error:
-            "Chybí sloupce american_* — spusťte supabase/bank_rates_american_migration.sql a NOTIFY pgrst, 'reload schema'. Klasické sazby (vč. KB 4,94 %) byly uloženy.",
+            "Chybí sloupce american_* — spusťte supabase/bank_rates_american_migration.sql a NOTIFY pgrst, 'reload schema'. Klasické sazby byly uloženy.",
         });
       }
 

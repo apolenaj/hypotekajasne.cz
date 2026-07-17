@@ -11,7 +11,7 @@ export type BankRateRow = {
   id: BankScraperId | string;
   bankName: string;
   rate: number;
-  rpsn: number;
+  rpsn: number | null;
   rateWithInsurance: number | null;
   rateWithoutInsurance: number | null;
   rpsnWithInsurance: number | null;
@@ -48,14 +48,13 @@ export async function fetchBankRates(): Promise<BankRateRow[]> {
   return data
     .map((row) => {
       const rate = toNumber(row.rate);
-      const rpsn = toNumber(row.rpsn);
-      if (rate == null || rpsn == null) return null;
+      if (rate == null) return null;
 
       return {
         id: row.id as string,
         bankName: String(row.bank_name),
         rate,
-        rpsn,
+        rpsn: toNumber(row.rpsn),
         rateWithInsurance: toNumber(row.rate_with_insurance),
         rateWithoutInsurance: toNumber(row.rate_without_insurance),
         rpsnWithInsurance: toNumber(row.rpsn_with_insurance),
@@ -103,16 +102,19 @@ export function useBankRates() {
 export function pickBankRate(
   row: BankRateRow,
   hasInsurance: boolean
-): { rate: number; rpsn: number } {
+): { rate: number; rpsn: number | null } | null {
   if (hasInsurance) {
+    const rate = row.rateWithInsurance ?? row.rate;
+    if (rate == null) return null;
     return {
-      rate: row.rateWithInsurance ?? row.rate,
+      rate,
       rpsn: row.rpsnWithInsurance ?? row.rpsn,
     };
   }
+  if (row.rateWithoutInsurance == null) return null;
   return {
-    rate: row.rateWithoutInsurance ?? row.rate,
-    rpsn: row.rpsnWithoutInsurance ?? row.rpsn,
+    rate: row.rateWithoutInsurance,
+    rpsn: row.rpsnWithoutInsurance,
   };
 }
 
@@ -120,17 +122,15 @@ export function pickBankRate(
 export function pickAmericanBankRate(
   row: BankRateRow,
   hasInsurance: boolean
-): { rate: number; rpsn: number } | null {
+): { rate: number; rpsn: number | null } | null {
   if (hasInsurance) {
     const rate = row.americanRateWithInsurance;
-    const rpsn = row.americanRpsnWithInsurance;
-    if (rate == null || rpsn == null) return null;
-    return { rate, rpsn };
+    if (rate == null) return null;
+    return { rate, rpsn: row.americanRpsnWithInsurance };
   }
   const rate = row.americanRateWithoutInsurance;
-  const rpsn = row.americanRpsnWithoutInsurance;
-  if (rate == null || rpsn == null) return null;
-  return { rate, rpsn };
+  if (rate == null) return null;
+  return { rate, rpsn: row.americanRpsnWithoutInsurance };
 }
 
 export function findBankRate(

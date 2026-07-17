@@ -72,7 +72,7 @@ import {
   MORTGAGE_PURPOSE_OPTIONS,
   type MortgagePurpose,
 } from "@/lib/cnb-limits";
-import { pickRate, pickRpsn, useCurrentRates } from "@/lib/rates";
+import { pickRate, pickRpsn, formatRateLabel, useCurrentRates } from "@/lib/rates";
 import { cn } from "@/lib/utils";
 
 const chartConfig = {
@@ -205,10 +205,11 @@ export function MortgageCalculator({
       if (!row) continue;
       const picked = pickBankRate(row, hasInsurance);
       const american = pickAmericanBankRate(row, hasInsurance);
+      if (!picked && !american) continue;
       rows.push({
         bankName: bank.name,
-        rate: picked.rate,
-        rpsn: picked.rpsn,
+        rate: picked?.rate ?? null,
+        rpsn: picked?.rpsn ?? null,
         americanRate: american?.rate ?? null,
         americanRpsn: american?.rpsn ?? null,
         americanSourceUrl: row.americanSourceUrl,
@@ -227,7 +228,8 @@ export function MortgageCalculator({
         country,
         price,
         savings,
-        interestRate: primaryRate,
+        // Splátka se počítá jen při známé sazbě; jinak 0 a UI ukáže „Na vyžádání“
+        interestRate: primaryRate ?? 0,
         termYears,
         financingType,
         bank: "",
@@ -251,17 +253,16 @@ export function MortgageCalculator({
     [result.loanAmount, rates.rateWithInsurance, termYears]
   );
 
-  const paymentWithoutInsurance = useMemo(
-    () =>
-      Math.round(
-        calculateAnnuityPayment(
-          result.loanAmount,
-          rates.rateWithoutInsurance,
-          termYears
-        )
-      ),
-    [result.loanAmount, rates.rateWithoutInsurance, termYears]
-  );
+  const paymentWithoutInsurance = useMemo(() => {
+    if (rates.rateWithoutInsurance == null) return null;
+    return Math.round(
+      calculateAnnuityPayment(
+        result.loanAmount,
+        rates.rateWithoutInsurance,
+        termYears
+      )
+    );
+  }, [result.loanAmount, rates.rateWithoutInsurance, termYears]);
 
   const foreignMarketPayment = useMemo(
     () =>
@@ -303,7 +304,7 @@ export function MortgageCalculator({
     : foreignMarketPayment;
 
   const dti = useMemo(
-    () => checkDTI(displayPayment, netIncome, country),
+    () => checkDTI(displayPayment ?? 0, netIncome, country),
     [displayPayment, netIncome, country]
   );
 
@@ -543,10 +544,11 @@ export function MortgageCalculator({
                     paymentWithInsurance,
                     currency
                   )}
-                  paymentWithoutInsurance={formatCurrency(
-                    paymentWithoutInsurance,
-                    currency
-                  )}
+                  paymentWithoutInsurance={
+                    paymentWithoutInsurance != null
+                      ? formatCurrency(paymentWithoutInsurance, currency)
+                      : null
+                  }
                   loading={ratesLoading}
                 />
                 <p className="text-xs text-muted-foreground">
@@ -731,12 +733,15 @@ export function MortgageCalculator({
               {[
                 {
                   label: "Měsíční splátka",
-                  value: formatCurrency(displayPayment, currency),
+                  value:
+                    displayPayment != null && primaryRate != null
+                      ? formatCurrency(displayPayment, currency)
+                      : "Na vyžádání",
                   accent: true,
                 },
                 {
                   label: "Úroková sazba",
-                  value: `${primaryRate.toFixed(2)} %`,
+                  value: formatRateLabel(primaryRate),
                   rpsn: displayRpsn,
                 },
                 {
@@ -746,10 +751,10 @@ export function MortgageCalculator({
                 { label: "LTV", value: `${result.ltv} %` },
                 {
                   label: "Celkem zaplatíte",
-                  value: formatCurrency(
-                    displayPayment * termYears * 12,
-                    currency
-                  ),
+                  value:
+                    displayPayment != null && primaryRate != null
+                      ? formatCurrency(displayPayment * termYears * 12, currency)
+                      : "Na vyžádání",
                   gold: true,
                 },
               ].map((item) => (
@@ -768,7 +773,7 @@ export function MortgageCalculator({
                   >
                     {item.value}
                   </p>
-                  {"rpsn" in item && item.rpsn != null && (
+                  {"rpsn" in item && (
                     <RpsnDisplay rpsn={item.rpsn} className="mt-1.5" />
                   )}
                 </div>
@@ -801,12 +806,16 @@ export function MortgageCalculator({
                 `Úspory: ${savings.toLocaleString("cs-CZ")} ${currency}`,
                 `LTV: ${result.ltv} %`,
                 `Úvěr: ${result.loanAmount.toLocaleString("cs-CZ")} ${currency}`,
-                `Splátka: ${displayPayment.toLocaleString("cs-CZ")} ${currency}`,
+                `Splátka: ${
+                  displayPayment != null
+                    ? `${displayPayment.toLocaleString("cs-CZ")} ${currency}`
+                    : "Na vyžádání"
+                }`,
                 `Splatnost: ${termYears} let`,
                 isCzechMarket
                   ? `Pojištění: ${hasInsurance ? "ano" : "ne"}`
                   : null,
-                `Sazba: ${primaryRate.toFixed(2)} %`,
+                `Sazba: ${formatRateLabel(primaryRate)}`,
                 isCzechMarket
                   ? `Účel: ${mortgagePurpose === "investment" ? "investiční" : "vlastní bydlení"}`
                   : null,

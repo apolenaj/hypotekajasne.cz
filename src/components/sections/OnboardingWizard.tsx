@@ -6,7 +6,7 @@ import { CalculatorDisclaimer } from "@/components/calculators/CalculatorDisclai
 import { InsuranceRateCards } from "@/components/calculators/InsuranceRateCards";
 import { formatCurrency } from "@/lib/calculators";
 import { submitLead } from "@/lib/leads";
-import { pickRate, useCurrentRates } from "@/lib/rates";
+import { pickRate, formatRateLabel, useCurrentRates } from "@/lib/rates";
 import { cn } from "@/lib/utils";
 
 const TOTAL_STEPS = 6;
@@ -95,7 +95,7 @@ const initialFormData: OnboardingFormData = {
 interface PreApprovalResult {
   maxLoan: number;
   maxPropertyPrice: number;
-  rate: number;
+  rate: number | null;
   approved: boolean;
   limitingFactor: "LTV" | "DSTI";
   maxPossibleByIncome: number;
@@ -159,11 +159,11 @@ export function OnboardingWizard() {
 
     const estimatedRate = pickRate(rates, hasInsurance);
 
-    const monthlyRate = estimatedRate / 100 / 12;
+    const monthlyRate = (estimatedRate ?? 0) / 100 / 12;
     const totalMonths = maxMaturityYears * 12;
 
     let maxLoanDSTI = 0;
-    if (maxMonthlyPayment > 0 && monthlyRate > 0) {
+    if (estimatedRate != null && maxMonthlyPayment > 0 && monthlyRate > 0) {
       maxLoanDSTI =
         maxMonthlyPayment *
         ((Math.pow(1 + monthlyRate, totalMonths) - 1) /
@@ -216,7 +216,7 @@ export function OnboardingWizard() {
         `Příjem: ${formData.netIncome || "—"} Kč (${formData.incomeType || "—"})`,
         `Vlastní hotovost: ${formData.ownCash || "—"} Kč`,
         `Pojištění: ${hasInsurance ? "ano" : "ne"}`,
-        `Sazba: ${selectedRate.toFixed(2)} %`,
+        `Sazba: ${formatRateLabel(selectedRate)}`,
         preApproval
           ? `Odhad max. úvěru: ${Math.round(preApproval.maxLoan).toLocaleString("cs-CZ")} Kč`
           : null,
@@ -678,7 +678,9 @@ export function OnboardingWizard() {
                           Odhadovaná sazba
                         </p>
                         <p className="text-2xl font-black text-emerald-600">
-                          od {preApproval.rate.toFixed(2)} % p.a.
+                          {preApproval.rate != null
+                            ? `od ${preApproval.rate.toFixed(2)} % p.a.`
+                            : "Na vyžádání"}
                         </p>
                         <p className="text-xs text-gray-500 mt-1">
                           {hasInsurance ? "S pojištěním" : "Bez pojištění"}

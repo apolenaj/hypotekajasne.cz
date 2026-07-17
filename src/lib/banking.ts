@@ -101,7 +101,7 @@ export interface BankOffer {
   category: BankCategory;
   baseRate: number;
   adjustedRate: number;
-  rpsn: number;
+  rpsn: number | null;
   monthlyPayment: number;
   riskPremium: number;
   best: boolean;
@@ -305,8 +305,9 @@ export type DualBankOffers = CategorizedBankOffers;
 
 export type ScrapedBankRateInput = {
   bankName: string;
-  rate: number;
-  rpsn: number;
+  /** null = sazba pro zvolenou variantu pojištění není známá */
+  rate: number | null;
+  rpsn: number | null;
   /** Sazba americké hypotéky (pokud je k dispozici). */
   americanRate: number | null;
   americanRpsn: number | null;
@@ -337,10 +338,10 @@ function buildOffersFromScraped(
       ? scraped.americanRpsn ?? null
       : scraped.rpsn;
 
-    if (rate == null || rpsnValue == null) continue;
+    if (rate == null) continue;
 
     const adjustedRate = +rate.toFixed(2);
-    const rpsn = +rpsnValue.toFixed(2);
+    const rpsn = rpsnValue != null ? +rpsnValue.toFixed(2) : null;
     const monthlyPayment = Math.round(
       calculateAnnuityPayment(loanAmount, adjustedRate, termYears)
     );
