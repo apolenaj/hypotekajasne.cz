@@ -28,11 +28,16 @@ function authorize(request: Request): boolean {
 
 function isValidScrapedBank(row: ScrapedBankRate): boolean {
   return (
-    typeof row.rate === "number" &&
-    Number.isFinite(row.rate) &&
-    typeof row.rpsn === "number" &&
-    Number.isFinite(row.rpsn) &&
-    isValidMortgagePair(row.rate, row.rpsn)
+    typeof row.rateWithInsurance === "number" &&
+    Number.isFinite(row.rateWithInsurance) &&
+    typeof row.rpsnWithInsurance === "number" &&
+    Number.isFinite(row.rpsnWithInsurance) &&
+    typeof row.rateWithoutInsurance === "number" &&
+    Number.isFinite(row.rateWithoutInsurance) &&
+    typeof row.rpsnWithoutInsurance === "number" &&
+    Number.isFinite(row.rpsnWithoutInsurance) &&
+    isValidMortgagePair(row.rateWithInsurance, row.rpsnWithInsurance) &&
+    row.rateWithoutInsurance >= row.rateWithInsurance
   );
 }
 
@@ -66,7 +71,7 @@ export async function GET(request: Request) {
         allFailures.push({
           id: row.id,
           bankName: row.bankName,
-          error: `${row.bankName}: neplatná nebo chybějící sazba/RPSN (rate=${String(row.rate)}, rpsn=${String(row.rpsn)})`,
+          error: `${row.bankName}: neplatná nebo chybějící sazba/RPSN (with=${String(row.rateWithInsurance)}/${String(row.rpsnWithInsurance)}, without=${String(row.rateWithoutInsurance)}/${String(row.rpsnWithoutInsurance)})`,
         });
       }
     }
@@ -77,15 +82,16 @@ export async function GET(request: Request) {
     if (validBanks.length > 0) {
       const supabase = getSupabaseAdmin();
 
+      // Inzerovaná sazba = s pojištěním; bez pojištění z DOM nebo +0.2 % fallback
       const upserts = validBanks.map((row) => ({
         id: row.id,
         bank_name: row.bankName,
-        rate: row.rate,
-        rpsn: row.rpsn,
-        rate_with_insurance: row.rate,
-        rate_without_insurance: row.rate,
-        rpsn_with_insurance: row.rpsn,
-        rpsn_without_insurance: row.rpsn,
+        rate: row.rateWithInsurance,
+        rpsn: row.rpsnWithInsurance,
+        rate_with_insurance: row.rateWithInsurance,
+        rate_without_insurance: row.rateWithoutInsurance,
+        rpsn_with_insurance: row.rpsnWithInsurance,
+        rpsn_without_insurance: row.rpsnWithoutInsurance,
         source_url: row.sourceUrl,
         updated_at: scrapedAt,
       }));
@@ -101,10 +107,10 @@ export async function GET(request: Request) {
       const { error: aggregateError } = await supabase.from("current_rates").upsert(
         {
           id: 1,
-          rate_with_insurance: primary.rate,
-          rate_without_insurance: primary.rate,
-          rpsn_with_insurance: primary.rpsn,
-          rpsn_without_insurance: primary.rpsn,
+          rate_with_insurance: primary.rateWithInsurance,
+          rate_without_insurance: primary.rateWithoutInsurance,
+          rpsn_with_insurance: primary.rpsnWithInsurance,
+          rpsn_without_insurance: primary.rpsnWithoutInsurance,
           updated_at: scrapedAt,
         },
         { onConflict: "id" }
