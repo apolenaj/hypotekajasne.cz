@@ -8,10 +8,9 @@ import {
   type BankScraperId,
 } from "@/lib/scrape/bank-ids";
 import {
-  extractFirstPercent,
-  extractFromSelectors,
-  RATE_TEXT_PATTERNS,
-  RPSN_TEXT_PATTERNS,
+  extractMortgageRates,
+  isBotChallengePage,
+  isValidMortgagePair,
 } from "@/lib/scrape/parse-rate";
 
 export type { BankScraperId };
@@ -21,8 +20,7 @@ export type BankScraperConfig = {
   id: BankScraperId;
   bankName: string;
   url: string;
-  rateSelectors: string[];
-  rpsnSelectors: string[];
+  alternateUrls?: string[];
 };
 
 export type ScrapedBankRate = {
@@ -38,56 +36,38 @@ export const BANK_SCRAPERS: BankScraperConfig[] = [
     id: "ceska-sporitelna",
     bankName: "Česká spořitelna",
     url: "https://www.csas.cz/cs/osobni-finance/hypoteky/hypoteka",
-    rateSelectors: [
-      "[data-testid*='rate']",
-      ".interest-rate",
-      ".hypo-rate",
-      "h1",
-      "h2",
-    ],
-    rpsnSelectors: [".rpsn", "[data-testid*='rpsn']", "p", "li"],
   },
   {
     id: "komercni-banka",
     bankName: "Komerční banka",
-    url: "https://www.kb.cz/cs/obcane/uvery/hypoteky",
-    rateSelectors: [
-      ".product-rate",
-      ".interest-rate",
-      "[class*='rate']",
-      "h1",
-      "h2",
-      "strong",
-    ],
-    rpsnSelectors: [".rpsn", "[class*='rpsn']", "p", "li"],
+    url: "https://www.kb.cz/cs/obcane/pujcky/hypoteky/hypoteka",
+    alternateUrls: ["https://www.kb.cz/cs/obcane/hypoteky"],
   },
   {
     id: "csob-hypotecni-banka",
     bankName: "ČSOB Hypoteční banka",
     url: "https://www.csob.cz/lide/bydleni/hypoteka",
-    rateSelectors: ["[class*='rate']", "h1", "h2", "strong"],
-    rpsnSelectors: ["[class*='rpsn']", "p", "li"],
+    alternateUrls: ["https://www.csob.cz/lide/bydleni/hypoteka-na-usporne-bydleni"],
   },
   {
     id: "raiffeisen-bank",
     bankName: "Raiffeisen Bank",
-    url: "https://www.rb.cz/osobni/hypoteky",
-    rateSelectors: ["[class*='rate']", "h1", "h2", "strong"],
-    rpsnSelectors: ["[class*='rpsn']", "p", "li"],
+    url: "https://www.rb.cz/osobni/hypoteky/nabidka-hypotek/hypoteka-s-nizsi-splatkou",
+    alternateUrls: ["https://www.rb.cz/osobni/hypoteky"],
   },
   {
     id: "mbank",
     bankName: "mBank",
-    url: "https://www.mbank.cz/osobni/hypoteky/",
-    rateSelectors: ["[class*='rate']", "h1", "h2", "strong"],
-    rpsnSelectors: ["[class*='rpsn']", "p", "li"],
+    url: "https://www.mbank.cz/osobni/hypoteky/hypoteka-na-bydleni/",
+    alternateUrls: ["https://www.mbank.cz/osobni/hypoteky/"],
   },
   {
     id: "unicredit-bank",
     bankName: "UniCredit Bank",
-    url: "https://www.unicreditbank.cz/cs/obcane/hypoteky.html",
-    rateSelectors: ["[class*='rate']", "h1", "h2", "strong"],
-    rpsnSelectors: ["[class*='rpsn']", "p", "li"],
+    url: "https://www.unicreditbank.cz/cs/obcane/hypoteky/hypoteka-nove-penize.html",
+    alternateUrls: [
+      "https://www.unicreditbank.cz/cs/obcane/hypoteky/refinancovani-hypoteky.html",
+    ],
   },
 ];
 
@@ -98,55 +78,73 @@ const FETCH_HEADERS = {
   "Accept-Language": "cs-CZ,cs;q=0.9,en;q=0.8",
 };
 
+function getUrlsToTry(config: BankScraperConfig): string[] {
+  return [config.url, ...(config.alternateUrls ?? [])];
+}
+
 export async function scrapeBank(
   config: BankScraperConfig
 ): Promise<ScrapedBankRate> {
-  const response = await fetch(config.url, {
-    headers: FETCH_HEADERS,
-    next: { revalidate: 0 },
-    signal: AbortSignal.timeout(25_000),
-  });
+  let lastError: Error | null = null;
 
-  if (!response.ok) {
-    throw new Error(
-      `${config.bankName}: HTTP ${response.status} při stahování ${config.url}`
-    );
+  for (const url of getUrlsToTry(config)) {
+    try {
+      const response = await fetch(url, {
+        headers: FETCH_HEADERS,
+        next: { revalidate: 0 },
+        signal: AbortSignal.timeout(25_000),
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `${config.bankName}: HTTP ${response.status} při stahování ${url}`
+        );
+      }
+
+      const html = await response.text();
+
+      if (isBotChallengePage(html)) {
+        throw new Error(
+          `${config.bankName}: stránka vyžaduje JavaScript / anti-bot ochranu (${url})`
+        );
+      }
+
+      const { rate, rpsn } = extractMortgageRates(html);
+
+      if (rate == null) {
+        throw new Error(
+          `${config.bankName}: nepodařilo se najít úrokovou sazbu na ${url}`
+        );
+      }
+
+      if (rpsn == null) {
+        throw new Error(
+          `${config.bankName}: nepodařilo se najít RPSN na ${url}`
+        );
+      }
+
+      if (!isValidMortgagePair(rate, rpsn)) {
+        throw new Error(
+          `${config.bankName}: neplatná kombinace sazby ${rate}% a RPSN ${rpsn}%`
+        );
+      }
+
+      return {
+        id: config.id,
+        bankName: config.bankName,
+        rate,
+        rpsn,
+        sourceUrl: url,
+      };
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error("Neznámá chyba");
+    }
   }
 
-  const html = await response.text();
-  const plainText = html
-    .replace(/<script[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style[\s\S]*?<\/style>/gi, " ")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ");
-
-  const rate =
-    extractFromSelectors(html, config.rateSelectors) ??
-    extractFirstPercent(plainText, RATE_TEXT_PATTERNS);
-
-  const rpsn =
-    extractFromSelectors(html, config.rpsnSelectors) ??
-    extractFirstPercent(plainText, RPSN_TEXT_PATTERNS);
-
-  if (rate == null) {
-    throw new Error(
-      `${config.bankName}: nepodařilo se najít úrokovou sazbu na ${config.url}`
-    );
-  }
-
-  if (rpsn == null) {
-    throw new Error(
-      `${config.bankName}: nepodařilo se najít RPSN na ${config.url}`
-    );
-  }
-
-  return {
-    id: config.id,
-    bankName: config.bankName,
-    rate,
-    rpsn,
-    sourceUrl: config.url,
-  };
+  throw (
+    lastError ??
+    new Error(`${config.bankName}: scraping selhal bez detailní chyby`)
+  );
 }
 
 export async function scrapeAllBanks(): Promise<{

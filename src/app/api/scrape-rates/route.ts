@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { scrapeAllBanks } from "@/lib/scrape/bank-scrapers";
+import { scrapeAllBanks, type ScrapedBankRate } from "@/lib/scrape/bank-scrapers";
+import { isValidMortgagePair } from "@/lib/scrape/parse-rate";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -25,6 +26,29 @@ function authorize(request: Request): boolean {
   return authHeader === `Bearer ${cronSecret}`;
 }
 
+function isValidScrapedBank(row: ScrapedBankRate): boolean {
+  return (
+    typeof row.rate === "number" &&
+    Number.isFinite(row.rate) &&
+    typeof row.rpsn === "number" &&
+    Number.isFinite(row.rpsn) &&
+    isValidMortgagePair(row.rate, row.rpsn)
+  );
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "message" in error &&
+    typeof error.message === "string"
+  ) {
+    return error.message;
+  }
+  return "Neznámá chyba scrapování";
+}
+
 export async function GET(request: Request) {
   if (!authorize(request)) {
     return new Response("Unauthorized", { status: 401 });
@@ -32,31 +56,48 @@ export async function GET(request: Request) {
 
   try {
     const { success, failures } = await scrapeAllBanks();
-    const supabase = getSupabaseAdmin();
+    const validBanks: ScrapedBankRate[] = [];
+    const allFailures = [...failures];
+
+    for (const row of success) {
+      if (isValidScrapedBank(row)) {
+        validBanks.push(row);
+      } else {
+        allFailures.push({
+          id: row.id,
+          bankName: row.bankName,
+          error: `${row.bankName}: neplatná nebo chybějící sazba/RPSN (rate=${String(row.rate)}, rpsn=${String(row.rpsn)})`,
+        });
+      }
+    }
+
     const scrapedAt = new Date().toISOString();
+    let saved = 0;
 
-    const upserts = success.map((row) => ({
-      id: row.id,
-      bank_name: row.bankName,
-      rate: row.rate,
-      rpsn: row.rpsn,
-      rate_with_insurance: row.rate,
-      rate_without_insurance: row.rate,
-      rpsn_with_insurance: row.rpsn,
-      rpsn_without_insurance: row.rpsn,
-      source_url: row.sourceUrl,
-      updated_at: scrapedAt,
-    }));
+    if (validBanks.length > 0) {
+      const supabase = getSupabaseAdmin();
 
-    if (upserts.length > 0) {
+      const upserts = validBanks.map((row) => ({
+        id: row.id,
+        bank_name: row.bankName,
+        rate: row.rate,
+        rpsn: row.rpsn,
+        rate_with_insurance: row.rate,
+        rate_without_insurance: row.rate,
+        rpsn_with_insurance: row.rpsn,
+        rpsn_without_insurance: row.rpsn,
+        source_url: row.sourceUrl,
+        updated_at: scrapedAt,
+      }));
+
       const { error } = await supabase.from("bank_rates").upsert(upserts, {
         onConflict: "id",
       });
       if (error) throw error;
 
-      // Agregát pro pojištění / shrnutí — z první úspěšně scrapované banky
-      // (typicky Česká spořitelna, pokud prošla).
-      const primary = success[0];
+      saved = validBanks.length;
+
+      const primary = validBanks[0];
       const { error: aggregateError } = await supabase.from("current_rates").upsert(
         {
           id: 1,
@@ -76,16 +117,14 @@ export async function GET(request: Request) {
     return NextResponse.json({
       success: true,
       scrapedAt,
-      saved: success.length,
-      banks: success,
-      failures,
+      saved,
+      banks: validBanks,
+      failures: allFailures,
     });
   } catch (error: unknown) {
     console.error("scrape-rates error:", error);
-    const message =
-      error instanceof Error ? error.message : "Neznámá chyba scrapování";
     return NextResponse.json(
-      { success: false, error: message },
+      { success: false, error: getErrorMessage(error) },
       { status: 500 }
     );
   }
