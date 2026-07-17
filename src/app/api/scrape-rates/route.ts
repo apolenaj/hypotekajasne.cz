@@ -124,9 +124,30 @@ export async function GET(request: Request) {
         updated_at: scrapedAt,
       }));
 
-      const { error } = await supabase.from("bank_rates").upsert(upserts, {
+      let americanColumnsMissing = false;
+      let { error } = await supabase.from("bank_rates").upsert(upserts, {
         onConflict: "id",
       });
+
+      // Dokud neběží migrace american_* sloupců, ulož alespoň klasické sazby
+      if (error && /american_/i.test(error.message + (error.details ?? ""))) {
+        americanColumnsMissing = true;
+        const classicOnly = upserts.map(
+          ({
+            american_rate_with_insurance: _a,
+            american_rate_without_insurance: _b,
+            american_rpsn_with_insurance: _c,
+            american_rpsn_without_insurance: _d,
+            american_source_url: _e,
+            ...rest
+          }) => rest
+        );
+        const retry = await supabase.from("bank_rates").upsert(classicOnly, {
+          onConflict: "id",
+        });
+        error = retry.error;
+      }
+
       if (error) {
         const hint = /american_/i.test(error.message + (error.details ?? ""))
           ? ` Spusťte migraci supabase/bank_rates_american_migration.sql a NOTIFY pgrst, 'reload schema';`
@@ -137,9 +158,18 @@ export async function GET(request: Request) {
       }
 
       saved = validBanks.length;
-      americanSaved = validBanks.filter(
-        (b) => b.americanRateWithInsurance != null
-      ).length;
+      americanSaved = americanColumnsMissing
+        ? 0
+        : validBanks.filter((b) => b.americanRateWithInsurance != null).length;
+
+      if (americanColumnsMissing) {
+        allFailures.push({
+          id: "schema",
+          bankName: "Supabase",
+          error:
+            "Chybí sloupce american_* — spusťte supabase/bank_rates_american_migration.sql a NOTIFY pgrst, 'reload schema'. Klasické sazby (vč. KB 4,94 %) byly uloženy.",
+        });
+      }
 
       const primary = validBanks[0];
       const { error: aggregateError } = await supabase.from("current_rates").upsert(
