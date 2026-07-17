@@ -199,12 +199,13 @@ export function MortgageCalculator({
   const primaryRate = isCzechMarket ? czechRate : foreignMarketRate;
 
   const scrapedCzechBanks = useMemo((): ScrapedBankRateInput[] => {
-    return DOMESTIC_BANKS.map((bank) => {
+    const rows: ScrapedBankRateInput[] = [];
+    for (const bank of DOMESTIC_BANKS) {
       const row = findBankRate(bankRates, bank.name);
-      if (!row) return null;
+      if (!row) continue;
       const picked = pickBankRate(row, hasInsurance);
       const american = pickAmericanBankRate(row, hasInsurance);
-      return {
+      rows.push({
         bankName: bank.name,
         rate: picked.rate,
         rpsn: picked.rpsn,
@@ -213,8 +214,9 @@ export function MortgageCalculator({
         americanSourceUrl: row.americanSourceUrl,
         updatedAt: row.updatedAt,
         sourceUrl: row.sourceUrl,
-      };
-    }).filter((row): row is ScrapedBankRateInput => row != null);
+      });
+    }
+    return rows;
   }, [bankRates, hasInsurance]);
 
   const currency = getEffectiveCurrency(country, financingType);

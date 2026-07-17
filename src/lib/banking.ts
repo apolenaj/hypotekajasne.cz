@@ -308,9 +308,9 @@ export type ScrapedBankRateInput = {
   rate: number;
   rpsn: number;
   /** Sazba americké hypotéky (pokud je k dispozici). */
-  americanRate?: number | null;
-  americanRpsn?: number | null;
-  americanSourceUrl?: string | null;
+  americanRate: number | null;
+  americanRpsn: number | null;
+  americanSourceUrl: string | null;
   updatedAt: string | null;
   sourceUrl: string | null;
 };
