@@ -7,8 +7,11 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 function getSupabaseAdmin() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  let url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ?? "";
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+
+  // Klient očekává project root, ne /rest/v1
+  url = url.replace(/\/rest\/v1\/?$/, "").replace(/\/$/, "");
 
   if (!url || !key) {
     throw new Error("Chybí NEXT_PUBLIC_SUPABASE_URL nebo SUPABASE_SERVICE_ROLE_KEY");
@@ -87,6 +90,18 @@ export async function GET(request: Request) {
     if (validBanks.length > 0) {
       const supabase = getSupabaseAdmin();
 
+      // Diagnostika: ověř, že PostgREST vidí tabulku (po CREATE TABLE je často potřeba reload schema)
+      const { error: probeError } = await supabase
+        .from("bank_rates")
+        .select("id")
+        .limit(1);
+      if (probeError) {
+        throw new Error(
+          `Supabase bank_rates nedostupná: ${probeError.message}${probeError.code ? ` (${probeError.code})` : ""}. ` +
+            `V Supabase SQL Editoru spusťte: NOTIFY pgrst, 'reload schema';`
+        );
+      }
+
       // Inzerovaná sazba = s pojištěním; bez pojištění z DOM nebo +0.2 % fallback
       const upserts = validBanks.map((row) => ({
         id: row.id,
@@ -104,7 +119,11 @@ export async function GET(request: Request) {
       const { error } = await supabase.from("bank_rates").upsert(upserts, {
         onConflict: "id",
       });
-      if (error) throw error;
+      if (error) {
+        throw new Error(
+          `Upsert bank_rates selhal: ${error.message}${error.code ? ` (${error.code})` : ""}${error.details ? ` — ${error.details}` : ""}`
+        );
+      }
 
       saved = validBanks.length;
 

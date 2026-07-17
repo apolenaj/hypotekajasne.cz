@@ -37,4 +37,7 @@ begin
   end if;
 end $$;
 
+-- Po vytvoření tabulky obnoví PostgREST schema cache (jinak PGRST125 / „Invalid path“)
+notify pgrst, 'reload schema';
+
 -- Zápis probíhá přes service role (API scrape), RLS insert není potřebný.
