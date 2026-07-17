@@ -12,6 +12,7 @@ export const routes = {
   oMajetio: "/o-majetio",
   kontakt: "/kontakt",
   faq: "/faq",
+  dekujeme: "/dekujeme",
   legal: {
     gdpr: "/pravni/gdpr",
     smlouvy: "/pravni/smlouvy",

@@ -56,7 +56,7 @@ export const globalGuideArticlesData: Record<string, GlobalGuideCountryData> = {
           "https://images.unsplash.com/photo-1582647509711-c8aa8a8bdef5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
         readTime: "5 min čtení",
         content: `
-          <p>Developer Payment Plans (platební plány přímo od developera) jsou tím hlavním motorem, který pohání dubajský realitní zázrak. Na rozdíl od klasické hypotéky <strong>nepotřebujete schválení banky a neplatíte žádné úroky</strong>. Splácíte nemovitost postupně, tak jak roste.</p>
+          <p>Developer Payment Plans (platební plány developera) financují část nákupu bez klasické hypotéky a bez bankovního úroku. Splácíte podle fází výstavby. To snižuje bariéru vstupu, ale přenáší riziko zpoždění, kvality a likvidity na kupujícího.</p>
           <h3>Jak to funguje v praxi?</h3>
           <p>Platební plány se obvykle označují poměrem, například <strong>60/40</strong> nebo <strong>70/30</strong>. První číslo znamená procento, které zaplatíte během výstavby, druhé číslo je částka splatná při předání klíčů (Handover).</p>
           <ul>

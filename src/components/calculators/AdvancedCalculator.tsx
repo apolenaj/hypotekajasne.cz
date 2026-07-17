@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { AmortizationChart } from "@/components/calculators/AmortizationChart";
+import { CalculatorDisclaimer } from "@/components/calculators/CalculatorDisclaimer";
+import { InsuranceRateCards } from "@/components/calculators/InsuranceRateCards";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -11,6 +13,7 @@ import {
   generateAmortizationData,
   type CountryId,
 } from "@/lib/calculators";
+import { pickRate, useCurrentRates } from "@/lib/rates";
 
 interface AdvancedCalculatorProps {
   country: CountryId;
@@ -18,15 +21,48 @@ interface AdvancedCalculatorProps {
 
 export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
   const config = countryConfigs[country];
+  const isCzechMarket = country === "cz";
+  const { rates, loading: ratesLoading } = useCurrentRates();
 
   const [price, setPrice] = useState(config.defaultPrice);
   const [capital, setCapital] = useState(config.defaultSavings);
-  const [rate, setRate] = useState(config.defaultRate);
   const [years, setYears] = useState(config.defaultTerm);
+  const [hasInsurance, setHasInsurance] = useState(true);
+
+  const czechRate = pickRate(rates, hasInsurance);
+  const selectedRate = isCzechMarket ? czechRate : config.defaultRate;
+  const loanAmount = Math.max(0, price - capital);
+
+  const paymentWithInsurance = useMemo(
+    () =>
+      Math.round(
+        calculateAnnuityPayment(loanAmount, rates.rateWithInsurance, years)
+      ),
+    [loanAmount, rates.rateWithInsurance, years]
+  );
+
+  const paymentWithoutInsurance = useMemo(
+    () =>
+      Math.round(
+        calculateAnnuityPayment(loanAmount, rates.rateWithoutInsurance, years)
+      ),
+    [loanAmount, rates.rateWithoutInsurance, years]
+  );
+
+  const foreignPayment = useMemo(
+    () =>
+      Math.round(
+        calculateAnnuityPayment(loanAmount, config.defaultRate, years)
+      ),
+    [loanAmount, config.defaultRate, years]
+  );
 
   const calculations = useMemo(() => {
-    const loanAmount = Math.max(0, price - capital);
-    const monthlyPayment = calculateAnnuityPayment(loanAmount, rate, years);
+    const monthlyPayment = isCzechMarket
+      ? hasInsurance
+        ? paymentWithInsurance
+        : paymentWithoutInsurance
+      : foreignPayment;
     const annualRentalIncome = price * config.defaultRentalYield;
     const annualMortgageCost = monthlyPayment * 12;
     const netAnnualCashFlow = annualRentalIncome - annualMortgageCost;
@@ -34,15 +70,25 @@ export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
 
     return {
       loanAmount: Math.round(loanAmount),
-      monthlyPayment: Math.round(monthlyPayment),
+      monthlyPayment,
       annualRentalIncome: Math.round(annualRentalIncome),
       roi: roi.toFixed(1),
     };
-  }, [price, capital, rate, years, config.defaultRentalYield]);
+  }, [
+    isCzechMarket,
+    hasInsurance,
+    paymentWithInsurance,
+    paymentWithoutInsurance,
+    foreignPayment,
+    price,
+    capital,
+    loanAmount,
+    config.defaultRentalYield,
+  ]);
 
   const chartData = useMemo(
-    () => generateAmortizationData(price, capital, rate, years),
-    [price, capital, rate, years]
+    () => generateAmortizationData(price, capital, selectedRate, years),
+    [price, capital, selectedRate, years]
   );
 
   const currency = config.currency;
@@ -76,20 +122,42 @@ export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
             className="rounded-lg"
           />
         </div>
-        <div>
-          <Label htmlFor={`rate-${country}`} className="mb-2 block">
-            Úroková sazba (% p.a.)
-          </Label>
-          <Input
-            id={`rate-${country}`}
-            type="number"
-            min={0}
-            step={0.1}
-            value={rate}
-            onChange={(e) => setRate(Number(e.target.value) || 0)}
-            className="rounded-lg"
-          />
-        </div>
+
+        {isCzechMarket ? (
+          <div className="md:col-span-2">
+            <InsuranceRateCards
+              hasInsurance={hasInsurance}
+              onSelect={setHasInsurance}
+              rateWithInsurance={rates.rateWithInsurance}
+              rateWithoutInsurance={rates.rateWithoutInsurance}
+              rpsnWithInsurance={rates.rpsnWithInsurance}
+              rpsnWithoutInsurance={rates.rpsnWithoutInsurance}
+              paymentWithInsurance={formatCurrency(
+                paymentWithInsurance,
+                currency
+              )}
+              paymentWithoutInsurance={formatCurrency(
+                paymentWithoutInsurance,
+                currency
+              )}
+              loading={ratesLoading}
+            />
+          </div>
+        ) : (
+          <div className="md:col-span-2 rounded-2xl border border-deep-teal/20 bg-deep-teal/5 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-deep-teal">
+              Lokální sazba trhu {config.label}
+            </p>
+            <p className="mt-1 text-2xl font-bold text-deep-teal">
+              {config.defaultRate.toFixed(2)} % p.a.
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Orientační splátka: {formatCurrency(foreignPayment, currency)}
+              /měs. (nepoužívá české sazby ze Supabase)
+            </p>
+          </div>
+        )}
+
         <div>
           <Label htmlFor={`years-${country}`} className="mb-2 block">
             Doba splácení (let)
@@ -103,6 +171,14 @@ export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
             className="rounded-lg"
           />
         </div>
+        <div className="flex items-end">
+          <div className="w-full rounded-xl bg-gradient-to-r from-deep-teal/5 to-muted-gold/5 p-4 ring-1 ring-gray-900/5">
+            <p className="text-xs text-muted-foreground">Zvolená sazba</p>
+            <p className="text-2xl font-bold text-deep-teal">
+              {selectedRate.toFixed(2)} %
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-gray-100 pt-6">
@@ -112,6 +188,14 @@ export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
           </p>
           <p className="text-2xl font-bold text-emerald-900 whitespace-nowrap">
             {formatCurrency(calculations.monthlyPayment, currency)}
+          </p>
+          <p className="text-xs text-emerald-700/70 mt-1">
+            {isCzechMarket
+              ? hasInsurance
+                ? "S pojištěním (Supabase)"
+                : "Bez pojištění (Supabase)"
+              : `Lokální sazba ${config.label}`}{" "}
+            · {selectedRate.toFixed(2)} %
           </p>
         </div>
         <div className="bg-blue-50 p-6 rounded-2xl">
@@ -132,6 +216,8 @@ export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
           <p className="text-2xl font-bold text-purple-900">{calculations.roi} %</p>
         </div>
       </div>
+
+      <CalculatorDisclaimer className="mt-4" />
 
       <AmortizationChart data={chartData} currency={currency} />
     </div>

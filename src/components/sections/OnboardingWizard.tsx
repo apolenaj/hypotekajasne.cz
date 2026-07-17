@@ -1,8 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Loader2 } from "lucide-react";
+import { CalculatorDisclaimer } from "@/components/calculators/CalculatorDisclaimer";
+import { InsuranceRateCards } from "@/components/calculators/InsuranceRateCards";
 import { formatCurrency } from "@/lib/calculators";
+import { submitLead } from "@/lib/leads";
+import { pickRate, useCurrentRates } from "@/lib/rates";
 import { cn } from "@/lib/utils";
 
 const TOTAL_STEPS = 6;
@@ -128,7 +132,11 @@ function OptionButton({
 export function OnboardingWizard() {
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [formData, setFormData] = useState<OnboardingFormData>(initialFormData);
+  const [hasInsurance, setHasInsurance] = useState(true);
+  const { rates, loading: ratesLoading } = useCurrentRates();
 
   const updateForm = <K extends keyof OnboardingFormData>(
     field: K,
@@ -149,13 +157,7 @@ export function OnboardingWizard() {
     const maxMonthlyPayment = income * 0.45 - loans;
     const maxMaturityYears = Math.min(30, Math.max(5, 65 - age));
 
-    let estimatedRate = 4.5;
-    if (
-      formData.targetCountry !== "Česká republika" &&
-      formData.czPropertyOwned === "Ne, nevlastním"
-    ) {
-      estimatedRate = 5.8;
-    }
+    const estimatedRate = pickRate(rates, hasInsurance);
 
     const monthlyRate = estimatedRate / 100 / 12;
     const totalMonths = maxMaturityYears * 12;
@@ -192,14 +194,49 @@ export function OnboardingWizard() {
       limitingFactor,
       maxPossibleByIncome: maxLoanDSTI,
     };
-  }, [formData]);
+  }, [formData, rates, hasInsurance]);
 
-  const handleSubmit = () => {
-    if (!formData.name.trim() || !formData.email.trim()) return;
-    console.log("Bankovní prescoring – odeslaná data:", {
-      ...formData,
-      preApproval,
+  const handleSubmit = async () => {
+    if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim()) {
+      return;
+    }
+
+    setSubmitError(null);
+    setSubmitLoading(true);
+
+    const selectedRate = pickRate(rates, hasInsurance);
+    const result = await submitLead({
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      source: "navrh_na_miru",
+      country: formData.targetCountry || undefined,
+      notes: [
+        `Účel: ${formData.purpose || "—"}`,
+        `Příjem: ${formData.netIncome || "—"} Kč (${formData.incomeType || "—"})`,
+        `Vlastní hotovost: ${formData.ownCash || "—"} Kč`,
+        `Pojištění: ${hasInsurance ? "ano" : "ne"}`,
+        `Sazba: ${selectedRate.toFixed(2)} %`,
+        preApproval
+          ? `Odhad max. úvěru: ${Math.round(preApproval.maxLoan).toLocaleString("cs-CZ")} Kč`
+          : null,
+      ]
+        .filter(Boolean)
+        .join(" | "),
+      metadata: {
+        ...formData,
+        has_insurance: hasInsurance,
+        selected_rate: selectedRate,
+        pre_approval: preApproval,
+      },
     });
+
+    setSubmitLoading(false);
+    if (!result.ok) {
+      setSubmitError(result.error);
+      return;
+    }
+
     setSubmitted(true);
   };
 
@@ -427,7 +464,7 @@ export function OnboardingWizard() {
           {step === 4 && (
             <div className="animate-in fade-in slide-in-from-right-8 duration-500">
               <h2 className="font-heading text-2xl font-bold text-gray-900 mb-6">
-                Stávající závazky (DSTI limit)
+                Stávající závazky (bonita / DSTI banky)
               </h2>
               <div className="space-y-6">
                 <div>
@@ -581,6 +618,17 @@ export function OnboardingWizard() {
 
           {step === 6 && (
             <div className="animate-in fade-in slide-in-from-right-8 duration-500">
+              <InsuranceRateCards
+                className="mb-8"
+                hasInsurance={hasInsurance}
+                onSelect={setHasInsurance}
+                rateWithInsurance={rates.rateWithInsurance}
+                rateWithoutInsurance={rates.rateWithoutInsurance}
+                rpsnWithInsurance={rates.rpsnWithInsurance}
+                rpsnWithoutInsurance={rates.rpsnWithoutInsurance}
+                loading={ratesLoading}
+              />
+
               <div
                 className={cn(
                   "p-8 rounded-3xl mb-8 border-2",
@@ -630,10 +678,18 @@ export function OnboardingWizard() {
                           Odhadovaná sazba
                         </p>
                         <p className="text-2xl font-black text-emerald-600">
-                          od {preApproval.rate} % p.a.
+                          od {preApproval.rate.toFixed(2)} % p.a.
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {hasInsurance ? "S pojištěním" : "Bez pojištění"}
+                        </p>
+                        <p className="text-[10px] text-gray-400 mt-1">
+                          Zdroj: aktuální česká sazba (Supabase)
                         </p>
                       </div>
                     </div>
+
+                    <CalculatorDisclaimer className="mt-4" />
 
                     <div className="mt-6 bg-white p-5 rounded-2xl border border-emerald-100 text-sm shadow-sm">
                       <h5 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
@@ -655,7 +711,7 @@ export function OnboardingWizard() {
 
                       {preApproval.limitingFactor === "LTV" ? (
                         <p className="text-gray-700 leading-relaxed">
-                          Vaše skvělé příjmy by vám teoreticky umožnily dosáhnout
+                          Vaše příjmy by teoreticky umožnily dosáhnout
                           na hypotéku až{" "}
                           <strong>
                             {Math.round(
@@ -668,26 +724,24 @@ export function OnboardingWizard() {
                           <br />
                           <br />
                           <span className="font-bold text-emerald-800">
-                            💡 Jak limit navýšit:
+                            Co zvážit:
                           </span>{" "}
-                          Zvažte dozajištění jinou nemovitostí (např. bytem
-                          rodičů) nebo doplnění kapitálu ze stavebního spoření
-                          či nezajištěného úvěru. Náš specialista vám ukáže,
-                          jak tento limit bezpečně prorazit.
+                          Dozajištění jinou nemovitostí nebo doplnění kapitálu.
+                          Finální limity vždy stanoví konkrétní banka.
                         </p>
                       ) : (
                         <p className="text-gray-700 leading-relaxed">
                           Máte připravený silný kapitál, ale aktuální maximální
                           limit úvěru je dán{" "}
                           <strong>
-                            ukazatelem DSTI (poměr vašich čistých příjmů vůči
-                            měsíčním výdajům)
+                            ukazatelem DSTI (poměr splátek k čistému příjmu)
                           </strong>
-                          , který reguluje ČNB.
+                          . DTI a DSTI ČNB aktuálně plošně neaktivuje — banky je
+                          však běžně sledují interně.
                           <br />
                           <br />
                           <span className="font-bold text-emerald-800">
-                            💡 Jak limit navýšit:
+                            Jak limit navýšit:
                           </span>{" "}
                           Pro dosažení vyšší částky doporučujeme přizvat k úvěru
                           spolužadatele (čímž se vaše příjmy sečtou), nebo před
@@ -770,6 +824,11 @@ export function OnboardingWizard() {
                   />
                 </div>
               </div>
+              {submitError && (
+                <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-800">
+                  {submitError}
+                </p>
+              )}
             </div>
           )}
 
@@ -798,10 +857,16 @@ export function OnboardingWizard() {
               <button
                 type="button"
                 onClick={handleSubmit}
-                disabled={!formData.name.trim() || !formData.email.trim()}
-                className="bg-emerald-600 text-white font-bold py-4 px-10 rounded-full hover:bg-emerald-500 transition-all shadow-xl hover:shadow-emerald-500/30 transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                disabled={
+                  submitLoading ||
+                  !formData.name.trim() ||
+                  !formData.email.trim() ||
+                  !formData.phone.trim()
+                }
+                className="inline-flex items-center gap-2 bg-emerald-600 text-white font-bold py-4 px-10 rounded-full hover:bg-emerald-500 transition-all shadow-xl hover:shadow-emerald-500/30 transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
-                Odeslat profil analytikovi
+                {submitLoading && <Loader2 className="h-5 w-5 animate-spin" />}
+                {submitLoading ? "Odesílám…" : "Odeslat profil analytikovi"}
               </button>
             )}
           </div>

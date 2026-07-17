@@ -18,25 +18,25 @@ export interface BuyVsRentDeepAnalysis {
 }
 
 export const DEFAULT_THUMB_RULE =
-  "Pokud je váš časový horizont v dané lokalitě kratší než 5 let, transakční náklady (daně, provize, úroky) často převýší zisk z růstu ceny a nájem je matematicky bezpečnější. Pokud plánujete horizont 10+ let, mechanismy jako pákový efekt a budování equity dělají z vlastnictví takřka neporazitelný nástroj pro tvorbu osobního bohatství.";
+  "Pokud je váš časový horizont v dané lokalitě kratší než 5 let, transakční náklady (daně, provize, úroky) často převýší zisk z růstu ceny a nájem bývá za daných předpokladů výhodnější. Při horizontu 10+ let může vlastnictví díky pákovému efektu a budování equity vycházet příznivěji — výsledek se však mění podle sazeb, ceny, nájmu, měny a nákladů. Nemovitosti nesou rizika včetně neobsazenosti, legislativních změn a kurzových výkyvů.";
 
 export const buyVsRentDeepAnalysis: Record<string, BuyVsRentDeepAnalysis> = {
   "Česká republika": {
-    title: "Proč je koupě v ČR historicky cestou k bohatství",
+    title: "Koupě vs. nájem v ČR: co říkají dlouhodobá data",
     intro:
-      "Při prostém srovnání měsíčních nákladů může nájem často působit výhodněji. Skutečný rozdíl se však skrývá ve finančních mechanismech, které vlastnictví nemovitosti spouští na pozadí.",
+      "Při prostém srovnání měsíčních nákladů může nájem často působit výhodněji. Rozdíl ale závisí na horizontu, sazbách a růstu cen — nejde o univerzální doporučení, ale o model za zadaných předpokladů.",
     sections: [
       {
         icon: "PiggyBank",
-        title: "1. Nucené spoření a budování Equity",
+        title: "1. Splátka vs. nájem: struktura cash-flow",
         content:
-          "Zatímco 100 % zaplaceného nájmu je nenávratný výdaj, splátka hypotéky se dělí na úrok (náklad banky) a jistinu. S každou splátkou si de facto 'kupujete' další kousek své nemovitosti. Za 10 let splácení tak neodhazujete peníze do prázdna, ale přesouváte je do nelikvidního spořicího účtu jménem 'Váš dům'.",
+          "Nájem je provozní náklad. Hypoteční splátka se dělí na úrok a jistinu — část platby tedy snižuje zůstatek dluhu. To neznamená automatický zisk: likvidita je nižší, transakční náklady vyšší a výsledek závisí na vývoji sazeb i ceny nemovitosti.",
       },
       {
         icon: "TrendingUp",
-        title: "2. Pákový efekt (Leverage) a zhodnocení",
+        title: "2. Pákový efekt (Leverage) — příležitost i riziko",
         content:
-          "Při koupi nemovitosti za 5 000 000 Kč s 20% akontací (1 000 000 Kč) kontrolujete aktivum v plné hodnotě. Pokud trh vzroste o konzervativních 5 % ročně, vaše nemovitost získá na hodnotě 250 000 Kč. Z pohledu vašeho vlastního vloženého kapitálu (1 mil. Kč) je to však zhodnocení 25 % hned v prvním roce. Nájemce z růstu trhu nemá nic, naopak mu hrozí zvýšení nájmu.",
+          "Při koupi nemovitosti za 5 000 000 Kč s 20% akontací kontrolujete aktivum v plné hodnotě. Růst trhu o 5 % pak ovlivní celou cenu, ne jen vlastní kapitál. Stejná páka ale funguje i dolů: pokles cen nebo vyšší sazby mohou model výrazně zhoršit. Nájemce se růstu kapitálu neúčastní, ale nese nižší fixní riziko.",
       },
       {
         icon: "ShieldAlert",

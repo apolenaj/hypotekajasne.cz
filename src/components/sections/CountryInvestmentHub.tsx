@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRight, Send } from "lucide-react";
+import { ArrowRight, Loader2, Send } from "lucide-react";
 import { articlesData, type Article } from "@/lib/articles-data";
 import { routes } from "@/lib/routes";
 import {
@@ -11,6 +11,7 @@ import {
   getCountryHubName,
 } from "@/lib/country-hub-data";
 import type { CountryId } from "@/lib/calculators";
+import { submitLead } from "@/lib/leads";
 import { CountryInfoTabs } from "@/components/sections/CountryInfoTabs";
 
 interface HubFormData {
@@ -75,10 +76,37 @@ function RelatedArticleCard({ article }: { article: Article }) {
 function InvestorLeadForm({ countryName }: { countryName: string }) {
   const [formData, setFormData] = useState<HubFormData>(defaultFormData);
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim() || !formData.email.trim()) return;
+    if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim()) {
+      return;
+    }
+    setError(null);
+    setLoading(true);
+
+    const result = await submitLead({
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      source: "country_hub",
+      country: countryName,
+      notes: [
+        `Země: ${countryName}`,
+        `Typ investora: ${formData.investorType}`,
+        `Budget: ${formData.budget}`,
+        `Typ nemovitosti: ${formData.propertyType}`,
+      ].join(" | "),
+      metadata: { ...formData },
+    });
+
+    setLoading(false);
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
     setSubmitted(true);
   };
 
@@ -166,6 +194,7 @@ function InvestorLeadForm({ countryName }: { countryName: string }) {
             <input
               id="hub-phone"
               type="tel"
+              required
               value={formData.phone}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, phone: e.target.value }))
@@ -252,12 +281,23 @@ function InvestorLeadForm({ countryName }: { countryName: string }) {
           </select>
         </div>
 
+        {error && (
+          <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-800">
+            {error}
+          </p>
+        )}
+
         <button
           type="submit"
-          className="w-full bg-emerald-900 text-white font-bold text-lg p-4 rounded-xl hover:bg-emerald-800 transition-all shadow-lg mt-4 inline-flex items-center justify-center gap-2"
+          disabled={loading}
+          className="w-full bg-emerald-900 text-white font-bold text-lg p-4 rounded-xl hover:bg-emerald-800 transition-all shadow-lg mt-4 inline-flex items-center justify-center gap-2 disabled:opacity-60"
         >
-          <Send className="h-5 w-5" />
-          Vyžádat neveřejné nabídky
+          {loading ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <Send className="h-5 w-5" />
+          )}
+          {loading ? "Odesílám…" : "Vyžádat neveřejné nabídky"}
         </button>
         <p className="text-[10px] text-gray-400 text-center mt-3 leading-relaxed">
           Vaše data jsou u nás v bezpečí. Kliknutím souhlasíte se zpracováním

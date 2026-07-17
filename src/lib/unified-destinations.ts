@@ -15,14 +15,14 @@ export const unifiedDestinations: UnifiedDestination[] = [
   },
   {
     country: "SAE (Dubaj)",
-    desc: "Daňový ráj, architektonické divy a absolutní bezpečí kapitálu.",
+    desc: "Bez daně z příjmu fyzických osob, dynamický development a vyšší provozní i regulatorní riziko.",
     image:
       "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
     slug: "dubaj",
   },
   {
     country: "Španělsko",
-    desc: "Evropská Florida: Stabilní právo, 300 slunečných dní a jistota.",
+    desc: "Trh v EU s dostupným financováním pro nerezidenty; výnos závisí na lokalitě a regulaci pronájmů.",
     image:
       "https://images.pexels.com/photos/1388030/pexels-photo-1388030.jpeg?auto=compress&cs=tinysrgb&w=1000",
     slug: "spanelsko",

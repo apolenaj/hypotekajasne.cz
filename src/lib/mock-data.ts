@@ -1,5 +1,5 @@
 import type { CountryId } from "@/lib/calculators";
-import { routes } from "@/lib/routes";
+import { getCountryGuidePath, routes } from "@/lib/routes";
 
 export interface DestinationCard {
   id: CountryId;
@@ -85,26 +85,94 @@ export const consultationCountries = [
   { value: "slovakia", label: "Slovensko" },
 ];
 
-export const mainNavLinks = [
-  { href: `${routes.pruvodceInvestora}/ceska-republika`, label: "Hypotéky v ČR" },
-  { href: routes.pruvodceInvestora, label: "Zahraniční nemovitosti" },
-  { href: routes.investicniRentgen, label: "Investiční rentgen" },
-  { href: routes.investicniPas, label: "Investiční pas" },
-  { href: routes.kalkulacky.root, label: "Kalkulačka" },
-] as const;
+export type NavLinkItem = {
+  href: string;
+  label: string;
+  external?: boolean;
+};
 
-export const expertNavLinks = [
-  { href: routes.kalkulacky.koupeVsNajem, label: "Koupě x Nájem" },
-  { href: routes.kalkulacky.historickyVyvoj, label: "Historický vývoj" },
-  { href: routes.kalkulacky.potencialniVyvoj, label: "Potenciální vývoj" },
-  { href: routes.hypotecniAkademie, label: "Hypoteční akademie" },
-  { href: routes.clanky, label: "Články" },
+/** Tři hlavní cesty — vždy viditelné v hlavičce */
+export const primaryNavLinks: NavLinkItem[] = [
+  {
+    href: routes.kalkulacky.root,
+    label: "Zjistit, kolik si mohu půjčit",
+  },
+  {
+    href: routes.investicniPas,
+    label: "Vybrat vhodnou zemi",
+  },
+  {
+    href: routes.investicniRentgen,
+    label: "Analyzovat nemovitost",
+  },
+];
+
+/** Sekundární rozbalovací menu */
+export const secondaryNavGroups: {
+  id: "nastroje" | "trhy" | "akademie" | "o-nas";
+  label: string;
+  items: NavLinkItem[];
+}[] = [
+  {
+    id: "nastroje",
+    label: "Nástroje",
+    items: [
+      { href: routes.kalkulacky.root, label: "Hypoteční kalkulačka" },
+      { href: routes.investicniPas, label: "Investiční pas" },
+      { href: routes.investicniRentgen, label: "Investiční rentgen" },
+      { href: routes.kalkulacky.koupeVsNajem, label: "Koupě × Nájem" },
+      { href: routes.kalkulacky.historickyVyvoj, label: "Historický vývoj" },
+      { href: routes.kalkulacky.potencialniVyvoj, label: "Potenciální vývoj" },
+      {
+        href: "https://majetio.cz",
+        label: "Majetio.cz",
+        external: true,
+      },
+    ],
+  },
+  {
+    id: "trhy",
+    label: "Trhy",
+    items: [
+      { href: getCountryGuidePath("cz"), label: "Česká republika" },
+      { href: getCountryGuidePath("dubai"), label: "SAE / Dubaj" },
+      { href: getCountryGuidePath("spain"), label: "Španělsko" },
+      { href: getCountryGuidePath("italy"), label: "Itálie" },
+      { href: getCountryGuidePath("croatia"), label: "Chorvatsko" },
+      { href: getCountryGuidePath("bali"), label: "Bali (Indonésie)" },
+      { href: getCountryGuidePath("saudi"), label: "Saúdská Arábie" },
+      { href: getCountryGuidePath("slovakia"), label: "Slovensko" },
+    ],
+  },
+  {
+    id: "akademie",
+    label: "Akademie",
+    items: [
+      { href: routes.hypotecniAkademie, label: "Hypoteční akademie" },
+      { href: routes.clanky, label: "Články" },
+      { href: routes.faq, label: "FAQ" },
+    ],
+  },
+  {
+    id: "o-nas",
+    label: "O nás",
+    items: [
+      { href: routes.oNas, label: "O nás" },
+      { href: routes.oMajetio, label: "O Majetio.cz" },
+      { href: routes.kontakt, label: "Kontakt" },
+    ],
+  },
+];
+
+/** @deprecated Prefer primaryNavLinks / secondaryNavGroups */
+export const mainNavLinks = primaryNavLinks;
+/** @deprecated Prefer secondaryNavGroups */
+export const expertNavLinks = secondaryNavGroups.flatMap((g) => g.items);
+/** @deprecated Prefer primaryNavLinks / secondaryNavGroups */
+export const navLinks = [
+  ...primaryNavLinks,
   { href: routes.oNas, label: "O nás" },
-  { href: routes.oMajetio, label: "O Majetio.cz" },
-] as const;
-
-/** @deprecated Use mainNavLinks and expertNavLinks */
-export const navLinks = [...mainNavLinks, { href: routes.oNas, label: "O nás" }];
+];
 
 export const footerLinks = {
   legal: [
@@ -326,7 +394,7 @@ export const financingDetailsData: Record<string, FinancingDetail[]> = {
         "Standardně do 80 % LTV, pro žadatele mladší 36 let až 90 % LTV.",
       rates: "Kolem 4.5 % p.a.",
       howItWorks:
-        "Banka standardně půjčí 80 % hodnoty nemovitosti. Limity DTI a DSTI nejsou aktuálně závazné, ale banky se drží doporučení DTI 8 (dluh do osminásobku čistého ročního příjmu).",
+        "Banka standardně půjčí 80 % hodnoty nemovitosti (do 36 let často až 90 %). Ukazatele DTI a DSTI ČNB aktuálně plošně neaktivuje — banky je však mohou používat interně při hodnocení bonity.",
       idealFor: "Zaměstnance na dobu neurčitou s ukončenou zkušební dobou.",
       advantages: [
         "Možnost přidat spolužadatele (např. partnera či rodiče) a spojit tak příjmy.",
@@ -344,10 +412,10 @@ export const financingDetailsData: Record<string, FinancingDetail[]> = {
       id: "invest-cz",
       title: "Investiční hypotéka (Koupě na pronájem)",
       shortDesc:
-        "Od 1. dubna 2026 platí přísnější limity: maximálně 70 % LTV a DTI 7.",
+        "Od 1. 4. 2026 ČNB doporučuje u investičních hypoték LTV max. 70 % a DTI 7.",
       rates: "Kolem 4.8 % p.a.",
       howItWorks:
-        "Pro koupi třetí a další obytné nemovitosti nebo nemovitosti na pronájem banky vyžadují 30 % vlastních zdrojů. Do limitů se počítají i zahraniční nemovitosti.",
+        "Pro investiční hypotéky (typicky třetí a další obytná nemovitost nebo koupě na pronájem) ČNB doporučuje LTV maximálně 70 % a limit DTI 7. Banky obvykle chtějí alespoň 30 % vlastních zdrojů. U vlastního bydlení zůstávají DTI a DSTI deaktivované.",
       idealFor:
         "Investory, kterým banka umí započítat budoucí očekávané nájemné do bonity.",
       advantages: ["Lze využít k nákupu činžovních domů či portfolia bytů."],
@@ -382,7 +450,7 @@ export const financingDetailsData: Record<string, FinancingDetail[]> = {
       id: "pre-approved",
       title: "Hypotéka bez vybrané nemovitosti",
       shortDesc:
-        "Schválení peněz předem. ČSOB například dává až devět měsíců na výběr.",
+        "Schválení peněz předem. ČSOB Hypoteční banka například dává až devět měsíců na výběr.",
       rates: "Kolem 4.7 % p.a.",
       howItWorks:
         "Banka nejdříve schválí váš příjem a úvěrový limit. Znáte přesný rozpočet před podpisem rezervační smlouvy.",

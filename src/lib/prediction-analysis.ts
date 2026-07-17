@@ -27,15 +27,15 @@ const sharedSections: PredictionAnalysisSection[] = [
 export const predictionAnalysisByCountry: Record<CountryId, PredictionAnalysis> =
   {
     cz: {
-      title: "Dva motory bohatství a iluze nominálního růstu",
+      title: "Dva zdroje výnosu a rozdíl mezi nominálním a reálným výsledkem",
       intro:
-        "Predikce na 20 let odhaluje to, co bohatí vědí už celá staletí: nemovitosti fungují jako dvoumotorový stroj na peníze. Zatímco většina začínajících investorů sleduje pouze růst tržní ceny (kapitálové zhodnocení), skutečný pasivní příjem tvoří kumulovaný výnos z nájemného, který roste v čase spolu s trhem.",
+        "Model na 20 let odděluje kapitálové zhodnocení od kumulovaného nájmu. Při zadaných předpokladech může být výsledek příznivý — mění se ale se sazbami, neobsazeností, inflací a náklady. Historický růst není zárukou budoucího vývoje.",
       sections: sharedSections,
     },
     dubai: {
-      title: "Dubaj: Daňový štít a dvojitý motor bez srážek",
+      title: "Dubaj: daňový režim a citlivost modelu na náklady",
       intro:
-        "V SAE predikce zahrnuje vyšší startovní yield (6–7 %) a nulovou daň z příjmu z pronájmu. Dva motory — capital appreciation a kumulativní nájem — pracují bez daně z kapitálového zisku, což dramaticky zvyšuje reálný výnos oproti západním trhům.",
+        "V SAE model často počítá s vyšším startovním yieldem a absencí daně z příjmu z pronájmu. Reálný výsledek ale ovlivňují service charges, volatilita nabídky off-plan projektů a měnové i regulatorní riziko. Nejde o garantovaný výnos.",
       sections: [
         {
           title: "Service charges vs. inflace",
@@ -48,7 +48,7 @@ export const predictionAnalysisByCountry: Record<CountryId, PredictionAnalysis> 
     spain: {
       title: "Španělsko: Sezónní yield a dlouhodobá kupní síla",
       intro:
-        "Na pobřeží Španělska tvoří dva motory kombinaci trvalého růstu cen a sezónního nájmu. Predikce odděluje nominální bohatství od reálného — v eurozóně inflace historicky nižší, ale stále významná.",
+        "Na pobřeží Španělska model kombinuje růst cen a sezónní / medium-term nájem. Odděluje nominální a reálný výsledek. Inflace v eurozóně bývá nižší než v ČR, ale stále ovlivňuje kupní sílu — a regulace Airbnb může změnit cash-flow.",
       sections: sharedSections,
     },
     italy: {

@@ -33,49 +33,49 @@ export const countryHubData: Record<string, CountryHubData> = {
     subtitle:
       "Domácí trh s regulací ČNB, stabilní LTV a nejširší nabídkou bankovních produktů v regionu.",
     marketOverview: `
-      <h3 class="text-2xl font-bold text-gray-900 mt-0 mb-4">Proč investovat v ČR v roce 2026</h3>
-      <p>Český trh je po cenové korekci a stabilizaci úrokových sazeb opět v režimu růstu. Praha a Brno fungují jako nezastavitelné lokomotivy tažené silnou poptávkou po nájemním bydlení, zatímco regiony jako Ostrava, Ústí nad Labem nebo Plzeň nabízejí nadstandardní hrubý yield (výnos) přesahující 6 % p.a.</p>
+      <h3 class="text-2xl font-bold text-gray-900 mt-0 mb-4">Český trh v datech (2026)</h3>
+      <p>Po korekci cen a stabilizaci sazeb se trh opět pohybuje v mírném růstovém režimu. Praha a Brno zůstávají tahouny poptávky po nájemním bydlení; některé regiony nabízejí vyšší hrubý yield, ale často i nižší likviditu. Při zadaných předpokladech může investiční byt vycházet příznivě — výsledek se mění se sazbami, neobsazeností a náklady.</p>
       
-      <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4">Bezpečí domácího hřiště</h3>
-      <p>Největší výhodou českého trhu je absolutní znalost prostředí. Máme jeden z nejtransparentnějších katastrů nemovitostí na světě (dostupný online zdarma) a bezprecedentní paletu bankovních produktů. Pokud máte stabilní příjmy v CZK, domácí hypotéka vás chrání před měnovým rizikem. Navíc, díky zákonu o spotřebitelském úvěru máte obrovskou flexibilitu při refinancování a mimořádných splátkách.</p>
+      <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4">Domácí prostředí a měnové riziko</h3>
+      <p>Výhodou je známé právní prostředí a transparentní katastr. Příjmy v CZK a hypotéka v CZK snižují měnové riziko oproti zahraničním aktivům. Flexibilita refinancování vyplývá ze zákona o spotřebitelském úvěru — nejde však o záruku schválení konkrétní nabídky bankou.</p>
 
-      <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4">Klíčová metrika: Dostupnost bydlení</h3>
-      <p>ČR má dlouhodobě jeden z nejhorších indexů dostupnosti vlastního bydlení v Evropě (poměr cen k platům). Pro běžného občana je to špatná zpráva, ale <strong>pro vás jako investora je to fundamentální výhoda</strong>. Znamená to totiž, že obrovská masa lidí nedosáhne na hypotéku a je nucena jít do nájmu. Poptávka po vašich nájemních bytech bude díky tomu v příštích 10 letech garantovaná.</p>
+      <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4">Dostupnost bydlení a nájemní poptávka</h3>
+      <p>ČR patří k zemím s horší dostupností vlastního bydlení (poměr cen k příjmům). To historicky podporovalo nájemní segment ve velkých městech. Poptávka ale není garantovaná: závisí na regulaci, migraci, sazbách a nové výstavbě. Modelujte i scénář delší neobsazenosti.</p>
 
       <div class="mt-8 p-6 bg-emerald-50 rounded-2xl border border-emerald-100">
-        <h4 class="font-bold text-emerald-900 mb-2">💡 Expertní tip z trhu</h4>
-        <p class="text-emerald-800 text-sm">Při nákupu investičního bytu v ČR se vyhněte novostavbám s prémiovou cenovkou, kde se vám výnos (ROI) propadne pod 3 %. Zaměřte se na starší cihlové nebo panelové byty 2+kk před rekonstrukcí poblíž dopravních uzlů. Po řízené rekonstrukci maximalizujete jak nájemné, tak kapitálový růst hodnoty (Flipping-to-Rent).</p>
+        <h4 class="font-bold text-emerald-900 mb-2">Analytická poznámka</h4>
+        <p class="text-emerald-800 text-sm">U novostaveb s prémiovou cenou často klesá hrubý výnos pod 3 %. Starší byty u dopravních uzlů mohou po rekonstrukci nabízet lepší poměr nájmu k ceně — vždy ověřte náklady, daně a likviditu lokality.</p>
       </div>
     `,
     fourPillars: {
       market:
-        "Rostoucí trh tažený nedostatečnou výstavbou a silnou poptávkou po nájemním bydlení ve velkých městech.",
+        "Trh tažený omezenou výstavbou a poptávkou po nájmu ve velkých městech; regionální rozdíly ve výnosech i likviditě.",
       financing:
-        "LTV max 80-90 % dle věku. Nutné plnit přísné limity DSTI nařízené ČNB. Široká paleta fixací (1-10 let).",
+        "Vlastní bydlení: LTV obvykle do 80 % (do 36 let až 90 %). Investiční hypotéky: ČNB od 4/2026 doporučuje LTV max. 70 % a DTI 7. DTI/DSTI nejsou plošně povinné — banky je často sledují interně.",
       process:
-        "Rezervační smlouva -> Úschova peněz -> Kupní smlouva -> Návrh na vklad do katastru nemovitostí (přepis 21-30 dní).",
+        "Rezervační smlouva → úschova → kupní smlouva → návrh na vklad do katastru (obvykle jednotky týdnů).",
       risks:
-        "Riziko: Klesající dostupnost vlastnického bydlení. Příležitost: Extrémní stabilita a růst nájemního trhu.",
+        "Rizika: sazby, neobsazenost, regulace nájmů, pokles likvidity. Příležitost: diverzifikace v domácí měně.",
     },
   },
   "SAE (Dubaj)": {
     heroImage:
       "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80&cache=bust",
     subtitle:
-      "Daňový ráj, architektonické divy a absolutní bezpečí kapitálu.",
+      "Bez daně z příjmu FO, dynamický development a vyšší provozní i regulatorní riziko.",
     marketOverview: `
-      <h3 class="text-2xl font-bold text-gray-900 mt-0 mb-4">Dubajský zázrak: Město, které nezná daně</h3>
-      <p>Dubaj není jen město, je to globální finanční útočiště. Neplatíte zde žádnou daň z příjmu, žádnou daň z kapitálových výnosů a žádnou daň z pronájmu. Vaše hrubé ROI (které se pohybuje mezi 6–9 %) je zde de facto čistým ziskem. Růst populace exponenciálně zrychluje a město do roku 2040 plánuje zdvojnásobit počet obyvatel. Otázka nezní, zda ceny porostou, ale o kolik.</p>
+      <h3 class="text-2xl font-bold text-gray-900 mt-0 mb-4">Dubaj: daňový režim a tržní realita</h3>
+      <p>V SAE obvykle neplatíte daň z příjmu fyzických osob ani daň z kapitálových výnosů z nemovitostí — hrubý yield se proto může blížit čistému výnosu. Zároveň ale rostou service charges, volatilita nabídky (zejména off-plan) a závislost na mezinárodním kapitálu. Otázka není „zda ceny porostou“, ale jak citlivý je model na náklady a cyklus trhu.</p>
       
-      <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4">Off-plan projekty: Jak udělat z mála peněz milionové zisky</h3>
-      <p>Nejpopulárnější formou nákupu je tzv. <strong>Off-plan</strong> (nemovitost ve výstavbě). Developeři nabízejí bezúročné platební plány, kde např. 60 % zaplatíte během 3 let výstavby a 40 % až při předání klíčů. Díky tomu nepotřebujete hypotéku. A co víc? Během výstavby tržní hodnota nemovitosti často stoupne o 20–30 %. Kontrakt pak můžete se ziskem prodat ještě předtím, než vilu vůbec dostaví (tzv. Flipping).</p>
+      <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4">Off-plan a platební plány developera</h3>
+      <p>Častou formou nákupu je <strong>off-plan</strong> s bezúročným platebním plánem developera. To snižuje potřebu klasické hypotéky, ale zvyšuje riziko zpoždění výstavby, změny podmínek a likvidity při prodeji před dokončením. Historický růst hodnoty během výstavby není zárukou budoucího výsledku.</p>
 
-      <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4">Golden Visa (Zlatá víza)</h3>
-      <p>Nákupem nemovitosti v hodnotě nad 2 000 000 AED (cca 12,5 mil. CZK) se automaticky kvalifikujete pro 10leté Zlaté vízum pro vás i vaši rodinu. Získáváte rezidenci, možnost otevřít si bezpečné bankovní účty a stát se daňovým rezidentem SAE.</p>
+      <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4">Golden Visa</h3>
+      <p>Nákup nad stanovený práh (typicky od 2 000 000 AED) může kvalifikovat k dlouhodobému vízu. Jde o imigrační benefit, nikoli o investiční garanci výnosu. Podmínky se mění — vždy ověřte aktuální limity a daňovou rezidenci.</p>
 
       <div class="mt-8 p-6 bg-emerald-50 rounded-2xl border border-emerald-100">
-        <h4 class="font-bold text-emerald-900 mb-2">💡 Expertní tip z trhu</h4>
-        <p class="text-emerald-800 text-sm">Pozor na tzv. Service Charges (poplatky za údržbu budovy). Luxusní věže s bazény a posilovnami polykají tisíce dirhamů měsíčně z vašeho zisku. Vybíráme pro klienty z <strong>Majetio.cz</strong> projekty, kde je balanc mezi luxusem a provozními náklady optimální.</p>
+        <h4 class="font-bold text-emerald-900 mb-2">Analytická poznámka</h4>
+        <p class="text-emerald-800 text-sm">Service charges u luxusních věží mohou významně snížit čistý výnos. Do modelu vždy započítejte roční poplatky správy, neobsazenost a kurz AED/CZK.</p>
       </div>
     `,
     fourPillars: placeholderFourPillars,
@@ -84,20 +84,20 @@ export const countryHubData: Record<string, CountryHubData> = {
     heroImage:
       "https://images.pexels.com/photos/1388030/pexels-photo-1388030.jpeg?auto=compress&cs=tinysrgb&w=1920",
     subtitle:
-      "Evropská Florida: Stabilní právo, 300 slunečných dní a jistota.",
+      "Trh v EU s dostupným financováním pro nerezidenty; výnos závisí na lokalitě a regulaci pronájmů.",
     marketOverview: `
-      <h3 class="text-2xl font-bold text-gray-900 mt-0 mb-4">Proč Španělsko? Návrat ke konzervativní jistotě</h3>
-      <p>Španělsko prošlo po krizi v roce 2008 tvrdým ozdravením. Dnešní trh je tažen stabilními hotovostními kupci ze severní Evropy. Pobřeží jako Costa del Sol nebo Costa Blanca zaznamenávají setrvalý meziroční růst cen o 6–8 %. Je to ideální trh pro uložení hodnoty peněz kombinovaný s nákupem "druhého domova".</p>
+      <h3 class="text-2xl font-bold text-gray-900 mt-0 mb-4">Španělsko: stabilita práva, ne garance výnosu</h3>
+      <p>Po krizi 2008 prošel trh ozdravením. Pobřežní lokality často vykazují růst cen tažený poptávkou ze severní Evropy, ale meziroční tempo se liší region od regionu. Jde o vhodný trh pro dlouhodobé držení v eurech — ne o jistotu zhodnocení.</p>
       
-      <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4">Realita španělských hypoték pro Čechy</h3>
-      <p>Na rozdíl od Asie nebo Dubaje, ve Španělsku <strong>funguje klasický hypoteční trh pro cizince</strong>. Španělské banky (Santander, Sabadell) vám jako českému občanovi s prokazatelnými příjmy rády půjčí. Počítejte však s tím, že jako nerezidentovi vám dají maximálně 60–70 % LTV. Zbytek (+ cca 12 % na španělské daně a notáře) musíte mít v hotovosti.</p>
+      <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4">Hypotéky pro nerezidenty</h3>
+      <p>Na rozdíl od některých asijských trhů zde funguje klasické bankovní financování pro cizince. Typické LTV pro nerezidenty bývá nižší (často kolem 60–70 %). K ceně přičtěte daně a transakční náklady (řádově desítky procent dle typu a regionu).</p>
 
-      <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4">Mýtus o squatterech (Okupas)</h3>
-      <p>Česká média ráda straší squattery, kteří vám "ukradnou" byt. Skutečnost? Pokud kupujete apartmán v prémiovém resortu, urbanizaci s ostrahou (gated community) a alarmem, je riziko absolutně nulové. Zákony jsou navíc čím dál přísnější. Toto riziko hrozí pouze u opuštěných ruin v nezajímavých vnitrozemských lokalitách.</p>
+      <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4">Okupas a právní riziko</h3>
+      <p>Riziko neoprávněného obsazení není nulové, ale liší se lokalitou a typem nemovitosti. U spravovaných apartmánů v rezidenčních komplexech bývá nižší než u dlouhodobě opuštěných objektů. Legislativa se vyvíjí — počítejte s právní due diligence, ne s absolutní jistotou.</p>
 
       <div class="mt-8 p-6 bg-emerald-50 rounded-2xl border border-emerald-100">
-        <h4 class="font-bold text-emerald-900 mb-2">💡 Expertní tip z trhu</h4>
-        <p class="text-emerald-800 text-sm">Nekalkulujte ROI pouze na základě srpnových příjmů z Airbnb. Městy se šíří regulace krátkodobých pronájmů. Skutečným trendem je tzv. "Medium-term" pronájem pro severské důchodce nebo digitální nomády, kteří si byt pronajmou na celou zimu (od října do března).</p>
+        <h4 class="font-bold text-emerald-900 mb-2">Analytická poznámka</h4>
+        <p class="text-emerald-800 text-sm">Nekalkulujte ROI jen ze špičkové sezóny Airbnb. Regulace krátkodobých pronájmů se zpřísňují. Medium-term nájem (měsíce) může být stabilnější, ale často s nižším hrubým výnosem.</p>
       </div>
     `,
     fourPillars: placeholderFourPillars,
@@ -108,15 +108,15 @@ export const countryHubData: Record<string, CountryHubData> = {
     subtitle:
       "Zajištění v Euru bez jazykové bariéry a s identickým právním systémem.",
     marketOverview: `
-      <h3 class="text-2xl font-bold text-gray-900 mt-0 mb-4">Měnový štít jménem EUR</h3>
-      <p>Slovenský realitní trh je pro českého investora často přehlíženým klenotem. Hlavním argumentem pro vstup na tento trh není exotika, ale <strong>diverzifikace měnového rizika</strong>. Příjmy z pronájmu inkasujete v Eurech, čímž si vytváříte přirozený hedge (ochranu) proti případným výkyvům české koruny, aniž byste museli řešit složitou zahraniční byrokracii.</p>
+      <h3 class="text-2xl font-bold text-gray-900 mt-0 mb-4">Slovensko: euro a podobné právní prostředí</h3>
+      <p>Pro českého investora je Slovensko často přehlížené, ale praktické: příjmy z pronájmu v eurech snižují měnové riziko vůči CZK a právní proces je blízký domácímu. Nejde o „klenot s garantovaným výnosem“, ale o diverzifikaci v EU s nižší jazykovou bariérou.</p>
       
-      <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4">Právní a kulturní kontinuita</h3>
-      <p>Proces nákupu je prakticky identický s Českou republikou. Katastr nemovitostí funguje na stejném principu, rezervační a kupní smlouvy mají stejnou logiku. Nečeká vás žádné vyřizování speciálních daňových čísel jako na jihu Evropy. Slovenské banky (např. VÚB, Tatra banka) navíc umí velmi flexibilně posoudit české příjmy a českou úvěrovou historii.</p>
+      <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4">Právní a bankovní kontinuita</h3>
+      <p>Katastr a smluvní praxe jsou podobné ČR. Slovenské banky často umí posoudit české příjmy — schválení však závisí na individuální bonitě. Bratislava bývá dražší; regionální města mohou nabízet vyšší yield při nižší likviditě.</p>
 
       <div class="mt-8 p-6 bg-emerald-50 rounded-2xl border border-emerald-100">
-        <h4 class="font-bold text-emerald-900 mb-2">💡 Expertní tip z trhu</h4>
-        <p class="text-emerald-800 text-sm">Odpoutejte zrak od předražené Bratislavy. Skutečné "cash-flow" příležitosti leží v industriálních centrech (Žilina, Košice, Trnava). Díky masivním investicím automobilek a technologických firem je zde obrovský přetlak poptávky po korporátním ubytování pro inženýry a manažery, což žene výnosy k 5–6 % p.a.</p>
+        <h4 class="font-bold text-emerald-900 mb-2">Analytická poznámka</h4>
+        <p class="text-emerald-800 text-sm">Mimo Bratislavu (např. Žilina, Košice, Trnava) může korporátní poptávka podporovat nájmy. Vždy ověřte lokalitu, správu a scénář delší neobsazenosti.</p>
       </div>
     `,
     fourPillars: placeholderFourPillars,
@@ -127,15 +127,15 @@ export const countryHubData: Record<string, CountryHubData> = {
     subtitle:
       "Schengen, Eurozóna a prémiová transformace adriatického pobřeží.",
     marketOverview: `
-      <h3 class="text-2xl font-bold text-gray-900 mt-0 mb-4">Konec levného Chorvatska: Vstup do prémiového klubu</h3>
-      <p>Rok 2023 přepsal pravidla hry. Chorvatsko vstoupilo do schengenského prostoru a přijalo Euro. Z "levné destinace pro letní dovolenou" se definitivně stala prémiová evropská riviéra. Odstranění hranic a měnového rizika přilákalo institucionální investory z Německa a Rakouska, což způsobilo bezprecedentní růst hodnoty nemovitostí v první linii u moře.</p>
+      <h3 class="text-2xl font-bold text-gray-900 mt-0 mb-4">Chorvatsko po vstupu do Schengenu a eurozóny</h3>
+      <p>Vstup do Schengenu a přijetí eura zvýšily atraktivitu trhu pro investory z EU a snížily část měnového i cestovního tření. Zároveň rostly ceny v atraktivních lokalitách. Prémiový segment u moře není „neobnovitelné aktivum, jehož cena už nikdy neklesne“ — likvidita a sezónnost zůstávají klíčovými riziky.</p>
       
-      <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4">Zákon o pobřeží a OIB</h3>
-      <p>Klíčem k nákupu v Chorvatsku je získání daňového čísla <strong>OIB (Osobni identifikacijski broj)</strong>. Největším specifikem je však chorvatský stavební zákon. Výstavba v pásmu do 70 metrů od moře je dnes přísně regulována a nové projekty tam téměř nevznikají. To znamená jediné: existující vily a apartmány "první řady" se staly vzácným, neobnovitelným aktivem, jehož cena už nikdy neklesne.</p>
+      <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4">OIB a regulace pobřeží</h3>
+      <p>Pro nákup je potřeba <strong>OIB</strong>. Výstavba v blízkosti moře je regulovaná, což omezuje novou nabídku v první linii — to může podporovat ceny, ale neeliminuje riziko poklesu poptávky nebo změn legislativy.</p>
 
       <div class="mt-8 p-6 bg-emerald-50 rounded-2xl border border-emerald-100">
-        <h4 class="font-bold text-emerald-900 mb-2">💡 Expertní tip z trhu</h4>
-        <p class="text-emerald-800 text-sm">Rozlišujte mezi Dalmácií a Istrií. Zatímco jih trpí přísnou sezónností (květen–září), Istrie se díky blízkosti k dálniční síti EU a rozvoji gastronomie stává celoroční destinací. Pro investiční ROI je celoroční obsazenost kritická.</p>
+        <h4 class="font-bold text-emerald-900 mb-2">Analytická poznámka</h4>
+        <p class="text-emerald-800 text-sm">Rozlišujte Dalmácii a Istrii. Jih bývá sezónnější; Istrie má větší šanci na delší obsazenost. Pro ROI je kritická celoroční (ne jen letní) poptávka a náklady správy.</p>
       </div>
     `,
     fourPillars: placeholderFourPillars,
@@ -144,17 +144,17 @@ export const countryHubData: Record<string, CountryHubData> = {
     heroImage:
       "https://images.pexels.com/photos/1701595/pexels-photo-1701595.jpeg?auto=compress&cs=tinysrgb&w=1920",
     subtitle:
-      "Země dvou trhů: Alpské jistoty versus toskánský lifestyle.",
+      "Rozdílné regionální trhy: likvidní sever vs. levnější jih s nižší likviditou.",
     marketOverview: `
-      <h3 class="text-2xl font-bold text-gray-900 mt-0 mb-4">Mýtus domů za 1 Euro a tvrdá realita</h3>
-      <p>Internet je plný virálních článků o italských vesnicích, které rozdávají domy zdarma. Jako profesionální investor musíte tuto iluzi okamžitě opustit. Italský trh se ostře dělí na bohatý sever (Lombardie, jezera, Dolomity), který funguje jako bezpečný přístav pro uložení kapitálu, a na chudší jih, kde jsou sice ceny zlomkové, ale likvidita při snaze o prodej se blíží nule.</p>
+      <h3 class="text-2xl font-bold text-gray-900 mt-0 mb-4">Mýtus domů za 1 euro vs. reálná data</h3>
+      <p>Virální nabídky „domů za euro“ často skrývají vysoké náklady rekonstrukce a nízkou likviditu. Sever (Lombardie, jezera, Alpy) historicky lépe drží poptávku zahraničních kupců; jih nabízí nižší ceny, ale delší dobu prodeje. Volba regionu je o riziku a likviditě, ne o jistotě výnosu.</p>
       
-      <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4">Codice Fiscale a italský notář</h3>
-      <p>Základním kamenem nákupu je <strong>Codice Fiscale</strong> (daňový kód). Italský systém je extrémně závislý na roli notáře (Notaio), který zde nenabízí jen ověření podpisu, ale nese plnou odpovědnost za čistotu transakce. Daňové zatížení závisí na tom, zda kupujete nemovitost jako "Prima Casa" (první domov – daň cca 2 %) nebo jako investiční "Seconda Casa" (daň 9 % z katastrální hodnoty).</p>
+      <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4">Codice Fiscale a role notáře</h3>
+      <p>Základem je <strong>Codice Fiscale</strong>. Notář (Notaio) má v Itálii silnou roli při převodu. Daňové zatížení se liší u Prima Casa vs. Seconda Casa — vždy modelujte transakční náklady před rozhodnutím.</p>
 
       <div class="mt-8 p-6 bg-emerald-50 rounded-2xl border border-emerald-100">
-        <h4 class="font-bold text-emerald-900 mb-2">💡 Expertní tip z trhu</h4>
-        <p class="text-emerald-800 text-sm">Absolutní zlatou žílou Itálie je momentálně oblast severních jezer (Lago di Garda, Lago di Como). Poptávka amerických a švýcarských kupců zde žene ceny raketově vzhůru. Pokud hledáte yield (výnos), zaměřte se na menší apartmány s povolením pro Airbnb v dojezdové vzdálenosti od lyžařských středisek.</p>
+        <h4 class="font-bold text-emerald-900 mb-2">Analytická poznámka</h4>
+        <p class="text-emerald-800 text-sm">Oblast severních jezer vykazuje silnou poptávku zahraničních kupců a vyšší ceny. U výnosových apartmánů ověřte povolení ke krátkodobému pronájmu — regulace se mění.</p>
       </div>
     `,
     fourPillars: placeholderFourPillars,
@@ -163,20 +163,20 @@ export const countryHubData: Record<string, CountryHubData> = {
     heroImage:
       "https://images.unsplash.com/photo-1586724237569-f3d0c1dee8c6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80&cache=bust",
     subtitle:
-      "Vize 2030: Otevírání bilionového trhu a příležitost desetiletí.",
+      "Vision 2030 otevírá trh cizincům; vysoký růstový potenciál i politická a realizační rizika.",
     marketOverview: `
-      <h3 class="text-2xl font-bold text-gray-900 mt-0 mb-4">Investujte tam, kde Dubaj byla před 20 lety</h3>
-      <p>Saúdská Arábie právě prochází největší socioekonomickou transformací v historii lidstva (projekt Vision 2030). Království masivně otevírá dveře zahraničnímu kapitálu, zavádí tzv. Premium Residency (obdoba Zlatých víz) a umožňuje cizincům přímé vlastnictví prémiových nemovitostí. S absencí daně z příjmu a obrovskou vládní finanční injekcí se zde tvoří nový globální investiční hub.</p>
+      <h3 class="text-2xl font-bold text-gray-900 mt-0 mb-4">Saúdská Arábie: transformace, ne hotový výnos</h3>
+      <p>Vision 2030 otevírá ekonomiku a rezidenční trh zahraničnímu kapitálu (včetně programů dlouhodobého pobytu). Jde o ranější fázi otevřeného trhu než Dubaj — příležitosti i rizika jsou vyšší. Absenci daně z příjmu vždy vyvažte geopolitickým, regulatorním a realizačním rizikem projektů.</p>
       
-      <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4">Program HQ (Korporátní exodus)</h3>
-      <p>Rijád zavedl tvrdé pravidlo: nadnárodní společnosti, které chtějí státní zakázky, musí přesunout svá regionální ředitelství (HQ) z Dubaje právě do Saúdské Arábie. Výsledek? Stovky tisíc vysoce postavených západních expatů se stěhují do Rijádu, Džiddy a NEOMu. Na trhu je absolutní nedostatek kvalitního prémiového ubytování pro tyto manažery, což vystřelilo výnosy z nájmů vysoko nad 8 % p.a.</p>
+      <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4">Program HQ a poptávka expatů</h3>
+      <p>Přesun regionálních ředitelství do Rijádu zvyšuje poptávku po kvalitním bydlení. To může podporovat nájmy, ale nabídka se také rozšiřuje. Výnosy nad 8 % p.a. jsou možné v některých segmentech — nejsou však zaručené a vyžadují pečlivý výběr lokality a správy.</p>
 
-      <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4">Nákup Off-plan a Cashflow</h3>
-      <p>Podobně jako v Emirátech, trh drží developerské platební plány. Zahraniční investoři využívají gigantických projektů (jako Roshn nebo Red Sea Global), kde nakupují "off-plan" byty v počátečních fázích výstavby. Potenciál kapitálového zhodnocení (Capital Appreciation) je zde aktuálně nejvyšší na světě.</p>
+      <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4">Off-plan a cash-flow</h3>
+      <p>Developerské platební plány snižují vstupní hotovost, ale přenášejí riziko výstavby a termínů na kupujícího. Kapitálové zhodnocení v rané fázi projektu je spekulativní složka modelu.</p>
 
       <div class="mt-8 p-6 bg-emerald-50 rounded-2xl border border-emerald-100">
-        <h4 class="font-bold text-emerald-900 mb-2">💡 Expertní tip z trhu</h4>
-        <p class="text-emerald-800 text-sm">Zatímco megaprojekt NEOM poutá mediální pozornost, skutečné byznysové cash-flow se momentálně nachází na severu Rijádu. Kupujte v uzavřených rezidenčních komunitách (tzv. Western Compounds), za které jsou nadnárodní firmy ochotné platit astronomické roční nájmy v hotovosti předem.</p>
+        <h4 class="font-bold text-emerald-900 mb-2">Analytická poznámka</h4>
+        <p class="text-emerald-800 text-sm">Mediální projekty (např. NEOM) nemusí být nejlikvidnějším cash-flow. U rezidenčních komunit ověřte smlouvu o správě, typ nájemců a měnové riziko SAR.</p>
       </div>
     `,
     fourPillars: placeholderFourPillars,
@@ -185,24 +185,24 @@ export const countryHubData: Record<string, CountryHubData> = {
     heroImage:
       "https://images.unsplash.com/photo-1537996194471-e657df975ab4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80&cache=bust",
     subtitle:
-      "Globální hotspot s ROI 10-15 %. Ráj digitálních nomádů i tvrdý byznys.",
+      "Vysoké modelové výnosy z short-term pronájmu; leasehold legislativa a provozní riziko.",
     marketOverview: `
-      <h3 class="text-2xl font-bold text-gray-900 mt-0 mb-4">Proč Bali? Anatomie nejvyšších výnosů na světě</h3>
-      <p>Zatímco evropské metropole bojují s výnosy kolem 3–4 %, Bali hraje úplně jinou ligu. Kombinace celoroční sezóny, masivního přílivu digitálních nomádů a expatů z celého světa vyhnala poptávku po prémiových vilách do extrému. Čistý roční výnos z pronájmu (Net ROI) zde standardně dosahuje <strong>10 až 15 %</strong>. Vaše investice se tak dokáže zaplatit za méně než 8 let.</p>
+      <h3 class="text-2xl font-bold text-gray-900 mt-0 mb-4">Bali: vysoký yield, vysoká citlivost modelu</h3>
+      <p>Hrubé výnosy 10–15 % se v marketingu často objevují u dobře spravovaných vil. Reálně závisí na obsazenosti, sezóně, správcovských poplatcích a stavu leaseholdu. Návratnost „do 8 let“ platí jen při udržení předpokladů — ne jako garance.</p>
       
-      <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4">Klíč k úspěchu: Leasehold vs. Freehold (PT PMA)</h3>
-      <p>Indonéská ústava zakazuje cizincům přímo vlastnit půdu (tzv. Hak Milik / Freehold). Profesionální investoři to řeší dvěma elegantními a legálními způsoby:</p>
+      <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4">Leasehold vs. struktura přes PT PMA</h3>
+      <p>Cizinci obvykle nemohou přímo vlastnit půdu (Hak Milik). Časté jsou:</p>
       <ul class="list-disc pl-6 mb-6 space-y-2 text-gray-700">
-        <li><strong>Leasehold (Dlouhodobý pronájem):</strong> Kupujete právo užívat a pronajímat vilu na 25–30 let s garantovaným právem prodloužení. Jde o nejrozšířenější model. Vyžaduje mnohem nižší vstupní kapitál a díky gigantickým výnosům se vám peníze rychle vrátí. Po uplynutí doby se nemovitost vrací majiteli pozemku, vy už ale máte své peníze několikanásobně zpět.</li>
-        <li><strong>Založení PT PMA (Zahraniční firma):</strong> Pokud chcete absolutní kontrolu (tzv. Hak Guna Bangunan - Právo stavby), založíte si lokální s.r.o. Tato firma může nemovitost vlastnit až na 80 let. Tento model dává smysl u investic nad 10 milionů CZK.</li>
+        <li><strong>Leasehold:</strong> právo užívání na desítky let, často s možností prodloužení — smluvní podmínky a právní čistota jsou kritické. Po skončení leaseholdu právo zaniká.</li>
+        <li><strong>PT PMA:</strong> zahraniční firma s právem stavby (HGB) na delší horizont; vyšší náklady založení a compliance. Vhodné spíše u větších investic.</li>
       </ul>
 
-      <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4">Financování: Zapomeňte na banky, hraje se v hotovosti</h3>
-      <p>Indonéské banky cizincům peníze nepůjčí. Většina nákupů probíhá buď v hotovosti, nebo přes <strong>Developer Payment Plans</strong> (platíte fáze stavby tak, jak vila roste). Nejefektivnější strategií pro Čechy je americká (neúčelová) hypotéka u české banky se zástavou české nemovitosti. Získáte miliony korun za český úrok a ty pošlete do Indonésie.</p>
+      <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4">Financování</h3>
+      <p>Lokální banky cizincům typicky nepůjčí. Častá je hotovost, developer plán, nebo neúčelový úvěr v ČR se zástavou české nemovitosti. Měnové riziko IDR/USD/CZK a právní riziko leaseholdu patří do každého modelu.</p>
 
       <div class="mt-8 p-6 bg-emerald-50 rounded-2xl border border-emerald-100">
-        <h4 class="font-bold text-emerald-900 mb-2">💡 Expertní tip z trhu</h4>
-        <p class="text-emerald-800 text-sm">Vyhněte se přeplněnému centru Canggu. Chytré peníze se nyní přesouvají do oblastí jako <strong>Pererenan, Seseh, Uluwatu nebo Ubud</strong>, kde je cena pozemků stále přijatelná, ale poptávka po ubytování raketově roste.</p>
+        <h4 class="font-bold text-emerald-900 mb-2">Analytická poznámka</h4>
+        <p class="text-emerald-800 text-sm">Canggu je saturovanější; novější lokality mohou mít nižší vstupní cenu, ale i vyšší nejistotu poptávky. Due diligence titulu a délky leaseholdu je povinný krok.</p>
       </div>
     `,
     fourPillars: placeholderFourPillars,

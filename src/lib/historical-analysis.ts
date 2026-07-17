@@ -14,9 +14,9 @@ export interface HistoricalAnalysis {
 export const historicalAnalysisByCountry: Record<CountryId, HistoricalAnalysis> =
   {
     cz: {
-      title: "Anatomie realitního cyklu: Proč peníze ztrácí a cihly vyhrávají",
+      title: "Anatomie realitního cyklu: hotovost, inflace a tvrdé aktivum",
       intro:
-        "Při pohledu na posledních 30 let českého realitního trhu je zjevný jeden fundamentální trend: dlouhodobá eroze kupní síly peněz tváří v tvář tvrdým aktivům. Zatímco v roce 1996 jste za 1 milion korun pořídili slušný byt v širším centru Prahy, dnes tato částka stěží pokryje 15% akontaci.",
+        "Při pohledu na posledních 30 let českého realitního trhu je zjevný jeden trend: kupní síla hotovosti klesá relativně k cenám nemovitostí. Zatímco v roce 1996 jste za 1 milion korun pořídili slušný byt v širším centru Prahy, dnes tato částka často pokryje jen část akontace. Historie ale negarantuje budoucí výnos — sazby, regulace i nabídka se mění.",
       sections: [
         {
           title: "Vztah úrokových sazeb a cen (Nůžky trhu)",

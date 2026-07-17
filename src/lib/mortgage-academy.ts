@@ -18,7 +18,7 @@ export const academyLessons: AcademyLesson[] = [
     realExample:
       "Kupujete byt za 5 000 000 Kč, banka vám půjčí 4 000 000 Kč. Vaše LTV je 80 %. Vlastní kapitál je tedy 1 000 000 Kč (20 %).",
     bankView:
-      "Banka sleduje LTV jako limit rizika. V ČR typicky končí kolem 80–90 % podle typu klienta. Nejde jen o kupní cenu — rozhoduje odhad ceny, který udělá ocenitel banky.",
+      "Banka sleduje LTV jako limit rizika. U vlastního bydlení ČNB ponechává horní hranici LTV 80 % (u žadatelů do 36 let až 90 %). U investičních hypoték doporučuje od 1. 4. 2026 LTV maximálně 70 %. Rozhoduje odhadní cena, ne jen kupní cena.",
     commonMistake:
       "Klienti si pletou kupní cenu s odhadní cenou banky. Pokud odhad vyjde níž než kupní cena, LTV vyskočí a chybějící rozdíl musíte dorovnat z vlastní kapsy.",
   },
@@ -44,7 +44,7 @@ export const academyLessons: AcademyLesson[] = [
     realExample:
       "Nájem je 20 000 Kč, splátka hypotéky 15 000 Kč, fond oprav 2 000 Kč. Čisté CF = +3 000 Kč. Pokud měsíc není nájemník, CF skočí do minusu — proto se počítá rezervní polštář.",
     bankView:
-      "U investiční hypotéky banka nebere nájem vždy 1:1. Často započítá jen část očekávaného nájmu, kontroluje vaše příjmy (DSTI) a chce vidět, že zvládnete splátku i bez nájmu.",
+      "U investiční hypotéky banka nebere nájem vždy 1:1. Často započítá jen část očekávaného nájmu, kontroluje vaše příjmy a chce vidět, že zvládnete splátku i bez nájmu. Od 4/2026 ČNB doporučuje u investičních úvěrů LTV max. 70 % a DTI 7.",
     commonMistake:
       "Ignorování daní, fondu oprav a nákladů na neobsazenost. Hrubý nájem není čistý výnos. Reálné CF často sníží i správa, pojištění a 1–2 měsíce prázdného bytu ročně.",
   },
@@ -70,7 +70,7 @@ export const academyLessons: AcademyLesson[] = [
     realExample:
       "Čistý příjem 50 000 Kč, splátka hypotéky 18 000 Kč a kreditka 2 000 Kč. DSTI = 40 %. Pokud limit banky je 45 %, ještě projdete — ale o další auto na leasing už bych se bál.",
     bankView:
-      "DSTI je jeden z hlavních stres-testů u hypotečky. Limit se liší podle banky a typu klienta. Počítají se všechny závazky: hypotéka, spotřebák, leasing, minimální platba z kreditky.",
+      "DSTI je běžný interní stres-test bank. Ukazatele DTI a DSTI ČNB aktuálně plošně neaktivuje (stav od 2026: deaktivované). Banky je přesto často sledují. U investičních hypoték ČNB od 1. 4. 2026 doporučuje DTI max. 7. Počítají se všechny závazky: hypotéka, spotřebák, leasing, minimální platba z kreditky.",
     commonMistake:
       "Zapomenout na kreditní karty a kontokorenty. I nevyužitý limit často banka započítá jako potenciální dluh a sníží vám maximální hypotéku.",
   },

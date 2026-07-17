@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   Clock,
   Globe2,
+  Loader2,
   Mail,
   MapPin,
   Phone,
@@ -30,6 +31,7 @@ import {
   type PurposeChoice,
   type RegionChoice,
 } from "@/lib/investment-passport";
+import { submitLead } from "@/lib/leads";
 import { routes } from "@/lib/routes";
 import { cn, formatNumber, parseNumber } from "@/lib/utils";
 
@@ -285,6 +287,8 @@ export function InvestmentPassportView() {
   const [formData, setFormData] =
     useState<PassportFormData>(initialPassportForm);
   const [submitted, setSubmitted] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const updateForm = <K extends keyof PassportFormData>(
     key: K,
@@ -312,10 +316,47 @@ export function InvestmentPassportView() {
     return false;
   };
 
-  const next = () => {
+  const next = async () => {
     if (!canContinue()) return;
     if (currentStep === TOTAL_STEPS) {
-      console.log("Investiční pas – lead:", formData);
+      setSubmitError(null);
+      setSubmitLoading(true);
+
+      const leadResult = await submitLead({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        source: "investment_passport",
+        notes: [
+          `Kapitál: ${formData.capital} Kč`,
+          `Financování: ${formData.financing || "—"}`,
+          `Účel: ${formData.purpose || "—"}`,
+          `Region: ${formData.region || "—"}`,
+          `Horizont: ${formData.horizon || "—"}`,
+          `Top trhy: ${result.markets.map((m) => m.name).join(", ")}`,
+        ].join(" | "),
+        metadata: {
+          capital: formData.capital,
+          financing: formData.financing,
+          purpose: formData.purpose,
+          region: formData.region,
+          horizon: formData.horizon,
+          top_markets: result.markets.map((m) => ({
+            name: m.name,
+            score: m.score,
+          })),
+          profile: result.profileLabel,
+          reachable_budget: result.reachableBudget,
+        },
+        country: result.markets[0]?.name,
+      });
+
+      setSubmitLoading(false);
+      if (!leadResult.ok) {
+        setSubmitError(leadResult.error);
+        return;
+      }
+
       setSubmitted(true);
       return;
     }
@@ -550,15 +591,32 @@ export function InvestmentPassportView() {
             <button
               type="button"
               onClick={next}
-              disabled={!canContinue()}
+              disabled={!canContinue() || submitLoading}
               className="inline-flex items-center gap-2 rounded-full bg-emerald-900 px-6 py-3 text-sm font-bold text-white shadow-md transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {currentStep === TOTAL_STEPS
-                ? "Zobrazit expertní pas"
-                : "Pokračovat"}
-              <ArrowRight className="h-4 w-4" />
+              {submitLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Odesílám…
+                </>
+              ) : currentStep === TOTAL_STEPS ? (
+                <>
+                  Zobrazit expertní pas
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              ) : (
+                <>
+                  Pokračovat
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
             </button>
           </div>
+          {submitError && currentStep === TOTAL_STEPS && (
+            <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-800">
+              {submitError}
+            </p>
+          )}
         </div>
       </div>
     </div>

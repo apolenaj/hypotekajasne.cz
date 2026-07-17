@@ -356,8 +356,8 @@ export function CountryDetailView({
           growth: "+ 8 % p.a."
         },
         optimistic: {
-          title: "Absolutní úspěch Vision 2030",
-          desc: "Saúdská Arábie se plně otevírá světovému turismu a kapitálu. Zákony otevírající trh cizincům spouštějí raketový růst cen nemovitostí napříč královstvím.",
+          title: "Vision 2030: ambiciózní otevírání trhu",
+          desc: "Saúdská Arábie otevírá turismus a rezidenční trh cizincům. Růst cen v některých segmentech je silný, ale závisí na realizaci projektů a geopolitickém kontextu.",
           growth: "+ 12 % p.a."
         }
       }

@@ -12,7 +12,11 @@ import {
   User,
   Wallet,
 } from "lucide-react";
+import { CalculatorDisclaimer } from "@/components/calculators/CalculatorDisclaimer";
 import { InfoTooltip } from "@/components/calculators/InfoTooltip";
+import { InsuranceRateCards } from "@/components/calculators/InsuranceRateCards";
+import { LeadCaptureForm } from "@/components/forms/LeadCaptureForm";
+import { RpsnDisplay } from "@/components/calculators/RpsnDisplay";
 import {
   ChartContainer,
   ChartTooltip,
@@ -29,22 +33,31 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  findBankRate,
+  pickBankRate,
+  useBankRates,
+} from "@/lib/bank-rates";
+import {
   checkDTI,
+  DOMESTIC_BANKS,
+  formatRatesUpdatedAt,
+  getBankCategoriesForMarket,
+  getBankOfferSourceLabel,
   getTripleBankOffers,
   sourceOfIncomeOptions,
   taxResidencyOptions,
   type BankOffer,
+  type CategorizedBankOffers,
   type IncomeSource,
+  type ScrapedBankRateInput,
   type TaxResidency,
 } from "@/lib/banking";
 import {
+  calculateAnnuityPayment,
   calculateMortgage,
   countryConfigs,
   countryOrder,
-  dubaiFinancingOptions,
   getEffectiveCurrency,
-  shouldShowInterestRate,
-  standardFinancingOptions,
   tooltips,
   type CountryId,
   type CurrencyCode,
@@ -52,6 +65,13 @@ import {
   formatCurrency,
 } from "@/lib/calculators";
 import { formatNumber, parseFormattedNumber } from "@/lib/format";
+import {
+  getCnbPurposeNotice,
+  getRecommendedMaxLtv,
+  MORTGAGE_PURPOSE_OPTIONS,
+  type MortgagePurpose,
+} from "@/lib/cnb-limits";
+import { pickRate, pickRpsn, useCurrentRates } from "@/lib/rates";
 import { cn } from "@/lib/utils";
 
 const chartConfig = {
@@ -85,14 +105,21 @@ function SectionHeader({
   subtitle?: string;
 }) {
   return (
-    <div className="flex items-center gap-3 mb-5">
-      <div className="w-9 h-9 rounded-xl bg-deep-teal/10 flex items-center justify-center">
-        <Icon className="w-5 h-5 text-deep-teal" />
+    <div className="mb-5 flex items-center gap-3">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-deep-teal/10">
+        <Icon className="h-5 w-5 text-deep-teal" />
       </div>
-      <div>
-        <h3 className="font-semibold text-text-dark">{title}</h3>
+      <div className={cn(!subtitle && "flex items-center")}>
+        <h3
+          className={cn(
+            "font-semibold text-text-dark",
+            !subtitle && "leading-none"
+          )}
+        >
+          {title}
+        </h3>
         {subtitle && (
-          <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p>
         )}
       </div>
     </div>
@@ -149,17 +176,43 @@ export function MortgageCalculator({
   const [price, setPrice] = useState(config.defaultPrice);
   const [savings, setSavings] = useState(config.defaultSavings);
   const [termYears, setTermYears] = useState(config.defaultTerm);
-  const [financingType, setFinancingType] = useState<FinancingType>(
-    country === "dubai" ? "developer-plan" : "annuity"
-  );
+  // Fixní anuita (Dubaj: developer plán jako výchozí model bez UI volby)
+  const financingType: FinancingType =
+    country === "dubai" ? "developer-plan" : "annuity";
   const [netIncome, setNetIncome] = useState(defaultIncome[country]);
   const [incomeSource, setIncomeSource] = useState<IncomeSource>("employee");
   const [taxResidency, setTaxResidency] = useState<TaxResidency>("cz");
+  const [mortgagePurpose, setMortgagePurpose] =
+    useState<MortgagePurpose>("owner_occupied");
+  const [hasInsurance, setHasInsurance] = useState(true);
+  const { rates, loading: ratesLoading } = useCurrentRates();
+  const { bankRates, loading: bankRatesLoading } = useBankRates();
+
+  const isCzechMarket = country === "cz";
+  /** České sazby ze Supabase — jen pro vnitrostátní + americké hypotéky */
+  const czechRate = pickRate(rates, hasInsurance);
+  const displayRpsn = pickRpsn(rates, hasInsurance);
+  /** Lokální sazba vybraného trhu (Emiráty, Španělsko, …) */
+  const foreignMarketRate = config.defaultRate;
+  /** Primární sazba pro shrnutí / výpočet úvěru podle trhu */
+  const primaryRate = isCzechMarket ? czechRate : foreignMarketRate;
+
+  const scrapedCzechBanks = useMemo((): ScrapedBankRateInput[] => {
+    return DOMESTIC_BANKS.map((bank) => {
+      const row = findBankRate(bankRates, bank.name);
+      if (!row) return null;
+      const picked = pickBankRate(row, hasInsurance);
+      return {
+        bankName: bank.name,
+        rate: picked.rate,
+        rpsn: picked.rpsn,
+        updatedAt: row.updatedAt,
+        sourceUrl: row.sourceUrl,
+      };
+    }).filter((row): row is ScrapedBankRateInput => row != null);
+  }, [bankRates, hasInsurance]);
 
   const currency = getEffectiveCurrency(country, financingType);
-  const showInterestRate = shouldShowInterestRate(country, financingType);
-  const financingOptions =
-    country === "dubai" ? dubaiFinancingOptions : standardFinancingOptions;
 
   const result = useMemo(
     () =>
@@ -167,96 +220,141 @@ export function MortgageCalculator({
         country,
         price,
         savings,
-        interestRate: config.defaultRate,
+        interestRate: primaryRate,
         termYears,
         financingType,
         bank: "",
       }),
-    [country, price, savings, termYears, financingType, config.defaultRate]
+    [country, price, savings, termYears, financingType, primaryRate]
   );
 
-  const tripleBankOffers = useMemo(() => {
-    if (!showInterestRate || result.loanAmount <= 0) {
-      return { international: [], local: [], czech: [] };
+  const recommendedMaxLtv = getRecommendedMaxLtv(mortgagePurpose);
+  const ltvExceedsCnb = isCzechMarket && result.ltv > recommendedMaxLtv;
+  const cnbPurposeNotice = getCnbPurposeNotice(mortgagePurpose);
+
+  const paymentWithInsurance = useMemo(
+    () =>
+      Math.round(
+        calculateAnnuityPayment(
+          result.loanAmount,
+          rates.rateWithInsurance,
+          termYears
+        )
+      ),
+    [result.loanAmount, rates.rateWithInsurance, termYears]
+  );
+
+  const paymentWithoutInsurance = useMemo(
+    () =>
+      Math.round(
+        calculateAnnuityPayment(
+          result.loanAmount,
+          rates.rateWithoutInsurance,
+          termYears
+        )
+      ),
+    [result.loanAmount, rates.rateWithoutInsurance, termYears]
+  );
+
+  const foreignMarketPayment = useMemo(
+    () =>
+      Math.round(
+        calculateAnnuityPayment(result.loanAmount, foreignMarketRate, termYears)
+      ),
+    [result.loanAmount, foreignMarketRate, termYears]
+  );
+
+  const tripleBankOffers = useMemo((): CategorizedBankOffers => {
+    if (result.loanAmount <= 0) {
+      return { domestic: [], american: [], local: [], international: [] };
     }
     return getTripleBankOffers(
       country,
-      config.defaultRate,
       result.loanAmount,
       termYears,
       {
         incomeSource,
         taxResidency,
         ltv: result.ltv,
-      }
+      },
+      scrapedCzechBanks
     );
   }, [
-    showInterestRate,
     country,
-    config.defaultRate,
     result.loanAmount,
     result.ltv,
     termYears,
     incomeSource,
     taxResidency,
+    scrapedCzechBanks,
   ]);
 
-  const bestOffer =
-    tripleBankOffers.local.find((offer) => offer.best) ??
-    tripleBankOffers.local[0] ??
-    tripleBankOffers.international.find((offer) => offer.best) ??
-    tripleBankOffers.international[0] ??
-    tripleBankOffers.czech.find((offer) => offer.best) ??
-    tripleBankOffers.czech[0];
-
-  const displayPayment = bestOffer?.monthlyPayment ?? result.monthlyPayment;
+  const displayPayment = isCzechMarket
+    ? hasInsurance
+      ? paymentWithInsurance
+      : paymentWithoutInsurance
+    : foreignMarketPayment;
 
   const dti = useMemo(
     () => checkDTI(displayPayment, netIncome, country),
     [displayPayment, netIncome, country]
   );
 
-  const riskPremium =
-    tripleBankOffers.local[0]?.riskPremium ??
-    tripleBankOffers.international[0]?.riskPremium ??
-    tripleBankOffers.czech[0]?.riskPremium ??
-    0;
+  const visibleBankCategories = getBankCategoriesForMarket(country);
 
-  const renderOfferGrid = (title: string, items: BankOffer[]) => (
-    <div className="mb-10 last:mb-0">
-      <h3 className="text-md font-semibold text-gray-900 mb-4">{title}</h3>
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        {items.map((offer, index) => (
-          <div
-            key={`${offer.bankName}-${index}`}
-            className={cn(
-              "p-4 rounded-xl border flex flex-col justify-between",
-              offer.best
-                ? "border-emerald-600 bg-emerald-50"
-                : "border-gray-200 bg-white/70"
-            )}
-          >
-            <h4 className="font-bold text-sm text-gray-900 leading-tight mb-2">
-              {offer.bankName}
-            </h4>
-            <div>
-              <div className="text-lg font-bold text-emerald-900 whitespace-nowrap">
-                od {offer.adjustedRate.toFixed(2)} %
-              </div>
-              <div className="text-[11px] text-gray-600 font-medium whitespace-nowrap">
-                {formatCurrency(offer.monthlyPayment, currency)}/měs.
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+  const hasBankOffers = visibleBankCategories.some(
+    (category) => tripleBankOffers[category.id].length > 0
   );
 
-  const hasBankOffers =
-    tripleBankOffers.international.length > 0 ||
-    tripleBankOffers.local.length > 0 ||
-    tripleBankOffers.czech.length > 0;
+  const renderOfferGrid = (
+    title: string,
+    description: string,
+    items: BankOffer[]
+  ) => {
+    if (items.length === 0) return null;
+
+    return (
+      <div className="mb-8 last:mb-0 rounded-2xl border border-gray-200 bg-white/60 p-5 ring-1 ring-gray-900/5">
+        <div className="mb-4">
+          <h3 className="text-base font-bold text-gray-900">{title}</h3>
+          <p className="mt-1 text-xs text-muted-foreground">{description}</p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          {items.map((offer, index) => (
+            <div
+              key={`${offer.category}-${offer.bankName}-${index}`}
+              className={cn(
+                "min-w-0 p-4 rounded-xl border flex flex-col justify-between gap-2",
+                offer.best
+                  ? "border-emerald-600 bg-emerald-50"
+                  : "border-gray-200 bg-white/70"
+              )}
+            >
+              <h4 className="min-w-0 break-words font-bold text-sm text-gray-900 leading-tight">
+                {offer.bankName}
+              </h4>
+              <div className="min-w-0">
+                <div className="text-lg font-bold text-emerald-900 whitespace-nowrap">
+                  od {offer.adjustedRate.toFixed(2)} %
+                </div>
+                <RpsnDisplay rpsn={offer.rpsn} compact className="mt-0.5" />
+                <div className="mt-1 text-[11px] text-gray-600 font-medium whitespace-nowrap">
+                  {formatCurrency(offer.monthlyPayment, currency)}/měs.
+                </div>
+                <div className="mt-2 space-y-0.5 text-[10px] leading-snug text-gray-400">
+                  <p className="break-words">
+                    {getBankOfferSourceLabel(offer.bankName)}
+                  </p>
+                  <p>{formatRatesUpdatedAt(offer.updatedAt)}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <CalculatorDisclaimer className="mt-4 border-t border-gray-100 pt-3" />
+      </div>
+    );
+  };
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -284,18 +382,13 @@ export function MortgageCalculator({
       <div className="rounded-3xl overflow-hidden ring-1 ring-gray-900/5 shadow-2xl shadow-gray-900/10 bg-white/80 backdrop-blur-xl">
         <div className="relative px-6 lg:px-10 py-8 border-b border-gray-100 bg-gradient-to-r from-deep-teal/10 via-white to-muted-gold/10">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-deep-teal to-deep-teal-light flex items-center justify-center shadow-lg shadow-deep-teal/30">
+            <div className="w-12 h-12 shrink-0 rounded-2xl bg-gradient-to-br from-deep-teal to-deep-teal-light flex items-center justify-center shadow-lg shadow-deep-teal/30">
               <Calculator className="w-6 h-6 text-white" />
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-text-dark">
-                Bankovní scoring kalkulačka
-              </h2>
-              <p className="text-sm text-muted-foreground mt-0.5">
-                {config.label} · {currency} · personalizované nabídky
-              </p>
-            </div>
-            <Sparkles className="w-5 h-5 text-muted-gold ml-auto hidden sm:block" />
+            <h2 className="text-xl font-bold text-text-dark leading-none">
+              Hypoteční kalkulačka
+            </h2>
+            <Sparkles className="w-5 h-5 text-muted-gold ml-auto hidden sm:block shrink-0" />
           </div>
         </div>
 
@@ -304,7 +397,6 @@ export function MortgageCalculator({
             <SectionHeader
               icon={User}
               title="Osobní profil"
-              subtitle="Ovlivňuje rizikovou přirážku a schvalitelnost"
             />
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
               <CurrencyInput
@@ -313,7 +405,7 @@ export function MortgageCalculator({
                 value={netIncome}
                 onChange={setNetIncome}
                 currency={currency}
-                tooltip="Čistý příjem po zdanění. Banka z něj odvozuje maximální výši splátky (DSTI)."
+                tooltip="Čistý příjem po zdanění. Banky z něj často odvozují maximální výši splátky."
               />
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-text-dark">
@@ -323,8 +415,11 @@ export function MortgageCalculator({
                   value={incomeSource}
                   onValueChange={(v) => v && setIncomeSource(v as IncomeSource)}
                 >
-                  <SelectTrigger className="h-12 rounded-xl bg-white/60 backdrop-blur-sm border-gray-200/80">
-                    <SelectValue />
+                  <SelectTrigger className="h-12 w-full rounded-xl bg-white/60 backdrop-blur-sm border-gray-200/80">
+                    <SelectValue placeholder="Vyberte zdroj příjmu">
+                      {sourceOfIncomeOptions.find((o) => o.value === incomeSource)
+                        ?.label ?? "Vyberte zdroj příjmu"}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {sourceOfIncomeOptions.map((o) => (
@@ -343,8 +438,11 @@ export function MortgageCalculator({
                   value={taxResidency}
                   onValueChange={(v) => v && setTaxResidency(v as TaxResidency)}
                 >
-                  <SelectTrigger className="h-12 rounded-xl bg-white/60 backdrop-blur-sm border-gray-200/80">
-                    <SelectValue />
+                  <SelectTrigger className="h-12 w-full rounded-xl bg-white/60 backdrop-blur-sm border-gray-200/80">
+                    <SelectValue placeholder="Vyberte zemi">
+                      {taxResidencyOptions.find((o) => o.value === taxResidency)
+                        ?.label ?? "Vyberte zemi"}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {taxResidencyOptions.map((o) => (
@@ -362,8 +460,53 @@ export function MortgageCalculator({
             <SectionHeader
               icon={Wallet}
               title="Parametry nemovitosti"
-              subtitle="Základ pro výpočet úvěru a LTV"
+              subtitle="Cena, vlastní zdroje a účel hypotéky"
             />
+            {isCzechMarket && (
+              <div className="mb-5 space-y-3">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-text-dark">
+                    Účel hypotéky
+                  </Label>
+                  <Select
+                    value={mortgagePurpose}
+                    onValueChange={(v) =>
+                      v && setMortgagePurpose(v as MortgagePurpose)
+                    }
+                  >
+                    <SelectTrigger className="h-12 w-full rounded-xl bg-white/60 backdrop-blur-sm border-gray-200/80">
+                      <SelectValue placeholder="Vyberte účel">
+                        {MORTGAGE_PURPOSE_OPTIONS.find(
+                          (o) => o.value === mortgagePurpose
+                        )?.label ?? "Vyberte účel"}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {MORTGAGE_PURPOSE_OPTIONS.map((o) => (
+                        <SelectItem key={o.value} value={o.value}>
+                          {o.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    {
+                      MORTGAGE_PURPOSE_OPTIONS.find(
+                        (o) => o.value === mortgagePurpose
+                      )?.description
+                    }
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-deep-teal/20 bg-deep-teal/5 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-deep-teal mb-1">
+                    Doporučení ČNB (od 4/2026)
+                  </p>
+                  <p className="text-sm text-text-dark leading-relaxed">
+                    {cnbPurposeNotice}
+                  </p>
+                </div>
+              </div>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <CurrencyInput
                 id="price"
@@ -375,39 +518,60 @@ export function MortgageCalculator({
               />
               <CurrencyInput
                 id="savings"
-                label="Vlastní úspory (LTV)"
+                label="Vlastní úspory"
                 value={savings}
                 onChange={setSavings}
                 currency={currency}
                 tooltip={tooltips.savings}
               />
-              <div className="space-y-2 sm:col-span-2">
-                <div className="flex items-center gap-1.5">
-                  <Label className="text-sm font-medium text-text-dark">
-                    Typ financování
-                  </Label>
-                  <InfoTooltip content={tooltips.financingType} />
-                </div>
-                <Select
-                  value={financingType}
-                  onValueChange={(v) => v && setFinancingType(v as FinancingType)}
-                >
-                  <SelectTrigger className="h-12 rounded-xl bg-white/60 backdrop-blur-sm border-gray-200/80">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {financingOptions.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {financingType === "american-cz-collateral" && (
-                  <p className="text-xs text-muted-gold mt-2 flex items-center gap-1.5">
-                    <InfoTooltip content={tooltips.americanMortgage} />
-                    Měna přepnuta na CZK – úvěr z české banky se zástavou v ČR
-                  </p>
+              <div className="sm:col-span-2 space-y-3">
+                <InsuranceRateCards
+                  hasInsurance={hasInsurance}
+                  onSelect={setHasInsurance}
+                  rateWithInsurance={rates.rateWithInsurance}
+                  rateWithoutInsurance={rates.rateWithoutInsurance}
+                  rpsnWithInsurance={rates.rpsnWithInsurance}
+                  rpsnWithoutInsurance={rates.rpsnWithoutInsurance}
+                  paymentWithInsurance={formatCurrency(
+                    paymentWithInsurance,
+                    currency
+                  )}
+                  paymentWithoutInsurance={formatCurrency(
+                    paymentWithoutInsurance,
+                    currency
+                  )}
+                  loading={ratesLoading}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {isCzechMarket ? (
+                    <>
+                      České sazby ze Supabase platí pro{" "}
+                      <strong>Vnitrostátní banky</strong> a{" "}
+                      <strong>Americké hypotéky</strong>.
+                    </>
+                  ) : (
+                    <>
+                      České sazby ze Supabase platí jen pro{" "}
+                      <strong>Americké hypotéky (z ČR)</strong>. Lokální banky
+                      trhu <strong>{config.label}</strong> používají sazbu{" "}
+                      {foreignMarketRate.toFixed(2)} % p.a. — klasické české
+                      vnitrostátní hypotéky se zde nezobrazují.
+                    </>
+                  )}
+                </p>
+                {!isCzechMarket && (
+                  <div className="rounded-2xl border border-deep-teal/20 bg-deep-teal/5 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-deep-teal">
+                      Lokální sazba trhu {config.label}
+                    </p>
+                    <p className="mt-1 text-2xl font-bold text-deep-teal">
+                      {foreignMarketRate.toFixed(2)} %
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Orientační splátka u zahraničních bank:{" "}
+                      {formatCurrency(foreignMarketPayment, currency)}/měs.
+                    </p>
+                  </div>
                 )}
               </div>
               <div className="space-y-2">
@@ -435,13 +599,53 @@ export function MortgageCalculator({
                 </div>
               </div>
               <div className="flex items-end">
-                <div className="w-full rounded-xl bg-gradient-to-r from-deep-teal/5 to-muted-gold/5 p-4 ring-1 ring-gray-900/5">
+                <div
+                  className={cn(
+                    "w-full rounded-xl p-4 ring-1",
+                    ltvExceedsCnb
+                      ? "bg-amber-50/80 ring-amber-200/80"
+                      : "bg-gradient-to-r from-deep-teal/5 to-muted-gold/5 ring-gray-900/5"
+                  )}
+                >
                   <p className="text-xs text-muted-foreground">Aktuální LTV</p>
-                  <p className="text-2xl font-bold text-deep-teal">{result.ltv} %</p>
+                  <p
+                    className={cn(
+                      "text-2xl font-bold",
+                      ltvExceedsCnb ? "text-amber-800" : "text-deep-teal"
+                    )}
+                  >
+                    {result.ltv} %
+                  </p>
+                  {isCzechMarket && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Doporučení ČNB: max. {recommendedMaxLtv} %
+                      {mortgagePurpose === "investment"
+                        ? " (investiční)"
+                        : " (vlastní bydlení)"}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
           </section>
+
+          {ltvExceedsCnb && (
+            <div className="flex gap-4 p-5 rounded-2xl ring-1 backdrop-blur-sm bg-amber-50/80 ring-amber-200/80 text-amber-900">
+              <AlertTriangle className="w-6 h-6 shrink-0 mt-0.5 text-amber-600" />
+              <div>
+                <p className="font-semibold text-sm mb-1">
+                  {mortgagePurpose === "investment"
+                    ? "LTV nad doporučením ČNB pro investiční hypotéky"
+                    : "LTV nad standardním limitem ČNB"}
+                </p>
+                <p className="text-sm opacity-90 leading-relaxed">
+                  {mortgagePurpose === "investment"
+                    ? `Pro investiční hypotéky ČNB doporučuje LTV maximálně 70 % a limit DTI 7. Vaše LTV je ${result.ltv} %. Zvažte vyšší vlastní zdroje.`
+                    : `Pro vlastní bydlení ČNB ponechává LTV obvykle do 80 % (do 36 let až 90 %). Vaše LTV je ${result.ltv} %.`}
+                </p>
+              </div>
+            </div>
+          )}
 
           {dti.warning && (
             <div
@@ -461,7 +665,7 @@ export function MortgageCalculator({
               <div>
                 <p className="font-semibold text-sm mb-1">
                   {dti.level === "danger"
-                    ? "Překročení limitu DSTI"
+                    ? "Vysoká zátěž příjmu"
                     : "Varování – vysoká zátěž příjmu"}
                 </p>
                 <p className="text-sm opacity-90 leading-relaxed">{dti.message}</p>
@@ -469,31 +673,46 @@ export function MortgageCalculator({
             </div>
           )}
 
-          {showInterestRate && hasBankOffers && (
-            <section>
-              <SectionHeader
-                icon={Building2}
-                title="Odhadované nabídky bank"
-                subtitle={
-                  riskPremium > 0
-                    ? `Zahrnuje rizikovou přirážku +${riskPremium.toFixed(1)} % (profil / LTV)`
-                    : "Srovnání mezinárodních a místních poskytovatelů"
-                }
-              />
-              {renderOfferGrid(
-                "Mezinárodní financování (Expat/Global)",
-                tripleBankOffers.international
-              )}
-              {renderOfferGrid(
-                "Vnitrostátní banky (lokální)",
-                tripleBankOffers.local
-              )}
-              {renderOfferGrid(
-                "České banky (financování zahraničních nemovitostí)",
-                tripleBankOffers.czech
-              )}
-            </section>
-          )}
+          <section>
+            <SectionHeader
+              icon={Building2}
+              title="Nabídky bank"
+              subtitle={
+                bankRatesLoading
+                  ? "Načítám aktuální sazby ze scrapingu…"
+                  : hasBankOffers
+                    ? "Úroky a RPSN z oficiálních webů bank (Supabase)"
+                    : undefined
+              }
+            />
+            {bankRatesLoading ? (
+              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-5 py-8 text-center text-sm text-muted-foreground">
+                Data se aktualizují…
+              </div>
+            ) : hasBankOffers ? (
+              visibleBankCategories.map((category) =>
+                renderOfferGrid(
+                  category.id === "local"
+                    ? `${category.title} — ${config.label}`
+                    : category.title,
+                  category.description,
+                  tripleBankOffers[category.id]
+                )
+              )
+            ) : (
+              <div className="rounded-2xl border border-dashed border-amber-200 bg-amber-50/80 px-5 py-8 text-center text-sm text-amber-900">
+                Data se aktualizují. Spusťte scraper{" "}
+                <code className="rounded bg-white/80 px-1.5 py-0.5 text-xs">
+                  /api/scrape-rates
+                </code>{" "}
+                (cron 4:00) nebo zkontrolujte tabulku{" "}
+                <code className="rounded bg-white/80 px-1.5 py-0.5 text-xs">
+                  bank_rates
+                </code>
+                .
+              </div>
+            )}
+          </section>
 
           <section className="rounded-2xl bg-gradient-to-br from-deep-teal/5 via-white to-muted-gold/5 p-6 lg:p-8 ring-1 ring-gray-900/5 space-y-6">
             <h3 className="font-semibold text-text-dark flex items-center gap-2">
@@ -501,12 +720,17 @@ export function MortgageCalculator({
               Shrnutí výsledků
             </h3>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
               {[
                 {
                   label: "Měsíční splátka",
                   value: formatCurrency(displayPayment, currency),
                   accent: true,
+                },
+                {
+                  label: "Úroková sazba",
+                  value: `${primaryRate.toFixed(2)} %`,
+                  rpsn: displayRpsn,
                 },
                 {
                   label: "Výše úvěru",
@@ -516,9 +740,7 @@ export function MortgageCalculator({
                 {
                   label: "Celkem zaplatíte",
                   value: formatCurrency(
-                    bestOffer
-                      ? bestOffer.monthlyPayment * termYears * 12
-                      : result.totalPayment,
+                    displayPayment * termYears * 12,
                     currency
                   ),
                   gold: true,
@@ -539,6 +761,9 @@ export function MortgageCalculator({
                   >
                     {item.value}
                   </p>
+                  {"rpsn" in item && item.rpsn != null && (
+                    <RpsnDisplay rpsn={item.rpsn} className="mt-1.5" />
+                  )}
                 </div>
               ))}
             </div>
@@ -557,6 +782,46 @@ export function MortgageCalculator({
                 </>
               )}
             </div>
+
+            <CalculatorDisclaimer className="rounded-xl bg-gray-50 px-4 py-3 ring-1 ring-gray-900/5" />
+
+            <LeadCaptureForm
+              source="mortgage_calculator"
+              country={config.label}
+              notes={[
+                `Trh: ${config.label}`,
+                `Cena: ${price.toLocaleString("cs-CZ")} ${currency}`,
+                `Úspory: ${savings.toLocaleString("cs-CZ")} ${currency}`,
+                `LTV: ${result.ltv} %`,
+                `Úvěr: ${result.loanAmount.toLocaleString("cs-CZ")} ${currency}`,
+                `Splátka: ${displayPayment.toLocaleString("cs-CZ")} ${currency}`,
+                `Splatnost: ${termYears} let`,
+                isCzechMarket
+                  ? `Pojištění: ${hasInsurance ? "ano" : "ne"}`
+                  : null,
+                `Sazba: ${primaryRate.toFixed(2)} %`,
+                isCzechMarket
+                  ? `Účel: ${mortgagePurpose === "investment" ? "investiční" : "vlastní bydlení"}`
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(" | ")}
+              metadata={{
+                country,
+                price,
+                savings,
+                ltv: result.ltv,
+                loan_amount: result.loanAmount,
+                monthly_payment: displayPayment,
+                term_years: termYears,
+                rate: primaryRate,
+                has_insurance: isCzechMarket ? hasInsurance : null,
+                mortgage_purpose: isCzechMarket ? mortgagePurpose : null,
+                currency,
+              }}
+              title="Líbí se vám výsledek? Nechte si ho ověřit"
+              subtitle="Pošleme vám nezávaznou konzultaci k této kalkulaci do 24 hodin."
+            />
 
             {result.showChart && result.chartData.length > 0 && (
               <div className="bg-white/80 rounded-xl p-5 ring-1 ring-gray-900/5">

@@ -9,7 +9,7 @@ export const swotAnalysisKsaData: SwotAnalysisSection[] = [
     items: [
       {
         subtitle: "Vládní podpora (Vision 2030)",
-        text: "Stát masivně investuje do infrastruktury a otevírá ekonomiku, což garantuje poptávku.",
+        text: "Stát investuje do infrastruktury a otevírá ekonomiku, což může podporovat poptávku — bez záruky konkrétního výnosu.",
       },
       {
         subtitle: "Expat ekonomika",

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { CalculatorSection } from "@/components/sections/CalculatorSection";
+import { LeadGen } from "@/components/sections/LeadGen";
 import type { CountryId } from "@/lib/calculators";
 import { routes } from "@/lib/routes";
 
@@ -37,6 +38,7 @@ export function KalkulackyView() {
         selectedCountry={selectedCountry}
         onSelectCountry={setSelectedCountry}
       />
+      <LeadGen />
     </>
   );
 }

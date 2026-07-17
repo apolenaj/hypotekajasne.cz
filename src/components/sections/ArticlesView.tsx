@@ -3,7 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowLeft, BookOpen, Mail } from "lucide-react";
+import { ArrowLeft, BookOpen, Loader2, Mail } from "lucide-react";
+import { submitLead } from "@/lib/leads";
 import { routes } from "@/lib/routes";
 import {
   articleCategories,
@@ -194,10 +195,29 @@ function ArticleCard({
 function NewsletterSection() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
+    setError(null);
+    setLoading(true);
+
+    const result = await submitLead({
+      name: "Newsletter",
+      email: email.trim(),
+      source: "newsletter",
+      notes: "Přihlášení k newsletteru z magazínu článků",
+      metadata: { channel: "articles_newsletter" },
+    });
+
+    setLoading(false);
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+
     setSubmitted(true);
     setEmail("");
   };
@@ -221,25 +241,30 @@ function NewsletterSection() {
             Děkujeme! První analýza je na cestě do vaší schránky.
           </p>
         ) : (
-          <form
-            onSubmit={handleSubmit}
-            className="flex flex-col sm:flex-row gap-3"
-          >
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Váš pracovní e-mail"
-              className="flex-1 px-6 py-4 rounded-xl border-none focus:ring-4 focus:ring-emerald-500/50 outline-none text-gray-900 font-medium"
-              required
-            />
-            <button
-              type="submit"
-              className="px-8 py-4 bg-white text-emerald-900 font-bold rounded-xl hover:bg-gray-50 transition-colors shadow-lg"
+          <>
+            <form
+              onSubmit={handleSubmit}
+              className="flex flex-col sm:flex-row gap-3"
             >
-              Odebírat analýzy
-            </button>
-          </form>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Váš pracovní e-mail"
+                className="flex-1 px-6 py-4 rounded-xl border-none focus:ring-4 focus:ring-emerald-500/50 outline-none text-gray-900 font-medium"
+                required
+              />
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-8 py-4 bg-white text-emerald-900 font-bold rounded-xl hover:bg-gray-50 transition-colors shadow-lg inline-flex items-center justify-center gap-2 disabled:opacity-60"
+              >
+                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                {loading ? "Odesílám…" : "Odebírat analýzy"}
+              </button>
+            </form>
+            {error && <p className="mt-3 text-sm text-red-200">{error}</p>}
+          </>
         )}
       </div>
     </div>

@@ -5,7 +5,7 @@ import { LeadGen } from "@/components/sections/LeadGen";
 export const metadata: Metadata = {
   title: "O nás | HypotékaJasně.cz",
   description:
-    "Procesní dokonalost, data a technologie — kdo stojí za HypotékaJasně.cz a Majetio.cz.",
+    "Poznejte tým HypotékaJasně.cz — zakladatele Josefa Apolenáře a experta na hypotéky Michala Heinzkeho.",
 };
 
 export default function ONasPage() {

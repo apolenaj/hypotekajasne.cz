@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Send } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Send, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FloatingInput } from "@/components/ui/FloatingInput";
 import {
@@ -12,9 +13,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { consultationCountries } from "@/lib/mock-data";
+import { buildThankYouPath, submitLead } from "@/lib/leads";
 
 export function LeadGen() {
-  const [submitted, setSubmitted] = useState(false);
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -22,39 +26,45 @@ export function LeadGen() {
     country: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Lead Gen formulář – odeslaná data:", formData);
-    setSubmitted(true);
+    setError(null);
+    setLoading(true);
+
+    const countryLabel =
+      consultationCountries.find((c) => c.value === formData.country)?.label ||
+      formData.country;
+
+    const result = await submitLead({
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      source: "lead_gen",
+      country: countryLabel || undefined,
+      notes: countryLabel
+        ? `Zájem o konzultaci: ${countryLabel}`
+        : "Obecná konzultace",
+      metadata: {
+        country_code: formData.country || null,
+      },
+    });
+
+    setLoading(false);
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+
+    router.push(buildThankYouPath("lead_gen"));
   };
 
-  if (submitted) {
-    return (
-      <section className="py-16 lg:py-20">
-        <div className="container mx-auto px-4 lg:px-8 max-w-lg text-center">
-          <div className="rounded-3xl bg-white/80 backdrop-blur-xl ring-1 ring-deep-teal/20 shadow-xl p-10">
-            <div className="w-14 h-14 rounded-2xl bg-deep-teal/10 flex items-center justify-center mx-auto mb-5">
-              <Send className="w-6 h-6 text-deep-teal" />
-            </div>
-            <h2 className="font-heading text-2xl font-bold text-deep-teal mb-3">
-              Děkujeme za vaši poptávku!
-            </h2>
-            <p className="text-muted-foreground text-sm">
-              Náš expert vás bude kontaktovat do 24 hodin.
-            </p>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
   return (
-    <section id="konzultace" className="py-16 lg:py-20 relative scroll-mt-28">
+    <section id="konzultace" className="relative scroll-mt-28 py-16 lg:py-20">
       <div className="absolute inset-0 bg-gradient-to-t from-slate-50/80 to-white" />
 
-      <div className="container relative mx-auto px-4 lg:px-8 max-w-lg">
-        <div className="text-center mb-8">
-          <h2 className="font-heading text-2xl lg:text-3xl font-bold text-text-dark mb-2">
+      <div className="container relative mx-auto max-w-lg px-4 lg:px-8">
+        <div className="mb-8 text-center">
+          <h2 className="font-heading mb-2 text-2xl font-bold text-text-dark lg:text-3xl">
             Chcete hypotéku vyřešit jasně?
           </h2>
           <p className="text-sm text-muted-foreground">
@@ -62,7 +72,7 @@ export function LeadGen() {
           </p>
         </div>
 
-        <div className="rounded-3xl bg-white/80 backdrop-blur-xl ring-1 ring-gray-900/5 shadow-xl shadow-gray-900/10 p-6 lg:p-8">
+        <div className="rounded-3xl bg-white/80 p-6 shadow-xl shadow-gray-900/10 ring-1 ring-gray-900/5 backdrop-blur-xl lg:p-8">
           <form onSubmit={handleSubmit} className="space-y-4">
             <FloatingInput
               id="name"
@@ -95,7 +105,7 @@ export function LeadGen() {
                   if (v) setFormData({ ...formData, country: v });
                 }}
               >
-                <SelectTrigger className="h-14 rounded-xl bg-white/60 backdrop-blur-sm border-gray-200/80">
+                <SelectTrigger className="h-14 rounded-xl border-gray-200/80 bg-white/60 backdrop-blur-sm">
                   <SelectValue placeholder="Zájem o konzultaci" />
                 </SelectTrigger>
                 <SelectContent>
@@ -108,12 +118,23 @@ export function LeadGen() {
               </Select>
             </div>
 
+            {error && (
+              <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">
+                {error}
+              </p>
+            )}
+
             <Button
               type="submit"
-              className="w-full h-12 bg-gradient-to-r from-deep-teal to-deep-teal-light hover:opacity-90 active:scale-[0.98] text-white rounded-xl text-base font-semibold mt-2 shadow-lg shadow-deep-teal/25 transition-all duration-200"
+              disabled={loading}
+              className="mt-2 h-12 w-full rounded-xl bg-gradient-to-r from-deep-teal to-deep-teal-light text-base font-semibold text-white shadow-lg shadow-deep-teal/25 transition-all duration-200 hover:opacity-90 active:scale-[0.98] disabled:opacity-60"
             >
-              <Send className="w-4 h-4 mr-2" />
-              Konzultovat s expertem
+              {loading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="mr-2 h-4 w-4" />
+              )}
+              {loading ? "Odesílám…" : "Konzultovat s expertem"}
             </Button>
           </form>
         </div>

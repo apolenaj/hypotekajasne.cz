@@ -125,9 +125,10 @@ export const banksByCountry: Record<CountryId, string[]> = {
   cz: [
     "Česká spořitelna",
     "Komerční banka",
-    "Moneta Money Bank",
-    "ČSOB",
-    "Raiffeisenbank",
+    "ČSOB Hypoteční banka",
+    "Raiffeisen Bank",
+    "mBank",
+    "UniCredit Bank",
   ],
   dubai: [
     "Emirates NBD",
@@ -163,7 +164,7 @@ export const dubaiFinancingOptions = [
 export const tooltips = {
   price: "Kupní cena nemovitosti včetně všech poplatků spojených s převodem.",
   savings:
-    "Vlastní zdroje, které vložíte do koupě. Ovlivňují LTV (poměr úvěru k hodnotě nemovitosti) – čím vyšší úspory, tím lepší podmínky.",
+    "Vlastní zdroje, které vložíte do koupě. Ovlivňují LTV (poměr úvěru k hodnotě). U vlastního bydlení ČNB cílí na LTV do 80 % (do 36 let až 90 %); u investičních hypoték od 4/2026 doporučuje max. 70 %.",
   financingType:
     "Způsob financování se liší podle země. V Dubaji můžete volit off-plan splátky, hypotéku pro cizince nebo americkou hypotéku s českou zástavou.",
   interestRate:

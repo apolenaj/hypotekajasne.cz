@@ -1,5 +1,6 @@
 import {
   calculateAnnuityPayment,
+  countryConfigs,
   type CountryId,
   type CurrencyCode,
   formatCurrency,
@@ -7,19 +8,17 @@ import {
 
 export type IncomeSource =
   | "employee"
-  | "osvc"
-  | "sro_owner"
-  | "rent"
-  | "foreign";
+  | "self_employed"
+  | "company_owner"
+  | "rent";
 
-export type TaxResidency = "cz" | "eu" | "non-eu";
+export type TaxResidency = "cz" | "sk" | "other";
 
 export const sourceOfIncomeOptions = [
-  { value: "employee" as const, label: "Zaměstnanec (HPP)" },
-  { value: "osvc" as const, label: "OSVČ (Podnikatel)" },
-  { value: "sro_owner" as const, label: "Majitel s.r.o." },
-  { value: "rent" as const, label: "Příjmy z pronájmu" },
-  { value: "foreign" as const, label: "Příjmy ze zahraničí" },
+  { value: "employee" as const, label: "Zaměstnanec" },
+  { value: "self_employed" as const, label: "OSVČ / Podnikatel" },
+  { value: "company_owner" as const, label: "Majitel firmy" },
+  { value: "rent" as const, label: "Příjem z pronájmu" },
 ] as const;
 
 /** @deprecated Use sourceOfIncomeOptions */
@@ -27,9 +26,9 @@ export const incomeSourceOptions = sourceOfIncomeOptions;
 
 export const taxResidencyOptions = [
   { value: "cz" as const, label: "Česká republika" },
-  { value: "eu" as const, label: "EU" },
-  { value: "non-eu" as const, label: "Mimo EU" },
-];
+  { value: "sk" as const, label: "Slovensko" },
+  { value: "other" as const, label: "Jiná země" },
+] as const;
 
 export interface RiskProfile {
   incomeSource: IncomeSource;
@@ -37,13 +36,77 @@ export interface RiskProfile {
   ltv: number;
 }
 
+export type BankCategory =
+  | "domestic"
+  | "american"
+  | "local"
+  | "international";
+
+export function getRateSourceLabel(
+  category: BankCategory,
+  marketLabel?: string
+): string {
+  switch (category) {
+    case "domestic":
+      return "Zdroj: aktuální česká sazba (Supabase)";
+    case "american":
+      return "Zdroj: česká sazba pro americkou hypotéku (Supabase)";
+    case "local":
+      return marketLabel
+        ? `Zdroj: lokální sazba trhu ${marketLabel}`
+        : "Zdroj: lokální sazba trhu";
+    case "international":
+      return "Zdroj: orientační mezinárodní sazba";
+  }
+}
+
+/** Text zdroje u karty banky (zobrazení klientovi). */
+export function getBankOfferSourceLabel(bankName: string): string {
+  return `Zdroj: Oficiální web ${bankName}`;
+}
+
+/** Orientační RPSN odvozené od sazby konkrétní banky (dočasně, než bude scraper). */
+export const BANK_RPSN_OFFSET = 0.25;
+
+export function estimateBankRpsn(interestRate: number): number {
+  return +(interestRate + BANK_RPSN_OFFSET).toFixed(2);
+}
+
+/**
+ * Formát času aktualizace sazeb ze scrapingu.
+ * Bez reálného `updatedAt` neukazujeme umělý čas.
+ */
+export function formatRatesUpdatedAt(updatedAt: string | null | undefined): string {
+  if (!updatedAt || Number.isNaN(Date.parse(updatedAt))) {
+    return "Aktualizace probíhá";
+  }
+
+  const date = new Date(updatedAt);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+
+  return `Aktualizováno: ${day}.${month}.${year} v ${hours}:${minutes}`;
+}
+
+export type BankDefinition = {
+  name: string;
+  category: BankCategory;
+};
+
 export interface BankOffer {
   bankName: string;
+  category: BankCategory;
   baseRate: number;
   adjustedRate: number;
+  rpsn: number;
   monthlyPayment: number;
   riskPremium: number;
   best: boolean;
+  updatedAt: string | null;
+  sourceUrl: string | null;
 }
 
 export interface DTIResult {
@@ -53,25 +116,86 @@ export interface DTIResult {
   message: string;
 }
 
-const DTI_WARNING_THRESHOLD = 0.4;
-const DTI_DANGER_THRESHOLD = 0.45;
+export type BankCategorySection = {
+  id: BankCategory;
+  title: string;
+  description: string;
+};
 
-const BANK_RATE_OFFSETS = [
-  { offset: -0.15, best: true },
-  { offset: 0, best: false },
-  { offset: 0.1, best: false },
-  { offset: 0.25, best: false },
-  { offset: 0.4, best: false },
-] as const;
+/** Kategorie pro český trh (pořadí). */
+export const CZ_BANK_CATEGORIES: BankCategorySection[] = [
+  {
+    id: "domestic",
+    title: "Vnitrostátní banky",
+    description: "Klasické české hypotéky na nemovitost v ČR",
+  },
+  {
+    id: "american",
+    title: "Americké hypotéky",
+    description:
+      "Neúčelové úvěry zajištěné nemovitostí poskytované z ČR",
+  },
+  {
+    id: "international",
+    title: "Mezinárodní banky",
+    description: "Mezinárodní financování pro klienty s příjmy ze zahraničí",
+  },
+];
 
-const bankNamesByCountry: Record<CountryId, string[]> = {
-  cz: [
-    "Moneta Money Bank",
-    "ČSOB",
-    "Česká spořitelna",
-    "Komerční banka",
-    "Raiffeisenbank",
-  ],
+/** Kategorie pro zahraniční trh — bez českých vnitrostátních bank. */
+export const FOREIGN_MARKET_BANK_CATEGORIES: BankCategorySection[] = [
+  {
+    id: "american",
+    title: "Americké hypotéky (z ČR)",
+    description:
+      "Neúčelové úvěry od českých bank zajištěné českou nemovitostí — slouží k nákupu v zahraničí (české sazby)",
+  },
+  {
+    id: "local",
+    title: "Lokální banky vybrané země",
+    description:
+      "Banky působící na vybraném zahraničním trhu s lokálními úrokovými sazbami",
+  },
+  {
+    id: "international",
+    title: "Mezinárodní banky",
+    description:
+      "Mezinárodní poskytovatelé financování pro klienty žijící v zahraničí",
+  },
+];
+
+export function getBankCategoriesForMarket(
+  country: CountryId
+): BankCategorySection[] {
+  return country === "cz" ? CZ_BANK_CATEGORIES : FOREIGN_MARKET_BANK_CATEGORIES;
+}
+
+/** @deprecated Prefer getBankCategoriesForMarket */
+export const BANK_CATEGORIES = CZ_BANK_CATEGORIES;
+
+/** České vnitrostátní banky — jen pro trh ČR */
+export const DOMESTIC_BANKS: BankDefinition[] = [
+  { name: "Česká spořitelna", category: "domestic" },
+  { name: "Komerční banka", category: "domestic" },
+  { name: "ČSOB Hypoteční banka", category: "domestic" },
+  { name: "Raiffeisen Bank", category: "domestic" },
+  { name: "mBank", category: "domestic" },
+  { name: "UniCredit Bank", category: "domestic" },
+];
+
+/** Americké hypotéky z ČR (české sazby) */
+export const AMERICAN_MORTGAGE_BANKS: BankDefinition[] = [
+  { name: "Česká spořitelna", category: "american" },
+  { name: "Komerční banka", category: "american" },
+  { name: "ČSOB Hypoteční banka", category: "american" },
+  { name: "Raiffeisen Bank", category: "american" },
+  { name: "mBank", category: "american" },
+  { name: "UniCredit Bank", category: "american" },
+];
+
+/** Lokální banky dané země (ne české) */
+export const LOCAL_BANKS_BY_COUNTRY: Record<CountryId, string[]> = {
+  cz: [],
   dubai: [
     "Emirates NBD",
     "Mashreq Bank",
@@ -92,20 +216,13 @@ const bankNamesByCountry: Record<CountryId, string[]> = {
     "PBZ",
     "Erste Bank",
     "OTP banka",
-    "Raiffeisenbank",
+    "Raiffeisenbank Hrvatska",
   ],
-  bali: [
-    "Bank Mandiri",
-    "BCA",
-    "BNI",
-    "CIMB Niaga",
-    "Mezinárodní financování",
-  ],
+  bali: ["Bank Mandiri", "BCA", "BNI", "CIMB Niaga"],
   saudi: [
     "Al Rajhi Bank",
     "Saudi National Bank",
     "Riyad Bank",
-    "SNB Capital",
     "Banque Saudi Fransi",
   ],
   slovakia: [
@@ -117,10 +234,22 @@ const bankNamesByCountry: Record<CountryId, string[]> = {
   ],
 };
 
+/** Mezinárodní / expat financování */
+export const INTERNATIONAL_EXPAT_BANKS: BankDefinition[] = [
+  { name: "HSBC Expat", category: "international" },
+  { name: "Barclays International", category: "international" },
+  { name: "UBS Global", category: "international" },
+  { name: "Citibank International", category: "international" },
+  { name: "Standard Chartered", category: "international" },
+];
+
 export function calculateRiskPremium(profile: RiskProfile): number {
   let premium = 0;
 
-  if (profile.incomeSource === "osvc" || profile.incomeSource === "sro_owner") {
+  if (
+    profile.incomeSource === "self_employed" ||
+    profile.incomeSource === "company_owner"
+  ) {
     premium += 0.3;
   }
 
@@ -128,11 +257,7 @@ export function calculateRiskPremium(profile: RiskProfile): number {
     premium += 0.2;
   }
 
-  if (profile.incomeSource === "foreign") {
-    premium += 0.35;
-  }
-
-  if (profile.taxResidency === "non-eu") {
+  if (profile.taxResidency === "other") {
     premium += 0.3;
   }
 
@@ -143,160 +268,172 @@ export function calculateRiskPremium(profile: RiskProfile): number {
   return premium;
 }
 
-const INTERNATIONAL_LENDERS = [
-  "HSBC Expat",
-  "Barclays Int.",
-  "UBS Global",
-  "Credit Suisse",
-  "Citibank Int.",
-] as const;
+const DTI_WARNING_THRESHOLD = 0.4;
+const DTI_DANGER_THRESHOLD = 0.45;
 
+const BANK_RATE_OFFSETS_DEPRECATED = [
+  { offset: -0.15, best: true },
+] as const;
+void BANK_RATE_OFFSETS_DEPRECATED;
+
+/** @deprecated Prefer DOMESTIC_BANKS / LOCAL_BANKS_BY_COUNTRY */
 export const countryBankConfigs: Record<CountryId, { banks: string[] }> =
   Object.fromEntries(
-    Object.entries(bankNamesByCountry).map(([country, banks]) => [
+    (Object.keys(LOCAL_BANKS_BY_COUNTRY) as CountryId[]).map((country) => [
       country,
-      { banks },
+      {
+        banks:
+          country === "cz"
+            ? DOMESTIC_BANKS.map((b) => b.name)
+            : LOCAL_BANKS_BY_COUNTRY[country],
+      },
     ])
   ) as Record<CountryId, { banks: string[] }>;
 
-const CZECH_BANKS = [
-  "Česká spořitelna",
-  "ČSOB",
-  "Moneta",
-  "Komerční banka",
-  "Raiffeisenbank",
-] as const;
-
-export interface TripleBankOffers {
-  international: BankOffer[];
+export interface CategorizedBankOffers {
+  domestic: BankOffer[];
+  american: BankOffer[];
   local: BankOffer[];
-  czech: BankOffer[];
+  international: BankOffer[];
 }
 
-/** @deprecated Use TripleBankOffers */
-export type DualBankOffers = TripleBankOffers;
+/** @deprecated Use CategorizedBankOffers */
+export type TripleBankOffers = CategorizedBankOffers;
 
-function buildOfferSet(
-  names: readonly string[],
-  rates: number[],
+/** @deprecated Use CategorizedBankOffers */
+export type DualBankOffers = CategorizedBankOffers;
+
+export type ScrapedBankRateInput = {
+  bankName: string;
+  rate: number;
+  rpsn: number;
+  updatedAt: string | null;
+  sourceUrl: string | null;
+};
+
+function buildOffersFromScraped(
+  banks: readonly BankDefinition[],
+  scrapedByName: Map<string, ScrapedBankRateInput>,
   loanAmount: number,
   termYears: number,
-  effectiveBase: number,
-  riskPremium: number,
-  bestIndex: number
+  riskPremium: number
 ): BankOffer[] {
-  return names.map((bankName, index) => {
-    const adjustedRate = +rates[index].toFixed(2);
+  const offers: BankOffer[] = [];
+
+  for (const bank of banks) {
+    const scraped = scrapedByName.get(bank.name);
+    if (!scraped) continue;
+
+    const adjustedRate = +scraped.rate.toFixed(2);
+    const rpsn = +scraped.rpsn.toFixed(2);
     const monthlyPayment = Math.round(
       calculateAnnuityPayment(loanAmount, adjustedRate, termYears)
     );
 
-    return {
-      bankName,
-      baseRate: effectiveBase,
+    offers.push({
+      bankName: bank.name,
+      category: bank.category,
+      baseRate: scraped.rate,
       adjustedRate,
+      rpsn,
       monthlyPayment,
       riskPremium,
-      best: index === bestIndex,
-    };
-  });
+      best: false,
+      updatedAt: scraped.updatedAt,
+      sourceUrl: scraped.sourceUrl,
+    });
+  }
+
+  if (offers.length > 0) {
+    const bestIndex = offers.reduce(
+      (best, offer, index) =>
+        offer.adjustedRate < offers[best].adjustedRate ? index : best,
+      0
+    );
+    offers[bestIndex] = { ...offers[bestIndex], best: true };
+  }
+
+  return offers;
 }
 
+/**
+ * Nabídky bank výhradně z vy-scrapovaných dat (`bank_rates`).
+ * Banka bez záznamu v DB se do výsledků vůbec nezařadí.
+ */
 export function getTripleBankOffers(
   country: CountryId,
-  baseRate: number,
   loanAmount: number,
   termYears: number,
-  profile: RiskProfile
-): TripleBankOffers {
+  profile: RiskProfile,
+  scrapedCzechBanks: ScrapedBankRateInput[]
+): CategorizedBankOffers {
   if (loanAmount <= 0 || termYears <= 0) {
-    return { international: [], local: [], czech: [] };
+    return { domestic: [], american: [], local: [], international: [] };
   }
 
   const riskPremium = calculateRiskPremium(profile);
-  const effectiveBase = baseRate + riskPremium;
-  const localBanks = countryBankConfigs[country].banks;
-
-  const internationalRates = INTERNATIONAL_LENDERS.map(
-    (_, index) => effectiveBase + 0.3 + index * 0.1
-  );
-  const localRates = localBanks.map((_, index) => effectiveBase + index * 0.15);
-  const czechRates = CZECH_BANKS.map(
-    (_, index) => effectiveBase + 0.8 + index * 0.1
+  const isCzechMarket = country === "cz";
+  const scrapedByName = new Map(
+    scrapedCzechBanks.map((row) => [row.bankName, row])
   );
 
   return {
-    international: buildOfferSet(
-      INTERNATIONAL_LENDERS,
-      internationalRates,
+    domestic: isCzechMarket
+      ? buildOffersFromScraped(
+          DOMESTIC_BANKS,
+          scrapedByName,
+          loanAmount,
+          termYears,
+          riskPremium
+        )
+      : [],
+    american: buildOffersFromScraped(
+      AMERICAN_MORTGAGE_BANKS,
+      scrapedByName,
       loanAmount,
       termYears,
-      effectiveBase,
-      riskPremium,
-      0
+      riskPremium
     ),
-    local: buildOfferSet(
-      localBanks,
-      localRates,
-      loanAmount,
-      termYears,
-      effectiveBase,
-      riskPremium,
-      0
-    ),
-    czech: buildOfferSet(
-      CZECH_BANKS,
-      czechRates,
-      loanAmount,
-      termYears,
-      effectiveBase,
-      riskPremium,
-      0
-    ),
+    // Zahraniční lokální / expat banky zatím nemají scraper → prázdné
+    local: [],
+    international: [],
   };
 }
 
 /** @deprecated Use getTripleBankOffers */
 export function getDualBankOffers(
   country: CountryId,
-  baseRate: number,
+  _czechBaseRate: number,
   loanAmount: number,
   termYears: number,
-  profile: RiskProfile
-): TripleBankOffers {
-  return getTripleBankOffers(country, baseRate, loanAmount, termYears, profile);
+  profile: RiskProfile,
+  scrapedCzechBanks: ScrapedBankRateInput[] = []
+): CategorizedBankOffers {
+  return getTripleBankOffers(
+    country,
+    loanAmount,
+    termYears,
+    profile,
+    scrapedCzechBanks
+  );
 }
 
 export function getBankOffers(
   country: CountryId,
-  baseRate: number,
+  _baseRate: number,
   loanAmount: number,
   termYears: number,
-  profile: RiskProfile
+  profile: RiskProfile,
+  scrapedCzechBanks: ScrapedBankRateInput[] = []
 ): BankOffer[] {
-  if (loanAmount <= 0 || termYears <= 0) {
-    return [];
-  }
-
-  const riskPremium = calculateRiskPremium(profile);
-  const effectiveBase = baseRate + riskPremium;
-  const bankNames = bankNamesByCountry[country];
-
-  return BANK_RATE_OFFSETS.map((template, index) => {
-    const adjustedRate = +(effectiveBase + template.offset).toFixed(2);
-    const monthlyPayment = Math.round(
-      calculateAnnuityPayment(loanAmount, adjustedRate, termYears)
-    );
-
-    return {
-      bankName: bankNames[index],
-      baseRate: effectiveBase,
-      adjustedRate,
-      monthlyPayment,
-      riskPremium,
-      best: template.best,
-    };
-  });
+  const offers = getTripleBankOffers(
+    country,
+    loanAmount,
+    termYears,
+    profile,
+    scrapedCzechBanks
+  );
+  return country === "cz" ? offers.domestic : offers.american;
 }
 
 export function checkDTI(
@@ -323,8 +460,8 @@ export function checkDTI(
       level: "danger",
       message:
         country === "cz"
-          ? `Splátka tvoří ${percent} % vašeho příjmu. Překračujete limit ČNB (45 % DSTI) – banka pravděpodobně úvěr neschválí.`
-          : `Splátka tvoří ${percent} % vašeho příjmu. Překračujete doporučený limit 45 % – úvěr bude obtížně schvalitelný.`,
+          ? `Splátka tvoří ${percent} % vašeho příjmu. Ukazatel DSTI ČNB aktuálně plošně neaktivuje — banky však často interně cílí kolem 40–45 %. Při této zátěži bude schválení obtížnější.`
+          : `Splátka tvoří ${percent} % vašeho příjmu. Překračujete obvyklý bankovní práh kolem 45 % — úvěr bude obtížně schvalitelný.`,
     };
   }
 
@@ -335,8 +472,8 @@ export function checkDTI(
       level: "warning",
       message:
         country === "cz"
-          ? `Splátka tvoří ${percent} % příjmu. Blížíte se k limitu ČNB (45 % DSTI). Zvažte vyšší vlastní zdroje nebo delší splatnost.`
-          : `Splátka tvoří ${percent} % příjmu. Blížíte se k doporučenému limitu 45 %.`,
+          ? `Splátka tvoří ${percent} % příjmu. DSTI není plošně povinný limit ČNB, ale banky ho běžně sledují. Zvažte vyšší vlastní zdroje nebo delší splatnost.`
+          : `Splátka tvoří ${percent} % příjmu. Blížíte se k doporučenému limitu kolem 45 %.`,
     };
   }
 

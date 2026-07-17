@@ -95,8 +95,8 @@ export const REGION_OPTIONS: {
   },
   {
     value: "eu_stability",
-    title: "Evropská jistota a blízkost domova",
-    description: "Právní ochrana EU — Španělsko, Itálie, Chorvatsko.",
+    title: "Evropský právní rámec a blízkost",
+    description: "Právní prostředí EU — Španělsko, Itálie, Chorvatsko.",
   },
   {
     value: "czech_slovak",
@@ -151,7 +151,7 @@ export function calculateTopMarkets(
     "Bali (Indonésie)": {
       score: 0,
       reason:
-        "Absolutně nejvyšší ROI z krátkodobého pronájmu a exotická diverzifikace.",
+        "Vyšší modelovaný výnos z krátkodobého pronájmu a měnová / legislativní rizika exotických trhů.",
     },
     Španělsko: {
       score: 0,

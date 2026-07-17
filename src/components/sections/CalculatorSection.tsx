@@ -30,15 +30,12 @@ export function CalculatorSection({
 
       <div className={embedded ? "relative" : "container relative mx-auto px-4 lg:px-8"}>
         <div className="text-center mb-12">
-          <p className="text-sm font-semibold uppercase tracking-widest text-deep-teal/70 mb-3">
-            Fintech scoring
-          </p>
           <h2 className="font-heading text-3xl lg:text-4xl font-bold text-text-dark mb-3">
             Kalkulačka hypotéky
           </h2>
           <p className="text-muted-foreground max-w-lg mx-auto">
-            Personalizované bankovní nabídky podle vašeho profilu a investiční
-            destinace
+            Orientační splátka a nabídky bank podle vašeho profilu a vybrané
+            země
           </p>
         </div>
 

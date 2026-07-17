@@ -12,7 +12,7 @@ export const COUNTRY_INFO_DATA: Record<string, CountryInfoEntry> = {
   "Česká republika": {
     overview: [
       "Konzervativní a vysoce stabilní trh s nulovým měnovým rizikem (pro lidi vydělávající v CZK).",
-      "Silná právní ochrana, snadná dostupnost hypotečního financování až do 90 % LTV pro rezidenty.",
+      "Silná právní ochrana; u vlastního bydlení LTV obvykle do 80 % (do 36 let až 90 %). U investičních hypoték ČNB od 4/2026 doporučuje LTV max. 70 % a DTI 7.",
       "Výnosy z dlouhodobého nájmu se pohybují kolem 3–5 % p.a. (v Praze méně, v regionech jako Ostrava/Ústí nad Labem více).",
       "Trh je ideální pro uchování hodnoty majetku a ochranu před inflací, méně pro agresivní cash-flow.",
     ],
