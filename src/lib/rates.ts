@@ -51,6 +51,48 @@ function detectOrientationalWithout(
   return Math.abs(withoutRate - withRate - 0.3) < 0.021;
 }
 
+/** Záloha: nejlevnější klasická sazba s pojištěním z bank_rates. */
+async function fetchRatesFromBankRates(): Promise<CurrentRates | null> {
+  const { data, error } = await supabase
+    .from("bank_rates")
+    .select(
+      "rate_with_insurance, rate_without_insurance, rpsn_with_insurance, rpsn_without_insurance, rate, rpsn, updated_at"
+    )
+    .order("rate_with_insurance", { ascending: true, nullsFirst: false });
+
+  if (error || !data?.length) {
+    console.error(
+      "Záloha bank_rates selhala:",
+      error?.message ?? "prázdná tabulka"
+    );
+    return null;
+  }
+
+  const best =
+    data.find((row) => toNumber(row.rate_with_insurance) != null) ?? data[0];
+
+  const rateWithInsurance =
+    toNumber(best.rate_with_insurance) ?? toNumber(best.rate);
+  const rateWithoutInsurance = toNumber(best.rate_without_insurance);
+  const rpsnWithInsurance =
+    toNumber(best.rpsn_with_insurance) ?? toNumber(best.rpsn);
+  const rpsnWithoutInsurance = toNumber(best.rpsn_without_insurance);
+
+  if (rateWithInsurance == null) return null;
+
+  return {
+    rateWithInsurance,
+    rateWithoutInsurance,
+    rpsnWithInsurance,
+    rpsnWithoutInsurance,
+    withoutInsuranceOrientational: detectOrientationalWithout(
+      rateWithInsurance,
+      rateWithoutInsurance
+    ),
+    updatedAt: best.updated_at ? String(best.updated_at) : null,
+  };
+}
+
 export async function fetchCurrentRates(): Promise<CurrentRates> {
   try {
     const { data, error } = await supabase
@@ -59,30 +101,37 @@ export async function fetchCurrentRates(): Promise<CurrentRates> {
         "rate_with_insurance, rate_without_insurance, rpsn_with_insurance, rpsn_without_insurance, updated_at"
       )
       .eq("id", 1)
-      .single();
+      .maybeSingle();
 
-    if (error || !data) {
-      console.error("Nepodařilo se načíst sazby ze Supabase:", error?.message);
-      return EMPTY_RATES;
+    if (!error && data) {
+      const rateWithInsurance = toNumber(data.rate_with_insurance);
+      const rateWithoutInsurance = toNumber(data.rate_without_insurance);
+
+      if (rateWithInsurance != null) {
+        return {
+          rateWithInsurance,
+          rateWithoutInsurance,
+          rpsnWithInsurance: toNumber(data.rpsn_with_insurance),
+          rpsnWithoutInsurance: toNumber(data.rpsn_without_insurance),
+          withoutInsuranceOrientational: detectOrientationalWithout(
+            rateWithInsurance,
+            rateWithoutInsurance
+          ),
+          updatedAt: data.updated_at ?? null,
+        };
+      }
+    } else if (error) {
+      console.error("Nepodařilo se načíst current_rates:", error.message);
     }
 
-    const rateWithInsurance = toNumber(data.rate_with_insurance);
-    const rateWithoutInsurance = toNumber(data.rate_without_insurance);
+    const fromBanks = await fetchRatesFromBankRates();
+    if (fromBanks) return fromBanks;
 
-    return {
-      rateWithInsurance,
-      rateWithoutInsurance,
-      rpsnWithInsurance: toNumber(data.rpsn_with_insurance),
-      rpsnWithoutInsurance: toNumber(data.rpsn_without_insurance),
-      withoutInsuranceOrientational: detectOrientationalWithout(
-        rateWithInsurance,
-        rateWithoutInsurance
-      ),
-      updatedAt: data.updated_at ?? null,
-    };
+    return EMPTY_RATES;
   } catch (err) {
     console.error("Chyba při načítání sazeb:", err);
-    return EMPTY_RATES;
+    const fromBanks = await fetchRatesFromBankRates();
+    return fromBanks ?? EMPTY_RATES;
   }
 }
 
