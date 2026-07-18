@@ -131,61 +131,77 @@ export async function GET(request: Request) {
         );
       }
 
-      const upserts = validBanks.map((row) => ({
-        id: row.id,
-        bank_name: row.bankName,
-        rate: row.rateWithInsurance,
-        rpsn: row.rpsnWithInsurance,
-        rate_with_insurance: row.rateWithInsurance,
-        rate_without_insurance: row.rateWithoutInsurance,
-        rpsn_with_insurance: row.rpsnWithInsurance,
-        rpsn_without_insurance: row.rpsnWithoutInsurance,
-        american_rate_with_insurance: row.americanRateWithInsurance,
-        american_rate_without_insurance: row.americanRateWithoutInsurance,
-        american_rpsn_with_insurance: row.americanRpsnWithInsurance,
-        american_rpsn_without_insurance: row.americanRpsnWithoutInsurance,
-        american_source_url: row.americanSourceUrl,
-        source_url: row.sourceUrl,
-        updated_at: scrapedAt,
-      }));
-
-      let americanColumnsMissing = false;
-      let { error } = await supabase.from("bank_rates").upsert(upserts, {
-        onConflict: "id",
+      const upserts = validBanks.map((row) => {
+        const payload: Record<string, unknown> = {
+          id: row.id,
+          bank_name: row.bankName,
+          rate: row.rateWithInsurance,
+          rate_with_insurance: row.rateWithInsurance,
+          rate_without_insurance: row.rateWithoutInsurance,
+          rpsn_with_insurance: row.rpsnWithInsurance,
+          rpsn_without_insurance: row.rpsnWithoutInsurance,
+          american_rate_with_insurance: row.americanRateWithInsurance,
+          american_rate_without_insurance: row.americanRateWithoutInsurance,
+          american_rpsn_with_insurance: row.americanRpsnWithInsurance,
+          american_rpsn_without_insurance: row.americanRpsnWithoutInsurance,
+          american_source_url: row.americanSourceUrl,
+          source_url: row.sourceUrl,
+          updated_at: scrapedAt,
+        };
+        // Legacy sloupec rpsn je v některých DB ještě NOT NULL —
+        // při chybějícím ověřeném RPSN ho neposíláme (update ponechá starou hodnotu).
+        if (row.rpsnWithInsurance != null) {
+          payload.rpsn = row.rpsnWithInsurance;
+        }
+        return payload;
       });
 
-      // Dokud neběží migrace american_* sloupců, ulož alespoň klasické sazby
-      if (error && /american_/i.test(error.message + (error.details ?? ""))) {
-        americanColumnsMissing = true;
-        const classicOnly = upserts.map(
-          ({
+      let americanColumnsMissing = false;
+      saved = 0;
+      americanSaved = 0;
+
+      for (const payload of upserts) {
+        let { error } = await supabase.from("bank_rates").upsert(payload, {
+          onConflict: "id",
+        });
+
+        if (error && /american_/i.test(error.message + (error.details ?? ""))) {
+          americanColumnsMissing = true;
+          const {
             american_rate_with_insurance: _a,
             american_rate_without_insurance: _b,
             american_rpsn_with_insurance: _c,
             american_rpsn_without_insurance: _d,
             american_source_url: _e,
-            ...rest
-          }) => rest
-        );
-        const retry = await supabase.from("bank_rates").upsert(classicOnly, {
-          onConflict: "id",
-        });
-        error = retry.error;
-      }
+            ...classicOnly
+          } = payload;
+          const retry = await supabase.from("bank_rates").upsert(classicOnly, {
+            onConflict: "id",
+          });
+          error = retry.error;
+        }
 
-      if (error) {
-        const hint = /american_/i.test(error.message + (error.details ?? ""))
-          ? ` Spusťte migraci supabase/bank_rates_american_migration.sql a NOTIFY pgrst, 'reload schema';`
-          : "";
-        throw new Error(
-          `Upsert bank_rates selhal: ${error.message}${error.code ? ` (${error.code})` : ""}${error.details ? ` — ${error.details}` : ""}${hint}`
-        );
-      }
+        if (error) {
+          allFailures.push({
+            id: String(payload.id),
+            bankName: String(payload.bank_name),
+            error: `Upsert selhal: ${error.message}${error.details ? ` — ${error.details}` : ""}${
+              /null value.*rpsn/i.test(error.message + (error.details ?? ""))
+                ? " Spusťte supabase/bank_rates_nullable_rpsn_migration.sql"
+                : ""
+            }`,
+          });
+          continue;
+        }
 
-      saved = validBanks.length;
-      americanSaved = americanColumnsMissing
-        ? 0
-        : validBanks.filter((b) => b.americanRateWithInsurance != null).length;
+        saved += 1;
+        if (
+          !americanColumnsMissing &&
+          payload.american_rate_with_insurance != null
+        ) {
+          americanSaved += 1;
+        }
+      }
 
       if (americanColumnsMissing) {
         allFailures.push({
@@ -196,7 +212,8 @@ export async function GET(request: Request) {
         });
       }
 
-      const primary = validBanks[0];
+      const primary =
+        validBanks.find((b) => b.rpsnWithInsurance != null) ?? validBanks[0];
       const { error: aggregateError } = await supabase.from("current_rates").upsert(
         {
           id: 1,
