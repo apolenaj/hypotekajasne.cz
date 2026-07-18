@@ -213,7 +213,10 @@ export async function GET(request: Request) {
       }
 
       const primary =
-        validBanks.find((b) => b.rpsnWithInsurance != null) ?? validBanks[0];
+        validBanks.find((b) => b.id === "unicredit-bank") ??
+        validBanks.find((b) => b.id === "komercni-banka") ??
+        validBanks.find((b) => b.rpsnWithInsurance != null) ??
+        validBanks[0];
       const { error: aggregateError } = await supabase.from("current_rates").upsert(
         {
           id: 1,

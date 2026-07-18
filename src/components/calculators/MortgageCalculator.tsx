@@ -73,7 +73,12 @@ import {
   type MortgagePurpose,
 } from "@/lib/cnb-limits";
 import { pickRate, pickRpsn, useCurrentRates } from "@/lib/rates";
-import { formatRateOrOnRequest } from "@/lib/format-rate";
+import {
+  formatRateOrOnRequest,
+  isAmericanWithoutOrientational,
+  isClassicWithoutOrientational,
+} from "@/lib/format-rate";
+import { BANK_NAME_TO_SCRAPER_ID } from "@/lib/scrape/bank-ids";
 import { cn } from "@/lib/utils";
 
 const chartConfig = {
@@ -344,7 +349,16 @@ export function MortgageCalculator({
               </h4>
               <div className="min-w-0">
                 <div className="text-lg font-bold text-emerald-900 whitespace-nowrap">
-                  od {offer.adjustedRate.toFixed(2)} %
+                  od{" "}
+                  {formatRateOrOnRequest(offer.adjustedRate, {
+                    orientational:
+                      !hasInsurance &&
+                      (offer.category === "american"
+                        ? isAmericanWithoutOrientational()
+                        : isClassicWithoutOrientational(
+                            BANK_NAME_TO_SCRAPER_ID[offer.bankName] ?? ""
+                          )),
+                  })}
                 </div>
                 <RpsnDisplay rpsn={offer.rpsn} compact className="mt-0.5" />
                 <div className="mt-1 text-[11px] text-gray-600 font-medium whitespace-nowrap">
@@ -541,6 +555,9 @@ export function MortgageCalculator({
                   rateWithoutInsurance={rates.rateWithoutInsurance}
                   rpsnWithInsurance={rates.rpsnWithInsurance}
                   rpsnWithoutInsurance={rates.rpsnWithoutInsurance}
+                  withoutRateOrientational={
+                    rates.withoutInsuranceOrientational
+                  }
                   paymentWithInsurance={
                     paymentWithInsurance == null
                       ? "Individuálně"

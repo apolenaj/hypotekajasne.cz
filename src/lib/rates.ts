@@ -8,6 +8,8 @@ export type CurrentRates = {
   rateWithoutInsurance: number | null;
   rpsnWithInsurance: number | null;
   rpsnWithoutInsurance: number | null;
+  /** Bez pojištění je orientační tržní průměr (+0.3), ne bankovní lístek */
+  withoutInsuranceOrientational: boolean;
   updatedAt: string | null;
 };
 
@@ -17,6 +19,7 @@ export const EMPTY_RATES: CurrentRates = {
   rateWithoutInsurance: null,
   rpsnWithInsurance: null,
   rpsnWithoutInsurance: null,
+  withoutInsuranceOrientational: false,
   updatedAt: null,
 };
 
@@ -24,6 +27,28 @@ function toNumber(value: unknown): number | null {
   if (value == null || value === "") return null;
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
+}
+
+/** KB insider 4.74/4.94; jinak mezera 0.3 = orientační doplnění. */
+function detectOrientationalWithout(
+  withRate: number | null,
+  withoutRate: number | null
+): boolean {
+  if (withRate == null || withoutRate == null) return false;
+  if (
+    Math.abs(withRate - 4.74) < 0.001 &&
+    Math.abs(withoutRate - 4.94) < 0.001
+  ) {
+    return false;
+  }
+  // UniCredit reálné PCE
+  if (
+    Math.abs(withRate - 5.09) < 0.001 &&
+    Math.abs(withoutRate - 5.39) < 0.001
+  ) {
+    return false;
+  }
+  return Math.abs(withoutRate - withRate - 0.3) < 0.021;
 }
 
 export async function fetchCurrentRates(): Promise<CurrentRates> {
@@ -41,11 +66,18 @@ export async function fetchCurrentRates(): Promise<CurrentRates> {
       return EMPTY_RATES;
     }
 
+    const rateWithInsurance = toNumber(data.rate_with_insurance);
+    const rateWithoutInsurance = toNumber(data.rate_without_insurance);
+
     return {
-      rateWithInsurance: toNumber(data.rate_with_insurance),
-      rateWithoutInsurance: toNumber(data.rate_without_insurance),
+      rateWithInsurance,
+      rateWithoutInsurance,
       rpsnWithInsurance: toNumber(data.rpsn_with_insurance),
       rpsnWithoutInsurance: toNumber(data.rpsn_without_insurance),
+      withoutInsuranceOrientational: detectOrientationalWithout(
+        rateWithInsurance,
+        rateWithoutInsurance
+      ),
       updatedAt: data.updated_at ?? null,
     };
   } catch (err) {

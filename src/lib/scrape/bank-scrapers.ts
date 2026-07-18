@@ -1,14 +1,8 @@
 /**
  * Konfigurace scraperů českých bank (klasická + americká hypotéka).
- * Reálně scrapovaná data + KB insider override + agregátor fallback pro null.
+ * KB: insider sazby. Ostatní: chybějící „bez pojištění“ = orientačně +0.3 p.b.
  */
 
-import {
-  createAggregatorCache,
-  enrichAmericanFromAggregators,
-  enrichClassicFromAggregators,
-  type AggregatorCache,
-} from "@/lib/scrape/aggregator-fallback";
 import {
   BANK_NAME_TO_SCRAPER_ID,
   type BankScraperId,
@@ -28,35 +22,6 @@ import {
   RPSN_TEXT_PATTERNS,
   type ExtractedMortgageRates,
 } from "@/lib/scrape/parse-rate";
-
-/** Insider data KB — reálné tržní sazby (přepisují scraper). */
-export const KB_INSIDER_RATES = {
-  rateWithInsurance: 4.74,
-  rateWithoutInsurance: 4.94,
-} as const;
-
-function applyKbInsiderRates(
-  scraped: ExtractedMortgageRates
-): ExtractedMortgageRates {
-  const spread =
-    scraped.rateWithInsurance != null && scraped.rpsnWithInsurance != null
-      ? roundRate(scraped.rpsnWithInsurance - scraped.rateWithInsurance)
-      : null;
-  const safeSpread =
-    spread != null && spread >= 0 && spread <= 1.5 ? spread : null;
-
-  const rateWith = KB_INSIDER_RATES.rateWithInsurance;
-  const rateWithout = KB_INSIDER_RATES.rateWithoutInsurance;
-
-  return buildExtractedRates({
-    rateWithInsurance: rateWith,
-    rpsnWithInsurance:
-      safeSpread != null ? roundRate(rateWith + safeSpread) : null,
-    rateWithoutInsurance: rateWithout,
-    rpsnWithoutInsurance:
-      safeSpread != null ? roundRate(rateWithout + safeSpread) : null,
-  });
-}
 
 export type { BankScraperId };
 export { BANK_NAME_TO_SCRAPER_ID };
@@ -83,14 +48,26 @@ export type ScrapedBankRate = {
   rpsnWithInsurance: number | null;
   rateWithoutInsurance: number | null;
   rpsnWithoutInsurance: number | null;
+  /** true = bez pojištění doplněno orientačně (+0.3 p.b.) */
+  withoutInsuranceEstimated: boolean;
   sourceUrl: string;
   /** Americká hypotéka — null pokud se nepodařilo scrapovat. */
   americanRateWithInsurance: number | null;
   americanRpsnWithInsurance: number | null;
   americanRateWithoutInsurance: number | null;
   americanRpsnWithoutInsurance: number | null;
+  americanWithoutInsuranceEstimated: boolean;
   americanSourceUrl: string | null;
 };
+
+/** Insider sazby KB (reálná tržní data od uživatele). */
+export const KB_INSIDER_RATES = {
+  rateWithInsurance: 4.74,
+  rateWithoutInsurance: 4.94,
+} as const;
+
+/** Orientační tržní přirážka, pokud chybí sazba bez pojištění. */
+export const ORIENTATIONAL_WITHOUT_SURCHARGE = 0.3;
 
 export const BANK_SCRAPERS: BankScraperConfig[] = [
   {
@@ -173,6 +150,7 @@ const emptyAmerican = {
   americanRpsnWithInsurance: null as number | null,
   americanRateWithoutInsurance: null as number | null,
   americanRpsnWithoutInsurance: null as number | null,
+  americanWithoutInsuranceEstimated: false,
   americanSourceUrl: null as string | null,
 };
 
@@ -180,11 +158,78 @@ function getUrlsToTry(config: BankScraperConfig): string[] {
   return [config.url, ...(config.alternateUrls ?? [])];
 }
 
+/** Doplní chybějící sazbu bez pojištění orientačně (+0.3 p.b.). */
+function fillOrientationalWithout(
+  rateWith: number | null,
+  rpsnWith: number | null,
+  rateWithout: number | null,
+  rpsnWithout: number | null
+): {
+  rateWithout: number | null;
+  rpsnWithout: number | null;
+  estimated: boolean;
+} {
+  if (rateWithout != null || rateWith == null) {
+    return {
+      rateWithout,
+      rpsnWithout,
+      estimated: false,
+    };
+  }
+
+  const filledRate = roundRate(rateWith + ORIENTATIONAL_WITHOUT_SURCHARGE);
+  const filledRpsn =
+    rpsnWithout != null
+      ? rpsnWithout
+      : rpsnWith != null
+        ? roundRate(rpsnWith + ORIENTATIONAL_WITHOUT_SURCHARGE)
+        : null;
+
+  return {
+    rateWithout: filledRate,
+    rpsnWithout: filledRpsn,
+    estimated: true,
+  };
+}
+
+/** Insider přepis KB klasické hypotéky. */
+function applyKbInsiderRates(
+  scraped: ExtractedMortgageRates
+): ExtractedMortgageRates {
+  const rateWith = KB_INSIDER_RATES.rateWithInsurance;
+  const rateWithout = KB_INSIDER_RATES.rateWithoutInsurance;
+
+  const spread =
+    scraped.rateWithInsurance != null && scraped.rpsnWithInsurance != null
+      ? roundRate(scraped.rpsnWithInsurance - scraped.rateWithInsurance)
+      : null;
+  const safeSpread =
+    spread != null && spread >= 0 && spread <= 1.5 ? spread : null;
+
+  return buildExtractedRates({
+    rateWithInsurance: rateWith,
+    rpsnWithInsurance:
+      safeSpread != null ? roundRate(rateWith + safeSpread) : scraped.rpsnWithInsurance,
+    rateWithoutInsurance: rateWithout,
+    rpsnWithoutInsurance:
+      safeSpread != null
+        ? roundRate(rateWithout + safeSpread)
+        : scraped.rpsnWithoutInsurance,
+  });
+}
+
 function toScrapedBankRate(
   config: Pick<BankScraperConfig, "id" | "bankName">,
   extracted: ExtractedMortgageRates,
   sourceUrl: string,
-  american: typeof emptyAmerican = emptyAmerican
+  american: typeof emptyAmerican = emptyAmerican,
+  flags: {
+    withoutInsuranceEstimated: boolean;
+    americanWithoutInsuranceEstimated: boolean;
+  } = {
+    withoutInsuranceEstimated: false,
+    americanWithoutInsuranceEstimated: false,
+  }
 ): ScrapedBankRate {
   const {
     rateWithInsurance,
@@ -217,8 +262,12 @@ function toScrapedBankRate(
     rpsnWithInsurance,
     rateWithoutInsurance,
     rpsnWithoutInsurance,
+    withoutInsuranceEstimated: flags.withoutInsuranceEstimated,
     sourceUrl,
     ...american,
+    americanWithoutInsuranceEstimated:
+      flags.americanWithoutInsuranceEstimated ||
+      american.americanWithoutInsuranceEstimated,
   };
 }
 
@@ -277,23 +326,16 @@ function americanFromPartial(
     americanRpsnWithInsurance: safeRpsnWith,
     americanRateWithoutInsurance: safeRateWithout,
     americanRpsnWithoutInsurance: safeRpsnWithout,
+    americanWithoutInsuranceEstimated: false,
     americanSourceUrl: sourceUrl,
   };
 }
 
-/** Scrapuje americkou hypotéku — oficiální URL, jinak agregátory. */
+/** Scrapuje americkou hypotéku — oficiální URL, jinak Peníze.cz. */
 async function scrapeAmericanRates(
   config: BankScraperConfig,
-  aggCache: AggregatorCache
+  penizeHtmlCache: { html: string | null }
 ): Promise<typeof emptyAmerican> {
-  let partial = {
-    rateWith: null as number | null,
-    rpsnWith: null as number | null,
-    rateWithout: null as number | null,
-    rpsnWithout: null as number | null,
-    sourceUrl: null as string | null,
-  };
-
   for (const url of config.americanUrls ?? []) {
     try {
       const html = await fetchHtml(url);
@@ -316,56 +358,33 @@ async function scrapeAmericanRates(
         extracted.rpsnWithInsurance;
 
       if (hypoRate != null) {
-        partial = {
-          rateWith: hypoRate,
-          rpsnWith: hypoRpsn,
-          rateWithout: extracted.rateWithoutInsurance,
-          rpsnWithout: extracted.rpsnWithoutInsurance,
-          sourceUrl: url,
-        };
-        break;
+        return americanFromPartial(
+          hypoRate,
+          hypoRpsn,
+          extracted.rateWithoutInsurance,
+          extracted.rpsnWithoutInsurance,
+          url
+        );
       }
     } catch {
       // zkus další URL / agregátor
     }
   }
 
-  if (partial.rateWith == null) {
-    try {
-      if (!aggCache.penizeAmericanHtml) {
-        aggCache.penizeAmericanHtml = await fetchHtml(PENIZE_AMERICAN_URL);
-      }
-      if (aggCache.penizeAmericanHtml) {
-        const rate = extractPenizeAmericanRate(
-          aggCache.penizeAmericanHtml,
-          config.id
-        );
-        if (rate != null) {
-          partial = {
-            ...partial,
-            rateWith: rate,
-            sourceUrl: PENIZE_AMERICAN_URL,
-          };
-        }
-      }
-    } catch {
-      // continue to enrich
+  try {
+    if (!penizeHtmlCache.html) {
+      penizeHtmlCache.html = await fetchHtml(PENIZE_AMERICAN_URL);
     }
+    const rate = extractPenizeAmericanRate(penizeHtmlCache.html, config.id);
+    if (rate != null) {
+      // Peníze.cz uvádí sazbu, RPSN a bez pojištění typicky ne — null
+      return americanFromPartial(rate, null, null, null, PENIZE_AMERICAN_URL);
+    }
+  } catch {
+    // american remains empty
   }
 
-  partial = await enrichAmericanFromAggregators(config.id, partial, aggCache);
-
-  if (partial.rateWith == null || partial.sourceUrl == null) {
-    return emptyAmerican;
-  }
-
-  return americanFromPartial(
-    partial.rateWith,
-    partial.rpsnWith,
-    partial.rateWithout,
-    partial.rpsnWithout,
-    partial.sourceUrl
-  );
+  return emptyAmerican;
 }
 
 /**
@@ -652,7 +671,7 @@ async function scrapeMesecFallback(
 
 export async function scrapeBank(
   config: BankScraperConfig,
-  aggCache: AggregatorCache = createAggregatorCache()
+  penizeHtmlCache: { html: string | null } = { html: null }
 ): Promise<ScrapedBankRate> {
   let extracted: ExtractedMortgageRates;
   let sourceUrl: string;
@@ -706,23 +725,56 @@ export async function scrapeBank(
     sourceUrl = found.sourceUrl;
   }
 
-  // Agregátory: doplň jen null pole (reálná čísla, bez dopočtů)
-  if (config.id !== "komercni-banka") {
-    extracted = await enrichClassicFromAggregators(
-      config.id,
-      config.mesecUrl,
-      extracted,
-      aggCache
-    );
-  }
+  const american = await scrapeAmericanRates(config, penizeHtmlCache);
 
-  // KB insider — vždy přepíše klasické sazby
+  // 1) KB insider přepis klasické hypotéky
   if (config.id === "komercni-banka") {
     extracted = applyKbInsiderRates(extracted);
   }
 
-  const american = await scrapeAmericanRates(config, aggCache);
-  return toScrapedBankRate(config, extracted, sourceUrl, american);
+  // 2) Orientační +0.3 % tam, kde chybí sazba bez pojištění
+  //    (ne u KB — už má insider data; UniCredit má reálné PCE, pokud přišlo)
+  let withoutEstimated = false;
+  if (config.id !== "komercni-banka") {
+    const filled = fillOrientationalWithout(
+      extracted.rateWithInsurance,
+      extracted.rpsnWithInsurance,
+      extracted.rateWithoutInsurance,
+      extracted.rpsnWithoutInsurance
+    );
+    // UniCredit: doplň jen pokud scraper opravdu vrátil null
+    if (filled.estimated) {
+      extracted = buildExtractedRates({
+        ...extracted,
+        rateWithoutInsurance: filled.rateWithout,
+        rpsnWithoutInsurance: filled.rpsnWithout,
+      });
+      withoutEstimated = true;
+    }
+  }
+
+  let americanResult = { ...american };
+  let americanWithoutEstimated = false;
+  const amFilled = fillOrientationalWithout(
+    american.americanRateWithInsurance,
+    american.americanRpsnWithInsurance,
+    american.americanRateWithoutInsurance,
+    american.americanRpsnWithoutInsurance
+  );
+  if (amFilled.estimated) {
+    americanResult = {
+      ...american,
+      americanRateWithoutInsurance: amFilled.rateWithout,
+      americanRpsnWithoutInsurance: amFilled.rpsnWithout,
+      americanWithoutInsuranceEstimated: true,
+    };
+    americanWithoutEstimated = true;
+  }
+
+  return toScrapedBankRate(config, extracted, sourceUrl, americanResult, {
+    withoutInsuranceEstimated: withoutEstimated,
+    americanWithoutInsuranceEstimated: americanWithoutEstimated,
+  });
 }
 
 export async function scrapeAllBanks(): Promise<{
@@ -731,11 +783,11 @@ export async function scrapeAllBanks(): Promise<{
 }> {
   const success: ScrapedBankRate[] = [];
   const failures: { id: string; bankName: string; error: string }[] = [];
-  const aggCache = createAggregatorCache();
+  const penizeHtmlCache = { html: null as string | null };
 
   for (const config of BANK_SCRAPERS) {
     try {
-      const scraped = await scrapeBank(config, aggCache);
+      const scraped = await scrapeBank(config, penizeHtmlCache);
       success.push(scraped);
     } catch (err) {
       failures.push({

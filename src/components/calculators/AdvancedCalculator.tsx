@@ -139,6 +139,7 @@ export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
               rateWithoutInsurance={rates.rateWithoutInsurance}
               rpsnWithInsurance={rates.rpsnWithInsurance}
               rpsnWithoutInsurance={rates.rpsnWithoutInsurance}
+              withoutRateOrientational={rates.withoutInsuranceOrientational}
               paymentWithInsurance={
                 paymentWithInsurance == null
                   ? "Individuálně"

@@ -628,6 +628,7 @@ export function OnboardingWizard() {
                 rateWithoutInsurance={rates.rateWithoutInsurance}
                 rpsnWithInsurance={rates.rpsnWithInsurance}
                 rpsnWithoutInsurance={rates.rpsnWithoutInsurance}
+                withoutRateOrientational={rates.withoutInsuranceOrientational}
                 loading={ratesLoading}
               />
 

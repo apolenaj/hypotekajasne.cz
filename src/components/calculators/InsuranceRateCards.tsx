@@ -13,6 +13,8 @@ type InsuranceRateCardsProps = {
   rateWithoutInsurance: number | null;
   rpsnWithInsurance?: number | null;
   rpsnWithoutInsurance?: number | null;
+  /** Zobrazit „*orientačně“ u sazby bez pojištění */
+  withoutRateOrientational?: boolean;
   paymentWithInsurance?: string | null;
   paymentWithoutInsurance?: string | null;
   loading?: boolean;
@@ -26,6 +28,7 @@ export function InsuranceRateCards({
   rateWithoutInsurance,
   rpsnWithInsurance,
   rpsnWithoutInsurance,
+  withoutRateOrientational = false,
   paymentWithInsurance,
   paymentWithoutInsurance,
   loading = false,
@@ -122,7 +125,9 @@ export function InsuranceRateCards({
               </p>
               <p className="mt-1 text-xs text-deep-teal font-medium">
                 {rateWithoutInsurance != null
-                  ? `aktuálně od ${formatRateOrOnRequest(rateWithoutInsurance)}`
+                  ? `aktuálně od ${formatRateOrOnRequest(rateWithoutInsurance, {
+                      orientational: withoutRateOrientational,
+                    })}`
                   : "Na vyžádání"}
               </p>
               <RpsnDisplay
