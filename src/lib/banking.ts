@@ -101,6 +101,7 @@ export interface BankOffer {
   category: BankCategory;
   baseRate: number;
   adjustedRate: number;
+  /** null = ověřené RPSN není k dispozici (UI: Na vyžádání) */
   rpsn: number | null;
   monthlyPayment: number;
   riskPremium: number;
@@ -305,7 +306,7 @@ export type DualBankOffers = CategorizedBankOffers;
 
 export type ScrapedBankRateInput = {
   bankName: string;
-  /** null = sazba pro zvolenou variantu pojištění není známá */
+  /** null = pro zvolený režim pojištění není ověřená sazba */
   rate: number | null;
   rpsn: number | null;
   /** Sazba americké hypotéky (pokud je k dispozici). */
@@ -338,10 +339,14 @@ function buildOffersFromScraped(
       ? scraped.americanRpsn ?? null
       : scraped.rpsn;
 
+    // Sazba je povinná; RPSN může chybět (Na vyžádání) — nesmíme ji vymýšlet
     if (rate == null) continue;
 
     const adjustedRate = +rate.toFixed(2);
-    const rpsn = rpsnValue != null ? +rpsnValue.toFixed(2) : null;
+    const rpsn =
+      rpsnValue != null && Number.isFinite(rpsnValue)
+        ? +rpsnValue.toFixed(2)
+        : null;
     const monthlyPayment = Math.round(
       calculateAnnuityPayment(loanAmount, adjustedRate, termYears)
     );
@@ -456,11 +461,11 @@ export function getBankOffers(
 }
 
 export function checkDTI(
-  monthlyPayment: number,
+  monthlyPayment: number | null | undefined,
   netIncome: number,
   country: CountryId
 ): DTIResult {
-  if (netIncome <= 0) {
+  if (netIncome <= 0 || monthlyPayment == null || !Number.isFinite(monthlyPayment)) {
     return {
       ratio: 0,
       warning: false,

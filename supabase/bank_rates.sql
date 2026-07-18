@@ -1,5 +1,10 @@
 -- Per-bank scraped mortgage rates (HypotékaJasně.cz)
 -- Spusťte v Supabase SQL Editoru (včetně ALTER níže, pokud tabulka už existuje).
+--
+-- Datová čistota: rate_without_insurance, rpsn_without_insurance a american_*_without_*
+-- a american_*_rpsn_* jsou NULLABLE — scraper ukládá NULL, pokud sazbu nelze reálně ověřit.
+-- Nikdy nedopočítávejte (+0.2 % apod.) na aplikační úrovni.
+-- rpsn / rpsn_with_insurance mohou být NULL, pokud banka neuvedla ověřené RPSN.
 
 create extension if not exists "pgcrypto";
 
@@ -7,7 +12,6 @@ create table if not exists public.bank_rates (
   id text primary key,
   bank_name text not null,
   rate numeric not null,
-  -- RPSN může chybět, pokud ho zdroj neuveřejňuje (NULL = neznámé, ne 0)
   rpsn numeric,
   rate_with_insurance numeric,
   rate_without_insurance numeric,
@@ -24,6 +28,9 @@ create table if not exists public.bank_rates (
 );
 
 -- Migrace pro existující instalace
+alter table public.bank_rates
+  alter column rpsn drop not null;
+
 alter table public.bank_rates
   add column if not exists american_rate_with_insurance numeric,
   add column if not exists american_rate_without_insurance numeric,

@@ -5,8 +5,9 @@ import { CheckCircle2, Loader2 } from "lucide-react";
 import { CalculatorDisclaimer } from "@/components/calculators/CalculatorDisclaimer";
 import { InsuranceRateCards } from "@/components/calculators/InsuranceRateCards";
 import { formatCurrency } from "@/lib/calculators";
+import { formatRateOrOnRequest } from "@/lib/format-rate";
 import { submitLead } from "@/lib/leads";
-import { pickRate, formatRateLabel, useCurrentRates } from "@/lib/rates";
+import { pickRate, useCurrentRates } from "@/lib/rates";
 import { cn } from "@/lib/utils";
 
 const TOTAL_STEPS = 6;
@@ -159,7 +160,8 @@ export function OnboardingWizard() {
 
     const estimatedRate = pickRate(rates, hasInsurance);
 
-    const monthlyRate = (estimatedRate ?? 0) / 100 / 12;
+    const monthlyRate =
+      estimatedRate != null ? estimatedRate / 100 / 12 : 0;
     const totalMonths = maxMaturityYears * 12;
 
     let maxLoanDSTI = 0;
@@ -216,7 +218,7 @@ export function OnboardingWizard() {
         `Příjem: ${formData.netIncome || "—"} Kč (${formData.incomeType || "—"})`,
         `Vlastní hotovost: ${formData.ownCash || "—"} Kč`,
         `Pojištění: ${hasInsurance ? "ano" : "ne"}`,
-        `Sazba: ${formatRateLabel(selectedRate)}`,
+        `Sazba: ${formatRateOrOnRequest(selectedRate)}`,
         preApproval
           ? `Odhad max. úvěru: ${Math.round(preApproval.maxLoan).toLocaleString("cs-CZ")} Kč`
           : null,

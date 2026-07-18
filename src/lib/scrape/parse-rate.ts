@@ -1,6 +1,7 @@
 /**
  * Parsování sazeb a RPSN z HTML (cheerio + textové vzory).
- * Bez umělých dopočtů — chybějící hodnoty zůstávají null.
+ * Žádné umělé dopočítávání (+0.2 %, RPSN offset, KB korekce).
+ * Chybějící sazba = null.
  */
 
 import * as cheerio from "cheerio";
@@ -118,11 +119,12 @@ export const RPSN_TEXT_PATTERNS = [
   /RPSN\s*[=:]\s*(\d{1,2}[,.]\d{1,2})/i,
 ];
 
-/** Sazba / RPSN výslovně bez pojištění. */
+/** Sazba / RPSN výslovně bez pojištění (absolutní číslo, ne přirážka). */
 export const WITHOUT_INSURANCE_RATE_PATTERNS = [
   /bez\s+pojišt[^\d%]{0,60}(?:úrokov[áou]\s+sazb[au][^\d%]{0,20})?(\d{1,2}[,.]\d{1,2})\s*%/i,
   /úrokov[áa]\s+sazba\s+bez\s+pojišt[^\d%]{0,30}(\d{1,2}[,.]\d{1,2})\s*%/i,
   /sazba\s+bez\s+pojišt[^\d%]{0,30}(\d{1,2}[,.]\d{1,2})\s*%/i,
+  /bez\s+pojišt[^\d%]{0,40}od\s+(\d{1,2}[,.]\d{1,2})\s*%/i,
 ];
 
 export const WITHOUT_INSURANCE_RPSN_PATTERNS = [
@@ -130,15 +132,11 @@ export const WITHOUT_INSURANCE_RPSN_PATTERNS = [
   /bez\s+pojišt[^\d%]{0,40}RPSN[^\d%]{0,20}(\d{1,2}[,.]\d{1,2})\s*%/i,
 ];
 
-/**
- * Publikovaná přirážka při absenci pojištění (procentní body).
- * Používá se jen když ji stránka výslovně uvádí — nikdy hardcoded fallback.
- */
-export const INSURANCE_SURCHARGE_PATTERNS = [
-  /(?:nesplnění|bez)\s+pojišt[^\d%]{0,80}(?:zvyšuje[^\d%]{0,30})?o\s+(\d[,.]\d{1,2})\s*(?:procentního\s+bodu|p\.?\s*b\.?|%)/i,
-  /pojišt[^\d%]{0,60}zvyšuje[^\d%]{0,40}o\s+(\d[,.]\d{1,2})\s*(?:procentního\s+bodu|p\.?\s*b\.?)/i,
-  /bez\s+(?:životního\s+)?pojišt[^\d%]{0,50}\+\s*(\d[,.]\d{1,2})\s*(?:%|p\.?\s*b)/i,
-  /sleva[^\d%]{0,40}pojišt[^\d%]{0,40}(\d[,.]\d{1,2})\s*(?:%|procent)/i,
+/** Sazba výslovně s pojištěním. */
+export const WITH_INSURANCE_RATE_PATTERNS = [
+  /s\s+pojišt[^\d%]{0,60}(?:úrokov[áou]\s+sazb[au][^\d%]{0,20})?(\d{1,2}[,.]\d{1,2})\s*%/i,
+  /úrokov[áa]\s+sazba\s+s\s+pojišt[^\d%]{0,30}(\d{1,2}[,.]\d{1,2})\s*%/i,
+  /sazba\s+s\s+pojišt[^\d%]{0,30}(\d{1,2}[,.]\d{1,2})\s*%/i,
 ];
 
 export function htmlToPlainText(html: string): string {
@@ -168,93 +166,28 @@ export function extractMetaText(html: string): string {
   return parts.join(" ");
 }
 
-export function extractInsuranceSurcharge(text: string): number | null {
-  for (const pattern of INSURANCE_SURCHARGE_PATTERNS) {
-    const flags = pattern.flags.includes("g") ? pattern.flags : `${pattern.flags}g`;
-    const globalPattern = new RegExp(pattern.source, flags);
-    for (const match of text.matchAll(globalPattern)) {
-      const raw = match[1];
-      if (!raw) continue;
-      const value = Number(String(raw).replace(",", "."));
-      if (Number.isFinite(value) && value >= 0.05 && value <= 1.5) {
-        return roundRate(value);
-      }
-    }
-  }
-  return null;
-}
-
 export type ExtractedMortgageRates = {
-  /** Inzerovaná (nejnižší) sazba = typicky s pojištěním. */
+  /** Inzerovaná (nejnižší) sazba = typicky s pojištěním / podmínkami. */
   rateWithInsurance: number | null;
   rpsnWithInsurance: number | null;
+  /** Jen pokud je na stránce výslovně uvedena absolutní sazba bez pojištění. */
   rateWithoutInsurance: number | null;
   rpsnWithoutInsurance: number | null;
-  /** true = bez pojištění chybí (null), ne odhad. */
-  withoutInsuranceEstimated: boolean;
 };
 
 /**
- * Sestaví varianty sazeb jen z reálně zjištěných hodnot.
- * Publikovanou přirážku použije jen pokud ji scraper našel na stránce.
+ * Složí výsledek jen z reálně nalezených hodnot — nikdy nedopočítává.
  */
-export function applyInsuranceVariants(
-  rateWithInsurance: number | null,
-  rpsnWithInsurance: number | null,
-  options: {
-    rateWithoutInsurance?: number | null;
-    rpsnWithoutInsurance?: number | null;
-    /** Publikovaná přirážka (p.b.) ze stránky — nikdy hardcoded. */
-    surcharge?: number | null;
-    /**
-     * Pokud true, `rateWithInsurance` je základní sazba BEZ pojištění
-     * a `surcharge` je sleva při pojištění (mBank kalkulačka).
-     */
-    baseIsWithoutInsurance?: boolean;
-  } = {}
-): ExtractedMortgageRates {
-  let rateWith = rateWithInsurance;
-  let rpsnWith = rpsnWithInsurance;
-  let rateWithout = options.rateWithoutInsurance ?? null;
-  let rpsnWithout = options.rpsnWithoutInsurance ?? null;
-  const surcharge = options.surcharge ?? null;
-
-  if (options.baseIsWithoutInsurance && rateWith != null && surcharge != null) {
-    // Základ = bez pojištění; s pojištěním = základ − sleva
-    rateWithout = rateWith;
-    rateWith = roundRate(rateWith - surcharge);
-    if (rpsnWith != null) {
-      rpsnWithout = rpsnWith;
-      rpsnWith = roundRate(rpsnWith - surcharge);
-    }
-  } else if (
-    rateWith != null &&
-    rateWithout == null &&
-    surcharge != null
-  ) {
-    // Základ = s pojištěním; bez pojištění = základ + publikovaná přirážka
-    rateWithout = roundRate(rateWith + surcharge);
-    if (rpsnWith != null && rpsnWithout == null) {
-      rpsnWithout = roundRate(rpsnWith + surcharge);
-    }
-  }
-
-  // Konzistence: bez pojištění nesmí být výhodnější než s pojištěním
-  if (
-    rateWith != null &&
-    rateWithout != null &&
-    rateWithout < rateWith
-  ) {
-    rateWithout = null;
-    rpsnWithout = null;
-  }
-  if (
-    rpsnWith != null &&
-    rpsnWithout != null &&
-    rpsnWithout < rpsnWith
-  ) {
-    rpsnWithout = null;
-  }
+export function buildExtractedRates(input: {
+  rateWithInsurance?: number | null;
+  rpsnWithInsurance?: number | null;
+  rateWithoutInsurance?: number | null;
+  rpsnWithoutInsurance?: number | null;
+}): ExtractedMortgageRates {
+  let rateWith = input.rateWithInsurance ?? null;
+  let rpsnWith = input.rpsnWithInsurance ?? null;
+  let rateWithout = input.rateWithoutInsurance ?? null;
+  let rpsnWithout = input.rpsnWithoutInsurance ?? null;
 
   if (
     rateWith != null &&
@@ -263,6 +196,7 @@ export function applyInsuranceVariants(
   ) {
     rpsnWith = null;
   }
+
   if (
     rateWithout != null &&
     rpsnWithout != null &&
@@ -271,12 +205,21 @@ export function applyInsuranceVariants(
     rpsnWithout = null;
   }
 
+  // Bez pojištění nesmí být výhodnější než s pojištěním — spíš chybný parse
+  if (
+    rateWith != null &&
+    rateWithout != null &&
+    rateWithout < rateWith - 0.001
+  ) {
+    rateWithout = null;
+    rpsnWithout = null;
+  }
+
   return {
     rateWithInsurance: rateWith,
     rpsnWithInsurance: rpsnWith,
     rateWithoutInsurance: rateWithout,
     rpsnWithoutInsurance: rpsnWithout,
-    withoutInsuranceEstimated: rateWithout == null,
   };
 }
 
@@ -284,7 +227,29 @@ export function extractMortgageRates(html: string): ExtractedMortgageRates {
   const decoded = decodeHtmlEntities(html);
   const plainText = `${extractMetaText(decoded)} ${htmlToPlainText(decoded)}`;
 
-  const rateWithInsurance =
+  // Preferuj reprezentativní příklad jako svázaný pár sazba+RPSN
+  const exampleMatch = plainText.match(
+    /úrokov[áa]\s+sazba\s+(\d{1,2}[,.]\d{1,2})\s*%[\s\S]{0,220}?RPSN\)?\s*(\d{1,2}[,.]\d{1,2})\s*%/i
+  );
+  let exampleRate: number | null = null;
+  let exampleRpsn: number | null = null;
+  if (exampleMatch?.[1] && exampleMatch[2]) {
+    const rate = parseCzechPercent(exampleMatch[1], { mortgageOnly: true });
+    const rpsn = parseCzechPercent(exampleMatch[2], { mortgageOnly: true });
+    if (rate != null && rpsn != null && isValidMortgagePair(rate, rpsn)) {
+      exampleRate = rate;
+      exampleRpsn = rpsn;
+    }
+  }
+
+  const explicitWith = extractFirstPercent(
+    plainText,
+    WITH_INSURANCE_RATE_PATTERNS,
+    { mortgageOnly: true }
+  );
+
+  const advertisedRate =
+    explicitWith ??
     extractFirstPercent(plainText, RATE_TEXT_PATTERNS, { mortgageOnly: true }) ??
     extractFirstPercent(decoded, RATE_TEXT_PATTERNS, { mortgageOnly: true });
 
@@ -292,38 +257,58 @@ export function extractMortgageRates(html: string): ExtractedMortgageRates {
     extractFirstPercent(plainText, RPSN_TEXT_PATTERNS, { mortgageOnly: true }) ??
     extractFirstPercent(decoded, RPSN_TEXT_PATTERNS, { mortgageOnly: true });
 
-  if (
-    rateWithInsurance != null &&
-    rpsnWithInsurance != null &&
-    !isValidMortgagePair(rateWithInsurance, rpsnWithInsurance)
-  ) {
-    rpsnWithInsurance = null;
-  }
-
-  const explicitRateWithout = extractFirstPercent(
+  const rateWithoutInsurance = extractFirstPercent(
     plainText,
     WITHOUT_INSURANCE_RATE_PATTERNS,
     { mortgageOnly: true }
   );
-  const explicitRpsnWithout = extractFirstPercent(
+  const rpsnWithoutInsurance = extractFirstPercent(
     plainText,
     WITHOUT_INSURANCE_RPSN_PATTERNS,
     { mortgageOnly: true }
   );
-  const surcharge = extractInsuranceSurcharge(plainText);
 
-  return applyInsuranceVariants(rateWithInsurance, rpsnWithInsurance, {
-    rateWithoutInsurance: explicitRateWithout,
-    rpsnWithoutInsurance: explicitRpsnWithout,
-    surcharge:
-      explicitRateWithout == null && explicitRpsnWithout == null
-        ? surcharge
-        : null,
+  // Pokud inzerovaná sazba ≠ příklad, nepřiděluj RPSN z příkladu k inzerátu
+  let rateWithInsurance = advertisedRate;
+  if (
+    advertisedRate != null &&
+    exampleRate != null &&
+    exampleRpsn != null &&
+    Math.abs(advertisedRate - exampleRate) > 0.021
+  ) {
+    // RPSN z příkladu nepatří k marketingové „od X %“
+    if (rpsnWithInsurance === exampleRpsn) {
+      rpsnWithInsurance = null;
+    }
+  } else if (
+    rateWithInsurance == null &&
+    exampleRate != null &&
+    exampleRpsn != null
+  ) {
+    rateWithInsurance = exampleRate;
+    rpsnWithInsurance = exampleRpsn;
+  } else if (
+    rateWithInsurance != null &&
+    exampleRate != null &&
+    exampleRpsn != null &&
+    Math.abs(rateWithInsurance - exampleRate) < 0.021
+  ) {
+    rpsnWithInsurance = exampleRpsn;
+  }
+
+  return buildExtractedRates({
+    rateWithInsurance,
+    rpsnWithInsurance,
+    rateWithoutInsurance,
+    rpsnWithoutInsurance,
   });
 }
 
-/** Měšec.cz: tabulka „Základní úroková sazba - fixace …“. */
-export function extractMesecCsobRate(html: string): number | null {
+/** Měšec.cz: tabulka „Základní úroková sazba - fixace …“ (preferuj 3 roky). */
+export function extractMesecFixationRate(
+  html: string,
+  preferredYears = 3
+): number | null {
   const $ = cheerio.load(html);
   const rates: { years: number; rate: number }[] = [];
 
@@ -342,95 +327,29 @@ export function extractMesecCsobRate(html: string): number | null {
 
   if (!rates.length) return null;
 
-  const preferred = rates.find((r) => r.years === 3);
+  const preferred = rates.find((r) => r.years === preferredYears);
   if (preferred) return preferred.rate;
 
   return rates.reduce((best, cur) => (cur.rate < best.rate ? cur : best)).rate;
 }
 
-/**
- * Oficiální mBank kalkulačka: `/.config/calc/mortgage-config.txt`
- * Sazby v JSON jsou BEZ pojištění; s pojištěním = sazba − insurance_dec.
- */
-export type MbankMortgageConfig = {
-  rates: {
-    standard: Record<string, string[]>;
-    american: Record<string, string[]>;
-  };
-  standard_insurance_dec: number;
-  american_insurance_dec: number;
-};
-
-export function parseMbankMortgageConfig(
-  raw: string
-): MbankMortgageConfig | null {
-  const match = raw.match(/var\s+C_MORTGAGE\s*=\s*(\{[\s\S]*\});?\s*$/);
-  if (!match?.[1]) return null;
-  try {
-    const parsed = JSON.parse(match[1]) as MbankMortgageConfig;
-    if (!parsed?.rates?.standard || !parsed?.rates?.american) return null;
-    return parsed;
-  } catch {
-    return null;
-  }
-}
-
-function pickMbankFixRate(
-  product: Record<string, string[]>,
-  preferredFix = "fix5"
-): number | null {
-  const row = product[preferredFix] ?? product.fix3 ?? product.fix1;
-  if (!row?.length) return null;
-  // periods: standard [50,80,100] — bereme LTV ≤ 80 % (index 1), jinak první
-  const raw = row[Math.min(1, row.length - 1)] ?? row[0];
-  return parseCzechPercent(String(raw), { mortgageOnly: true });
-}
-
-export function extractMbankRatesFromConfig(raw: string): {
-  classic: ExtractedMortgageRates;
-  american: ExtractedMortgageRates;
-} | null {
-  const config = parseMbankMortgageConfig(raw);
-  if (!config) return null;
-
-  const classicBase = pickMbankFixRate(config.rates.standard);
-  const americanBase = pickMbankFixRate(config.rates.american);
-  const classicDec = Number(config.standard_insurance_dec);
-  const americanDec = Number(config.american_insurance_dec);
-
-  return {
-    classic: applyInsuranceVariants(classicBase, null, {
-      surcharge:
-        Number.isFinite(classicDec) && classicDec > 0 && classicDec <= 2
-          ? roundRate(classicDec)
-          : null,
-      baseIsWithoutInsurance: true,
-    }),
-    american: applyInsuranceVariants(americanBase, null, {
-      surcharge:
-        Number.isFinite(americanDec) && americanDec > 0 && americanDec <= 2
-          ? roundRate(americanDec)
-          : null,
-      baseIsWithoutInsurance: true,
-    }),
-  };
+/** @deprecated alias — stejné jako extractMesecFixationRate */
+export function extractMesecCsobRate(html: string): number | null {
+  return extractMesecFixationRate(html);
 }
 
 const PENIZE_AMERICAN_BANK_ALIASES: Record<string, string[]> = {
   "ceska-sporitelna": ["ČS -", "Česká spořitelna", "spořitelna"],
   "komercni-banka": ["Komerční banka"],
-  "csob-hypotecni-banka": [
-    "ČSOB -",
-    "ČSOB Americká",
-    "Hypoteční banka - Americká",
-  ],
+  "csob-hypotecni-banka": ["ČSOB -", "ČSOB Americká", "Hypoteční banka - Americká"],
   "raiffeisen-bank": ["Raiffeisenbank", "UNIVERZÁL"],
-  mbank: ["mBank", "mHypotéka Light"],
+  "mbank": ["mBank", "mHypotéka Light"],
   "unicredit-bank": ["UniCredit"],
 };
 
 /**
  * Peníze.cz srovnání amerických hypoték — řádek „Banka - produkt … X,XX %“.
+ * Vrací jen sazbu (RPSN na stránce typicky chybí → null).
  */
 export function extractPenizeAmericanRate(
   html: string,
@@ -475,4 +394,41 @@ export function extractPenizeAmericanRate(
 
   if (!candidates.length) return null;
   return Math.min(...candidates);
+}
+
+/** Extrahuje InterestOut z UniCredit PCE JSON odpovědi. */
+export function extractUnicreditInterestFromPce(
+  payload: unknown
+): number | null {
+  if (!payload || typeof payload !== "object") return null;
+  const root = payload as {
+    SUCCESS?: {
+      OutputByResultNumber?: {
+        PCE_OutputResultContainerInfo?: Array<{
+          Key?: string;
+          Value?: {
+            PCE_OutputValueInfo?:
+              | { Value?: string | number | null }
+              | Array<{ Value?: string | number | null }>;
+          };
+        }>;
+      };
+    };
+  };
+
+  const infos =
+    root.SUCCESS?.OutputByResultNumber?.PCE_OutputResultContainerInfo;
+  if (!infos?.length) return null;
+
+  const interest = infos.find((x) => x.Key === "InterestOut");
+  const rawInfo = interest?.Value?.PCE_OutputValueInfo;
+  const raw = Array.isArray(rawInfo) ? rawInfo[0]?.Value : rawInfo?.Value;
+  if (raw == null) return null;
+
+  const value =
+    typeof raw === "number"
+      ? raw
+      : parseCzechPercent(String(raw), { mortgageOnly: true });
+
+  return value != null && isValidMortgageRate(value) ? roundRate(value) : null;
 }

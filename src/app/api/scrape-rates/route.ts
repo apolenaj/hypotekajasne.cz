@@ -36,13 +36,16 @@ function isValidScrapedBank(row: ScrapedBankRate): boolean {
     return false;
   }
 
-  if (
-    row.rpsnWithInsurance != null &&
-    !isValidMortgagePair(row.rateWithInsurance, row.rpsnWithInsurance)
-  ) {
-    return false;
+  if (row.rpsnWithInsurance != null) {
+    if (
+      !Number.isFinite(row.rpsnWithInsurance) ||
+      !isValidMortgagePair(row.rateWithInsurance, row.rpsnWithInsurance)
+    ) {
+      return false;
+    }
   }
 
+  // Bez pojištění je volitelné — jen ověřená absolutní sazba, žádné dopočty
   if (row.rateWithoutInsurance != null) {
     if (
       !Number.isFinite(row.rateWithoutInsurance) ||
@@ -52,12 +55,14 @@ function isValidScrapedBank(row: ScrapedBankRate): boolean {
     }
   }
 
-  if (
-    row.rateWithoutInsurance != null &&
-    row.rpsnWithoutInsurance != null &&
-    !isValidMortgagePair(row.rateWithoutInsurance, row.rpsnWithoutInsurance)
-  ) {
-    return false;
+  if (row.rpsnWithoutInsurance != null) {
+    if (
+      row.rateWithoutInsurance == null ||
+      !Number.isFinite(row.rpsnWithoutInsurance) ||
+      !isValidMortgagePair(row.rateWithoutInsurance, row.rpsnWithoutInsurance)
+    ) {
+      return false;
+    }
   }
 
   return true;

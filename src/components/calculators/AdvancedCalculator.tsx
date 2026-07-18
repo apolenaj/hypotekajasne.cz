@@ -13,7 +13,8 @@ import {
   generateAmortizationData,
   type CountryId,
 } from "@/lib/calculators";
-import { pickRate, formatRateLabel, useCurrentRates } from "@/lib/rates";
+import { formatRateOrOnRequest } from "@/lib/format-rate";
+import { pickRate, useCurrentRates } from "@/lib/rates";
 
 interface AdvancedCalculatorProps {
   country: CountryId;
@@ -32,14 +33,14 @@ export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
   const czechRate = pickRate(rates, hasInsurance);
   const selectedRate = isCzechMarket ? czechRate : config.defaultRate;
   const loanAmount = Math.max(0, price - capital);
+  const calcRate = selectedRate ?? 0;
 
-  const paymentWithInsurance = useMemo(
-    () =>
-      Math.round(
-        calculateAnnuityPayment(loanAmount, rates.rateWithInsurance, years)
-      ),
-    [loanAmount, rates.rateWithInsurance, years]
-  );
+  const paymentWithInsurance = useMemo(() => {
+    if (rates.rateWithInsurance == null) return null;
+    return Math.round(
+      calculateAnnuityPayment(loanAmount, rates.rateWithInsurance, years)
+    );
+  }, [loanAmount, rates.rateWithInsurance, years]);
 
   const paymentWithoutInsurance = useMemo(() => {
     if (rates.rateWithoutInsurance == null) return null;
@@ -63,15 +64,22 @@ export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
         : paymentWithoutInsurance
       : foreignPayment;
     const annualRentalIncome = price * config.defaultRentalYield;
-    const annualMortgageCost = (monthlyPayment ?? 0) * 12;
-    const netAnnualCashFlow = annualRentalIncome - annualMortgageCost;
-    const roi = capital > 0 ? (netAnnualCashFlow / capital) * 100 : 0;
+    const annualMortgageCost =
+      monthlyPayment == null ? null : monthlyPayment * 12;
+    const netAnnualCashFlow =
+      annualMortgageCost == null
+        ? null
+        : annualRentalIncome - annualMortgageCost;
+    const roi =
+      capital > 0 && netAnnualCashFlow != null
+        ? (netAnnualCashFlow / capital) * 100
+        : null;
 
     return {
       loanAmount: Math.round(loanAmount),
       monthlyPayment,
       annualRentalIncome: Math.round(annualRentalIncome),
-      roi: roi.toFixed(1),
+      roi: roi == null ? "—" : roi.toFixed(1),
     };
   }, [
     isCzechMarket,
@@ -80,15 +88,15 @@ export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
     paymentWithoutInsurance,
     foreignPayment,
     price,
-    config.defaultRentalYield,
     capital,
     loanAmount,
+    config.defaultRentalYield,
   ]);
 
-  const chartData = useMemo(() => {
-    if (selectedRate == null) return [];
-    return generateAmortizationData(price, capital, selectedRate, years);
-  }, [price, capital, selectedRate, years]);
+  const chartData = useMemo(
+    () => generateAmortizationData(price, capital, calcRate, years),
+    [price, capital, calcRate, years]
+  );
 
   const currency = config.currency;
 
@@ -131,14 +139,15 @@ export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
               rateWithoutInsurance={rates.rateWithoutInsurance}
               rpsnWithInsurance={rates.rpsnWithInsurance}
               rpsnWithoutInsurance={rates.rpsnWithoutInsurance}
-              paymentWithInsurance={formatCurrency(
-                paymentWithInsurance,
-                currency
-              )}
+              paymentWithInsurance={
+                paymentWithInsurance == null
+                  ? "Individuálně"
+                  : formatCurrency(paymentWithInsurance, currency)
+              }
               paymentWithoutInsurance={
-                paymentWithoutInsurance != null
-                  ? formatCurrency(paymentWithoutInsurance, currency)
-                  : null
+                paymentWithoutInsurance == null
+                  ? "Individuálně"
+                  : formatCurrency(paymentWithoutInsurance, currency)
               }
               loading={ratesLoading}
             />
@@ -175,7 +184,7 @@ export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
           <div className="w-full rounded-xl bg-gradient-to-r from-deep-teal/5 to-muted-gold/5 p-4 ring-1 ring-gray-900/5">
             <p className="text-xs text-muted-foreground">Zvolená sazba</p>
             <p className="text-2xl font-bold text-deep-teal">
-              {formatRateLabel(selectedRate)}
+              {formatRateOrOnRequest(selectedRate)}
             </p>
           </div>
         </div>
@@ -187,9 +196,9 @@ export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
             Měsíční splátka
           </p>
           <p className="text-2xl font-bold text-emerald-900 whitespace-nowrap">
-            {calculations.monthlyPayment != null
-              ? formatCurrency(calculations.monthlyPayment, currency)
-              : "Na vyžádání"}
+            {calculations.monthlyPayment == null
+              ? "Individuálně"
+              : formatCurrency(calculations.monthlyPayment, currency)}
           </p>
           <p className="text-xs text-emerald-700/70 mt-1">
             {isCzechMarket
@@ -197,7 +206,7 @@ export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
                 ? "S pojištěním (Supabase)"
                 : "Bez pojištění (Supabase)"
               : `Lokální sazba ${config.label}`}{" "}
-            · {formatRateLabel(selectedRate)}
+            · {formatRateOrOnRequest(selectedRate)}
           </p>
         </div>
         <div className="bg-blue-50 p-6 rounded-2xl">
@@ -221,7 +230,11 @@ export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
 
       <CalculatorDisclaimer className="mt-4" />
 
-      <AmortizationChart data={chartData} currency={currency} />
+      {selectedRate != null && (
+        <div className="mt-8">
+          <AmortizationChart data={chartData} currency={currency} />
+        </div>
+      )}
     </div>
   );
 }

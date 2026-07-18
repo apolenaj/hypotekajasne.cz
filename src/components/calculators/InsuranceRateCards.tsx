@@ -3,7 +3,7 @@
 import { Shield, ShieldOff } from "lucide-react";
 import { CALCULATOR_DISCLAIMER } from "@/components/calculators/CalculatorDisclaimer";
 import { RpsnDisplay } from "@/components/calculators/RpsnDisplay";
-import { formatRateLabel } from "@/lib/rates";
+import { formatRateOrOnRequest } from "@/lib/format-rate";
 import { cn } from "@/lib/utils";
 
 type InsuranceRateCardsProps = {
@@ -31,15 +31,6 @@ export function InsuranceRateCards({
   loading = false,
   className,
 }: InsuranceRateCardsProps) {
-  const withLabel =
-    rateWithInsurance != null
-      ? `aktuálně od ${formatRateLabel(rateWithInsurance)}`
-      : "Individuálně";
-  const withoutLabel =
-    rateWithoutInsurance != null
-      ? `aktuálně od ${formatRateLabel(rateWithoutInsurance)}`
-      : "Na vyžádání";
-
   return (
     <div className={cn("space-y-3", className)}>
       <div className="flex items-center justify-between gap-3">
@@ -80,22 +71,24 @@ export function InsuranceRateCards({
                 Měsíční splátka s pojištěním
               </p>
               <p className="mt-1 text-xs text-emerald-800 font-medium">
-                {withLabel}
+                {rateWithInsurance != null
+                  ? `aktuálně od ${formatRateOrOnRequest(rateWithInsurance)}`
+                  : "Na vyžádání"}
               </p>
-              {rpsnWithInsurance != null && (
-                <RpsnDisplay
-                  rpsn={rpsnWithInsurance}
-                  compact
-                  className="mt-0.5"
-                />
-              )}
+              <RpsnDisplay
+                rpsn={rpsnWithInsurance ?? null}
+                compact
+                className="mt-0.5"
+              />
               {paymentWithInsurance && (
                 <p className="mt-2 text-lg font-black text-emerald-900 tabular-nums">
                   {paymentWithInsurance}
-                  <span className="text-xs font-semibold text-emerald-700/80">
-                    {" "}
-                    / měs.
-                  </span>
+                  {paymentWithInsurance !== "Individuálně" && (
+                    <span className="text-xs font-semibold text-emerald-700/80">
+                      {" "}
+                      / měs.
+                    </span>
+                  )}
                 </p>
               )}
             </div>
@@ -128,22 +121,24 @@ export function InsuranceRateCards({
                 Měsíční splátka bez pojištění
               </p>
               <p className="mt-1 text-xs text-deep-teal font-medium">
-                {withoutLabel}
+                {rateWithoutInsurance != null
+                  ? `aktuálně od ${formatRateOrOnRequest(rateWithoutInsurance)}`
+                  : "Na vyžádání"}
               </p>
-              {rpsnWithoutInsurance != null && (
-                <RpsnDisplay
-                  rpsn={rpsnWithoutInsurance}
-                  compact
-                  className="mt-0.5"
-                />
-              )}
+              <RpsnDisplay
+                rpsn={rpsnWithoutInsurance ?? null}
+                compact
+                className="mt-0.5"
+              />
               {paymentWithoutInsurance && (
                 <p className="mt-2 text-lg font-black text-deep-teal tabular-nums">
                   {paymentWithoutInsurance}
-                  <span className="text-xs font-semibold text-deep-teal/70">
-                    {" "}
-                    / měs.
-                  </span>
+                  {paymentWithoutInsurance !== "Individuálně" && (
+                    <span className="text-xs font-semibold text-deep-teal/70">
+                      {" "}
+                      / měs.
+                    </span>
+                  )}
                 </p>
               )}
             </div>

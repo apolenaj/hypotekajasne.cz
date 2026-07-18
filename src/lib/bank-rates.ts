@@ -111,6 +111,7 @@ export function pickBankRate(
       rpsn: row.rpsnWithInsurance ?? row.rpsn,
     };
   }
+  // Bez pojištění — jen ověřená sazba, žádný fallback na sazbu s pojištěním
   if (row.rateWithoutInsurance == null) return null;
   return {
     rate: row.rateWithoutInsurance,

@@ -72,7 +72,8 @@ import {
   MORTGAGE_PURPOSE_OPTIONS,
   type MortgagePurpose,
 } from "@/lib/cnb-limits";
-import { pickRate, pickRpsn, formatRateLabel, useCurrentRates } from "@/lib/rates";
+import { pickRate, pickRpsn, useCurrentRates } from "@/lib/rates";
+import { formatRateOrOnRequest } from "@/lib/format-rate";
 import { cn } from "@/lib/utils";
 
 const chartConfig = {
@@ -197,6 +198,8 @@ export function MortgageCalculator({
   const foreignMarketRate = config.defaultRate;
   /** Primární sazba pro shrnutí / výpočet úvěru podle trhu */
   const primaryRate = isCzechMarket ? czechRate : foreignMarketRate;
+  /** Pro výpočet anuity — bez ověřené sazby nepočítáme falešnou splátku */
+  const calcRate = primaryRate ?? 0;
 
   const scrapedCzechBanks = useMemo((): ScrapedBankRateInput[] => {
     const rows: ScrapedBankRateInput[] = [];
@@ -228,30 +231,28 @@ export function MortgageCalculator({
         country,
         price,
         savings,
-        // Splátka se počítá jen při známé sazbě; jinak 0 a UI ukáže „Na vyžádání“
-        interestRate: primaryRate ?? 0,
+        interestRate: calcRate,
         termYears,
         financingType,
         bank: "",
       }),
-    [country, price, savings, termYears, financingType, primaryRate]
+    [country, price, savings, termYears, financingType, calcRate]
   );
 
   const recommendedMaxLtv = getRecommendedMaxLtv(mortgagePurpose);
   const ltvExceedsCnb = isCzechMarket && result.ltv > recommendedMaxLtv;
   const cnbPurposeNotice = getCnbPurposeNotice(mortgagePurpose);
 
-  const paymentWithInsurance = useMemo(
-    () =>
-      Math.round(
-        calculateAnnuityPayment(
-          result.loanAmount,
-          rates.rateWithInsurance,
-          termYears
-        )
-      ),
-    [result.loanAmount, rates.rateWithInsurance, termYears]
-  );
+  const paymentWithInsurance = useMemo(() => {
+    if (rates.rateWithInsurance == null) return null;
+    return Math.round(
+      calculateAnnuityPayment(
+        result.loanAmount,
+        rates.rateWithInsurance,
+        termYears
+      )
+    );
+  }, [result.loanAmount, rates.rateWithInsurance, termYears]);
 
   const paymentWithoutInsurance = useMemo(() => {
     if (rates.rateWithoutInsurance == null) return null;
@@ -304,7 +305,7 @@ export function MortgageCalculator({
     : foreignMarketPayment;
 
   const dti = useMemo(
-    () => checkDTI(displayPayment ?? 0, netIncome, country),
+    () => checkDTI(displayPayment, netIncome, country),
     [displayPayment, netIncome, country]
   );
 
@@ -540,14 +541,15 @@ export function MortgageCalculator({
                   rateWithoutInsurance={rates.rateWithoutInsurance}
                   rpsnWithInsurance={rates.rpsnWithInsurance}
                   rpsnWithoutInsurance={rates.rpsnWithoutInsurance}
-                  paymentWithInsurance={formatCurrency(
-                    paymentWithInsurance,
-                    currency
-                  )}
+                  paymentWithInsurance={
+                    paymentWithInsurance == null
+                      ? "Individuálně"
+                      : formatCurrency(paymentWithInsurance, currency)
+                  }
                   paymentWithoutInsurance={
-                    paymentWithoutInsurance != null
-                      ? formatCurrency(paymentWithoutInsurance, currency)
-                      : null
+                    paymentWithoutInsurance == null
+                      ? "Individuálně"
+                      : formatCurrency(paymentWithoutInsurance, currency)
                   }
                   loading={ratesLoading}
                 />
@@ -734,14 +736,14 @@ export function MortgageCalculator({
                 {
                   label: "Měsíční splátka",
                   value:
-                    displayPayment != null && primaryRate != null
-                      ? formatCurrency(displayPayment, currency)
-                      : "Na vyžádání",
+                    displayPayment == null
+                      ? "Individuálně"
+                      : formatCurrency(displayPayment, currency),
                   accent: true,
                 },
                 {
                   label: "Úroková sazba",
-                  value: formatRateLabel(primaryRate),
+                  value: formatRateOrOnRequest(primaryRate),
                   rpsn: displayRpsn,
                 },
                 {
@@ -752,9 +754,12 @@ export function MortgageCalculator({
                 {
                   label: "Celkem zaplatíte",
                   value:
-                    displayPayment != null && primaryRate != null
-                      ? formatCurrency(displayPayment * termYears * 12, currency)
-                      : "Na vyžádání",
+                    displayPayment == null
+                      ? "Individuálně"
+                      : formatCurrency(
+                          displayPayment * termYears * 12,
+                          currency
+                        ),
                   gold: true,
                 },
               ].map((item) => (
@@ -773,7 +778,7 @@ export function MortgageCalculator({
                   >
                     {item.value}
                   </p>
-                  {"rpsn" in item && (
+                  {"rpsn" in item && item.rpsn != null && (
                     <RpsnDisplay rpsn={item.rpsn} className="mt-1.5" />
                   )}
                 </div>
@@ -807,15 +812,15 @@ export function MortgageCalculator({
                 `LTV: ${result.ltv} %`,
                 `Úvěr: ${result.loanAmount.toLocaleString("cs-CZ")} ${currency}`,
                 `Splátka: ${
-                  displayPayment != null
-                    ? `${displayPayment.toLocaleString("cs-CZ")} ${currency}`
-                    : "Na vyžádání"
+                  displayPayment == null
+                    ? "Individuálně"
+                    : `${displayPayment.toLocaleString("cs-CZ")} ${currency}`
                 }`,
                 `Splatnost: ${termYears} let`,
                 isCzechMarket
                   ? `Pojištění: ${hasInsurance ? "ano" : "ne"}`
                   : null,
-                `Sazba: ${formatRateLabel(primaryRate)}`,
+                `Sazba: ${formatRateOrOnRequest(primaryRate)}`,
                 isCzechMarket
                   ? `Účel: ${mortgagePurpose === "investment" ? "investiční" : "vlastní bydlení"}`
                   : null,

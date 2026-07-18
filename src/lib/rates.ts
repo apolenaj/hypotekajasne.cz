@@ -4,26 +4,24 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 export type CurrentRates = {
-  rateWithInsurance: number;
+  rateWithInsurance: number | null;
   rateWithoutInsurance: number | null;
   rpsnWithInsurance: number | null;
   rpsnWithoutInsurance: number | null;
   updatedAt: string | null;
 };
 
-/**
- * Fallback jen když Supabase není dostupná (dev / výpadek).
- * Bez pojištění záměrně null — neinventujeme +0.2 %.
- */
-export const FALLBACK_RATES: CurrentRates = {
-  rateWithInsurance: 4.29,
+/** Prázdný stav — žádné vymyšlené sazby při výpadku DB. */
+export const EMPTY_RATES: CurrentRates = {
+  rateWithInsurance: null,
   rateWithoutInsurance: null,
-  rpsnWithInsurance: 4.75,
+  rpsnWithInsurance: null,
   rpsnWithoutInsurance: null,
   updatedAt: null,
 };
 
 function toNumber(value: unknown): number | null {
+  if (value == null || value === "") return null;
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
 }
@@ -40,17 +38,11 @@ export async function fetchCurrentRates(): Promise<CurrentRates> {
 
     if (error || !data) {
       console.error("Nepodařilo se načíst sazby ze Supabase:", error?.message);
-      return FALLBACK_RATES;
-    }
-
-    const withInsurance = toNumber(data.rate_with_insurance);
-    if (withInsurance == null) {
-      console.error("Neplatné sazby v current_rates:", data);
-      return FALLBACK_RATES;
+      return EMPTY_RATES;
     }
 
     return {
-      rateWithInsurance: withInsurance,
+      rateWithInsurance: toNumber(data.rate_with_insurance),
       rateWithoutInsurance: toNumber(data.rate_without_insurance),
       rpsnWithInsurance: toNumber(data.rpsn_with_insurance),
       rpsnWithoutInsurance: toNumber(data.rpsn_without_insurance),
@@ -58,12 +50,12 @@ export async function fetchCurrentRates(): Promise<CurrentRates> {
     };
   } catch (err) {
     console.error("Chyba při načítání sazeb:", err);
-    return FALLBACK_RATES;
+    return EMPTY_RATES;
   }
 }
 
 export function useCurrentRates() {
-  const [rates, setRates] = useState<CurrentRates>(FALLBACK_RATES);
+  const [rates, setRates] = useState<CurrentRates>(EMPTY_RATES);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -100,10 +92,4 @@ export function pickRpsn(
   return hasInsurance
     ? rates.rpsnWithInsurance
     : rates.rpsnWithoutInsurance;
-}
-
-/** UI label pro chybějící / individuální sazbu. */
-export function formatRateLabel(rate: number | null | undefined): string {
-  if (rate == null || !Number.isFinite(rate)) return "Na vyžádání";
-  return `${rate.toFixed(2)} %`;
 }

@@ -23,20 +23,6 @@ export function RpsnDisplay({
   className,
   compact = false,
 }: RpsnDisplayProps) {
-  if (rpsn == null || !Number.isFinite(rpsn)) {
-    return (
-      <div
-        className={cn(
-          "text-gray-500",
-          compact ? "text-[11px] leading-snug" : "text-sm",
-          className
-        )}
-      >
-        RPSN: Na vyžádání
-      </div>
-    );
-  }
-
   return (
     <div
       className={cn(
@@ -46,7 +32,9 @@ export function RpsnDisplay({
       )}
     >
       <span className="min-w-0">
-        RPSN: {rpsn.toFixed(2)}&nbsp;%
+        {rpsn != null && Number.isFinite(rpsn)
+          ? <>RPSN: {rpsn.toFixed(2)}&nbsp;%</>
+          : <>RPSN: Na vyžádání</>}
       </span>
       <Tooltip>
         <TooltipTrigger
