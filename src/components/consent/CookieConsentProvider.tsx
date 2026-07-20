@@ -36,11 +36,17 @@ const CookieConsentContext = createContext<CookieConsentContextValue | null>(
 
 const CONSENT_EVENT = "hj:cookie-consent";
 
-function readStored(): CookieConsentRecord | null {
-  if (typeof window === "undefined") return null;
+/**
+ * useSyncExternalStore requires a stable getSnapshot reference when data
+ * hasn't changed. Caching by raw localStorage string prevents infinite
+ * re-renders after Accept all (JSON.parse always returns a new object).
+ */
+let cachedRaw: string | null | undefined;
+let cachedRecord: CookieConsentRecord | null = null;
+
+function parseConsentRaw(raw: string | null): CookieConsentRecord | null {
+  if (!raw) return null;
   try {
-    const raw = localStorage.getItem(COOKIE_STORAGE_KEY);
-    if (!raw) return null;
     const parsed = JSON.parse(raw) as CookieConsentRecord;
     if (!parsed?.categories || !parsed.decidedAt) return null;
     if (parsed.policyVersion !== COOKIE_POLICY_VERSION) return null;
@@ -50,9 +56,31 @@ function readStored(): CookieConsentRecord | null {
   }
 }
 
+function readStored(): CookieConsentRecord | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(COOKIE_STORAGE_KEY);
+    if (raw === cachedRaw) return cachedRecord;
+    cachedRaw = raw;
+    cachedRecord = parseConsentRaw(raw);
+    return cachedRecord;
+  } catch {
+    cachedRaw = null;
+    cachedRecord = null;
+    return null;
+  }
+}
+
 function writeStored(record: CookieConsentRecord) {
-  localStorage.setItem(COOKIE_STORAGE_KEY, JSON.stringify(record));
-  window.dispatchEvent(new CustomEvent(CONSENT_EVENT, { detail: record }));
+  try {
+    const raw = JSON.stringify(record);
+    localStorage.setItem(COOKIE_STORAGE_KEY, raw);
+    cachedRaw = raw;
+    cachedRecord = record;
+    window.dispatchEvent(new CustomEvent(CONSENT_EVENT, { detail: record }));
+  } catch (err) {
+    console.warn("[cookie-consent] failed to persist consent", err);
+  }
 }
 
 function subscribeConsent(onStoreChange: () => void) {

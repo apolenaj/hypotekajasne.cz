@@ -1,65 +1,72 @@
 "use client";
 
-import { useEffect } from "react";
+import Script from "next/script";
 import { useCookieConsent } from "@/components/consent/CookieConsentProvider";
 
 /**
  * Načte analytiku / marketing skripty až po consent.
  * Bez Measurement ID / Pixel ID se nenačítá nic (bezpečný default).
+ * Chyby skriptů nesmí shodit React strom — proto next/script + defensive guards.
  */
 export function ConsentGatedScripts() {
   const { ready, analyticsAllowed, marketingAllowed } = useCookieConsent();
 
-  useEffect(() => {
-    if (!ready) return;
+  if (!ready) return null;
 
-    const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
-    if (analyticsAllowed && gaId) {
-      injectScriptOnce(
-        "hj-ga",
-        `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gaId)}`
-      );
-      if (!(window as unknown as { dataLayer?: unknown[] }).dataLayer) {
-        (window as unknown as { dataLayer: unknown[] }).dataLayer = [];
-      }
-      const w = window as unknown as {
-        dataLayer: unknown[];
-        gtag?: (...args: unknown[]) => void;
-      };
-      w.gtag = function gtag(...args: unknown[]) {
-        w.dataLayer.push(args);
-      };
-      w.gtag("js", new Date());
-      w.gtag("config", gaId, { anonymize_ip: true });
-    }
+  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim() || "";
+  const metaPixel = process.env.NEXT_PUBLIC_META_PIXEL_ID?.trim() || "";
 
-    const metaPixel = process.env.NEXT_PUBLIC_META_PIXEL_ID?.trim();
-    if (marketingAllowed && metaPixel) {
-      // Placeholder — skutečný pixel doplnit po legal review; bez ID se nespouští.
-      injectScriptOnce(
-        "hj-meta-stub",
-        undefined,
-        `window.__hjMarketingConsent=true;window.__hjMetaPixelId=${JSON.stringify(metaPixel)};`
-      );
-    }
-  }, [ready, analyticsAllowed, marketingAllowed]);
+  const loadGa = analyticsAllowed && Boolean(gaId);
+  const loadMarketing = marketingAllowed && Boolean(metaPixel);
 
-  return null;
+  return (
+    <>
+      {loadGa ? (
+        <>
+          <Script
+            id="hj-ga-src"
+            src={`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gaId)}`}
+            strategy="afterInteractive"
+            onError={() => {
+              console.warn("[analytics] failed to load gtag.js");
+            }}
+          />
+          <Script
+            id="hj-ga-init"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `
+try {
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){window.dataLayer.push(arguments);}
+  window.gtag = gtag;
+  gtag('js', new Date());
+  gtag('config', ${JSON.stringify(gaId)}, { anonymize_ip: true });
+} catch (e) {
+  console.warn('[analytics] gtag init failed', e);
 }
+              `.trim(),
+            }}
+          />
+        </>
+      ) : null}
 
-function injectScriptOnce(
-  id: string,
-  src?: string,
-  inline?: string
-) {
-  if (document.getElementById(id)) return;
-  const el = document.createElement("script");
-  el.id = id;
-  if (src) {
-    el.async = true;
-    el.src = src;
-  } else if (inline) {
-    el.text = inline;
-  }
-  document.head.appendChild(el);
+      {loadMarketing ? (
+        <Script
+          id="hj-meta-stub"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+try {
+  window.__hjMarketingConsent = true;
+  window.__hjMetaPixelId = ${JSON.stringify(metaPixel)};
+} catch (e) {
+  console.warn('[marketing] consent stub failed', e);
+}
+            `.trim(),
+          }}
+        />
+      ) : null}
+    </>
+  );
 }

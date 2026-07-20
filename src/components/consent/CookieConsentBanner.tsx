@@ -129,14 +129,26 @@ export function CookieConsentBanner() {
         <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
           <button
             type="button"
-            onClick={acceptAll}
+            onClick={() => {
+              try {
+                acceptAll();
+              } catch (err) {
+                console.warn("[cookie-consent] acceptAll failed", err);
+              }
+            }}
             className={cn(btnBase, "bg-deep-teal text-white hover:opacity-95")}
           >
             Accept all
           </button>
           <button
             type="button"
-            onClick={rejectOptional}
+            onClick={() => {
+              try {
+                rejectOptional();
+              } catch (err) {
+                console.warn("[cookie-consent] rejectOptional failed", err);
+              }
+            }}
             className={cn(
               btnBase,
               "border-2 border-deep-teal bg-white text-deep-teal hover:bg-deep-teal/5"
