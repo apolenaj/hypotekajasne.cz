@@ -696,7 +696,7 @@ export function CountryDetailView({
                           </div>
 
                           <div className="rounded-3xl bg-white/80 backdrop-blur-sm ring-1 ring-gray-900/5 shadow-sm p-4 sm:p-6">
-                            <ResponsiveContainer height={400} width="100%">
+                            <ResponsiveContainer height={400} width="100%" minWidth={0} minHeight={0}>
                               <ComposedChart
                                 data={currentMarketData.chartData}
                                 margin={{ top: 10, right: 12, left: 0, bottom: 10 }}

@@ -198,8 +198,8 @@ export function DecisionLabHistorical({ countryId }: Props) {
           exportRows={exportRows}
           exportFilename={`historical-${countryId}-${mode}.csv`}
         >
-          <div className="h-[340px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-[340px] w-full min-h-0">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="year" tick={{ fontSize: 11 }} />

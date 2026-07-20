@@ -48,8 +48,8 @@ export function ComparisonRadarChart({ properties }: ComparisonRadarChartProps) 
       <p className="mt-1 text-[11px] text-muted-foreground">
         Primární rozhodnutí stavte na číslech v tabulce. Radar slouží jen jako rychlý přehled tvaru profilu.
       </p>
-      <div className="mt-4 h-[320px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="mt-4 h-[320px] w-full min-h-0">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
           <RadarChart data={data} cx="50%" cy="50%" outerRadius="78%">
             <PolarGrid stroke="#d1d5db" />
             <PolarAngleAxis

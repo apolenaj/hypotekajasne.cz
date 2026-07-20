@@ -33,7 +33,8 @@ export function AmortizationChart({ data, currency }: AmortizationChartProps) {
       <h3 className="text-sm font-semibold text-gray-500 mb-4">
         Projekce splácení (zůstatek jistiny v {currency})
       </h3>
-      <ResponsiveContainer width="100%" height="100%">
+      <div className="h-48 w-full min-h-0">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
         <AreaChart data={data}>
           <defs>
             <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
@@ -61,7 +62,8 @@ export function AmortizationChart({ data, currency }: AmortizationChartProps) {
             fill={`url(#${gradientId})`}
           />
         </AreaChart>
-      </ResponsiveContainer>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }

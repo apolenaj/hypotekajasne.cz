@@ -226,8 +226,8 @@ export function DecisionLabFuture({ countryId }: Props) {
         exportRows={exportRows}
         exportFilename={`future-${countryId}-${scenario}.csv`}
       >
-        <div className="h-[340px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="h-[340px] w-full min-h-0">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             <ComposedChart data={result.series}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="label" tick={{ fontSize: 11 }} />

@@ -132,8 +132,8 @@ export function DecisionLabBuyVsRent({ countryId }: Props) {
         exportRows={exportRows}
         exportFilename={`buy-vs-rent-${countryId}.csv`}
       >
-        <div className="h-[320px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="h-[320px] w-full min-h-0">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             <LineChart data={result.series}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="label" tick={{ fontSize: 11 }} />

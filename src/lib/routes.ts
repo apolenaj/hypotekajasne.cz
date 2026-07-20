@@ -32,7 +32,7 @@ export const routes = {
   documentVault: "/dokumentovy-trezor",
   dealRoom: "/transakce",
   offerStrategy: "/strategie-nabidky",
-  dueDiligence: "/prověrka-nemovitosti",
+  dueDiligence: "/proverka-nemovitosti",
   marketPulse: "/trhovy-puls",
   alertCenter: "/alerty",
   reportEngine: "/reporty",

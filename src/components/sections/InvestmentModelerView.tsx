@@ -473,8 +473,8 @@ function SnowballChart({
           ? ` Hypotéka splacena v roce ${acceleratedPayoffYear}.`
           : " Hypotéka není splacena do 30 let."}
       </p>
-      <div className="h-72 w-full">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-72 w-full min-h-0">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="rok" fontSize={12} interval={4} />
@@ -554,8 +554,8 @@ function CrossoverChart({
           hypotéku do 30 let.
         </p>
       )}
-      <div className="h-72 w-full">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-72 w-full min-h-0">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="rok" fontSize={12} interval={4} />
@@ -612,8 +612,8 @@ function RealWealthChart({ data }: { data: ChartProjectionPoint[] }) {
         akcie) v nominální hodnotě oproti reálné kupní síle znehodnocené
         inflací.
       </p>
-      <div className="h-72 w-full">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-72 w-full min-h-0">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
           <AreaChart data={data}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="rok" fontSize={12} interval={4} />
