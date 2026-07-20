@@ -63,7 +63,7 @@ export const COUNTRY_INFO_DATA: Record<string, CountryInfoEntry> = {
       },
       {
         name: "Daň z příjmu z pronájmu",
-        value: "0 % (Absolutní svoboda od daně z příjmu fyzických osob).",
+        value: "0 % daň z příjmu FO v lokálním režimu (ověřte aktuálně; domovská rezidence v ČR řeší zvlášť).",
       },
       {
         name: "Daň z nemovitosti (roční)",

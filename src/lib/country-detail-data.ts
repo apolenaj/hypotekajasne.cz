@@ -67,7 +67,7 @@ const countryDetailData: Partial<Record<CountryId, CountryDetailContent>> = {
         ],
         highlights: [
           "Vysoká likvidita větších měst a silná poptávka po nájmu",
-          "Transparentní katastr a notářské ověření převodu",
+          "Transparentní katastr; převod přes smlouvu a zápis (úschova advokát / notář / banka)",
           "Možnost financovat i investiční byt standardní hypotékou",
         ],
       },
@@ -588,8 +588,10 @@ const countryDetailData: Partial<Record<CountryId, CountryDetailContent>> = {
           { label: "Průměrný výnos z nájmu", value: "6.5 – 8.5 %" },
         ],
         highlights: [
-          "Extrémní růst tažený vládním programem Vision 2030 a otevíráním trhu zahraničním investorům.",
-          "Nová legislativa umožňující 100% zahraniční vlastnictví v prémiových zónách (Premium Residency).",
+          "Růst tažený programem Vision 2030 a otevíráním trhu zahraničním investorům (bez záruky výnosu).",
+          "Režim Non-Saudi Property Ownership od 1/2026: zónový rámec vlastnictví (ne jen Premium Residency).",
+          "Geografické a regulatorní podmínky (vč. Mekky/Mediny) je nutné ověřit na Saudi Properties.",
+          "Lokální sazby individuálně; české zajištění jako oddělený produkt.",
           "Masivní přesun centrál nadnárodních firem do Rijádu vytváří obrovskou poptávku po rezidenčním bydlení.",
         ],
       },
@@ -621,7 +623,7 @@ const countryDetailData: Partial<Record<CountryId, CountryDetailContent>> = {
           {
             title: "1. Ověření eligibility",
             description:
-              "Kontrola, zda nemovitost leží ve zóně povolené pro zahraniční vlastnictví (Premium Residency).",
+              "Ověření geografické zóny a kategorie nabyvatele (Non-Saudi Property Ownership od 1/2026) — Premium Residency není jediná cesta.",
           },
           {
             title: "2. Rezervace a smlouva",
@@ -653,7 +655,7 @@ const countryDetailData: Partial<Record<CountryId, CountryDetailContent>> = {
         opportunities: [
           "Vision 2030 a masivní infrastrukturní investice",
           "Rostoucí poptávka po bydlení pro expaty v Rijádu",
-          "Prémiové zóny s 100% zahraničním vlastnictvím",
+          "Prémiové zóny pod Non-Saudi Ownership režimem (ověřit Geographic Scope)",
         ],
       },
     },
@@ -762,7 +764,7 @@ function buildFallbackContent(country: CountryId): CountryDetailContent {
         stats: [
           { label: "Měna trhu", value: config.currency },
           { label: "Referenční cena", value: `od ${config.defaultPrice.toLocaleString("cs-CZ")} ${config.currency}` },
-          { label: "Typická sazba", value: `${config.defaultRate} % p.a.` },
+          { label: "Typická sazba", value: config.defaultRate != null ? `${config.defaultRate} % p.a.` : "Individuálně ověřujeme" },
         ],
         highlights: [
           "Dynamický segment investičních nemovitostí",

@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { validateFormConsent } from "@/lib/consent/records";
 import {
   isLeadSource,
   LEAD_SOURCE_LABELS,
   type LeadPayload,
 } from "@/lib/leads";
+import type { FormConsentRecord } from "@/lib/consent/records";
+import type { PartnerTransferScope } from "@/lib/legal/consent-versions";
 
 function getSupabaseAdmin() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -21,8 +24,28 @@ function getSupabaseAdmin() {
   });
 }
 
-function normalizePayload(body: unknown): LeadPayload | null {
-  if (!body || typeof body !== "object") return null;
+function parseConsent(raw: unknown): FormConsentRecord | null {
+  if (!raw || typeof raw !== "object") return null;
+  const c = raw as Record<string, unknown>;
+  const scope = String(c.partnerTransferScope ?? "none") as PartnerTransferScope;
+  return {
+    policyVersion: String(c.policyVersion ?? ""),
+    privacyAccepted: Boolean(c.privacyAccepted),
+    partnerTransferAccepted: Boolean(c.partnerTransferAccepted),
+    partnerTransferScope: scope,
+    marketingAccepted: Boolean(c.marketingAccepted),
+    consentedAt: String(c.consentedAt ?? new Date().toISOString()),
+    sourcePath:
+      typeof c.sourcePath === "string" ? c.sourcePath : undefined,
+  };
+}
+
+function normalizePayload(
+  body: unknown
+): { payload: LeadPayload } | { error: string } {
+  if (!body || typeof body !== "object") {
+    return { error: "Neplatné tělo požadavku." };
+  }
   const data = body as Record<string, unknown>;
 
   const name = String(data.name ?? "").trim();
@@ -36,38 +59,45 @@ function normalizePayload(body: unknown): LeadPayload | null {
       ? (data.metadata as Record<string, unknown>)
       : undefined;
 
-  if (!name || !email || !email.includes("@")) return null;
-  if (!isLeadSource(source)) return null;
+  if (!name || !email || !email.includes("@")) {
+    return { error: "Vyplňte jméno a platný e-mail." };
+  }
+  if (!isLeadSource(source)) {
+    return { error: "Neplatný zdroj formuláře." };
+  }
+  if (source !== "newsletter" && phone.length < 6) {
+    return { error: "Vyplňte telefon." };
+  }
 
-  // Newsletter stačí s e-mailem; ostatní zdroje vyžadují telefon
-  if (source !== "newsletter" && phone.length < 6) return null;
+  const consentCheck = validateFormConsent(source, parseConsent(data.consent));
+  if (!consentCheck.ok) {
+    return { error: consentCheck.error };
+  }
 
   return {
-    name: source === "newsletter" && name === "—" ? "Newsletter" : name,
-    email,
-    phone: phone || undefined,
-    source,
-    country,
-    notes,
-    metadata,
+    payload: {
+      name: source === "newsletter" && name === "—" ? "Newsletter" : name,
+      email,
+      phone: phone || undefined,
+      source,
+      country,
+      notes,
+      metadata,
+      consent: consentCheck.consent,
+    },
   };
 }
 
 export async function POST(request: Request) {
   try {
     const raw = await request.json();
-    const payload = normalizePayload(raw);
+    const normalized = normalizePayload(raw);
 
-    if (!payload) {
-      return NextResponse.json(
-        {
-          error:
-            "Neplatná data. Vyplňte jméno, e-mail a telefon (u newsletteru stačí e-mail).",
-        },
-        { status: 400 }
-      );
+    if ("error" in normalized) {
+      return NextResponse.json({ error: normalized.error }, { status: 400 });
     }
 
+    const { payload } = normalized;
     const sourceLabel = LEAD_SOURCE_LABELS[payload.source];
     const composedNotes = [
       `Zdroj: ${sourceLabel}`,
@@ -90,6 +120,12 @@ export async function POST(request: Request) {
         submitted_at: new Date().toISOString(),
         user_agent:
           request.headers.get("user-agent")?.slice(0, 200) ?? undefined,
+        consent: payload.consent,
+        // Explicitně: marketing jen pokud checkbox
+        marketing_opt_in: payload.consent.marketingAccepted === true,
+        partner_transfer: payload.consent.partnerTransferAccepted === true,
+        partner_scope: payload.consent.partnerTransferScope,
+        consent_policy_version: payload.consent.policyVersion,
       },
     };
 

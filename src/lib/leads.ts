@@ -1,11 +1,15 @@
 /**
  * Sjednocený sběr leadů do Supabase tabulky `leads`.
+ * Consent record je povinný — odeslání ≠ marketingový souhlas.
  */
+
+import type { FormConsentRecord } from "@/lib/consent/records";
 
 export const LEAD_SOURCES = [
   "investment_passport",
   "navrh_na_miru",
   "mortgage_calculator",
+  "property_analysis",
   "lead_gen",
   "contact",
   "country_hub",
@@ -15,9 +19,10 @@ export const LEAD_SOURCES = [
 export type LeadSource = (typeof LEAD_SOURCES)[number];
 
 export const LEAD_SOURCE_LABELS: Record<LeadSource, string> = {
-  investment_passport: "Investiční pas",
-  navrh_na_miru: "Návrh na míru",
+  investment_passport: "Osobní investiční průvodce",
+  navrh_na_miru: "Hypoteční připravenost",
   mortgage_calculator: "Hypoteční kalkulačka",
+  property_analysis: "Majetio Property Analysis",
   lead_gen: "Konzultace s expertem",
   contact: "Kontaktní formulář",
   country_hub: "Zájem o zemi (hub)",
@@ -35,6 +40,11 @@ export type LeadPayload = {
   notes?: string;
   /** Strukturovaný kontext (cena, LTV, pojištění, …) */
   metadata?: Record<string, unknown>;
+  /**
+   * Timestamped consent record (verze + účely).
+   * marketingAccepted se nikdy neodvozuje z pouhého odeslání.
+   */
+  consent: FormConsentRecord;
 };
 
 export type LeadSubmitResult =

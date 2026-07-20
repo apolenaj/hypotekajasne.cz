@@ -155,12 +155,13 @@ interface GlobalInvestmentGuideProps {
 export function GlobalInvestmentGuide({ countryId }: GlobalInvestmentGuideProps) {
   const [selectedArticle, setSelectedArticle] =
     useState<GlobalGuideArticle | null>(null);
+  const [articleCountryId, setArticleCountryId] = useState(countryId);
+  if (articleCountryId !== countryId) {
+    setArticleCountryId(countryId);
+    setSelectedArticle(null);
+  }
 
   const countryData = getGlobalGuideData(countryId);
-
-  useEffect(() => {
-    setSelectedArticle(null);
-  }, [countryId]);
 
   useEffect(() => {
     if (selectedArticle) {

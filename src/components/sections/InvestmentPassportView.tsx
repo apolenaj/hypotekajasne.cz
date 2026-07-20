@@ -8,15 +8,16 @@ import {
   Banknote,
   CheckCircle2,
   Clock,
-  Globe2,
+  GitCompare,
+  HelpCircle,
   Loader2,
   Mail,
   MapPin,
   Phone,
-  Sparkles,
   Target,
   User,
   Wallet,
+  X,
 } from "lucide-react";
 import {
   evaluateInvestmentPassport,
@@ -27,13 +28,21 @@ import {
   REGION_OPTIONS,
   type FinancingChoice,
   type HorizonChoice,
+  type MarketMatchResult,
   type PassportFormData,
   type PurposeChoice,
   type RegionChoice,
 } from "@/lib/investment-passport";
+import { WEIGHTS_VERSION } from "@/lib/market-matching";
 import { submitLead } from "@/lib/leads";
 import { routes } from "@/lib/routes";
 import { cn, formatNumber, parseNumber } from "@/lib/utils";
+import {
+  FormConsentFields,
+  emptyFormConsentState,
+  toConsentRecord,
+} from "@/components/consent/FormConsentFields";
+import { track } from "@/lib/analytics/track";
 
 const TOTAL_STEPS = 6;
 
@@ -64,14 +73,14 @@ function OptionCard({
       className={cn(
         "w-full rounded-2xl border-2 p-5 text-left transition-all",
         selected
-          ? "border-emerald-600 bg-emerald-50 shadow-md shadow-emerald-900/10"
-          : "border-gray-200 bg-white hover:border-emerald-300"
+          ? "border-deep-teal bg-deep-teal/5 shadow-sm"
+          : "border-border bg-white hover:border-deep-teal/40"
       )}
     >
       <p
         className={cn(
           "font-bold",
-          selected ? "text-emerald-900" : "text-gray-800"
+          selected ? "text-deep-teal" : "text-text-dark"
         )}
       >
         {title}
@@ -101,8 +110,8 @@ function StepProgress({ currentStep }: { currentStep: number }) {
                 className={cn(
                   "flex h-9 w-9 items-center justify-center rounded-full border-2 transition-all sm:h-10 sm:w-10",
                   done || active
-                    ? "border-emerald-600 bg-emerald-600 text-white"
-                    : "border-gray-200 bg-white text-gray-400"
+                    ? "border-deep-teal bg-deep-teal text-white"
+                    : "border-border bg-white text-muted-foreground"
                 )}
               >
                 {done ? (
@@ -114,7 +123,7 @@ function StepProgress({ currentStep }: { currentStep: number }) {
               <span
                 className={cn(
                   "hidden text-[10px] font-semibold sm:block md:text-xs",
-                  active || done ? "text-emerald-800" : "text-gray-400"
+                  active || done ? "text-deep-teal" : "text-muted-foreground"
                 )}
               >
                 {step.label}
@@ -123,13 +132,299 @@ function StepProgress({ currentStep }: { currentStep: number }) {
           );
         })}
       </div>
-      <div className="h-1.5 overflow-hidden rounded-full bg-gray-100">
+      <div className="h-1.5 overflow-hidden rounded-full bg-muted">
         <div
-          className="h-full rounded-full bg-emerald-600 transition-all duration-500"
+          className="h-full rounded-full bg-deep-teal transition-all duration-500"
           style={{ width: `${(currentStep / TOTAL_STEPS) * 100}%` }}
         />
       </div>
     </div>
+  );
+}
+
+function MatchExplainDialog({
+  market,
+  onClose,
+}: {
+  market: MarketMatchResult;
+  onClose: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="match-explain-title"
+    >
+      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-5 shadow-xl sm:p-6">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2
+              id="match-explain-title"
+              className="font-heading text-lg font-bold text-text-dark"
+            >
+              Proč tento trh získal {market.overallMatch}/100?
+            </h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Organické skóre · {WEIGHTS_VERSION}. Placené partnerství skóre
+              nemění.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-1 text-muted-foreground hover:bg-muted"
+            aria-label="Zavřít"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <p className="mt-4 text-sm text-muted-foreground">
+          Σ (váha × fit). Fit = 100 − |atribut trhu − váš ideál| (kapitál má
+          budget fit).
+        </p>
+
+        <ul className="mt-4 space-y-3">
+          {market.breakdown
+            .slice()
+            .sort((a, b) => b.weightedContribution - a.weightedContribution)
+            .map((b) => (
+              <li
+                key={b.dimension}
+                className="rounded-xl border border-border px-3 py-2.5"
+              >
+                <div className="flex items-center justify-between gap-2 text-sm">
+                  <span className="font-semibold text-text-dark">{b.label}</span>
+                  <span className="tabular-nums text-deep-teal">
+                    +{b.weightedContribution.toFixed(1)}
+                  </span>
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Váha {(b.weight * 100).toFixed(0)} % · trh {b.marketValue} ·
+                  ideál {b.userIdeal} · fit {b.fit}
+                </p>
+              </li>
+            ))}
+        </ul>
+
+        <p className="mt-4 text-xs text-muted-foreground">
+          Váhy jsou veřejné na{" "}
+          <Link href={routes.metodika} className="text-deep-teal underline">
+            /metodika
+          </Link>
+          .
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function ComparePanel({
+  markets,
+  selectedIds,
+  onToggle,
+}: {
+  markets: MarketMatchResult[];
+  selectedIds: string[];
+  onToggle: (id: string) => void;
+}) {
+  const selected = markets.filter((m) => selectedIds.includes(m.marketId));
+  if (selected.length < 2) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        Vyberte 2–3 trhy výše (checkbox) pro side-by-side srovnání.
+      </p>
+    );
+  }
+
+  const rows: { label: string; get: (m: MarketMatchResult) => string }[] = [
+    {
+      label: "Overall Match",
+      get: (m) => `${m.overallMatch}/100`,
+    },
+    {
+      label: "Typický vstup",
+      get: (m) => `${formatNumber(m.capitalRequired.typicalEntryCzk)} Kč`,
+    },
+    {
+      label: "Min. kapitál",
+      get: (m) => `${formatNumber(m.capitalRequired.typicalMinCzk)} Kč`,
+    },
+    {
+      label: "Rozpočet vs vstup",
+      get: (m) =>
+        m.capitalRequired.reachableVsEntry === "above"
+          ? "nad vstupem"
+          : m.capitalRequired.reachableVsEntry === "below"
+            ? "pod vstupem"
+            : "blízko vstupu",
+    },
+    {
+      label: "Financování",
+      get: (m) => m.financingOptions.slice(0, 2).join("; "),
+    },
+    {
+      label: "Top riziko",
+      get: (m) => m.topRisks[0] ?? "—",
+    },
+    {
+      label: "Data",
+      get: (m) => m.dataFreshness.label,
+    },
+  ];
+
+  return (
+    <div className="overflow-x-auto rounded-xl border border-border">
+      <table className="w-full min-w-[520px] text-left text-sm">
+        <thead>
+          <tr className="border-b border-border bg-[#f7f8f7]">
+            <th className="px-3 py-2 font-semibold text-text-dark">Dimenze</th>
+            {selected.map((m) => (
+              <th key={m.marketId} className="px-3 py-2 font-semibold text-deep-teal">
+                {m.name}
+                <button
+                  type="button"
+                  onClick={() => onToggle(m.marketId)}
+                  className="ml-2 text-xs font-normal text-muted-foreground underline"
+                >
+                  odebrat
+                </button>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.label} className="border-b border-border/70">
+              <td className="px-3 py-2 font-medium text-text-dark">{row.label}</td>
+              {selected.map((m) => (
+                <td key={m.marketId} className="px-3 py-2 text-muted-foreground">
+                  {row.get(m)}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function MarketCard({
+  market,
+  rank,
+  compareSelected,
+  onToggleCompare,
+  onExplain,
+}: {
+  market: MarketMatchResult;
+  rank: number;
+  compareSelected: boolean;
+  onToggleCompare: () => void;
+  onExplain: () => void;
+}) {
+  return (
+    <article className="flex flex-col overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
+      <div className="relative h-36 overflow-hidden bg-deep-teal">
+        {market.image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={market.image}
+            alt=""
+            className="h-full w-full object-cover"
+          />
+        ) : null}
+        <span className="absolute left-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm font-bold text-deep-teal">
+          #{rank}
+        </span>
+        <label className="absolute right-3 top-3 flex cursor-pointer items-center gap-1.5 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-text-dark">
+          <input
+            type="checkbox"
+            checked={compareSelected}
+            onChange={onToggleCompare}
+            className="accent-deep-teal"
+          />
+          Porovnat
+        </label>
+      </div>
+      <div className="flex flex-1 flex-col p-5">
+        <h3 className="font-heading text-lg font-bold text-text-dark">
+          {market.name}
+        </h3>
+        <p className="mt-1 text-2xl font-bold tabular-nums text-deep-teal">
+          Overall Match {market.overallMatch}/100
+        </p>
+        <p className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+          Organické skóre · bez sponzoringu
+        </p>
+
+        <section className="mt-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-deep-teal">
+            Proč sedí
+          </p>
+          <ul className="mt-1.5 space-y-1">
+            {market.whyMatches.slice(0, 3).map((t) => (
+              <li key={t} className="text-xs leading-relaxed text-muted-foreground">
+                {t}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="mt-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">
+            Proč nemusí sedět
+          </p>
+          <ul className="mt-1.5 space-y-1">
+            {market.whyNotMatches.slice(0, 3).map((t) => (
+              <li key={t} className="text-xs leading-relaxed text-muted-foreground">
+                {t}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="mt-3 space-y-1 text-xs text-muted-foreground">
+          <p>
+            <span className="font-semibold text-text-dark">Kapitál: </span>
+            typicky {formatNumber(market.capitalRequired.typicalEntryCzk)} Kč
+            (min. {formatNumber(market.capitalRequired.typicalMinCzk)} Kč)
+          </p>
+          <p>
+            <span className="font-semibold text-text-dark">Financování: </span>
+            {market.financingOptions.join(" · ")}
+          </p>
+          <p>
+            <span className="font-semibold text-text-dark">Rizika: </span>
+            {market.topRisks.join(" · ")}
+          </p>
+          <p>
+            <span className="font-semibold text-text-dark">Data: </span>
+            {market.dataFreshness.label}
+          </p>
+        </section>
+
+        <div className="mt-4 flex flex-col gap-2">
+          <button
+            type="button"
+            onClick={onExplain}
+            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-deep-teal/30 bg-deep-teal/5 px-3 py-2 text-sm font-semibold text-deep-teal"
+          >
+            <HelpCircle className="h-4 w-4" />
+            Proč tento trh získal {market.overallMatch}/100?
+          </button>
+          {market.slug ? (
+            <Link
+              href={`${routes.pruvodceInvestora}/${market.slug}`}
+              className="text-center text-sm font-semibold text-deep-teal underline-offset-2 hover:underline"
+            >
+              Otevřít dossier země →
+            </Link>
+          ) : null}
+        </div>
+      </div>
+    </article>
   );
 }
 
@@ -142,131 +437,136 @@ function PassportDashboard({
   result: ReturnType<typeof evaluateInvestmentPassport>;
   onRestart: () => void;
 }) {
+  const [explainMarket, setExplainMarket] = useState<MarketMatchResult | null>(
+    null
+  );
+  const [compareIds, setCompareIds] = useState<string[]>(() =>
+    result.markets.slice(0, 2).map((m) => m.marketId)
+  );
+
+  const toggleCompare = (id: string) => {
+    setCompareIds((prev) => {
+      if (prev.includes(id)) return prev.filter((x) => x !== id);
+      if (prev.length >= 3) return [...prev.slice(1), id];
+      return [...prev, id];
+    });
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
-      <section className="border-b border-gray-200 bg-deep-teal text-white">
+    <div className="min-h-screen bg-[#f4f6f5]">
+      <section className="border-b border-border bg-gradient-to-br from-[#0b3d3a] via-[#0f4c48] to-[#1a5c4a] text-white">
         <div className="mx-auto max-w-5xl px-4 py-12">
-          <p className="text-sm font-bold uppercase tracking-widest text-emerald-200">
-            Expertní investiční pas
+          <p className="text-sm font-bold uppercase tracking-widest text-muted-gold">
+            Osobní investiční průvodce
           </p>
-          <h1 className="mt-3 font-heading text-3xl font-black md:text-4xl">
-            Gratulujeme, {formData.name}, zde je váš osobní investiční profil
+          <h1 className="mt-3 font-heading text-3xl font-bold md:text-4xl">
+            {formData.name}, váš market match
           </h1>
-          <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-sm font-semibold text-emerald-50">
-            <Sparkles className="h-4 w-4" />
-            {result.profileLabel}
+          <p className="mt-2 text-sm text-white/80">
+            {result.profileLabel} · váhy {result.weightsVersion}
           </p>
         </div>
       </section>
 
-      <div className="mx-auto max-w-5xl px-4 py-10 space-y-8">
-        <div className="overflow-hidden rounded-3xl border border-emerald-200/60 bg-gradient-to-br from-[#0b3d3a] via-[#0f5c56] to-[#1a7a6d] p-1 shadow-2xl shadow-emerald-900/20">
-          <div className="rounded-[1.35rem] bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.12),_transparent_55%)] p-6 sm:p-10 text-white">
-            <div className="flex flex-wrap items-start justify-between gap-4 border-b border-white/15 pb-6">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.25em] text-emerald-100/80">
-                  Mezinárodní investiční pas
-                </p>
-                <h2 className="mt-2 font-heading text-3xl font-black">
-                  {formData.name}
-                </h2>
-              </div>
-              <div className="rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-right backdrop-blur-sm">
-                <p className="text-xs uppercase tracking-wide text-emerald-100/70">
-                  Horizont
-                </p>
-                <p className="font-bold">{result.horizonLabel}</p>
-              </div>
-            </div>
-
-            <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl border border-white/15 bg-black/20 p-5">
-                <p className="text-xs font-bold uppercase tracking-wide text-emerald-100/70">
-                  Dostupný kapitál
-                </p>
-                <p className="mt-2 text-2xl font-black sm:text-3xl">
-                  {formatNumber(result.capital)} CZK
-                </p>
-              </div>
-              <div className="rounded-2xl border border-emerald-300/40 bg-emerald-400/15 p-5">
-                <p className="text-xs font-bold uppercase tracking-wide text-emerald-100">
-                  Odhadovaný dosažitelný rozpočet
-                </p>
-                <p className="mt-2 text-2xl font-black sm:text-3xl">
-                  {formatNumber(result.reachableBudget)} CZK
-                </p>
-                <p className="mt-1 text-xs text-emerald-100/80">
-                  {formData.financing === "cash"
-                    ? "100% cash — rozpočet = vlastní kapitál"
-                    : "Kapitál × 3 (model s úvěrovou pákou)"}
-                </p>
-              </div>
-            </div>
-
-            <p className="mt-6 text-sm text-emerald-50/90">
-              Financování: {result.financingLabel}
+      <div className="mx-auto max-w-5xl space-y-8 px-4 py-10">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="rounded-2xl border border-border bg-white p-5">
+            <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+              Vlastní kapitál
+            </p>
+            <p className="mt-1 text-2xl font-bold tabular-nums text-text-dark">
+              {formatNumber(result.capital)} Kč
+            </p>
+          </div>
+          <div className="rounded-2xl border border-deep-teal/20 bg-deep-teal/5 p-5">
+            <p className="text-xs font-bold uppercase tracking-wide text-deep-teal">
+              Orientační dosažitelný rozpočet
+            </p>
+            <p className="mt-1 text-2xl font-bold tabular-nums text-deep-teal">
+              {formatNumber(result.reachableBudget)} Kč
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {formData.financing === "cash"
+                ? "100% cash = kapitál"
+                : "Model páky ×3 — ne příslib úvěru"}
             </p>
           </div>
         </div>
 
         <div>
-          <h3 className="flex items-center gap-2 text-xl font-black text-gray-900">
-            <Globe2 className="h-5 w-5 text-deep-teal" />
-            Top 3 doporučené trhy
-          </h3>
+          <h2 className="font-heading text-xl font-bold text-text-dark">
+            Top 3 markets
+          </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Seřazeno podle scoring enginu na míru vašim odpovědím.
+            Seřazeno podle organického Overall Match. Partnerství skóre
+            neovlivňuje — viz{" "}
+            <Link href={routes.metodika} className="text-deep-teal underline">
+              metodika
+            </Link>
+            .
           </p>
 
           <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-3">
             {result.markets.map((market, index) => (
-              <Link
-                key={market.name}
-                href={
-                  market.slug
-                    ? `${routes.pruvodceInvestora}/${market.slug}`
-                    : routes.pruvodceInvestora
-                }
-                className="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg shadow-gray-900/5 ring-1 ring-gray-900/5 transition hover:-translate-y-1 hover:shadow-xl"
-              >
-                <div className="relative h-40 overflow-hidden bg-deep-teal">
-                  {market.image ? (
-                    <img
-                      src={market.image}
-                      alt={market.name}
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                    />
-                  ) : null}
-                  <span className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white text-sm font-black text-deep-teal shadow">
-                    #{index + 1}
-                  </span>
-                </div>
-                <div className="p-5">
-                  <p className="text-lg font-black text-gray-900">
-                    {market.name}
-                  </p>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    {market.reason}
-                  </p>
-                </div>
-              </Link>
+              <MarketCard
+                key={market.marketId}
+                market={market}
+                rank={index + 1}
+                compareSelected={compareIds.includes(market.marketId)}
+                onToggleCompare={() => toggleCompare(market.marketId)}
+                onExplain={() => setExplainMarket(market)}
+              />
             ))}
           </div>
         </div>
 
+        <section className="rounded-2xl border border-border bg-white p-5 sm:p-6">
+          <h3 className="flex items-center gap-2 font-heading text-lg font-bold text-text-dark">
+            <GitCompare className="h-5 w-5 text-deep-teal" />
+            Side-by-side compare (2–3 země)
+          </h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Můžete přidat i další trhy z organického žebříčku.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {result.allMarkets.map((m) => (
+              <button
+                key={m.marketId}
+                type="button"
+                onClick={() => toggleCompare(m.marketId)}
+                className={cn(
+                  "rounded-full border px-3 py-1 text-xs font-semibold",
+                  compareIds.includes(m.marketId)
+                    ? "border-deep-teal bg-deep-teal text-white"
+                    : "border-border text-muted-foreground hover:border-deep-teal/40"
+                )}
+              >
+                {m.name} ({m.overallMatch})
+              </button>
+            ))}
+          </div>
+          <div className="mt-4">
+            <ComparePanel
+              markets={result.allMarkets}
+              selectedIds={compareIds}
+              onToggle={toggleCompare}
+            />
+          </div>
+        </section>
+
         <div className="flex flex-col gap-3 sm:flex-row">
           <Link
             href={routes.navrhNaMiru}
-            className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-emerald-900 px-6 py-4 text-center text-base font-bold text-white shadow-lg transition hover:bg-emerald-800"
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-deep-teal px-6 py-3.5 text-center text-sm font-bold text-white transition hover:bg-deep-teal/90"
           >
-            Chci vidět konkrétní nemovitosti a analýzy pro tyto trhy
-            <ArrowRight className="h-5 w-5" />
+            Hypoteční připravenost
+            <ArrowRight className="h-4 w-4" />
           </Link>
           <Link
-            href={routes.investicniRentgen}
-            className="inline-flex items-center justify-center rounded-full border border-gray-300 px-6 py-4 font-bold text-gray-800 transition hover:bg-gray-50"
+            href={routes.metodika}
+            className="inline-flex items-center justify-center rounded-lg border border-border px-6 py-3.5 text-sm font-bold text-text-dark hover:bg-muted"
           >
-            Investiční rentgen
+            Váhy scoringu v metodice
           </Link>
         </div>
 
@@ -278,6 +578,13 @@ function PassportDashboard({
           Spustit průvodce znovu
         </button>
       </div>
+
+      {explainMarket ? (
+        <MatchExplainDialog
+          market={explainMarket}
+          onClose={() => setExplainMarket(null)}
+        />
+      ) : null}
     </div>
   );
 }
@@ -289,11 +596,21 @@ export function InvestmentPassportView() {
   const [submitted, setSubmitted] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [consent, setConsent] = useState(() =>
+    emptyFormConsentState("mortgage_specialist")
+  );
+  const [startedTracked, setStartedTracked] = useState(false);
 
   const updateForm = <K extends keyof PassportFormData>(
     key: K,
     value: PassportFormData[K]
-  ) => setFormData((prev) => ({ ...prev, [key]: value }));
+  ) => {
+    if (!startedTracked) {
+      track("investment_pass_started", { tool_id: "investment_passport" });
+      setStartedTracked(true);
+    }
+    setFormData((prev) => ({ ...prev, [key]: value }));
+  };
 
   const result = useMemo(
     () => evaluateInvestmentPassport(formData),
@@ -310,7 +627,9 @@ export function InvestmentPassportView() {
       return (
         formData.name.trim().length > 1 &&
         formData.email.includes("@") &&
-        formData.phone.trim().length >= 9
+        formData.phone.trim().length >= 9 &&
+        consent.privacyAccepted &&
+        consent.partnerTransferAccepted
       );
     }
     return false;
@@ -333,9 +652,12 @@ export function InvestmentPassportView() {
           `Účel: ${formData.purpose || "—"}`,
           `Region: ${formData.region || "—"}`,
           `Horizont: ${formData.horizon || "—"}`,
-          `Top trhy: ${result.markets.map((m) => m.name).join(", ")}`,
+          `Top trhy: ${result.markets
+            .map((m) => `${m.name} ${m.overallMatch}`)
+            .join(", ")}`,
         ].join(" | "),
         metadata: {
+          product: "market_matching",
           capital: formData.capital,
           financing: formData.financing,
           purpose: formData.purpose,
@@ -343,12 +665,15 @@ export function InvestmentPassportView() {
           horizon: formData.horizon,
           top_markets: result.markets.map((m) => ({
             name: m.name,
-            score: m.score,
+            overallMatch: m.overallMatch,
+            isSponsored: m.isSponsored,
           })),
+          weights_version: result.weightsVersion,
           profile: result.profileLabel,
           reachable_budget: result.reachableBudget,
         },
         country: result.markets[0]?.name,
+        consent: toConsentRecord(consent),
       });
 
       setSubmitLoading(false);
@@ -356,6 +681,18 @@ export function InvestmentPassportView() {
         setSubmitError(leadResult.error);
         return;
       }
+
+      track("investment_pass_completed", {
+        tool_id: "investment_passport",
+      });
+      track("lead_submitted", {
+        lead_source: "investment_passport",
+        partner_scope: "mortgage_specialist",
+      });
+      track("partner_handoff", {
+        lead_source: "investment_passport",
+        partner_scope: "mortgage_specialist",
+      });
 
       setSubmitted(true);
       return;
@@ -380,36 +717,36 @@ export function InvestmentPassportView() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
-      <section className="border-b border-gray-200 bg-deep-teal text-white">
+    <div className="min-h-screen bg-[#f4f6f5]">
+      <section className="border-b border-border bg-gradient-to-br from-[#0b3d3a] via-[#0f4c48] to-[#1a5c4a] text-white">
         <div className="mx-auto max-w-3xl px-4 py-12">
-          <p className="text-sm font-bold uppercase tracking-widest text-emerald-200">
-            Expertní lead-generation wizard
+          <p className="text-sm font-bold uppercase tracking-widest text-muted-gold">
+            Osobní investiční průvodce
           </p>
-          <h1 className="mt-3 font-heading text-3xl font-black md:text-5xl">
-            Mezinárodní investiční pas
+          <h1 className="mt-3 font-heading text-3xl font-bold md:text-5xl">
+            Market matching na míru
           </h1>
-          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-emerald-50/90">
-            Šest přesných otázek. Scoring engine. Top 3 trhy na míru vašemu
-            kapitálu, financování a cíli.
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/85 md:text-lg">
+            Transparentní vážené skóre napříč 10 dimenzemi. Top 3 trhy s
+            vysvětlením — ne black box.
           </p>
         </div>
       </section>
 
       <div className="mx-auto max-w-3xl px-4 py-10">
-        <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-xl shadow-gray-900/5 ring-1 ring-gray-900/5 sm:p-10">
+        <div className="rounded-3xl border border-border bg-white p-6 shadow-sm sm:p-10">
           <StepProgress currentStep={currentStep} />
 
           {currentStep === 1 && (
             <div>
-              <h2 className="text-2xl font-black text-gray-900">
+              <h2 className="text-2xl font-bold text-text-dark">
                 Kolik máte k dispozici vlastních prostředků?
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                Zadejte hotovost / equity pro první transakci.
+                Vstup do dimenze required capital.
               </p>
               <label className="mt-8 block">
-                <span className="mb-2 block text-sm font-bold text-gray-700">
+                <span className="mb-2 block text-sm font-bold text-text-dark">
                   Vlastní kapitál (CZK)
                 </span>
                 <input
@@ -420,27 +757,19 @@ export function InvestmentPassportView() {
                     updateForm("capital", parseNumber(e.target.value))
                   }
                   placeholder="např. 2 000 000"
-                  className="w-full rounded-xl border border-gray-300 bg-gray-50 p-4 text-lg font-bold outline-none focus:border-emerald-500"
+                  className="w-full rounded-xl border border-border bg-[#f7f8f7] p-4 text-lg font-bold outline-none ring-deep-teal/30 focus:ring-2"
                 />
               </label>
-              {Number(formData.capital) > 0 && (
-                <p className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-                  Orientace s pákou (×3):{" "}
-                  <strong>
-                    {formatNumber(Math.round(Number(formData.capital) * 3))} CZK
-                  </strong>
-                </p>
-              )}
             </div>
           )}
 
           {currentStep === 2 && (
             <div>
-              <h2 className="text-2xl font-black text-gray-900">
+              <h2 className="text-2xl font-bold text-text-dark">
                 Jak plánujete nákup financovat?
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                Od páky až po 100% cash — ovlivní dosažiteľný rozpočet i trhy.
+                Ovlivní financing availability a rozpočet.
               </p>
               <div className="mt-8 space-y-3">
                 {FINANCING_OPTIONS.map((opt) => (
@@ -460,11 +789,11 @@ export function InvestmentPassportView() {
 
           {currentStep === 3 && (
             <div>
-              <h2 className="text-2xl font-black text-gray-900">
+              <h2 className="text-2xl font-bold text-text-dark">
                 Co je vaším hlavním cílem?
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                Účel je nejsilnější signál pro scoring trhu.
+                Nastaví ideály yield, risk a intended use.
               </p>
               <div className="mt-8 space-y-3">
                 {PURPOSE_OPTIONS.map((opt) => (
@@ -484,11 +813,11 @@ export function InvestmentPassportView() {
 
           {currentStep === 4 && (
             <div>
-              <h2 className="text-2xl font-black text-gray-900">
+              <h2 className="text-2xl font-bold text-text-dark">
                 Jaké prostředí preferujete?
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                Regionální filtr silně váží domácí vs. zahraniční trhy.
+                Váží currency risk, regulation a ownership.
               </p>
               <div className="mt-8 space-y-3">
                 {REGION_OPTIONS.map((opt) => (
@@ -508,11 +837,11 @@ export function InvestmentPassportView() {
 
           {currentStep === 5 && (
             <div>
-              <h2 className="text-2xl font-black text-gray-900">
+              <h2 className="text-2xl font-bold text-text-dark">
                 Kdy plánujete nemovitost pořídit?
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                Horizont pomáhá prioritizovat rychlost a ready nabídky.
+                Dimenze investment horizon a liquidity.
               </p>
               <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {HORIZON_OPTIONS.map((opt) => (
@@ -531,49 +860,56 @@ export function InvestmentPassportView() {
 
           {currentStep === 6 && (
             <div>
-              <h2 className="text-2xl font-black text-gray-900">
-                Kam vám máme expertní pas a detailní nabídky zaslat?
+              <h2 className="text-2xl font-bold text-text-dark">
+                Kam zaslat výsledek market matchingu?
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                Po odeslání ihned uvidíte Top 3 trhy a odhad rozpočtu.
+                Po odeslání uvidíte Top 3 s rozkladem skóre. Kontakt je
+                volitelný pro konzultaci — skóre se počítá z odpovědí, ne z
+                partnerství.
               </p>
               <div className="mt-8 space-y-4">
                 <label className="block">
-                  <span className="mb-2 flex items-center gap-2 text-sm font-bold text-gray-700">
+                  <span className="mb-2 flex items-center gap-2 text-sm font-bold text-text-dark">
                     <User className="h-4 w-4" /> Jméno a příjmení
                   </span>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => updateForm("name", e.target.value)}
-                    className="w-full rounded-xl border border-gray-300 bg-gray-50 p-4 font-semibold outline-none focus:border-emerald-500"
+                    className="w-full rounded-xl border border-border bg-[#f7f8f7] p-4 font-semibold outline-none ring-deep-teal/30 focus:ring-2"
                     placeholder="Jan Novák"
                   />
                 </label>
                 <label className="block">
-                  <span className="mb-2 flex items-center gap-2 text-sm font-bold text-gray-700">
+                  <span className="mb-2 flex items-center gap-2 text-sm font-bold text-text-dark">
                     <Mail className="h-4 w-4" /> E-mail
                   </span>
                   <input
                     type="email"
                     value={formData.email}
                     onChange={(e) => updateForm("email", e.target.value)}
-                    className="w-full rounded-xl border border-gray-300 bg-gray-50 p-4 font-semibold outline-none focus:border-emerald-500"
+                    className="w-full rounded-xl border border-border bg-[#f7f8f7] p-4 font-semibold outline-none ring-deep-teal/30 focus:ring-2"
                     placeholder="jan@email.cz"
                   />
                 </label>
                 <label className="block">
-                  <span className="mb-2 flex items-center gap-2 text-sm font-bold text-gray-700">
+                  <span className="mb-2 flex items-center gap-2 text-sm font-bold text-text-dark">
                     <Phone className="h-4 w-4" /> Telefon
                   </span>
                   <input
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => updateForm("phone", e.target.value)}
-                    className="w-full rounded-xl border border-gray-300 bg-gray-50 p-4 font-semibold outline-none focus:border-emerald-500"
+                    className="w-full rounded-xl border border-border bg-[#f7f8f7] p-4 font-semibold outline-none ring-deep-teal/30 focus:ring-2"
                     placeholder="+420 777 123 456"
                   />
                 </label>
+                <FormConsentFields
+                  state={consent}
+                  onChange={setConsent}
+                  showPartnerTransfer
+                />
               </div>
             </div>
           )}
@@ -583,7 +919,7 @@ export function InvestmentPassportView() {
               type="button"
               onClick={back}
               disabled={currentStep === 1}
-              className="inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-bold text-gray-600 transition hover:bg-gray-100 disabled:opacity-40"
+              className="inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-bold text-muted-foreground transition hover:bg-muted disabled:opacity-40"
             >
               <ArrowLeft className="h-4 w-4" />
               Zpět
@@ -592,7 +928,7 @@ export function InvestmentPassportView() {
               type="button"
               onClick={next}
               disabled={!canContinue() || submitLoading}
-              className="inline-flex items-center gap-2 rounded-full bg-emerald-900 px-6 py-3 text-sm font-bold text-white shadow-md transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex items-center gap-2 rounded-full bg-deep-teal px-6 py-3 text-sm font-bold text-white shadow-md transition hover:bg-deep-teal/90 disabled:cursor-not-allowed disabled:opacity-40"
             >
               {submitLoading ? (
                 <>
@@ -601,7 +937,7 @@ export function InvestmentPassportView() {
                 </>
               ) : currentStep === TOTAL_STEPS ? (
                 <>
-                  Zobrazit expertní pas
+                  Zobrazit market match
                   <ArrowRight className="h-4 w-4" />
                 </>
               ) : (

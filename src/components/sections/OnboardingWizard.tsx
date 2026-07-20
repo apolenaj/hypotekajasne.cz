@@ -9,6 +9,11 @@ import { formatRateOrOnRequest } from "@/lib/format-rate";
 import { submitLead } from "@/lib/leads";
 import { pickRate, useCurrentRates } from "@/lib/rates";
 import { cn } from "@/lib/utils";
+import {
+  FormConsentFields,
+  emptyFormConsentState,
+  toConsentRecord,
+} from "@/components/consent/FormConsentFields";
 
 const TOTAL_STEPS = 6;
 
@@ -137,6 +142,9 @@ export function OnboardingWizard() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [formData, setFormData] = useState<OnboardingFormData>(initialFormData);
   const [hasInsurance, setHasInsurance] = useState(true);
+  const [consent, setConsent] = useState(() =>
+    emptyFormConsentState("mortgage_specialist")
+  );
   const { rates, loading: ratesLoading } = useCurrentRates();
 
   const updateForm = <K extends keyof OnboardingFormData>(
@@ -231,6 +239,7 @@ export function OnboardingWizard() {
         selected_rate: selectedRate,
         pre_approval: preApproval,
       },
+      consent: toConsentRecord(consent),
     });
 
     setSubmitLoading(false);
@@ -829,6 +838,12 @@ export function OnboardingWizard() {
                   />
                 </div>
               </div>
+              <FormConsentFields
+                state={consent}
+                onChange={setConsent}
+                showPartnerTransfer
+                className="mt-4 space-y-3 rounded-xl border border-border bg-slate-50 px-3 py-3 text-left text-xs leading-relaxed text-muted-foreground sm:text-sm"
+              />
               {submitError && (
                 <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-800">
                   {submitError}
@@ -866,7 +881,9 @@ export function OnboardingWizard() {
                   submitLoading ||
                   !formData.name.trim() ||
                   !formData.email.trim() ||
-                  !formData.phone.trim()
+                  !formData.phone.trim() ||
+                  !consent.privacyAccepted ||
+                  !consent.partnerTransferAccepted
                 }
                 className="inline-flex items-center gap-2 bg-emerald-600 text-white font-bold py-4 px-10 rounded-full hover:bg-emerald-500 transition-all shadow-xl hover:shadow-emerald-500/30 transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >

@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { AboutMajetioView } from "@/components/sections/AboutMajetioView";
 
 export const metadata: Metadata = {
-  title: "O Majetio.cz | HypotékaJasně.cz",
+  title: "Hypotéka Jasně & Majetio | Ekosystém",
   description:
-    "Jak spolu fungují Hypotéka Jasně a Majetio.cz — financování, edukace a katalog nemovitostí s investičním skóre.",
+    "Financial Passport, bezpečný handoff rozpočtu a role platforem: finance vs. property discovery. LIVE / BETA / COMING SOON.",
 };
 
 export default function OMajetioPage() {

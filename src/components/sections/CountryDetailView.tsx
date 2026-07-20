@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   CartesianGrid,
   ComposedChart,
@@ -463,11 +463,8 @@ export function CountryDetailView({
     (typeof countryDetailTabLabels)[CountryDetailTabId],
   ][];
 
-  useEffect(() => {
-    if (variant === "section" && forcedSection) {
-      setActiveTab(forcedSection);
-    }
-  }, [variant, forcedSection, country]);
+  const effectiveTab =
+    variant === "section" && forcedSection ? forcedSection : activeTab;
 
   const isPanelVisible = (tabId: CountryDetailTabId) => {
     if (variant === "overview") {
@@ -476,7 +473,7 @@ export function CountryDetailView({
     if (variant === "section") {
       return tabId === forcedSection;
     }
-    return activeTab === tabId;
+    return effectiveTab === tabId;
   };
 
   const showHeader = variant === "full" || variant === "overview";
@@ -527,7 +524,7 @@ export function CountryDetailView({
             <div className="flex flex-wrap gap-2 p-4 sm:p-6 border-b border-gray-900/5 bg-slate-50/50">
               {tabs.map(([tabId, tab]) => {
                 const Icon = tabIcons[tabId];
-                const isActive = activeTab === tabId;
+                const isActive = effectiveTab === tabId;
 
                 return (
                   <button
@@ -554,7 +551,7 @@ export function CountryDetailView({
           )}
 
           <div
-            key={variant === "full" ? activeTab : `${variant}-${forcedSection}`}
+            key={variant === "full" ? effectiveTab : `${variant}-${forcedSection}`}
             className="p-6 sm:p-8 lg:p-10 animate-in fade-in duration-500 fill-mode-both"
           >
             {isPanelVisible("market") && (

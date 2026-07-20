@@ -42,7 +42,7 @@ export const buyVsRentDeepAnalysis: Record<string, BuyVsRentDeepAnalysis> = {
         icon: "ShieldAlert",
         title: "3. Ochrana proti inflaci (Hedge)",
         content:
-          "V prostředí s průměrnou inflací 3–5 % se dějí dvě věci: hodnota peněz klesá, ale váš dluh nominálně zůstává stejný. Fixovaná hypotéka znamená, že zatímco vaše mzda a ceny v ekonomice rostou, váš dluh vůči bance se reálně 'odmazává' inflací. Nájemné naproti tomu historicky vždy kopíruje, nebo dokonce překonává inflaci.",
+          "V prostředí s kladnou inflací se kupní síla hotovosti a fixního dluhu vyvíjí odlišně. Nájemné často historicky rostlo spolu s cenovou hladinou, ale nejde o zákon — záleží na lokalitě, kontraktech a cyklu. Hypotéka s fixací může reálně zlevnit splátku vůči mzdám, pokud mzdy rostou; není to záruka.",
       },
       {
         icon: "Building",

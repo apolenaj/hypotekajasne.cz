@@ -4,6 +4,7 @@ import { Shield, ShieldOff } from "lucide-react";
 import { CALCULATOR_DISCLAIMER } from "@/components/calculators/CalculatorDisclaimer";
 import { RpsnDisplay } from "@/components/calculators/RpsnDisplay";
 import { formatRateOrOnRequest } from "@/lib/format-rate";
+import { missingDataLabel } from "@/lib/data/display";
 import { cn } from "@/lib/utils";
 
 type InsuranceRateCardsProps = {
@@ -76,7 +77,7 @@ export function InsuranceRateCards({
               <p className="mt-1 text-xs text-emerald-800 font-medium">
                 {rateWithInsurance != null
                   ? `aktuálně od ${formatRateOrOnRequest(rateWithInsurance)}`
-                  : "Na vyžádání"}
+                  : missingDataLabel(null)}
               </p>
               <RpsnDisplay
                 rpsn={rpsnWithInsurance ?? null}
@@ -128,7 +129,7 @@ export function InsuranceRateCards({
                   ? `aktuálně od ${formatRateOrOnRequest(rateWithoutInsurance, {
                       orientational: withoutRateOrientational,
                     })}`
-                  : "Na vyžádání"}
+                  : missingDataLabel(null)}
               </p>
               <RpsnDisplay
                 rpsn={rpsnWithoutInsurance ?? null}

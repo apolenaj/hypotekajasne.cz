@@ -231,6 +231,50 @@ export async function GET(request: Request) {
       if (aggregateError) {
         console.error("current_rates upsert warning:", aggregateError.message);
       }
+
+      // Mortgage products pipeline (staging / anomaly / history)
+      let pipeline: unknown = null;
+      try {
+        const {
+          runPipelineCore,
+          persistPipelineResult,
+          fetchPublishedProducts,
+        } = await import("@/lib/mortgage-pipeline");
+        const existing = await fetchPublishedProducts(supabase);
+        const result = runPipelineCore(validBanks, existing, {
+          scrapedAt,
+        });
+        const persisted = await persistPipelineResult(
+          supabase,
+          result,
+          "cron"
+        );
+        pipeline = {
+          runId: result.runId,
+          stats: result.stats,
+          blocked: result.blocked.length,
+          published: result.published.length,
+          alerts: result.disappeared.length + result.stats.anomalyBlocked,
+          persistOk: persisted.ok,
+          persistErrors: persisted.errors,
+        };
+      } catch (pipeErr) {
+        console.error("mortgage pipeline warning:", pipeErr);
+        pipeline = {
+          error: getErrorMessage(pipeErr),
+          hint: "Spusťte supabase/mortgage_products_pipeline.sql",
+        };
+      }
+
+      return NextResponse.json({
+        success: true,
+        scrapedAt,
+        saved,
+        americanSaved,
+        banks: validBanks,
+        failures: allFailures,
+        pipeline,
+      });
     }
 
     return NextResponse.json({
@@ -240,6 +284,7 @@ export async function GET(request: Request) {
       americanSaved,
       banks: validBanks,
       failures: allFailures,
+      pipeline: null,
     });
   } catch (error: unknown) {
     console.error("scrape-rates error:", error);

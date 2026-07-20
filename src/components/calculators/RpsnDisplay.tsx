@@ -6,6 +6,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { DataStatusBadge } from "@/components/trust/DataStatusBadge";
+import { DataSourcePopover } from "@/components/trust/DataSourcePopover";
+import { missingDataLabel } from "@/lib/data/display";
+import { toProvenanceFields } from "@/lib/data/provenance";
+import { resolveEffectiveStatus } from "@/lib/data/freshness";
+import type { DataStatus } from "@/lib/data/types";
 import { cn } from "@/lib/utils";
 
 export const RPSN_TOOLTIP =
@@ -14,28 +20,60 @@ export const RPSN_TOOLTIP =
 type RpsnDisplayProps = {
   rpsn: number | null | undefined;
   className?: string;
-  /** Menší typografie v úzkých kartách nabídek */
   compact?: boolean;
+  /** Timestamp ze scrape — pro freshness */
+  updatedAt?: string | null;
+  sourceUrl?: string | null;
+  declaredStatus?: DataStatus;
 };
 
 export function RpsnDisplay({
   rpsn,
   className,
   compact = false,
+  updatedAt = null,
+  sourceUrl = null,
+  declaredStatus,
 }: RpsnDisplayProps) {
+  const hasValue = rpsn != null && Number.isFinite(rpsn);
+  const record = toProvenanceFields({
+    id: "rpsn.display",
+    value: hasValue ? rpsn : null,
+    unit: "percent_pa",
+    country: "cz",
+    source: sourceUrl ?? "Supabase bank_rates / current_rates",
+    sourceUrl,
+    sourceType: "supabase",
+    status: declaredStatus ?? (hasValue ? "LIVE" : "STALE"),
+    confidence: hasValue ? 0.8 : 0,
+    lastFetchedAt: updatedAt,
+    notes: hasValue
+      ? null
+      : "RPSN chybí ve zdroji — Neinventujeme.",
+  });
+  const { effectiveStatus } = resolveEffectiveStatus(record);
+
   return (
     <div
       className={cn(
-        "flex items-center gap-1 text-gray-500",
+        "flex flex-wrap items-center gap-1.5 text-gray-500",
         compact ? "text-[11px] leading-snug" : "text-sm",
         className
       )}
     >
       <span className="min-w-0">
-        {rpsn != null && Number.isFinite(rpsn)
-          ? <>RPSN: {rpsn.toFixed(2)}&nbsp;%</>
-          : <>RPSN: Na vyžádání</>}
+        {hasValue ? (
+          <>RPSN: {rpsn!.toFixed(2)}&nbsp;%</>
+        ) : (
+          <>RPSN: {missingDataLabel(effectiveStatus)}</>
+        )}
       </span>
+      <DataStatusBadge status={effectiveStatus} />
+      <DataSourcePopover
+        record={{ ...record, status: effectiveStatus }}
+        methodologyTopic="rpsn"
+        label="Zdroj"
+      />
       <Tooltip>
         <TooltipTrigger
           type="button"

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ArrowRight, Loader2, Send } from "lucide-react";
 import { articlesData, type Article } from "@/lib/articles-data";
 import { routes } from "@/lib/routes";
@@ -13,6 +13,11 @@ import {
 import type { CountryId } from "@/lib/calculators";
 import { submitLead } from "@/lib/leads";
 import { CountryInfoTabs } from "@/components/sections/CountryInfoTabs";
+import {
+  FormConsentFields,
+  emptyFormConsentState,
+  toConsentRecord,
+} from "@/components/consent/FormConsentFields";
 
 interface HubFormData {
   name: string;
@@ -45,7 +50,7 @@ const SUB_NAV_LINKS = [
 function RelatedArticleCard({ article }: { article: Article }) {
   return (
     <Link
-      href={routes.clanky}
+      href={article.href || routes.clanky}
       className="group flex flex-col border border-gray-100 rounded-2xl overflow-hidden hover:shadow-lg transition-all"
     >
       <div className="relative h-48 overflow-hidden">
@@ -65,7 +70,7 @@ function RelatedArticleCard({ article }: { article: Article }) {
           {article.excerpt}
         </p>
         <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-emerald-700">
-          Číst v magazínu
+          Číst článek
           <ArrowRight className="h-4 w-4" />
         </span>
       </div>
@@ -78,6 +83,9 @@ function InvestorLeadForm({ countryName }: { countryName: string }) {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [consent, setConsent] = useState(() =>
+    emptyFormConsentState("mortgage_specialist")
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,6 +108,7 @@ function InvestorLeadForm({ countryName }: { countryName: string }) {
         `Typ nemovitosti: ${formData.propertyType}`,
       ].join(" | "),
       metadata: { ...formData },
+      consent: toConsentRecord(consent),
     });
 
     setLoading(false);
@@ -230,7 +239,7 @@ function InvestorLeadForm({ countryName }: { countryName: string }) {
               Čistě investiční záměr (cash-flow / flip)
             </option>
             <option value="diverzifikace">
-              Diverzifikace portfolia (záchrana před inflací)
+              Diverzifikace portfolia (ochrana kupní síly)
             </option>
           </select>
         </div>
@@ -287,6 +296,12 @@ function InvestorLeadForm({ countryName }: { countryName: string }) {
           </p>
         )}
 
+        <FormConsentFields
+          state={consent}
+          onChange={setConsent}
+          showPartnerTransfer
+        />
+
         <button
           type="submit"
           disabled={loading}
@@ -300,8 +315,8 @@ function InvestorLeadForm({ countryName }: { countryName: string }) {
           {loading ? "Odesílám…" : "Vyžádat neveřejné nabídky"}
         </button>
         <p className="text-[10px] text-gray-400 text-center mt-3 leading-relaxed">
-          Vaše data jsou u nás v bezpečí. Kliknutím souhlasíte se zpracováním
-          osobních údajů pro účely komunikace.
+          Odeslání formuláře není univerzální marketingový souhlas. Marketing
+          jen při samostatném zaškrtnutí.
         </p>
       </form>
     </div>
@@ -316,10 +331,12 @@ export function CountryInvestmentHub({ countryId }: CountryInvestmentHubProps) {
   const countryName = getCountryHubName(countryId);
   const data = getCountryHubData(countryId);
   const [imageError, setImageError] = useState(false);
-
-  useEffect(() => {
+  const [imageResetKey, setImageResetKey] = useState(`${countryId}:${data.heroImage}`);
+  const nextImageKey = `${countryId}:${data.heroImage}`;
+  if (imageResetKey !== nextImageKey) {
+    setImageResetKey(nextImageKey);
     setImageError(false);
-  }, [countryId, data.heroImage]);
+  }
 
   const heroTitle = countryName.includes("Dubaj") ? "Dubaj" : countryName;
 

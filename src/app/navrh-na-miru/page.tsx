@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { OnboardingWizard } from "@/components/sections/OnboardingWizard";
+import { MortgageReadinessWizard } from "@/components/mortgage-readiness/MortgageReadinessWizard";
 
 export const metadata: Metadata = {
-  title: "Návrh na míru | HypotékaJasně.cz",
+  title: "Hypoteční připravenost | HypotékaJasně.cz",
   description:
-    "Sestavte si investiční profil a získejte přesný matematický model financování nemovitosti v ČR i zahraničí.",
+    "Orientační skóre hypoteční připravenosti, personalizovaný action plan a bezpečný odkaz na nemovitosti v rozpočtu na Majetio.",
 };
 
 export default function NavrhNaMiruPage() {
-  return <OnboardingWizard />;
+  return <MortgageReadinessWizard />;
 }

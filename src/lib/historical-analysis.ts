@@ -26,7 +26,7 @@ export const historicalAnalysisByCountry: Record<CountryId, HistoricalAnalysis> 
         {
           title: "Neviditelný zloděj: Inflace",
           content:
-            'Graf "Stroje času" jasně ukazuje, proč je šetření do matrace tou nejriskantnější investicí. Inflace funguje jako skrytá daň z hotovosti. Nemovitost funguje jako štít – cena stavebních materiálů, práce i pozemků roste s inflací, čímž se přirozeně zvyšuje tržní hodnota vašeho majetku. A co víc, pokud máte hypotéku, inflace reálně požírá váš dluh vůči bance.',
+            "Stroj času ukazuje rozdíl mezi nominální hotovostí a reálnou kupní silou (CPI). Hotovost bez výnosu typicky ztrácí kupní sílu — není to ale jediné riziko a „nejriskantnější investice“ závisí na cíli a horizontu. Nemovitost historicky často rostla s cenovou hladinou, ale minulost negarantuje budoucnost. U hypotéky inflace může reálně snižovat dluh vůči příjmům, pokud rostou mzdy.",
         },
         {
           title: "Nájmy jako barometr poptávky",

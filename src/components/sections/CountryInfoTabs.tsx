@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { getCountryInfoData } from "@/lib/country-info-data";
 import { cn } from "@/lib/utils";
+import { ModelledDomainProvenance } from "@/components/trust/ModelledDomainProvenance";
 
 type TabId = "overview" | "process" | "taxes" | "ownership" | "risks";
 
@@ -78,8 +79,8 @@ function getOwnershipInfo(country: string): OwnershipInfo {
 function DataFallback({ topic }: { topic: string }) {
   return (
     <div className="rounded-2xl border border-dashed border-emerald-200 bg-emerald-50/50 p-6 text-sm leading-relaxed text-emerald-950">
-      Detailní data o {topic} pro tento trh pro vás momentálně aktualizujeme a
-      revidujeme s našimi právními partnery.
+      Detail k tématu „{topic}“ doplňujeme. Mezitím platí obecný právní rámec
+      země — vždy ověřte s lokálním právníkem.
     </div>
   );
 }
@@ -168,6 +169,14 @@ function OwnershipTab({ country }: { country: string }) {
         Doporučujeme vždy escrow / notářskou úschovu a lokální právní prověrku
         před odesláním jakékoli zálohy.
       </p>
+      <div className="mt-4">
+        <ModelledDomainProvenance
+          topic="legal"
+          label="Právo"
+          source="Editorial country-info (ownership)"
+          notes="Není individuální právní rada. Status VERIFIED po editorial kontrole."
+        />
+      </div>
     </div>
   );
 }

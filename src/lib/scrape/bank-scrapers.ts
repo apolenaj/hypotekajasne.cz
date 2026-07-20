@@ -22,9 +22,14 @@ import {
   RPSN_TEXT_PATTERNS,
   type ExtractedMortgageRates,
 } from "@/lib/scrape/parse-rate";
+import {
+  KB_INSIDER_RATES,
+  ORIENTATIONAL_WITHOUT_SURCHARGE,
+} from "@/lib/scrape/rate-policy";
 
 export type { BankScraperId };
 export { BANK_NAME_TO_SCRAPER_ID };
+export { KB_INSIDER_RATES, ORIENTATIONAL_WITHOUT_SURCHARGE };
 
 export type BankScraperConfig = {
   id: BankScraperId;
@@ -59,15 +64,6 @@ export type ScrapedBankRate = {
   americanWithoutInsuranceEstimated: boolean;
   americanSourceUrl: string | null;
 };
-
-/** Insider sazby KB (reálná tržní data od uživatele). */
-export const KB_INSIDER_RATES = {
-  rateWithInsurance: 4.74,
-  rateWithoutInsurance: 4.94,
-} as const;
-
-/** Orientační tržní přirážka, pokud chybí sazba bez pojištění. */
-export const ORIENTATIONAL_WITHOUT_SURCHARGE = 0.3;
 
 export const BANK_SCRAPERS: BankScraperConfig[] = [
   {

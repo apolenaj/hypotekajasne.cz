@@ -53,11 +53,11 @@ export const swotAnalysisKsaData: SwotAnalysisSection[] = [
       },
       {
         subtitle: "Relokace centrál",
-        text: "Společnosti se povinně stěhují do Rijádu, což zaručuje dlouhodobé nájemce z řad managementu.",
+        text: "Přesun firemních sídel do Rijádu zvyšuje poptávku po bydlení managementu — nejde o záruku obsazenosti konkrétní nemovitosti.",
       },
       {
-        subtitle: "Zlatá víza (Premium Residency)",
-        text: "Programy umožňující cizincům bezpečně vlastnit majetek a dlouhodobě v zemi podnikat.",
+        subtitle: "Premium Residency + Non-Saudi Ownership (2026)",
+        text: "Premium Residency zůstává doplňkovou cestou; od ledna 2026 platí zónový režim vlastnictví nesaúdských osob — vždy ověřte Geographic Scope.",
       },
     ],
   },

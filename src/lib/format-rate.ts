@@ -1,5 +1,7 @@
 /** Zobrazení sazby — nikdy nevymýšlí číslo při chybějících datech. */
 
+import { missingDataLabel } from "@/lib/data/display";
+
 export function formatRateOrOnRequest(
   rate: number | null | undefined,
   {
@@ -7,7 +9,9 @@ export function formatRateOrOnRequest(
     orientational = false,
   }: { suffix?: string; orientational?: boolean } = {}
 ): string {
-  if (rate == null || !Number.isFinite(rate)) return "Na vyžádání";
+  if (rate == null || !Number.isFinite(rate)) {
+    return missingDataLabel(null);
+  }
   const base = `${rate.toFixed(2)}${suffix}`;
   return orientational ? `${base} *orientačně` : base;
 }
@@ -31,6 +35,6 @@ export function isClassicWithoutOrientational(bankId: string): boolean {
 }
 
 /** Americká sazba bez pojištění je po +0.3 fallbacku vždy orientační. */
-export function isAmericanWithoutOrientational(_bankId?: string): boolean {
+export function isAmericanWithoutOrientational(): boolean {
   return true;
 }

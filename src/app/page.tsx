@@ -1,15 +1,9 @@
-import { HomeCountryGrid } from "@/components/sections/HomeCountryGrid";
-import { FindMyPathView } from "@/components/sections/FindMyPathView";
-import { MajetioPromoSection } from "@/components/sections/MajetioPromoSection";
-import { Hero } from "@/components/sections/Hero";
+import type { Metadata } from "next";
+import { HomeExperience } from "@/components/home/HomeExperience";
+import { rootMetadata } from "@/lib/seo/metadata";
+
+export const metadata: Metadata = rootMetadata;
 
 export default function Home() {
-  return (
-    <>
-      <Hero />
-      <HomeCountryGrid />
-      <FindMyPathView />
-      <MajetioPromoSection />
-    </>
-  );
+  return <HomeExperience />;
 }

@@ -12,6 +12,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  FormConsentFields,
+  emptyFormConsentState,
+  toConsentRecord,
+} from "@/components/consent/FormConsentFields";
 import { consultationCountries } from "@/lib/mock-data";
 import { buildThankYouPath, submitLead } from "@/lib/leads";
 
@@ -25,6 +30,9 @@ export function LeadGen() {
     phone: "",
     country: "",
   });
+  const [consent, setConsent] = useState(() =>
+    emptyFormConsentState("mortgage_specialist")
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,6 +55,7 @@ export function LeadGen() {
       metadata: {
         country_code: formData.country || null,
       },
+      consent: toConsentRecord(consent),
     });
 
     setLoading(false);
@@ -117,6 +126,12 @@ export function LeadGen() {
                 </SelectContent>
               </Select>
             </div>
+
+            <FormConsentFields
+              state={consent}
+              onChange={setConsent}
+              showPartnerTransfer
+            />
 
             {error && (
               <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">

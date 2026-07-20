@@ -3,14 +3,16 @@ import type { BuyingProcessStep } from "@/lib/buying-process-cz-data";
 export const buyingProcessKsaData: BuyingProcessStep[] = [
   {
     step: 1,
-    title: "Povolení k nákupu (Premium Residency)",
-    description: "Cizinci potřebují povolení ke koupi nemovitosti v KSA.",
+    title: "Ověření zóny a způsobilosti (Non-Saudi Ownership 2026)",
+    description:
+      "Od ledna 2026 platí Law on Real Estate Ownership by Non-Saudis — zónový rámec místo čistě povolovacího režimu.",
     details: [
-      "Nejčastější cestou je získání 'Premium Residency' (zlaté vízum).",
-      "Nákup je povolen pouze ve vybraných zónách a projektech.",
+      "Ověřte, že nemovitost leží v povolené geografické zóně (Saudi Properties / REGA).",
+      "Premium Residency zůstává samostatnou cestou, ale není jedinou podmínkou vlastnictví pod novým zákonem.",
+      "Mekka a Medina podléhají zpřísněným omezením.",
     ],
     warning:
-      "Před jakoukoli platbou si nechte písemně potvrdit, že jako cizinec máte v daném projektu právo na vlastnictví.",
+      "Umístění v zóně neznamená automatickou způsobilost kupujícího — ověřte kategorii nabyvatele před platbou.",
   },
   {
     step: 2,

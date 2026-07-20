@@ -48,7 +48,7 @@ export const buyVsRentData: Record<string, BuyVsRentCountryData> = {
       "Rychlá změna lokality",
     ],
     rentCons: [
-      "Peníze nebudou nikdy vaše",
+      "Kapitál zůstává u pronajímatele — budujete si vlastní equity méně přímo",
       "Riziko růstu nájmu",
       "Absence rozhodovací pravomoci",
     ],
@@ -271,11 +271,16 @@ export function generateBreakEvenChartData(
   countryId: CountryId
 ): BreakEvenChartPoint[] {
   const config = countryConfigs[countryId];
-  const { defaultPrice: price, defaultSavings: savings, defaultRate: rate, defaultTerm: term, defaultRentalYield: yieldRate } =
+  const { defaultPrice: price, defaultSavings: savings, defaultTerm: term, defaultRentalYield: yieldRate } =
     config;
 
+  // Bez ověřené lokální sazby nepočítáme falešnou anuitu — cash-heavy model
+  const rate = config.defaultRate;
   const loanAmount = Math.max(0, price - savings);
-  const monthlyMortgage = calculateAnnuityPayment(loanAmount, rate, term);
+  const monthlyMortgage =
+    rate != null && rate > 0
+      ? calculateAnnuityPayment(loanAmount, rate, term)
+      : 0;
   const annualMortgage = monthlyMortgage * 12;
   const initialBuyCost = savings + price * TRANSACTION_FEE_RATE;
   const yearlyBuyCost = annualMortgage + price * MAINTENANCE_RATE;

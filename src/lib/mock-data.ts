@@ -33,7 +33,7 @@ export const destinationCards: DestinationCard[] = [
   {
     id: "italy",
     name: "Itálie",
-    subtitle: "Vysoký potenciál růstu ROI",
+    subtitle: "Růstový trh — ověřte model výnosu",
     image:
       "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=800&h=600&fit=crop&q=80",
   },
@@ -47,7 +47,7 @@ export const destinationCards: DestinationCard[] = [
   {
     id: "bali",
     name: "Bali (Indonésie)",
-    subtitle: "Exotický ráj s vysokým ROI",
+    subtitle: "Leasehold a hotovostní nákupy — model, ne slib",
     image:
       "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&h=600&fit=crop&q=80",
   },
@@ -94,6 +94,10 @@ export type NavLinkItem = {
 /** Tři hlavní cesty — vždy viditelné v hlavičce */
 export const primaryNavLinks: NavLinkItem[] = [
   {
+    href: routes.dashboard,
+    label: "Můj dashboard",
+  },
+  {
     href: routes.kalkulacky.root,
     label: "Zjistit, kolik si mohu půjčit",
   },
@@ -117,9 +121,24 @@ export const secondaryNavGroups: {
     id: "nastroje",
     label: "Nástroje",
     items: [
+      { href: routes.financniPas, label: "Financial Passport" },
+      { href: routes.portfolio, label: "Portfolio OS" },
+      { href: routes.refinanceRadar, label: "Refinance Radar" },
+      { href: routes.globalFinancing, label: "Global Financing Router" },
+      { href: routes.documentVault, label: "Document Vault" },
+      { href: routes.dealRoom, label: "Deal Room" },
+      { href: routes.offerStrategy, label: "Offer Strategy" },
+      { href: routes.dueDiligence, label: "Due Diligence" },
+      { href: routes.marketPulse, label: "Market Pulse" },
+      { href: routes.alertCenter, label: "Alert Center" },
+      { href: routes.reportEngine, label: "Report Engine" },
+      { href: routes.b2bPortal, label: "B2B Portal" },
+      { href: routes.sledovani, label: "Sledování nemovitostí" },
+      { href: routes.copilot, label: "AI Copilot" },
       { href: routes.kalkulacky.root, label: "Hypoteční kalkulačka" },
       { href: routes.investicniPas, label: "Investiční pas" },
       { href: routes.investicniRentgen, label: "Investiční rentgen" },
+      { href: routes.investicniRentgenPorovnani, label: "Porovnání nemovitostí" },
       { href: routes.kalkulacky.koupeVsNajem, label: "Koupě × Nájem" },
       { href: routes.kalkulacky.historickyVyvoj, label: "Historický vývoj" },
       { href: routes.kalkulacky.potencialniVyvoj, label: "Potenciální vývoj" },
@@ -183,6 +202,9 @@ export const footerLinks = {
   company: [
     { href: routes.kontakt, label: "Kontakt" },
     { href: routes.faq, label: "FAQ" },
+    { href: routes.dashboard, label: "Můj dashboard" },
+    { href: routes.financniPas, label: "Financial Passport" },
+    { href: routes.copilot, label: "AI Copilot" },
     { href: routes.oNas, label: "O nás" },
   ],
 };
@@ -615,7 +637,7 @@ export const financingDetailsData: Record<string, FinancingDetail[]> = {
         "Podpis Leasehold (nebo přes PT PMA firmu Freehold) smlouvy, postupné splácení notáři do escrow.",
       advantages: [
         "Žádné úrokové zatížení na místě",
-        "Extrémně vysoké ROI (až 15 %) díky absenci finančních nákladů",
+        "Modelový hrubý výnos u vil se v marketingu uvádí vyšší — ověřte obsazenost, poplatky a leasehold; nejde o záruku.",
       ],
       risks: [
         "Nutnost mít 100 % kapitálu během krátké doby výstavby",

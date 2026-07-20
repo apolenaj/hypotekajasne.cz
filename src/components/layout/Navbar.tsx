@@ -198,7 +198,7 @@ export function Navbar() {
               />
             )}
             <Link href={routes.navrhNaMiru} className={ctaClassName}>
-              Návrh na míru
+              Hypoteční připravenost
             </Link>
           </div>
         </div>
@@ -225,7 +225,7 @@ export function Navbar() {
               href={routes.navrhNaMiru}
               className={cn(ctaClassName, "hidden sm:inline-flex")}
             >
-              Návrh na míru
+              Hypoteční připravenost
             </Link>
             <button
               type="button"
@@ -252,7 +252,7 @@ export function Navbar() {
               onClick={closeMobile}
               className={cn(ctaClassName, "w-full")}
             >
-              Návrh na míru
+              Hypoteční připravenost
             </Link>
 
             <div>

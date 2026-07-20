@@ -9,11 +9,17 @@ export type CountryId =
   | "slovakia";
 export type CurrencyCode = "CZK" | "AED" | "EUR" | "USD" | "SAR";
 
+/**
+ * @deprecated Prefer FinancingOptionId from @/lib/financing.
+ * Kept for legacy calculateMortgage callers.
+ */
 export type StandardFinancingType = "annuity" | "linear";
+/** @deprecated Prefer FinancingOptionId from @/lib/financing. */
 export type DubaiFinancingType =
   | "developer-plan"
   | "non-resident"
   | "american-cz-collateral";
+/** @deprecated Prefer FinancingOptionId from @/lib/financing. */
 export type FinancingType = StandardFinancingType | DubaiFinancingType;
 
 export interface CountryConfig {
@@ -22,7 +28,11 @@ export interface CountryConfig {
   currency: CurrencyCode;
   defaultPrice: number;
   defaultSavings: number;
-  defaultRate: number;
+  /**
+   * Ověřená lokální sazba — null = nevymýšlíme (žádný hardcoded foreign rate).
+   * CZ používá live sazby ze Supabase, ne toto pole.
+   */
+  defaultRate: number | null;
   defaultTerm: number;
   defaultRentalYield: number;
 }
@@ -34,7 +44,7 @@ export const countryConfigs: Record<CountryId, CountryConfig> = {
     currency: "CZK",
     defaultPrice: 5_000_000,
     defaultSavings: 1_000_000,
-    defaultRate: 4.5,
+    defaultRate: null,
     defaultTerm: 30,
     defaultRentalYield: 0.036,
   },
@@ -43,8 +53,9 @@ export const countryConfigs: Record<CountryId, CountryConfig> = {
     label: "Dubaj (SAE)",
     currency: "AED",
     defaultPrice: 2_500_000,
-    defaultSavings: 500_000,
-    defaultRate: 4.5,
+    // Non-resident LTV strop 50 % → min. 50 % equity (ne generických 20 %)
+    defaultSavings: 1_250_000,
+    defaultRate: null,
     defaultTerm: 25,
     defaultRentalYield: 0.065,
   },
@@ -53,8 +64,9 @@ export const countryConfigs: Record<CountryId, CountryConfig> = {
     label: "Španělsko",
     currency: "EUR",
     defaultPrice: 350_000,
-    defaultSavings: 70_000,
-    defaultRate: 3.8,
+    // Nerezident typicky max ~70 % LTV → 30 % equity (ne 80 % LTV)
+    defaultSavings: 105_000,
+    defaultRate: null,
     defaultTerm: 30,
     defaultRentalYield: 0.05,
   },
@@ -63,8 +75,8 @@ export const countryConfigs: Record<CountryId, CountryConfig> = {
     label: "Itálie",
     currency: "EUR",
     defaultPrice: 400_000,
-    defaultSavings: 80_000,
-    defaultRate: 4.0,
+    defaultSavings: 160_000,
+    defaultRate: null,
     defaultTerm: 25,
     defaultRentalYield: 0.0525,
   },
@@ -73,8 +85,8 @@ export const countryConfigs: Record<CountryId, CountryConfig> = {
     label: "Chorvatsko",
     currency: "EUR",
     defaultPrice: 300_000,
-    defaultSavings: 60_000,
-    defaultRate: 4.2,
+    defaultSavings: 120_000,
+    defaultRate: null,
     defaultTerm: 20,
     defaultRentalYield: 0.0575,
   },
@@ -83,8 +95,9 @@ export const countryConfigs: Record<CountryId, CountryConfig> = {
     label: "Bali",
     currency: "USD",
     defaultPrice: 350_000,
-    defaultSavings: 70_000,
-    defaultRate: 5.5,
+    // Bez bankovní hypotéky pro cizince — cash / developer heavy
+    defaultSavings: 350_000,
+    defaultRate: null,
     defaultTerm: 20,
     defaultRentalYield: 0.125,
   },
@@ -93,8 +106,8 @@ export const countryConfigs: Record<CountryId, CountryConfig> = {
     label: "Saúdská Arábie",
     currency: "SAR",
     defaultPrice: 1_200_000,
-    defaultSavings: 240_000,
-    defaultRate: 4.8,
+    defaultSavings: 480_000,
+    defaultRate: null,
     defaultTerm: 25,
     defaultRentalYield: 0.075,
   },
@@ -103,8 +116,8 @@ export const countryConfigs: Record<CountryId, CountryConfig> = {
     label: "Slovensko",
     currency: "EUR",
     defaultPrice: 220_000,
-    defaultSavings: 44_000,
-    defaultRate: 4.3,
+    defaultSavings: 88_000,
+    defaultRate: null,
     defaultTerm: 30,
     defaultRentalYield: 0.0475,
   },
@@ -201,9 +214,12 @@ export interface CalculatorResult {
 
 export function getEffectiveCurrency(
   country: CountryId,
-  financingType: FinancingType
+  financingType: FinancingType | string
 ): CurrencyCode {
-  if (country === "dubai" && financingType === "american-cz-collateral") {
+  if (
+    financingType === "american-cz-collateral" ||
+    financingType === "CZECH_EQUITY_LOAN"
+  ) {
     return "CZK";
   }
   return countryConfigs[country].currency;
@@ -211,9 +227,108 @@ export function getEffectiveCurrency(
 
 export function shouldShowInterestRate(
   country: CountryId,
-  financingType: FinancingType
+  financingType: FinancingType | string
 ): boolean {
-  return !(country === "dubai" && financingType === "developer-plan");
+  return !(
+    (country === "dubai" && financingType === "developer-plan") ||
+    financingType === "DEVELOPER_PAYMENT_PLAN" ||
+    financingType === "CASH"
+  );
+}
+
+/**
+ * @deprecated Prefer calculateFinancing from @/lib/financing.
+ * Legacy wrapper — foreign markets no longer invent annuity from hardcoded rates.
+ */
+export function calculateMortgage(input: CalculatorInput): CalculatorResult {
+  const { country, price, savings, interestRate, termYears, financingType } =
+    input;
+  const currency = getEffectiveCurrency(country, financingType);
+  const loanAmount = Math.max(0, price - savings);
+  const ltv = price > 0 ? Math.round((loanAmount / price) * 100) : 0;
+
+  if (
+    financingType === "developer-plan" ||
+    (financingType as string) === "DEVELOPER_PAYMENT_PLAN"
+  ) {
+    return {
+      monthlyPayment: 0,
+      totalPayment: Math.round(price),
+      totalInterest: 0,
+      loanAmount: Math.round(price),
+      termYears,
+      ltv: 0,
+      currency,
+      collateral: "Developer payment plan (ne bankovní hypotéka)",
+      financingLabel: "Developer Payment Plan",
+      showChart: false,
+      chartData: [],
+    };
+  }
+
+  let monthlyPayment = 0;
+  let financingLabel = "Anuitní splácení";
+  let collateral = `Nemovitost (LTV ${ltv}%)`;
+  let showChart = false;
+
+  const hasRate =
+    Number.isFinite(interestRate) && interestRate > 0 && loanAmount > 0;
+
+  if (financingType === "american-cz-collateral") {
+    financingLabel = "Americká hypotéka (Zástava v ČR)";
+    collateral = "Česká nemovitost jako zástava";
+    if (hasRate) {
+      monthlyPayment = calculateAnnuityPayment(
+        loanAmount,
+        interestRate,
+        termYears
+      );
+      showChart = true;
+    }
+  } else if (country === "cz") {
+    if (financingType === "linear" && hasRate) {
+      financingLabel = "Lineární splácení";
+      monthlyPayment = calculateLinearFirstPayment(
+        loanAmount,
+        interestRate,
+        termYears
+      );
+      showChart = true;
+    } else if (hasRate) {
+      monthlyPayment = calculateAnnuityPayment(
+        loanAmount,
+        interestRate,
+        termYears
+      );
+      showChart = true;
+    }
+  } else if (financingType === "non-resident") {
+    financingLabel = "Non-resident hypotéka";
+    collateral = `Nemovitost (LTV ${ltv}%)`;
+    // Bez ověřené sazby — UI používá calculateFinancing
+  } else {
+    financingLabel = "Financování — ověřit individuálně";
+  }
+
+  monthlyPayment = Math.round(monthlyPayment);
+  const totalPayment = Math.round(monthlyPayment * termYears * 12);
+  const totalInterest = Math.max(0, totalPayment - loanAmount);
+
+  return {
+    monthlyPayment,
+    totalPayment,
+    totalInterest,
+    loanAmount,
+    termYears,
+    ltv,
+    currency,
+    collateral,
+    financingLabel,
+    showChart,
+    chartData: showChart
+      ? generateChartData(loanAmount, monthlyPayment, termYears, interestRate)
+      : [],
+  };
 }
 
 export function calculateAnnuityPayment(
@@ -310,110 +425,16 @@ function generateChartData(
   return data;
 }
 
-export function calculateMortgage(input: CalculatorInput): CalculatorResult {
-  const { country, price, savings, interestRate, termYears, financingType } =
-    input;
-  const currency = getEffectiveCurrency(country, financingType);
-  const loanAmount = Math.max(0, price - savings);
-  const ltv = price > 0 ? Math.round((loanAmount / price) * 100) : 0;
-
-  let monthlyPayment = 0;
-  let effectiveTerm = termYears;
-  let financingLabel = "Anuitní splácení";
-  let collateral = `Nemovitost (LTV ${ltv}%)`;
-  let showChart = false;
-
-  if (country === "dubai") {
-    if (financingType === "developer-plan") {
-      const constructionMonths = 36;
-      const postHandoverYears = 20;
-      const constructionPayment = loanAmount * 0.6;
-      const postHandoverLoan = loanAmount * 0.4;
-      const constructionMonthly = constructionPayment / constructionMonths;
-      const postHandoverMonthly = calculateAnnuityPayment(
-        postHandoverLoan,
-        4.5,
-        postHandoverYears
-      );
-      monthlyPayment = Math.round(
-        constructionMonthly * 0.4 + postHandoverMonthly * 0.6
-      );
-      effectiveTerm = postHandoverYears + 3;
-      financingLabel = "Developer Payment Plan (Off-plan)";
-      collateral = "Off-plan nemovitost v SAE";
-      showChart = true;
-    } else if (financingType === "non-resident") {
-      monthlyPayment = calculateAnnuityPayment(
-        loanAmount,
-        interestRate,
-        termYears
-      );
-      financingLabel = "Non-resident hypotéka";
-      collateral = "Nemovitost v SAE (LTV " + ltv + "%)";
-      showChart = true;
-    } else {
-      monthlyPayment = calculateAnnuityPayment(
-        loanAmount,
-        interestRate,
-        termYears
-      );
-      financingLabel = "Americká hypotéka (Zástava v ČR)";
-      collateral = "Česká nemovitost jako zástava";
-      showChart = true;
-    }
-  } else if (financingType === "linear") {
-    monthlyPayment = calculateLinearFirstPayment(
-      loanAmount,
-      interestRate,
-      termYears
-    );
-    financingLabel = "Lineární splácení";
-  } else {
-    monthlyPayment = calculateAnnuityPayment(
-      loanAmount,
-      interestRate,
-      termYears
-    );
-    financingLabel = "Anuitní splácení";
-  }
-
-  monthlyPayment = Math.round(monthlyPayment);
-  const totalPayment = Math.round(monthlyPayment * effectiveTerm * 12);
-  const totalInterest = Math.max(0, totalPayment - loanAmount);
-
-  const chartData = showChart
-    ? generateChartData(
-        loanAmount,
-        monthlyPayment,
-        effectiveTerm,
-        financingType === "developer-plan" ? 4.5 : interestRate
-      )
-    : [];
-
-  return {
-    monthlyPayment,
-    totalPayment,
-    totalInterest,
-    loanAmount,
-    termYears: effectiveTerm,
-    ltv,
-    currency,
-    collateral,
-    financingLabel,
-    showChart,
-    chartData,
-  };
-}
-
 export function formatCurrency(
   amount: number,
   currency: CurrencyCode
 ): string {
-  return (
-    new Intl.NumberFormat("en-US", {
-      style: "decimal",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount) + ` ${currency}`
-  );
+  const formatted = new Intl.NumberFormat("cs-CZ", {
+    style: "decimal",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(Math.round(amount));
+
+  const suffix = currency === "CZK" ? "Kč" : currency;
+  return `${formatted}\u00a0${suffix}`;
 }

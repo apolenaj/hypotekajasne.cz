@@ -63,17 +63,17 @@ const toolCards = [
   },
   {
     href: routes.navrhNaMiru,
-    title: "Návrh na míru",
+    title: "Hypoteční připravenost",
     description:
-      "4krokový investiční profil — připravíme matematický model financování.",
+      "Skóre připravenosti, překážky a action plan — bez příslibu schválení bankou.",
     icon: ClipboardList,
     accent: "bg-emerald-900 text-white",
   },
   {
-    href: routes.oNas,
-    title: "O nás",
+    href: routes.duvera,
+    title: "Trust Center",
     description:
-      "Procesní dokonalost, data a technologie — kdo stojí za platformou.",
+      "Kdo co dělá, jak vyděláváme, partneři a metodika — bez prázdných slibů.",
     icon: BarChart3,
     accent: "bg-gray-100 text-gray-800",
   },

@@ -14,8 +14,8 @@ export interface InvestorPath {
 export const investorPaths: InvestorPath[] = [
   {
     id: "low-capital",
-    title: "Nejnižší potřebný kapitál",
-    desc: "Trhy s nejnižším vstupním prahem (např. leasehold na Bali od 1,5 mil. Kč) nebo projekty se splátkovým kalendářem bez nutnosti hypotéky.",
+    title: "Nižší vstupní kapitál",
+    desc: "Trhy s nižším orientačním prahem (např. leasehold struktury) nebo projekty se splátkovým kalendářem — vždy ověřte právní formu.",
     icon: "capital",
     markets: ["Bali (Indonésie)", "SAE (Dubaj)", "Saúdská Arábie"],
     accent: "from-amber-500/15 to-orange-500/5",
@@ -23,8 +23,8 @@ export const investorPaths: InvestorPath[] = [
   },
   {
     id: "high-yield",
-    title: "Nejvyšší potenciální výnos",
-    desc: "Lokalit s nejlepším čistým cash-flow a ROI přesahujícím 10 % p.a. díky silnému turistickému ruchu.",
+    title: "Vyšší potenciální výnos",
+    desc: "Lokality s častěji uváděným vyšším hrubým výnosem; čistý cash-flow závisí na obsazenosti, daních a správě.",
     icon: "yield",
     markets: ["Bali (Indonésie)", "SAE (Dubaj)", "Španělsko"],
     accent: "from-emerald-500/15 to-teal-500/5",
@@ -32,8 +32,8 @@ export const investorPaths: InvestorPath[] = [
   },
   {
     id: "low-risk",
-    title: "Nejnižší riziko",
-    desc: "Stabilní právní prostředí a alpské/evropské jistoty.",
+    title: "Nižší relativní riziko",
+    desc: "Trhy s bližším právním rámcem EU / ČR. Riziko není nulové — vždy platí lokální due diligence.",
     icon: "risk",
     markets: ["Česká republika", "Itálie", "Slovensko"],
     accent: "from-sky-500/15 to-blue-500/5",
@@ -41,8 +41,8 @@ export const investorPaths: InvestorPath[] = [
   },
   {
     id: "sea-rent",
-    title: "Kombinace: Moře & Pronájem",
-    desc: "Ideální pro vlastní rekreaci v létě a pronájem mimo sezónu.",
+    title: "Moře & sezónní pronájem",
+    desc: "Kombinace vlastní rekreace a pronájmu mimo sezónu; výnos je silně sezónní.",
     icon: "sea",
     markets: ["Chorvatsko", "Španělsko", "Itálie"],
     accent: "from-cyan-500/15 to-indigo-500/5",
@@ -57,7 +57,7 @@ export function getPathMarketDetails(marketName: string) {
 export function getRentgenHref(country: string, city?: string): string {
   const params = new URLSearchParams({ country });
   if (city) params.set("city", city);
-  return `${routes.investicniRentgen}?${params.toString()}`;
+  return `${routes.investicniRentgenModelar}?${params.toString()}`;
 }
 
 /** Default city for Investiční rentgen prefill (matches LOCATIONS_DATA). */

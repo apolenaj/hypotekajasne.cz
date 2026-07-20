@@ -756,6 +756,8 @@ function InvestmentModelerInner() {
   const [scenario, setScenario] = useState<ScenarioKey>("moderate");
   const prefillsApplied = useRef(false);
 
+  // URL prefill + auto price/rent — sync z query / trhu (jednorázově / při změně vstupů)
+  /* eslint-disable react-hooks/set-state-in-effect -- intentional form hydration from URL + market metrics */
   useEffect(() => {
     if (prefillsApplied.current) return;
     const country = searchParams.get("country");
@@ -801,6 +803,7 @@ function InvestmentModelerInner() {
       }));
     }
   }, [form.city, form.area, form.propertyType, form.purpose]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const analysis = useMemo(() => analyzeInvestmentModel(form), [form]);
   const active = analysis.scenarios[scenario];

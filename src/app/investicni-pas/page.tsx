@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { InvestmentPassportView } from "@/components/sections/InvestmentPassportView";
 
 export const metadata: Metadata = {
-  title: "Mezinárodní investiční pas | HypotékaJasně.cz",
+  title: "Osobní investiční průvodce | HypotékaJasně.cz",
   description:
-    "Zjistěte svůj investiční profil a top 3 země pro nemovitost – na míru kapitálu, cíli a riziku.",
+    "Transparentní market matching: Overall Match, vážené dimenze, Top 3 trhy a side-by-side srovnání.",
 };
 
 export default function InvesticniPasPage() {

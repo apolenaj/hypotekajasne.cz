@@ -1,10 +1,10 @@
 import {
   calculateAnnuityPayment,
-  countryConfigs,
   type CountryId,
   type CurrencyCode,
   formatCurrency,
 } from "@/lib/calculators";
+import { REGULATORY_RECORDS } from "@/lib/data/static-regulatory";
 
 export type IncomeSource =
   | "employee"
@@ -65,9 +65,13 @@ export function getBankOfferSourceLabel(bankName: string): string {
   return `Zdroj: Oficiální web ${bankName}`;
 }
 
-/** Orientační RPSN odvozené od sazby konkrétní banky (dočasně, než bude scraper). */
+/**
+ * @deprecated Neinventovat RPSN. Používej scrapované RPSN nebo null → UI „Na vyžádání“.
+ * Ponecháno jen kvůli případným starým importům — nevolat v produkční cestě.
+ */
 export const BANK_RPSN_OFFSET = 0.25;
 
+/** @deprecated See BANK_RPSN_OFFSET — nikdy nedoplňovat fiktivní RPSN do nabídek. */
 export function estimateBankRpsn(interestRate: number): number {
   return +(interestRate + BANK_RPSN_OFFSET).toFixed(2);
 }
@@ -269,8 +273,9 @@ export function calculateRiskPremium(profile: RiskProfile): number {
   return premium;
 }
 
-const DTI_WARNING_THRESHOLD = 0.4;
-const DTI_DANGER_THRESHOLD = 0.45;
+/** UX prahy DSTI — kanonicky v REGULATORY_RECORDS (static-regulatory). */
+const DTI_WARNING_THRESHOLD = REGULATORY_RECORDS.dstiWarning.value;
+const DTI_DANGER_THRESHOLD = REGULATORY_RECORDS.dstiDanger.value;
 
 const BANK_RATE_OFFSETS_DEPRECATED = [
   { offset: -0.15, best: true },

@@ -4,11 +4,21 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Send } from "lucide-react";
 import {
+  FormConsentFields,
+  emptyFormConsentState,
+  toConsentRecord,
+} from "@/components/consent/FormConsentFields";
+import {
   buildThankYouPath,
   submitLead,
   type LeadPayload,
   type LeadSource,
 } from "@/lib/leads";
+import {
+  defaultPartnerScope,
+  requiresPartnerTransfer,
+} from "@/lib/consent/records";
+import { track } from "@/lib/analytics/track";
 import { cn } from "@/lib/utils";
 
 type LeadCaptureFormProps = {
@@ -18,7 +28,6 @@ type LeadCaptureFormProps = {
   metadata?: Record<string, unknown>;
   title?: string;
   subtitle?: string;
-  /** Po úspěchu přesměrovat na /dekujeme (default true). Jinak zavolá onSuccess. */
   redirectOnSuccess?: boolean;
   onSuccess?: () => void;
   className?: string;
@@ -41,6 +50,9 @@ export function LeadCaptureForm({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [consent, setConsent] = useState(() =>
+    emptyFormConsentState(defaultPartnerScope(source))
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,6 +69,7 @@ export function LeadCaptureForm({
       country,
       notes,
       metadata,
+      consent: toConsentRecord(consent),
     };
 
     const result = await submitLead(payload);
@@ -65,6 +78,20 @@ export function LeadCaptureForm({
     if (!result.ok) {
       setError(result.error);
       return;
+    }
+
+    track("lead_submitted", {
+      lead_source: source,
+      partner_scope: requiresPartnerTransfer(source)
+        ? consent.partnerTransferScope
+        : "none",
+      path: typeof window !== "undefined" ? window.location.pathname : undefined,
+    });
+    if (requiresPartnerTransfer(source) && consent.partnerTransferAccepted) {
+      track("partner_handoff", {
+        lead_source: source,
+        partner_scope: consent.partnerTransferScope,
+      });
     }
 
     if (redirectOnSuccess) {
@@ -97,7 +124,12 @@ export function LeadCaptureForm({
           placeholder="Jméno a příjmení"
           className="h-11 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm outline-none focus:border-deep-teal focus:ring-2 focus:ring-deep-teal/20"
         />
-        <div className={cn("grid gap-3", compact ? "grid-cols-1" : "sm:grid-cols-2")}>
+        <div
+          className={cn(
+            "grid gap-3",
+            compact ? "grid-cols-1" : "sm:grid-cols-2"
+          )}
+        >
           <input
             required
             type="email"
@@ -117,6 +149,12 @@ export function LeadCaptureForm({
             className="h-11 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm outline-none focus:border-deep-teal focus:ring-2 focus:ring-deep-teal/20"
           />
         </div>
+
+        <FormConsentFields
+          state={consent}
+          onChange={setConsent}
+          showPartnerTransfer={requiresPartnerTransfer(source)}
+        />
 
         {error && (
           <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">

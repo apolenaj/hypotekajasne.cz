@@ -3,6 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Mail, MapPin, Send, Loader2 } from "lucide-react";
+import {
+  FormConsentFields,
+  emptyFormConsentState,
+  toConsentRecord,
+} from "@/components/consent/FormConsentFields";
 import { siteContact } from "@/lib/mock-data";
 import { buildThankYouPath, submitLead } from "@/lib/leads";
 
@@ -13,6 +18,9 @@ export function ContactView() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [consent, setConsent] = useState(() =>
+    emptyFormConsentState("none")
+  );
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -33,6 +41,7 @@ export function ContactView() {
       source: "contact",
       notes: message,
       metadata: { message },
+      consent: toConsentRecord(consent, "/kontakt"),
     });
 
     setLoading(false);
@@ -157,6 +166,12 @@ export function ContactView() {
                   placeholder="Váš dotaz…"
                 />
               </label>
+
+              <FormConsentFields
+                state={consent}
+                onChange={setConsent}
+                showPartnerTransfer={false}
+              />
 
               {error && (
                 <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">

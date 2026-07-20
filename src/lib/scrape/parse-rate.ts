@@ -184,7 +184,7 @@ export function buildExtractedRates(input: {
   rateWithoutInsurance?: number | null;
   rpsnWithoutInsurance?: number | null;
 }): ExtractedMortgageRates {
-  let rateWith = input.rateWithInsurance ?? null;
+  const rateWith = input.rateWithInsurance ?? null;
   let rpsnWith = input.rpsnWithInsurance ?? null;
   let rateWithout = input.rateWithoutInsurance ?? null;
   let rpsnWithout = input.rpsnWithoutInsurance ?? null;

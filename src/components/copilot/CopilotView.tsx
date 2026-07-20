@@ -1,0 +1,511 @@
+"use client";
+
+import Link from "next/link";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  appendAuditLog,
+  buildSessionContext,
+  CLAIM_KIND_HINT,
+  clearAuditLog,
+  COPILOT_QUICK_ACTIONS,
+  COPILOT_SYSTEM_DISCLAIMER,
+  loadAuditLog,
+  loadCopilotProperties,
+  orchestrateCopilot,
+  saveCopilotProperties,
+  upsertCopilotProperty,
+  type CopilotAuditEntry,
+  type CopilotMessage,
+  type CopilotPropertyDraft,
+  type CopilotQuickActionId,
+} from "@/lib/copilot";
+import { track } from "@/lib/analytics";
+import { useCurrentRates } from "@/lib/rates";
+import { routes } from "@/lib/routes";
+import { cn } from "@/lib/utils";
+import { addPropertyWatch, removeWatchTarget } from "@/lib/watchlist";
+import {
+  Bot,
+  ClipboardList,
+  Send,
+  ShieldAlert,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
+
+function SimpleMarkdown({ text }: { text: string }) {
+  const blocks = text.split("\n");
+  return (
+    <div className="space-y-1 text-sm leading-relaxed text-text-dark">
+      {blocks.map((line, i) => {
+        if (line.startsWith("## ")) {
+          return (
+            <h3 key={i} className="pt-2 font-heading text-lg font-bold">
+              {line.slice(3)}
+            </h3>
+          );
+        }
+        if (line.startsWith("### ")) {
+          return (
+            <h4 key={i} className="pt-1 text-sm font-bold text-deep-teal">
+              {line.slice(4)}
+            </h4>
+          );
+        }
+        if (line.startsWith("|")) {
+          return (
+            <pre
+              key={i}
+              className="overflow-x-auto font-mono text-[11px] text-muted-foreground"
+            >
+              {line}
+            </pre>
+          );
+        }
+        if (line.startsWith("- ")) {
+          const inner = line.slice(2).replace(
+            /\*\*(.+?)\*\*/g,
+            "<strong>$1</strong>"
+          );
+          return (
+            <li
+              key={i}
+              className="ml-4 list-disc"
+              dangerouslySetInnerHTML={{ __html: inner }}
+            />
+          );
+        }
+        if (line.startsWith("> ")) {
+          return (
+            <p
+              key={i}
+              className="border-l-2 border-muted-gold/60 pl-3 text-muted-foreground"
+            >
+              {line.slice(2)}
+            </p>
+          );
+        }
+        if (line.startsWith("—") || line.startsWith("---")) {
+          return <hr key={i} className="my-3 border-border" />;
+        }
+        if (!line.trim()) return <div key={i} className="h-2" />;
+        const html = line
+          .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+          .replace(/_(.+?)_/g, "<em>$1</em>")
+          .replace(
+            /\[(.+?)\]\((.+?)\)/g,
+            '<a class="font-semibold text-deep-teal underline" href="$2">$1</a>'
+          );
+        return (
+          <p key={i} dangerouslySetInnerHTML={{ __html: html }} />
+        );
+      })}
+    </div>
+  );
+}
+
+const WELCOME: CopilotMessage = {
+  id: "welcome",
+  role: "assistant",
+  content: [
+    "## Property & Mortgage Copilot",
+    "",
+    "Nejsem obecné ChatGPT. Odpovídám jen z **ověřených nástrojů a dat** HypotékaJasně — s citací DATA / MODEL / ODHAD.",
+    "",
+    "Zkuste rychlou akci níže, nebo se zeptejte např. na dostupnost, skóre, stress test sazby nebo Praha vs Dubaj.",
+    "",
+    "—",
+    COPILOT_SYSTEM_DISCLAIMER,
+  ].join("\n"),
+  createdAt: new Date().toISOString(),
+};
+
+export function CopilotView() {
+  const { rates } = useCurrentRates();
+  const modelRate =
+    rates?.rateWithInsurance ?? rates?.rateWithoutInsurance ?? null;
+
+  const [messages, setMessages] = useState<CopilotMessage[]>([WELCOME]);
+  const [input, setInput] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [audit, setAudit] = useState<CopilotAuditEntry[]>(() =>
+    typeof window !== "undefined" ? loadAuditLog() : []
+  );
+  const [properties, setProperties] = useState<CopilotPropertyDraft[]>(() =>
+    typeof window !== "undefined" ? loadCopilotProperties() : []
+  );
+  const [draftLabel, setDraftLabel] = useState("");
+  const [draftPrice, setDraftPrice] = useState("");
+
+  useEffect(() => {
+    track("calculator_started", { tool_id: "ai_copilot" });
+  }, []);
+
+  const run = useCallback(
+    (message: string, quickAction?: CopilotQuickActionId) => {
+      const text = message.trim();
+      if (!text || busy) return;
+      setBusy(true);
+
+      const userMsg: CopilotMessage = {
+        id: `u_${Date.now()}`,
+        role: "user",
+        content: text,
+        createdAt: new Date().toISOString(),
+      };
+      setMessages((m) => [...m, userMsg]);
+      setInput("");
+
+      const { context, answers } = buildSessionContext({
+        modelRatePercent: modelRate,
+        modelRateUpdatedAt: rates?.updatedAt ?? null,
+        modelRateClaimKind: modelRate != null ? "DATA" : "MODEL",
+        properties,
+      });
+
+      const result = orchestrateCopilot({
+        message: text,
+        quickAction,
+        context,
+        readinessAnswers: answers,
+      });
+
+      appendAuditLog(result.audit);
+      setAudit(loadAuditLog());
+      setMessages((m) => [...m, result.message]);
+      track("calculator_completed", {
+        tool_id: "ai_copilot",
+        intent_id: result.message.intent,
+      });
+      setBusy(false);
+    },
+    [busy, modelRate, rates?.updatedAt, properties]
+  );
+
+  const addProperty = () => {
+    const price = Number(draftPrice.replace(/\s/g, "").replace(",", "."));
+    if (!Number.isFinite(price) || price < 100_000) return;
+    const item: CopilotPropertyDraft = {
+      id: `p_${Date.now()}`,
+      label: draftLabel.trim() || `Nemovitost ${properties.length + 1}`,
+      priceCzk: Math.round(price),
+    };
+    upsertCopilotProperty(item);
+    addPropertyWatch({
+      id: item.id,
+      label: item.label,
+      priceCzk: item.priceCzk,
+    });
+    const next = loadCopilotProperties();
+    setProperties(next);
+    setDraftLabel("");
+    setDraftPrice("");
+  };
+
+  const removeProperty = (id: string) => {
+    const next = properties.filter((p) => p.id !== id);
+    saveCopilotProperties(next);
+    removeWatchTarget(id);
+    setProperties(next);
+  };
+
+  const lastAssistant = useMemo(
+    () => [...messages].reverse().find((m) => m.role === "assistant"),
+    [messages]
+  );
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-[#eef3f1] via-white to-[#f7f5ef]">
+      <section className="border-b border-border bg-deep-teal text-white">
+        <div className="mx-auto max-w-6xl px-4 py-10 md:py-14">
+          <div className="flex items-center gap-2 text-muted-gold">
+            <Sparkles className="h-5 w-5" />
+            <span className="text-xs font-bold uppercase tracking-widest">
+              Trusted Copilot
+            </span>
+          </div>
+          <h1 className="mt-3 font-heading text-3xl font-black md:text-5xl">
+            Property & Mortgage Copilot
+          </h1>
+          <p className="mt-3 max-w-2xl text-base text-emerald-50/90 md:text-lg">
+            Inteligentní vrstva nad kalkulačkami a daty platformy — s citacemi,
+            audit logem a bez příslibu schválení úvěru.
+          </p>
+        </div>
+      </section>
+
+      <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 lg:grid-cols-[280px_1fr_300px]">
+        {/* Left: profile + properties */}
+        <aside className="space-y-4">
+          <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
+            <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+              Kontext
+            </p>
+            <p className="mt-2 text-sm text-text-dark">
+              Profil připravenosti se načítá{" "}
+              <strong>lokálně z prohlížeče</strong>. Citlivá data neodesíláme do
+              LLM API.
+            </p>
+            <Link
+              href={routes.navrhNaMiru}
+              className="mt-3 inline-flex text-sm font-semibold text-deep-teal underline"
+            >
+              Otevřít / upravit připravenost
+            </Link>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
+            <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+              Uložené nemovitosti (session)
+            </p>
+            <ul className="mt-3 space-y-2">
+              {properties.length === 0 ? (
+                <li className="text-sm text-muted-foreground">
+                  Zatím žádné — přidejte pro porovnání.
+                </li>
+              ) : (
+                properties.map((p) => (
+                  <li
+                    key={p.id}
+                    className="flex items-center justify-between gap-2 text-sm"
+                  >
+                    <span>
+                      {p.label}
+                      <span className="block text-xs text-muted-foreground">
+                        {p.priceCzk.toLocaleString("cs-CZ")} Kč
+                      </span>
+                    </span>
+                    <button
+                      type="button"
+                      className="text-xs text-red-700 underline"
+                      onClick={() => removeProperty(p.id)}
+                    >
+                      Odebrat
+                    </button>
+                  </li>
+                ))
+              )}
+            </ul>
+            <div className="mt-3 space-y-2">
+              <input
+                className="h-10 w-full rounded-lg border border-border px-3 text-sm"
+                placeholder="Název"
+                value={draftLabel}
+                onChange={(e) => setDraftLabel(e.target.value)}
+              />
+              <input
+                className="h-10 w-full rounded-lg border border-border px-3 text-sm"
+                placeholder="Cena Kč"
+                inputMode="numeric"
+                value={draftPrice}
+                onChange={(e) => setDraftPrice(e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={addProperty}
+                className="h-10 w-full rounded-full bg-deep-teal text-sm font-bold text-white"
+              >
+                Přidat nemovitost
+              </button>
+            </div>
+          </div>
+        </aside>
+
+        {/* Center: chat */}
+        <div className="flex min-h-[70vh] flex-col rounded-2xl border border-border bg-white shadow-sm">
+          <div
+            id="copilot-quick"
+            className="flex flex-wrap gap-2 border-b border-border p-3"
+          >
+            {COPILOT_QUICK_ACTIONS.map((a) => (
+              <button
+                key={a.id}
+                id={a.id === "affordability" ? "quick-affordability" : undefined}
+                type="button"
+                disabled={busy}
+                onClick={() => run(a.prompt, a.id)}
+                className="rounded-full border border-border bg-[#f7f8f7] px-3 py-1.5 text-xs font-semibold text-text-dark hover:border-deep-teal/40 disabled:opacity-50"
+              >
+                {a.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex-1 space-y-4 overflow-y-auto p-4">
+            {messages.map((m) => (
+              <div
+                key={m.id}
+                className={cn(
+                  "max-w-[95%] rounded-2xl px-4 py-3",
+                  m.role === "user"
+                    ? "ml-auto bg-deep-teal text-white"
+                    : "bg-[#f4f7f6] text-text-dark"
+                )}
+              >
+                {m.role === "assistant" ? (
+                  <>
+                    <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-deep-teal">
+                      <Bot className="h-3.5 w-3.5" />
+                      Copilot
+                      {m.intent ? (
+                        <span className="font-normal text-muted-foreground">
+                          · {m.intent}
+                        </span>
+                      ) : null}
+                    </div>
+                    <SimpleMarkdown text={m.content} />
+                    {m.cta && m.cta.length > 0 ? (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {m.cta.map((c) => (
+                          <Link
+                            key={c.href + c.label}
+                            href={c.href}
+                            className="rounded-full border border-deep-teal/30 bg-white px-3 py-1 text-xs font-semibold text-deep-teal"
+                          >
+                            {c.label}
+                          </Link>
+                        ))}
+                      </div>
+                    ) : null}
+                  </>
+                ) : (
+                  <p className="text-sm whitespace-pre-wrap">{m.content}</p>
+                )}
+              </div>
+            ))}
+            {busy ? (
+              <p className="text-sm text-muted-foreground">Počítám z nástrojů…</p>
+            ) : null}
+          </div>
+
+          <form
+            className="flex gap-2 border-t border-border p-3"
+            onSubmit={(e) => {
+              e.preventDefault();
+              run(input);
+            }}
+          >
+            <input
+              className="h-12 flex-1 rounded-full border border-border px-4 text-sm"
+              placeholder="Např. Co se stane, když sazba vzroste o 2 %?"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              disabled={busy}
+              aria-label="Zpráva pro Copilot"
+            />
+            <button
+              type="submit"
+              disabled={busy || !input.trim()}
+              className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-deep-teal text-white disabled:opacity-40"
+              aria-label="Odeslat"
+            >
+              <Send className="h-4 w-4" />
+            </button>
+          </form>
+        </div>
+
+        {/* Right: provenance + audit */}
+        <aside className="space-y-4">
+          <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
+            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+              <ShieldAlert className="h-3.5 w-3.5" />
+              Použité vstupy & zdroje
+            </p>
+            {lastAssistant?.usedInputs && lastAssistant.usedInputs.length > 0 ? (
+              <ul className="mt-3 space-y-2 text-sm">
+                {lastAssistant.usedInputs.map((u) => (
+                  <li key={u.key} className="border-b border-border/60 pb-2">
+                    <span className="font-semibold">{u.label}</span>
+                    <span className="mt-0.5 block text-muted-foreground">
+                      {u.display}
+                    </span>
+                    <span className="mt-1 inline-block rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide">
+                      {u.claimKind}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-2 text-sm text-muted-foreground">
+                Po odpovědi se zde zobrazí vstupy.
+              </p>
+            )}
+            {lastAssistant?.citations && lastAssistant.citations.length > 0 ? (
+              <ul className="mt-4 space-y-2 text-sm">
+                {lastAssistant.citations.map((c) => (
+                  <li key={c.id}>
+                    <span className="font-semibold">{c.label}</span>
+                    <span className="block text-xs text-muted-foreground">
+                      {c.source}
+                      {c.updatedAt ? ` · ${c.updatedAt}` : ""}
+                    </span>
+                    <span className="text-[10px] font-bold uppercase text-deep-teal">
+                      {c.claimKind} — {CLAIM_KIND_HINT[c.claimKind]}
+                    </span>
+                    {c.href ? (
+                      <Link
+                        href={c.href}
+                        className="mt-0.5 block text-xs text-deep-teal underline"
+                      >
+                        Zdroj
+                      </Link>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+
+          <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
+            <div className="flex items-center justify-between gap-2">
+              <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                <ClipboardList className="h-3.5 w-3.5" />
+                Audit log
+              </p>
+              <button
+                type="button"
+                className="inline-flex items-center gap-1 text-[11px] text-muted-foreground underline"
+                onClick={() => {
+                  clearAuditLog();
+                  setAudit([]);
+                }}
+              >
+                <Trash2 className="h-3 w-3" />
+                Vymazat
+              </button>
+            </div>
+            <ul className="mt-3 max-h-64 space-y-2 overflow-y-auto text-xs">
+              {audit.length === 0 ? (
+                <li className="text-muted-foreground">Zatím prázdné.</li>
+              ) : (
+                audit.map((a) => (
+                  <li
+                    key={a.id}
+                    className="rounded-lg border border-border/70 bg-[#fafafa] p-2"
+                  >
+                    <div className="font-semibold">{a.intent}</div>
+                    <div className="text-muted-foreground">
+                      {new Date(a.at).toLocaleString("cs-CZ")}
+                    </div>
+                    <div className="mt-1">
+                      Tools: {a.tools.map((t) => t.toolId).join(", ") || "—"}
+                    </div>
+                    <div>
+                      Citations: {a.citationIds.join(", ") || "—"}
+                    </div>
+                    <div>Data: {a.dataKeysUsed.join(", ") || "—"}</div>
+                    {a.guardrailFlags.length ? (
+                      <div className="text-amber-800">
+                        Guardrails: {a.guardrailFlags.join(", ")}
+                      </div>
+                    ) : null}
+                  </li>
+                ))
+              )}
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </div>
+  );
+}

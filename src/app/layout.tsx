@@ -3,6 +3,9 @@ import { Inter, Playfair_Display } from "next/font/google";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Providers } from "@/components/Providers";
+import { JsonLdScript } from "@/components/seo/JsonLdScript";
+import { organizationJsonLd, webSiteJsonLd } from "@/lib/seo/json-ld";
+import { rootMetadata } from "@/lib/seo/metadata";
 import "./globals.css";
 
 const inter = Inter({
@@ -15,11 +18,7 @@ const playfair = Playfair_Display({
   subsets: ["latin", "latin-ext"],
 });
 
-export const metadata: Metadata = {
-  title: "HypotékaJasně.cz | Hypotéky v ČR i zahraničí",
-  description:
-    "Vypočítejte si splátky, porovnejte nabídky a získejte konzultaci od našich expertů. Hypotéky v Česku i v zahraničí.",
-};
+export const metadata: Metadata = rootMetadata;
 
 export default function RootLayout({
   children,
@@ -29,6 +28,7 @@ export default function RootLayout({
   return (
     <html lang="cs" className={`${inter.variable} ${playfair.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col font-sans">
+        <JsonLdScript data={[organizationJsonLd(), webSiteJsonLd()]} />
         <Providers>
           <Navbar />
           <main className="flex-1">{children}</main>

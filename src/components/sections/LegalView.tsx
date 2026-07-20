@@ -1,6 +1,27 @@
+import Link from "next/link";
 import { Scale } from "lucide-react";
+import {
+  ANALYTICS_LEGAL_BASIS,
+  CONSENT_POLICY_VERSION,
+  COOKIE_POLICY_VERSION,
+  CONSENT_PURPOSES,
+  formatOperatorAddress,
+  getOperatorIdentity,
+  getPaidAnalysisTerms,
+  LAWYER_REVIEW_NOTICE,
+  operatorDisplayName,
+  PROCESSING_ROLES,
+  REGULATED_BOUNDARIES,
+  TERMS_VERSION,
+} from "@/lib/legal";
+import { routes } from "@/lib/routes";
 
-export type LegalPageType = "gdpr" | "smlouvy" | "zasady";
+export type LegalPageType =
+  | "gdpr"
+  | "smlouvy"
+  | "zasady"
+  | "cookies"
+  | "placena-analyza";
 
 const LEGAL_META: Record<
   LegalPageType,
@@ -8,143 +29,286 @@ const LEGAL_META: Record<
 > = {
   gdpr: {
     title: "Ochrana osobních údajů (GDPR)",
-    subtitle: "Zásady zpracování osobních údajů uživatelů platformy.",
+    subtitle: "Správce, účely, souhlasy a práva subjektů údajů.",
   },
   smlouvy: {
     title: "Smlouvy a podmínky užití",
-    subtitle: "Rámec používání webu HypotékaJasně.cz.",
+    subtitle: "Rámec používání webu a regulované hranice.",
   },
   zasady: {
     title: "Zásady používání platformy",
-    subtitle: "Pravidla, cookies a zásady prezentace obsahu.",
+    subtitle: "Transparentnost obsahu a chování uživatelů.",
+  },
+  cookies: {
+    title: "Cookie policy",
+    subtitle:
+      "Nezbytné / analytické / marketingové — analytika jen se souhlasem.",
+  },
+  "placena-analyza": {
+    title: "Podmínky placené analýzy",
+    subtitle: "Cena, scope, dodání, reklamace a odstoupení (digitální služba).",
   },
 };
 
-const DISCLAIMER =
-  "Právní doložka: Provozovatel tohoto webu nevykonává činnost podle zákona č. 257/2016 Sb., o spotřebitelském úvěru, ani neposkytuje investiční poradenství. Platforma slouží ke sběru a generování poptávek (leadů), které jsou se souhlasem uživatele předávány třetím stranám – oprávněným subjektům disponujícím příslušnými licencemi.";
+function LawyerBanner() {
+  return (
+    <div className="mb-6 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm leading-relaxed text-amber-950">
+      <p className="font-bold">Legal review required</p>
+      <p className="mt-1">{LAWYER_REVIEW_NOTICE}</p>
+    </div>
+  );
+}
+
+function OperatorBlock() {
+  const op = getOperatorIdentity();
+  return (
+    <div className="rounded-xl border border-border bg-slate-50 px-4 py-3 text-sm">
+      <p className="font-semibold text-text-dark">Provozovatel / správce</p>
+      <p className="mt-1 text-muted-foreground">
+        {operatorDisplayName(op)}
+      </p>
+      <p className="mt-1 text-muted-foreground">
+        {formatOperatorAddress(op)}
+      </p>
+      <p className="mt-1 text-muted-foreground">
+        E-mail: {op.email} · Tel: {op.phone}
+      </p>
+      <dl className="mt-3 grid gap-1 text-xs sm:grid-cols-2">
+        <div>
+          <dt className="font-bold uppercase text-muted-foreground">IČO</dt>
+          <dd>
+            {op.ico ?? (
+              <span className="text-amber-800">
+                TODO — LEGAL_OPERATOR_ICO (nezveřejňujeme falešné IČO)
+              </span>
+            )}
+          </dd>
+        </div>
+        <div>
+          <dt className="font-bold uppercase text-muted-foreground">DIČ</dt>
+          <dd>
+            {op.dic ?? (
+              <span className="text-muted-foreground">Neuvedeno / N/A</span>
+            )}
+          </dd>
+        </div>
+        <div className="sm:col-span-2">
+          <dt className="font-bold uppercase text-muted-foreground">
+            Veřejný registr
+          </dt>
+          <dd>
+            {op.publicRegisterUrl ? (
+              <a
+                href={op.publicRegisterUrl}
+                className="text-deep-teal underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Otevřít výpis
+              </a>
+            ) : (
+              <span className="text-amber-800">
+                TODO — LEGAL_OPERATOR_REGISTER_URL
+              </span>
+            )}
+          </dd>
+        </div>
+      </dl>
+      {!op.isProductionReady ? (
+        <p className="mt-3 rounded-lg border border-amber-200 bg-amber-100/80 px-3 py-2 text-xs text-amber-950">
+          <strong>REQUIRED CONFIG:</strong>{" "}
+          {op.missingFields.join("; ")}. Doplňte env před produkcí — nevymýšlíme
+          právní identitu.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function RegulatedBoundariesBox() {
+  return (
+    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm leading-relaxed text-amber-950">
+      <p className="font-bold">{REGULATED_BOUNDARIES.title}</p>
+      <ul className="mt-2 list-disc space-y-1 pl-5">
+        {REGULATED_BOUNDARIES.statements.map((s) => (
+          <li key={s}>{s}</li>
+        ))}
+      </ul>
+      <p className="mt-3">
+        Role v ekosystému:{" "}
+        <Link href={routes.duvera} className="font-semibold underline">
+          Trust Center
+        </Link>
+        .
+      </p>
+    </div>
+  );
+}
 
 function GdprContent() {
+  const op = getOperatorIdentity();
   return (
     <div className="space-y-8 text-gray-700 leading-relaxed">
-      <div className="prose max-w-none">
-        <p className="mb-6">
-          Ochrana vašeho soukromí je pro nás prioritou. Tyto zásady vysvětlují,
-          jaké osobní údaje shromažďujeme, proč tak činíme a jaká máte práva v
-          souvislosti s využíváním platformy{" "}
-          <strong>Hypotéka Jasně</strong>.
-        </p>
+      <LawyerBanner />
+      <OperatorBlock />
+      <RegulatedBoundariesBox />
 
-        <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">
-          1. Kdo je správcem vašich údajů?
+      <section>
+        <h3 className="mb-3 text-xl font-bold text-gray-900">
+          1. Role správců a zpracovatelů
         </h3>
-        <p>
-          Správcem vašich osobních údajů je provozovatel platformy Hypotéka
-          Jasně, se sídlem{" "}
-          <strong>Soukenická 6, Krnov, 79401 Česká republika</strong>. V případě
-          jakýchkoliv dotazů ohledně GDPR nás můžete kontaktovat na e-mailu:{" "}
-          <strong>info@hypotekajasne.cz</strong> nebo telefonu{" "}
-          <strong>+420 727 814 810</strong>.
-        </p>
+        <ul className="space-y-3">
+          {PROCESSING_ROLES.map((r) => (
+            <li
+              key={r.id}
+              className="rounded-lg border border-border px-3 py-2 text-sm"
+            >
+              <p className="font-semibold text-text-dark">{r.label}</p>
+              <p className="text-xs font-medium text-deep-teal">
+                GDPR role: {r.gdprRole}
+              </p>
+              <p className="mt-1 text-muted-foreground">{r.description}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
 
-        <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">
-          2. Jaké údaje zpracováváme?
+      <section>
+        <h3 className="mb-3 text-xl font-bold text-gray-900">
+          2. Jaké údaje zpracováváme
         </h3>
-        <p>
-          Abychom vám mohli poskytnout naše služby (analýzy, kalkulace a
-          propojení s experty), zpracováváme následující údaje:
-        </p>
-        <ul className="list-disc pl-5 mt-2 space-y-2">
+        <ul className="list-disc space-y-2 pl-5">
+          <li>Kontaktní údaje z formulářů (jméno, e-mail, telefon).</li>
           <li>
-            <strong>Základní kontaktní údaje:</strong> Jméno, příjmení, e-mailová
-            adresa, telefonní číslo.
+            Kontext záměru (příjem, kapitál, lokalita) — pro model a vyřízení
+            žádosti.
           </li>
           <li>
-            <strong>
-              Informace o vašich preferencích (Investiční/Hypoteční pas):
+            Technické údaje nezbytné pro provoz (bezpečnost, session). Analytika
+            a marketing cookies jen po souhlasu — viz{" "}
+            <Link href={routes.legal.cookies} className="text-deep-teal underline">
+              Cookie policy
+            </Link>
+            .
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h3 className="mb-3 text-xl font-bold text-gray-900">
+          3. Právní základy a souhlasy (verze {CONSENT_POLICY_VERSION})
+        </h3>
+        <p className="mb-3 text-sm">
+          <strong>Odeslání formuláře není univerzální marketingový souhlas.</strong>{" "}
+          Marketing je samostatný checkbox. Partner-specific transfer je
+          samostatný souhlas s uvedeným rozsahem.
+        </p>
+        <ul className="list-disc space-y-2 pl-5 text-sm">
+          <li>
+            <strong>Vyřízení žádosti:</strong>{" "}
+            {CONSENT_PURPOSES.privacy_processing.description}
+          </li>
+          <li>
+            <strong>Předání partnerovi:</strong>{" "}
+            {CONSENT_PURPOSES.partner_transfer.description} Základ: souhlas (čl.
+            6 odst. 1 písm. a) GDPR).
+          </li>
+          <li>
+            <strong>Marketing:</strong> {CONSENT_PURPOSES.marketing.description}
+          </li>
+          <li>
+            <strong>Analytické cookies:</strong> právní základ ={" "}
+            <em>consent</em> (ANALYTICS_LEGAL_BASIS=
+            {ANALYTICS_LEGAL_BASIS}).{" "}
+            <strong className="text-text-dark">
+              Nepoužíváme oprávněný zájem pro analytické cookies.
             </strong>{" "}
-            Vámi zadané údaje o výši vlastního kapitálu, měsíčních příjmech a
-            výdajích, účelu investice a preferovaných lokalitách.
-          </li>
-          <li>
-            <strong>Technické údaje:</strong> IP adresa, typ prohlížeče a data o
-            pohybu na našich webových stránkách (prostřednictvím cookies) za
-            účelem vylepšování platformy.
+            Technické řešení spouští analytiku až po Accept / Settings.
           </li>
         </ul>
+      </section>
 
-        <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">
-          3. Proč údaje zpracováváme a na jakém právním základě?
-        </h3>
-        <ul className="list-disc pl-5 mt-2 space-y-2">
-          <li>
-            <strong>Předání poptávky (Lead) partnerům:</strong> Vaše údaje
-            zpracováváme a předáváme licencovaným hypotečním či realitním
-            specialistům{" "}
-            <em>výhradně na základě vašeho výslovného souhlasu</em> (čl. 6 odst.
-            1 písm. a) GDPR), který nám udělujete odesláním kontaktního
-            formuláře či žádosti o analýzu.
-          </li>
-          <li>
-            <strong>Vylepšování našich služeb:</strong> Na základě našeho
-            oprávněného zájmu (čl. 6 odst. 1 písm. f) GDPR) analyzujeme
-            návštěvnost webu, abychom pro vás platformu neustále zlepšovali.
-          </li>
-        </ul>
-
-        <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">
-          4. Komu vaše údaje předáváme?
+      <section>
+        <h3 className="mb-3 text-xl font-bold text-gray-900">
+          4. Partner-specific předání
         </h3>
         <p>
-          Nejsme finanční poradci. Náš obchodní model spočívá v propojení
-          uživatelů s experty. Vaše osobní a finanční údaje předáme (s vaším
-          souhlasem) našim <strong>prověřeným partnerům</strong>{" "}
-          (licencovaným hypotečním zprostředkovatelům, bankám, realitním
-          makléřům či developerům v ČR i zahraničí), aby vás mohli s nabídkou
-          napřímo kontaktovat. Zajišťujeme, že naši partneři dodržují stejné
-          standardy ochrany dat jako my.
+          Údaje předáváme jen pokud zaškrtnete partner transfer a jen v rozsahu
+          (např. licencovaný hypoteční specialista, Majetio). Nejde o blanket
+          předání všem makléřům/developerům. Detail partnerů:{" "}
+          <Link href={routes.partneri} className="text-deep-teal underline">
+            /partneri
+          </Link>
+          .
         </p>
+      </section>
 
-        <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">
-          5. Jak dlouho vaše údaje uchováváme?
-        </h3>
+      <section>
+        <h3 className="mb-3 text-xl font-bold text-gray-900">5. Doba uchování</h3>
         <p>
-          Vaše údaje uchováváme pouze po dobu nezbytně nutnou k naplnění účelu,
-          pro který byly shromážděny. U poptávek předávaných partnerům
-          uchováváme údaje standardně po dobu <strong>3 let</strong>, případně
-          do doby, než svůj souhlas odvoláte.
+          Poptávky: typicky až 3 roky nebo do odvolání souhlasu / žádosti o
+          výmaz (draft — potvrdí právník). Cookie preference: do změny nebo
+          smazání localStorage.
         </p>
+      </section>
 
-        <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">
-          6. Jaká máte práva?
-        </h3>
-        <p>Podle nařízení GDPR máte mimo jiné právo:</p>
-        <ul className="list-disc pl-5 mt-2 space-y-2">
+      <section>
+        <h3 className="mb-3 text-xl font-bold text-gray-900">6. Vaše práva</h3>
+        <ul className="list-disc space-y-2 pl-5">
+          <li>Přístup, oprava, výmaz, omezení, námitka, přenositelnost.</li>
           <li>
-            <strong>Požadovat přístup</strong> ke svým osobním údajům a
-            informace o jejich zpracování.
+            Odvolání souhlasu (marketing / partner transfer / cookies) na{" "}
+            {op.email} — bez vlivu na zákonnost před odvoláním.
           </li>
-          <li>
-            <strong>Požadovat opravu nebo výmaz</strong> vašich osobních údajů
-            („právo být zapomenut”).
-          </li>
-          <li>
-            <strong>Kdykoliv odvolat svůj souhlas</strong> se zpracováním údajů
-            pro marketingové účely a předávání partnerům (odvolání zašlete na
-            info@hypotekajasne.cz).
-          </li>
-          <li>
-            <strong>Podat stížnost</strong> u Úřadu pro ochranu osobních údajů
-            (ÚOOÚ), pokud se domníváte, že s vašimi daty nenakládáme v souladu s
-            právními předpisy.
-          </li>
+          <li>Stížnost u ÚOOÚ.</li>
         </ul>
-      </div>
+      </section>
 
-      <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg mt-8 text-sm text-gray-500 italic">
-        Poslední aktualizace: červenec 2026. Tento dokument má informativní
-        charakter. Doporučujeme jeho finální znění zkonzultovat s právním
-        zástupcem.
-      </div>
+      <p className="text-xs text-muted-foreground">
+        Verze zásad: {CONSENT_POLICY_VERSION}. Cookie policy verze:{" "}
+        {COOKIE_POLICY_VERSION}.
+      </p>
+    </div>
+  );
+}
+
+function CookiesContent() {
+  return (
+    <div className="space-y-8 text-gray-700 leading-relaxed">
+      <LawyerBanner />
+      <OperatorBlock />
+      <p>
+        Tato Cookie policy je{" "}
+        <strong>sjednocená s GDPR</strong>: analytika i marketing cookies
+        vyžadují aktivní souhlas. Stejné tvrzení musí držet banner (Accept all /
+        Reject optional / Settings) i technické načítání skriptů.
+      </p>
+      <ul className="list-disc space-y-3 pl-5">
+        <li>
+          <strong>Nezbytné:</strong> provoz webu, bezpečnost, uložení cookie
+          preference. Nelze vypnout.
+        </li>
+        <li>
+          <strong>Analytické:</strong>{" "}
+          {CONSENT_PURPOSES.cookie_analytics.description} Právní základ:{" "}
+          <code className="text-xs">consent</code> — nikoli legitimate interest.
+        </li>
+        <li>
+          <strong>Marketingové:</strong>{" "}
+          {CONSENT_PURPOSES.cookie_marketing.description}
+        </li>
+      </ul>
+      <p className="text-sm">
+        Preference změníte přes „Nastavení cookies“ v patičce. Verze:{" "}
+        {COOKIE_POLICY_VERSION}.
+      </p>
+      <p className="text-sm">
+        Související:{" "}
+        <Link href={routes.legal.gdpr} className="text-deep-teal underline">
+          GDPR
+        </Link>
+        .
+      </p>
     </div>
   );
 }
@@ -152,103 +316,41 @@ function GdprContent() {
 function SmlouvyContent() {
   return (
     <div className="space-y-8 text-gray-700 leading-relaxed">
-      <div className="prose max-w-none">
-        <p className="mb-6">
-          Tyto podmínky upravují pravidla pro užívání webového portálu a
-          technologické platformy <strong>Hypotéka Jasně</strong> (dále jen
-          „Portál“). Používáním tohoto Portálu potvrzujete, že jste se s těmito
-          podmínkami seznámili, rozumíte jim a souhlasíte s nimi.
-        </p>
-
-        <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">
-          1. Povaha služeb a informační charakter
-        </h3>
-        <p>
-          Portál Hypotéka Jasně je{" "}
-          <strong>
-            nezávislou technologickou, vzdělávací a informační platformou
-          </strong>
-          . Provozovatel Portálu se sídlem Soukenická 6, Krnov, 79401,
-          nevykonává činnost banky, neposkytuje spotřebitelské úvěry ani
-          nevykonává činnost licencovaného finančního zprostředkovatele podle
-          zákona č. 257/2016 Sb., o spotřebitelském úvěru, ani neposkytuje
-          regulované investiční či daňové poradenství.
-        </p>
-
-        <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">
-          2. Kalkulačky a orientační výpočty
-        </h3>
-        <ul className="list-disc pl-5 mt-2 space-y-2">
-          <li>
-            <strong>Nezávaznost dat:</strong> Všechny výpočty generované nástroji
-            na Portálu (jako jsou Investiční rentgen, Hypoteční pas, Sněhová
-            koule a další kalkulačky) vycházejí z modelových předpokladů,
-            průměrných tržních hodnot a algoritmů Portálu.
-          </li>
-          <li>
-            <strong>Žádná garance:</strong> Tyto výpočty slouží{" "}
-            <strong>výhradně pro vaši základní orientaci a představu</strong>.
-            Nepředstavují závaznou nabídku financování, garanci úrokové sazby,
-            ani příslib budoucích výnosů z pronájmu či růstu ceny nemovitosti.
-          </li>
-          <li>
-            Skutečné podmínky úvěru nebo finální výnos investice se mohou od
-            našich modelů výrazně lišit v závislosti na tržní situaci, vaší
-            bonitě a konkrétní bance.
-          </li>
-        </ul>
-
-        <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">
-          3. Propojení s experty (Předávání poptávek)
-        </h3>
-        <p>
-          Hlavním účelem Portálu je poskytnout vám informace a následně vás – na
-          základě vaší výslovné žádosti odeslané přes naše formuláře – propojit
-          s profesionály.
-        </p>
-        <p className="mt-2">
-          Odesláním poptávky žádáte o to, aby vaše data (tzv. Lead) byla předána{" "}
-          <strong>třetím stranám – prověřeným licencovaným partnerům</strong>{" "}
-          (hypotečním specialistům, realitním makléřům, developerům). Samotný
-          proces vyjednávání a případné uzavření smluv (o úvěru, o koupi)
-          probíhá výhradně mezi vámi a těmito partnery mimo náš Portál.
-        </p>
-
-        <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">
-          4. Vyloučení odpovědnosti
-        </h3>
-        <ul className="list-disc pl-5 mt-2 space-y-2">
-          <li>
-            Provozovatel Portálu{" "}
-            <strong>nenese žádnou právní ani finanční odpovědnost</strong> za
-            škody, ušlý zisk nebo jiné komplikace, které uživateli vzniknou na
-            základě rozhodnutí učiněných s využitím informací či kalkulaček na
-            tomto webu.
-          </li>
-          <li>
-            Provozovatel nenese odpovědnost za obsah, pravdivost a aktuálnost
-            informací, které obdržíte od partnerů (třetích stran), na které jsme
-            vás napojili. Každou investiční nebo úvěrovou smlouvu vždy pečlivě
-            prostudujte s vaším právním zástupcem.
-          </li>
-        </ul>
-
-        <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">
-          5. Autorská práva a ochrana dat
-        </h3>
-        <p>
-          Veškerý obsah Portálu (zejména texty Hypoteční akademie, analytické
-          texty zemí, grafika, algoritmy kalkulaček a celkový design) je chráněn
-          autorským právem. Je zakázáno obsah Portálu kopírovat, vytěžovat (např.
-          web scraping) nebo jej využívat ke komerčním účelům bez písemného
-          souhlasu provozovatele.
-        </p>
-      </div>
-
-      <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg mt-8 text-sm text-gray-500 italic">
-        Platnost od: července 2026. Provozovatel si vyhrazuje právo tyto
-        podmínky kdykoliv změnit. Doporučujeme jejich znění průběžně sledovat.
-      </div>
+      <LawyerBanner />
+      <OperatorBlock />
+      <RegulatedBoundariesBox />
+      <p>
+        Podmínky užití platformy Hypotéka Jasně (verze {TERMS_VERSION}).
+        Používáním webu berete na vědomí informační charakter nástrojů.
+      </p>
+      <h3 className="text-xl font-bold text-gray-900">1. Povaha služeb</h3>
+      <p>
+        Portál je technologická a vzdělávací platforma. Modelové výpočty nejsou
+        závaznou nabídkou banky. Handoff na partnera jen se souhlasem.
+      </p>
+      <h3 className="text-xl font-bold text-gray-900">2. Kalkulačky</h3>
+      <p>
+        Výstupy jsou orientační. Skutečné sazby a schválení určuje banka.
+      </p>
+      <h3 className="text-xl font-bold text-gray-900">
+        3. Placená digitální analýza
+      </h3>
+      <p>
+        Podmínky budoucí placené služby:{" "}
+        <Link
+          href={routes.legal.placenaAnalyza}
+          className="text-deep-teal underline"
+        >
+          /pravni/placena-analyza
+        </Link>
+        .
+      </p>
+      <h3 className="text-xl font-bold text-gray-900">4. Odpovědnost</h3>
+      <p>
+        Provozovatel nenese odpovědnost za rozhodnutí učiněná výhradně na
+        základě modelů na webu ani za jednání třetích stran (banka, specialista,
+        makléř).
+      </p>
     </div>
   );
 }
@@ -256,107 +358,110 @@ function SmlouvyContent() {
 function ZasadyContent() {
   return (
     <div className="space-y-8 text-gray-700 leading-relaxed">
-      <div className="prose max-w-none">
-        <p className="mb-6">
-          Tyto Zásady používání platformy doplňují naše Smlouvy a podmínky užití.
-          Upravují technické fungování webu, využívání souborů cookies a
-          pravidla transparentní prezentace obsahu na portálu{" "}
-          <strong>Hypotéka Jasně</strong>.
-        </p>
+      <LawyerBanner />
+      <RegulatedBoundariesBox />
+      <p>
+        Zásady doplňují smlouvy. Cookies:{" "}
+        <Link href={routes.legal.cookies} className="text-deep-teal underline">
+          Cookie policy
+        </Link>{" "}
+        (analytika jen se souhlasem — shodně s GDPR).
+      </p>
+      <h3 className="text-xl font-bold text-gray-900">Transparentnost</h3>
+      <ul className="list-disc space-y-2 pl-5">
+        <li>
+          Organické skóre se neprodává. Sponzoring je označen — viz metodika.
+        </li>
+        <li>
+          Odměna od partnera při realizaci — viz{" "}
+          <Link
+            href={routes.jakVydelavame}
+            className="text-deep-teal underline"
+          >
+            /jak-vydelavame
+          </Link>
+          .
+        </li>
+      </ul>
+      <h3 className="text-xl font-bold text-gray-900">Chování uživatelů</h3>
+      <p>
+        Zákaz scrapingu a falešných poptávek. Kontaktní údaje musí být pravdivé.
+      </p>
+    </div>
+  );
+}
 
-        <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">
-          1. Jak využíváme soubory Cookies
-        </h3>
+function PlacenaAnalyzaContent() {
+  const t = getPaidAnalysisTerms();
+  return (
+    <div className="space-y-8 text-gray-700 leading-relaxed">
+      <LawyerBanner />
+      <OperatorBlock />
+      <RegulatedBoundariesBox />
+      <p className="rounded-xl border border-border bg-slate-50 px-4 py-3 text-sm">
+        Produkt: <strong>{t.productName}</strong> ({t.productId}) · Cena:{" "}
+        <strong>{t.priceLabel}</strong> · Verze podmínek: {t.version}
+      </p>
+      <section>
+        <h3 className="mb-2 text-xl font-bold text-gray-900">Cena</h3>
         <p>
-          Pro správné fungování našich kalkulaček a analýzu návštěvnosti
-          využíváme malé textové soubory známé jako cookies. Dělíme je do
-          následujících kategorií:
+          {t.priceLabel} ({t.currency}). Konfigurovatelné přes env —
+          PROPERTY_ANALYSIS_PRICING.
         </p>
-        <ul className="list-disc pl-5 mt-2 space-y-2">
-          <li>
-            <strong>Technické a nezbytné cookies:</strong> Jsou nutné pro
-            základní fungování webu (např. pamatují si hodnoty zadané do
-            kalkulačky při přechodu na další krok). Nelze je vypnout.
-          </li>
-          <li>
-            <strong>Analytické cookies:</strong> Pomáhají nám pochopit, jak
-            návštěvníci náš web používají (např. Google Analytics). Díky nim
-            můžeme vylepšovat uživatelské rozhraní. Zpracováváme je pouze s
-            vaším souhlasem.
-          </li>
-          <li>
-            <strong>Marketingové cookies:</strong> Slouží k zobrazení relevantní
-            reklamy na jiných webech. Tyto cookies využíváme výhradně tehdy,
-            pokud nám k tomu dáte aktivní souhlas přes cookie lištu.
-          </li>
+      </section>
+      <section>
+        <h3 className="mb-2 text-xl font-bold text-gray-900">Scope</h3>
+        <ul className="list-disc space-y-1 pl-5 text-sm">
+          {t.scope.map((s) => (
+            <li key={s}>{s}</li>
+          ))}
         </ul>
-
-        <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">
-          2. Zásady prezentace obsahu a hodnocení (Transparentnost)
+        <p className="mt-2 text-sm font-semibold">Mimo scope:</p>
+        <ul className="list-disc space-y-1 pl-5 text-sm">
+          {t.outOfScope.map((s) => (
+            <li key={s}>{s}</li>
+          ))}
+        </ul>
+      </section>
+      <section>
+        <h3 className="mb-2 text-xl font-bold text-gray-900">Delivery</h3>
+        <ul className="list-disc space-y-1 pl-5 text-sm">
+          {t.delivery.map((s) => (
+            <li key={s}>{s}</li>
+          ))}
+        </ul>
+      </section>
+      <section>
+        <h3 className="mb-2 text-xl font-bold text-gray-900">Complaint</h3>
+        <ul className="list-disc space-y-1 pl-5 text-sm">
+          {t.complaint.map((s) => (
+            <li key={s}>{s}</li>
+          ))}
+        </ul>
+      </section>
+      <section>
+        <h3 className="mb-2 text-xl font-bold text-gray-900">
+          Cancellation / withdrawal
         </h3>
-        <p>
-          Zakládáme si na tom, abyste přesně věděli, jak náš byznys model funguje
-          a jak zobrazujeme informace:
-        </p>
-        <ul className="list-disc pl-5 mt-2 space-y-2">
-          <li>
-            <strong>Nezávislost Investičního skóre:</strong> Výpočty v našem
-            Investičním rentgenu a případné hodnotící skóre nemovitostí jsou
-            generovány čistě matematickým algoritmem.{" "}
-            <strong>
-              Naši partneři si nemohou zaplatit lepší skóre
-            </strong>{" "}
-            pro své projekty.
-          </li>
-          <li>
-            <strong>Provizní model:</strong> Přístup na portál je pro běžné
-            uživatele zcela zdarma. Platforma je financována prostřednictvím
-            marketingových B2B spoluprací. Pokud vás na základě vaší žádosti
-            propojíme s expertem (vygenerujeme tzv. Lead), můžeme za toto
-            zprostředkování obdržet od partnera marketingovou odměnu nebo
-            provizi.
-          </li>
-          <li>
-            <strong>Aktualizace dat:</strong> Snažíme se data na „Kartách zemí”
-            (daně, právní procesy) udržovat maximálně aktuální, vždy je však
-            uváděno datum poslední kontroly. Upozorňujeme, že legislativa v
-            zahraničí se může dynamicky měnit.
-          </li>
+        <ul className="list-disc space-y-1 pl-5 text-sm">
+          {t.cancellationWithdrawal.map((s) => (
+            <li key={s}>{s}</li>
+          ))}
         </ul>
-
-        <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">
-          3. Pravidla chování uživatelů
+      </section>
+      <section>
+        <h3 className="mb-2 text-xl font-bold text-gray-900">
+          Digital service terms
         </h3>
-        <p>
-          Abychom zajistili plynulý chod portálu pro všechny, platí pro používání
-          webu následující pravidla:
-        </p>
-        <ul className="list-disc pl-5 mt-2 space-y-2">
-          <li>
-            <strong>Zákaz automatizovaného vytěžování dat:</strong> Je přísně
-            zakázáno používat softwarové roboty, crawlery či skripty (scraping)
-            za účelem hromadného stahování dat z našich kalkulaček, databází a
-            akademie.
-          </li>
-          <li>
-            <strong>Pravdivost kontaktních údajů:</strong> Při odesílání
-            kontaktních formulářů za účelem propojení s expertem se zavazujete
-            používat pouze své vlastní a pravdivé kontaktní údaje. Vytváření
-            falešných poptávek (spam) je zakázáno.
-          </li>
-          <li>
-            V případě porušení těchto pravidel si provozovatel vyhrazuje právo
-            omezit nebo trvale zablokovat IP adrese uživatele přístup k
-            platformě.
-          </li>
+        <ul className="list-disc space-y-1 pl-5 text-sm">
+          {t.digitalServiceNotes.map((s) => (
+            <li key={s}>{s}</li>
+          ))}
         </ul>
-      </div>
-
-      <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg mt-8 text-sm text-gray-500 italic">
-        Platnost od: července 2026. Své preference ohledně ukládání souborů
-        cookies můžete kdykoliv změnit v nastavení vašeho prohlížeče nebo
-        kliknutím na odkaz „Nastavení cookies” v patičce webu.
-      </div>
+      </section>
+      <p className="text-xs italic text-muted-foreground">
+        {t.lawyerReviewNotice}
+      </p>
     </div>
   );
 }
@@ -378,20 +483,42 @@ export function LegalView({ type }: { type: LegalPageType }) {
             {meta.title}
           </h1>
           <p className="mt-3 text-emerald-50/90">{meta.subtitle}</p>
+          <nav className="mt-6 flex flex-wrap gap-2 text-xs">
+            {(
+              [
+                ["gdpr", routes.legal.gdpr],
+                ["cookies", routes.legal.cookies],
+                ["smlouvy", routes.legal.smlouvy],
+                ["zasady", routes.legal.zasady],
+                ["placena-analyza", routes.legal.placenaAnalyza],
+              ] as const
+            ).map(([key, href]) => (
+              <Link
+                key={key}
+                href={href}
+                className={
+                  type === key
+                    ? "rounded-full bg-white px-3 py-1 font-bold text-deep-teal"
+                    : "rounded-full border border-white/30 px-3 py-1 text-white/90 hover:bg-white/10"
+                }
+              >
+                {LEGAL_META[key].title.split(" ")[0]}
+              </Link>
+            ))}
+          </nav>
         </div>
       </section>
 
       <div className="mx-auto max-w-3xl px-4 py-12 lg:py-16">
-        <div className="mb-8 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm leading-relaxed text-amber-950 sm:text-base">
-          <p className="font-bold">Právní doložka</p>
-          <p className="mt-2">{DISCLAIMER}</p>
-        </div>
-
         <article className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm ring-1 ring-gray-900/5 sm:p-10">
           {type === "gdpr" ? (
             <GdprContent />
           ) : type === "smlouvy" ? (
             <SmlouvyContent />
+          ) : type === "cookies" ? (
+            <CookiesContent />
+          ) : type === "placena-analyza" ? (
+            <PlacenaAnalyzaContent />
           ) : (
             <ZasadyContent />
           )}

@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "baseUrl": "."
+  },
+  "include": [
+    "src/lib/mortgage-pipeline/**/*.test.ts",
+    "src/lib/mortgage-decision.test.ts",
+    "src/lib/mortgage-decision.ts",
+    "src/lib/financing/**/*.ts",
+    "src/lib/investment-engine/**/*.ts",
+    "src/lib/decision-lab/**/*.ts",
+    "src/lib/seo/**/*.ts",
+    "src/lib/i18n/**/*.ts",
+    "src/lib/legal/**/*.ts",
+    "src/lib/analytics/**/*.ts",
+    "src/lib/release/**/*.ts",
+    "src/lib/consent/**/*.ts",
+    "src/lib/magazine/**/*.ts",
+    "src/lib/academy/**/*.ts",
+    "src/lib/routes.ts",
+    "src/lib/calculators.ts",
+    "src/lib/cnb-limits.ts",
+    "src/lib/banking.ts",
+    "src/lib/historical-data.ts",
+    "src/lib/mock-data.ts",
+    "src/lib/property-rentgen/**/*.ts",
+    "src/lib/utils.ts"
+  ]
+}

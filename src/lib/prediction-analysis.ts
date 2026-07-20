@@ -15,12 +15,12 @@ const sharedSections: PredictionAnalysisSection[] = [
   {
     title: "Neviditelný zabiják výnosů: Inflace",
     content:
-      'Věnujte pozornost kartě "Sežráno inflací". Mnoho lidí se raduje, že jejich byt za 20 let vyrostl na trojnásobek hodnoty. V reálné kupní síle se však zisk drasticky snižuje, protože inflace znehodnotila samotnou měnu. Právě proto je držení nemovitosti klíčové – pokud byste stejnou částku drželi na běžném účtu, inflace by vám z ní reálně smazala více než polovinu. Nemovitost nejen generuje zisk, ale funguje jako štít, který vaše peníze převádí v čase bez ztráty jejich "váhy".',
+      'Sledujte nominální i reálnou hodnotu. Růst ceny nemovitosti neznamená automaticky stejný růst kupní síly — inflace snižuje reálný výsledek. Hotovost na účtu bez výnosu kupní sílu typicky ztrácí, ale konkrétní ztráta závisí na inflaci a horizontu, ne na univerzálním pravidle „více než polovinu“.',
   },
   {
     title: "Složené úročení v praxi",
     content:
-      "Ať už se rozhodnete pro jakýkoliv scénář (konzervativní či optimistický), všimněte si křivky kumulativního nájmu. Díky fenoménu, kdy se nájemné každoročně mírně zvyšuje a úročí (pokud je reinvestováno), začne po 10–15 letech křivka výnosů růst exponenciálně. Koupě bytu tak po určité době zaplatí nejen sama sebe, ale vygeneruje kapitál pro nákup dalšího aktiva.",
+      "Kumulativní nájem v simulátoru je součet (nebo reinvestované portfolio, pokud zadáte reinvestment return > 0). Bez reinvestice netvrdíme, že se nájem „úročí“.",
   },
 ];
 

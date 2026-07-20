@@ -2,26 +2,8 @@
 
 import { useState } from "react";
 import { ChevronDown, HelpCircle } from "lucide-react";
+import { FAQ_ITEMS } from "@/lib/faq/items";
 import { cn } from "@/lib/utils";
-
-const FAQ_ITEMS = [
-  {
-    q: "Poskytujete přímo hypotéky nebo finanční poradenství?",
-    a: "Ne. Hypotéka Jasně je technologická a informační platforma. Nejsme banka ani licencovaní finanční poradci. Naším cílem je dodat vám data, kalkulace a následně vás propojit se sítí našich smluvních, ověřených a plně licencovaných expertů, kteří s vámi vyřeší samotný úvěr či nákup.",
-  },
-  {
-    q: "Jsou vaše kalkulace a investiční skóre závazné?",
-    a: "Ne, všechny výpočty na webu slouží výhradně jako modelové a orientační příklady pro vaši představu. Skutečné úrokové sazby, poplatky a výnosy se mohou lišit. Finální a závaznou nabídku získáte vždy až od licencovaného partnera nebo banky.",
-  },
-  {
-    q: "Platím něco za využívání vašich kalkulaček a propojení s expertem?",
-    a: "Ne, využívání naší platformy je pro klienty zcela zdarma. Naše platforma je financována našimi B2B partnery (experty a realitními kancelářemi) v rámci marketingové spolupráce.",
-  },
-  {
-    q: "Jak vybíráte experty, kterým předáváte mé kontakty?",
-    a: "Spolupracujeme pouze s prověřenými partnery, kteří mají platné licence v daných zemích, prokazatelnou historii a výborné reference. Klademe důraz na transparentnost a rychlost komunikace.",
-  },
-] as const;
 
 export function FaqView() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
@@ -40,8 +22,8 @@ export function FaqView() {
             Nejčastější dotazy
           </h1>
           <p className="mt-4 text-lg text-emerald-50/90">
-            Jak fungujeme, co nestojíme a jak chráníme váš byznys model
-            transparentní komunikací.
+            Role platformy, model vs. banka a transparentní odměna — detail v
+            Trust Center.
           </p>
         </div>
       </section>
