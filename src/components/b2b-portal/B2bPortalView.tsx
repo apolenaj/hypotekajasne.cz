@@ -183,15 +183,14 @@ export function B2bPortalView() {
   const onTrackView = (orderId: string) => {
     if (!org || !member) return;
     const store = loadB2bPortalStore();
-    persist(
-      trackShareEngagement({
-        store,
-        analysisOrderId: orderId,
-        orgId: org.id,
-        memberId: member.id,
-        eventType: "view",
-      })
-    );
+    const { store: next } = trackShareEngagement({
+      store,
+      analysisOrderId: orderId,
+      orgId: org.id,
+      memberId: member.id,
+      eventType: "view",
+    });
+    persist(next);
   };
 
   const onSimulateInterest = (orderId: string) => {
@@ -395,8 +394,8 @@ export function B2bPortalView() {
                               Simulovat platbu
                             </button>
                           ) : null}
-                          {(order.status === "paid" || order.status === "awaiting_payment") &&
-                          order.status !== "delivered" ? (
+                          {order.status === "paid" ||
+                          order.status === "awaiting_payment" ? (
                             <button
                               type="button"
                               onClick={() => onDeliver(order.id)}
