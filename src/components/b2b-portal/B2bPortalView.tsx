@@ -7,12 +7,14 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
+import type { LucideIcon } from "lucide-react";
 import {
   Building2,
   ChevronRight,
   ClipboardList,
   Download,
   FileText,
+  Landmark,
   Link2,
   Shield,
   Users,
@@ -68,10 +70,27 @@ const STATUS_LABELS: Record<AnalysisOrder["status"], string> = {
   cancelled: "Zrušeno",
 };
 
+type B2bPortalTab =
+  | "agent"
+  | "developer"
+  | "partner"
+  | "billing"
+  | "audit"
+  | "architecture";
+
+const PORTAL_TABS: { id: B2bPortalTab; label: string; Icon: LucideIcon }[] = [
+  { id: "agent", label: "Makléř / analýza", Icon: Users },
+  { id: "developer", label: "Developer", Icon: Building2 },
+  { id: "partner", label: "Hypoteční partner", Icon: Landmark },
+  { id: "billing", label: "Billing", Icon: FileText },
+  { id: "audit", label: "Audit log", Icon: ClipboardList },
+  { id: "architecture", label: "Architektura", Icon: Shield },
+];
+
 export function B2bPortalView() {
   const ready = useIsClient();
   const [tick, setTick] = useState(0);
-  const [tab, setTab] = useState<"agent" | "developer" | "billing" | "audit" | "architecture">("agent");
+  const [tab, setTab] = useState<B2bPortalTab>("agent");
 
   const dash = buildB2bPortalDashboard();
   void tick;
@@ -242,15 +261,7 @@ export function B2bPortalView() {
         <B2bDataProvenanceLegend />
 
         <nav className="flex flex-wrap gap-2 border-b border-border pb-2">
-          {(
-            [
-              ["agent", "Makléř / analýza", Users],
-              ["developer", "Developer", Building2],
-              ["billing", "Billing", FileText],
-              ["audit", "Audit log", ClipboardList],
-              ["architecture", "Architektura", Shield],
-            ] as const
-          ).map(([id, label, Icon]) => (
+          {PORTAL_TABS.map(({ id, label, Icon }) => (
             <button
               key={id}
               type="button"
@@ -457,6 +468,65 @@ export function B2bPortalView() {
                       <p className="text-[10px] text-muted-foreground">
                         Consent {l.consentId} · {new Date(l.consentGrantedAt).toLocaleString("cs-CZ")}
                       </p>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
+          </div>
+        ) : null}
+
+        {tab === "partner" && member && memberHasPermission(member.role, "engagement.view") ? (
+          <div className="space-y-6">
+            <section className="rounded-2xl border border-border bg-white p-5">
+              <h2 className="font-heading text-lg font-bold">Sledování analýz & engagement</h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Hypoteční partner — náhled na doručené reporty, anonymní engagement a qualified
+                interest se souhlasem. Bez ovlivnění investičního skóre.
+              </p>
+              <p className="mt-3 text-sm">
+                Celkem událostí: <strong>{dash.engagement.totalEvents}</strong> · Unikátních
+                viewerů: <strong>{dash.engagement.uniqueViewers}</strong>
+              </p>
+            </section>
+
+            <section className="rounded-2xl border border-border bg-white p-5">
+              <h2 className="font-heading text-lg font-bold">Objednávky (tracking)</h2>
+              <ul className="mt-4 space-y-3">
+                {dash.orders.length === 0 ? (
+                  <li className="text-sm text-muted-foreground">Zatím žádné objednávky.</li>
+                ) : (
+                  dash.orders.map((order) => {
+                    const eng = engagementSummaryForOrder(dash.store, order.id);
+                    const submission =
+                      dash.store.propertySubmissions[order.propertySubmissionId];
+                    return (
+                      <li
+                        key={order.id}
+                        className="rounded-xl border border-border p-4 text-sm"
+                      >
+                        <p className="font-bold">{submission?.label ?? order.id}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {STATUS_LABELS[order.status]}
+                          {order.status === "delivered" ? " · Majetio Property Intelligence" : ""}
+                        </p>
+                        <p className="mt-2 text-[10px] text-muted-foreground">
+                          Engagement: {eng.views} views · {eng.downloads} downloads
+                        </p>
+                      </li>
+                    );
+                  })
+                )}
+              </ul>
+            </section>
+
+            {dash.interests.length > 0 ? (
+              <section className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-5">
+                <h2 className="font-heading text-lg font-bold">Qualified interest (consent)</h2>
+                <ul className="mt-3 space-y-2 text-sm">
+                  {dash.interests.map((l) => (
+                    <li key={l.id} className="rounded-lg border border-emerald-200 bg-white p-3">
+                      <strong>{l.contactName}</strong> · {l.contactEmail} · {l.interestType}
                     </li>
                   ))}
                 </ul>
