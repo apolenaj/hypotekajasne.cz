@@ -43,7 +43,9 @@
     "test:b2b-portal": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/b2b-portal/b2b-portal.test.ts",
     "test:release-audit": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/release/release-audit.test.ts",
     "test:a11y-smoke": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/release/a11y-smoke.test.ts",
-    "test": "npm run check:data && npm run test:pipeline && npm run test:decision && npm run test:financing && npm run test:investment && npm run test:decision-lab && npm run test:readiness && npm run test:matching && npm run test:rentgen && npm run test:majetio && npm run test:academy && npm run test:magazine && npm run test:seo && npm run test:analytics && npm run test:copilot && npm run test:financial-passport && npm run test:dashboard && npm run test:nba && npm run test:watchlist && npm run test:property-compare && npm run test:digital-twin && npm run test:portfolio-os && npm run test:release-audit && npm run test:a11y-smoke",
+    "test:money": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/money.test.ts src/lib/affordability.test.ts",
+    "test:nav": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/navigation/navigation-responsive.test.ts",
+    "test": "npm run check:data && npm run test:pipeline && npm run test:decision && npm run test:financing && npm run test:investment && npm run test:decision-lab && npm run test:readiness && npm run test:matching && npm run test:rentgen && npm run test:majetio && npm run test:academy && npm run test:magazine && npm run test:seo && npm run test:analytics && npm run test:copilot && npm run test:financial-passport && npm run test:dashboard && npm run test:nba && npm run test:watchlist && npm run test:property-compare && npm run test:digital-twin && npm run test:portfolio-os && npm run test:money && npm run test:release-audit && npm run test:a11y-smoke && npm run test:nav",
     "verify": "npm run test && npm run lint && npm run typecheck && npm run build"
   },
   "dependencies": {
@@ -68,6 +70,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
+    "playwright": "^1.52.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.1",
     "typescript": "^5"

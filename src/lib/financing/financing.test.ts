@@ -116,6 +116,8 @@ describe("DEVELOPER_PAYMENT_PLAN", () => {
     });
     assert.equal(result.option, "DEVELOPER_PAYMENT_PLAN");
     assert.equal(result.totalInterest, 0);
+    assert.equal(result.ltv, null);
+    assert.equal(result.maxLtvPercent, null);
   });
 });
 

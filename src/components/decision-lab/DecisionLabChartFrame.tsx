@@ -77,7 +77,7 @@ export function DecisionLabChartFrame({
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-4 py-3 sm:px-5">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-deep-teal">
-            Decision Lab
+            Laboratoř rozhodnutí
           </p>
           <h4 className="font-heading text-lg font-bold text-text-dark">
             {meta.title}
@@ -99,7 +99,7 @@ export function DecisionLabChartFrame({
               className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border px-3 text-xs font-semibold text-text-dark hover:border-deep-teal/40"
             >
               <Download className="h-3.5 w-3.5" />
-              Export CSV
+              Exportovat CSV
             </button>
           )}
         </div>
@@ -134,7 +134,7 @@ export function DecisionLabChartFrame({
         {assumptions && assumptions.length > 0 && (
           <details className="pt-1">
             <summary className="cursor-pointer font-semibold text-deep-teal">
-              Assumptions
+              Předpoklady
             </summary>
             <ul className="mt-2 list-disc space-y-1 pl-4">
               {assumptions.map((a) => (

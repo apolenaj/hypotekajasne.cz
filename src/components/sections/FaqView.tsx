@@ -15,7 +15,7 @@ export function FaqView() {
           <div className="flex items-center gap-3 text-emerald-200">
             <HelpCircle className="h-6 w-6" />
             <span className="text-sm font-bold uppercase tracking-widest">
-              FAQ
+              Časté otázky
             </span>
           </div>
           <h1 className="mt-4 font-heading text-3xl font-black md:text-5xl">
@@ -23,7 +23,7 @@ export function FaqView() {
           </h1>
           <p className="mt-4 text-lg text-emerald-50/90">
             Role platformy, model vs. banka a transparentní odměna — detail v
-            Trust Center.
+            Centru důvěry.
           </p>
         </div>
       </section>

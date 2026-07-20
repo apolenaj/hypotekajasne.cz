@@ -72,54 +72,54 @@ const METRIC_ROWS: {
   format: (v: number | string | null) => string;
 }[] = [
   {
-    label: "Purchase price",
+    label: "Kupní cena",
     get: (m) => m.purchasePrice,
     format: (v) => fmtCzk(v as number),
   },
   {
-    label: "Price/m²",
+    label: "Cena/m²",
     get: (m) => m.pricePerM2,
     format: (v) =>
       v != null ? `${Number(v).toLocaleString("cs-CZ")} Kč/m²` : "—",
   },
   {
-    label: "Estimated fair value",
+    label: "Odhadovaná férová hodnota",
     get: (m) => m.estimatedFairValue,
     format: (v) => fmtCzk(v as number | null),
   },
   {
-    label: "Discount/premium",
+    label: "Sleva / prémie",
     get: (m) => m.discountPremiumPct,
     format: (v) =>
       v != null ? `${((v as number) * 100).toFixed(1).replace(".", ",")} %` : "—",
   },
   {
-    label: "Gross yield",
+    label: "Hrubý výnos",
     get: (m) => m.grossYieldPct,
     format: (v) => fmtPct(v as number | null),
   },
   {
-    label: "Net yield",
+    label: "Čistý výnos",
     get: (m) => m.netYieldPct,
     format: (v) => fmtPct(v as number | null),
   },
   {
-    label: "Cash flow (měs.)",
+    label: "Peněžní tok (měs.)",
     get: (m) => m.monthlyCashFlow,
     format: (v) => fmtCzk(v as number | null),
   },
   {
-    label: "IRR (base, 7 let)",
+    label: "IRR (základní, 7 let)",
     get: (m) => m.irrPct,
     format: (v) => fmtPct(v as number | null),
   },
   {
-    label: "Required cash",
+    label: "Potřebná hotovost",
     get: (m) => m.requiredCash,
     format: (v) => fmtCzk(v as number),
   },
   {
-    label: "Mortgage payment",
+    label: "Splátka hypotéky",
     get: (m) => m.mortgagePayment,
     format: (v) => fmtCzk(v as number | null),
   },
@@ -130,37 +130,37 @@ const METRIC_ROWS: {
       v != null ? (v as number).toFixed(2).replace(".", ",") : "—",
   },
   {
-    label: "Liquidity",
+    label: "Likvidita",
     get: (m) => m.liquidityScore,
     format: (v) => `${v}/100`,
   },
   {
-    label: "Rental demand",
+    label: "Poptávka po nájmu",
     get: (m) => m.rentalDemandScore,
     format: (v) => `${v}/100`,
   },
   {
-    label: "Location score",
+    label: "Skóre lokality",
     get: (m) => m.locationScore,
     format: (v) => `${v}/100`,
   },
   {
-    label: "Risk score",
+    label: "Skóre rizika",
     get: (m) => m.riskScore,
     format: (v) => `${v}/100`,
   },
   {
-    label: "Legal/data completeness",
+    label: "Úplnost právních/datových podkladů",
     get: (m) => m.dataCompleteness,
     format: (v) => `${v} %`,
   },
   {
-    label: "Renovation need",
+    label: "Potřeba renovace",
     get: (m) => m.renovationNeed,
     format: (v) => String(v),
   },
   {
-    label: "Affordability fit",
+    label: "Fit dostupnosti",
     get: (m) => ({
       value: m.affordability?.verdict ?? "—",
       kind: m.affordability?.claimKind ?? "NEOVERENO",
@@ -169,10 +169,10 @@ const METRIC_ROWS: {
     format: (v) =>
       String(v)
         .replace(/_/g, " ")
-        .replace("within safe budget", "v safe rozpočtu")
-        .replace("within max estimate", "v max odhadu")
+        .replace("within safe budget", "ve bezpečném rozpočtu")
+        .replace("within max estimate", "v max. odhadu")
         .replace("above budget", "nad rozpočtem")
-        .replace("insufficient data", "bez passportu"),
+        .replace("insufficient data", "bez Finančního pasu"),
   },
 ];
 
@@ -300,14 +300,14 @@ export function PropertyCompareView() {
       <header className="border-b border-border bg-deep-teal text-white print:bg-white print:text-black">
         <div className="mx-auto max-w-6xl px-4 py-10">
           <p className="text-xs font-bold uppercase tracking-widest text-muted-gold print:text-stone-600">
-            Investiční rentgen · Profesionální compare
+            Investiční rentgen · Profesionální porovnání
           </p>
           <h1 className="mt-2 font-heading text-3xl font-black md:text-4xl">
             Porovnání nemovitostí (2–5)
           </h1>
           <p className="mt-2 max-w-3xl text-sm text-emerald-50/90 print:text-stone-700">
-            Číselné výsledky first — yield, cash flow, IRR, DSCR, fit k profilu.
-            Žádné absolutní „nejlepší“ bez trade-offs. Radar jen jako doplněk.
+            Číselné výsledky nejprve — výnos, peněžní tok, IRR, DSCR, fit k profilu.
+            Žádné absolutní „nejlepší“ bez kompromisů. Radar jen jako doplněk.
           </p>
           <div className="mt-4 flex flex-wrap gap-2 print:hidden">
             <button
@@ -316,7 +316,7 @@ export function PropertyCompareView() {
               className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold"
             >
               <Link2 className="h-4 w-4" />
-              {copied ? "Odkaz zkopírován" : "Shareable link"}
+              {copied ? "Odkaz zkopírován" : "Odkaz ke sdílení"}
             </button>
             <button
               type="button"
@@ -330,7 +330,7 @@ export function PropertyCompareView() {
               href={routes.financniPas}
               className="rounded-full border border-white/30 px-4 py-2 text-sm font-semibold"
             >
-              Financial Passport
+              Finanční pas
             </Link>
           </div>
         </div>
@@ -350,7 +350,7 @@ export function PropertyCompareView() {
                 onClick={loadFromWatchlist}
                 className="rounded-lg border border-border bg-white px-3 py-1.5 text-xs font-semibold"
               >
-                Z watchlistu
+                Ze seznamu sledování
               </button>
               <button
                 type="button"
@@ -495,12 +495,12 @@ export function PropertyCompareView() {
                     setEditingId(editingId === p.id ? null : p.id)
                   }
                 >
-                  {editingId === p.id ? "Skrýt equity" : "Equity / sazba"}
+                  {editingId === p.id ? "Skrýt vlastní kapitál" : "Vlastní kapitál / sazba"}
                 </button>
                 {editingId === p.id ? (
                   <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
                     <label>
-                      Equity
+                      Vlastní kapitál
                       <input
                         className="mt-0.5 h-8 w-full rounded border px-2"
                         placeholder="20 % MODEL"
@@ -566,7 +566,7 @@ export function PropertyCompareView() {
             <section>
               <h2 className="mb-3 flex items-center gap-2 font-heading text-lg font-bold">
                 <Trophy className="h-5 w-5 text-muted-gold" />
-                WINNER BY CATEGORY
+                Vítěz podle kategorie
               </h2>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {comparison.categoryWinners.map((w) => (
@@ -593,7 +593,7 @@ export function PropertyCompareView() {
 
             {/* Trade-offs */}
             <section>
-              <h2 className="mb-3 font-heading text-lg font-bold">Trade-offs</h2>
+              <h2 className="mb-3 font-heading text-lg font-bold">Kompromisy</h2>
               <div className="grid gap-4 md:grid-cols-2">
                 {comparison.profileRecommendation.tradeoffs.map((t) => (
                   <article
@@ -613,8 +613,8 @@ export function PropertyCompareView() {
                 ))}
               </div>
               <p className="mt-3 text-xs text-muted-foreground italic">
-                Příklad: Property A může mít vyšší cash flow a nižší růstový
-                potenciál; Property B nižší cash flow, ale lepší lokalitu a
+                Příklad: Nemovitost A může mít vyšší peněžní tok a nižší růstový
+                potenciál; Nemovitost B nižší peněžní tok, ale lepší lokalitu a
                 likviditu — záleží na vašem cíli.
               </p>
             </section>
@@ -661,17 +661,17 @@ export function PropertyCompareView() {
             {/* Exit scenarios */}
             <section>
               <h2 className="mb-3 font-heading text-lg font-bold">
-                Exit scenarios (Bear / Base / Bull)
+                Scénáře výstupu (Pesimistický / Základní / Optimistický)
               </h2>
               <div className="overflow-x-auto rounded-xl border border-border bg-white">
                 <table className="w-full min-w-[520px] text-sm">
                   <thead>
                     <tr className="border-b bg-[#f7f8f7]">
                       <th className="px-3 py-2 text-left">Nemovitost</th>
-                      <th className="px-3 py-2">Bear IRR</th>
-                      <th className="px-3 py-2">Base IRR</th>
-                      <th className="px-3 py-2">Bull IRR</th>
-                      <th className="px-3 py-2">Exit proceeds (base)</th>
+                      <th className="px-3 py-2">Pesimistický IRR</th>
+                      <th className="px-3 py-2">Základní IRR</th>
+                      <th className="px-3 py-2">Optimistický IRR</th>
+                      <th className="px-3 py-2">Výnos z prodeje (základní)</th>
                     </tr>
                   </thead>
                   <tbody>

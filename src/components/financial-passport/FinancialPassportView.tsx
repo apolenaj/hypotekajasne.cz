@@ -103,7 +103,7 @@ function PassportContent({ doc }: { doc: FinancialPassportDocument }) {
   return (
     <div className="space-y-6">
       {/* Readiness — dimensional, not single black number */}
-      <Section title="Připravenost (readiness)">
+      <Section title="Moje připravenost">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
@@ -213,7 +213,7 @@ function PassportContent({ doc }: { doc: FinancialPassportDocument }) {
           <ul className="space-y-2 text-sm">
             <li>Hotovost: {fmt(doc.assets.cash)}</li>
             <li>Investice: {fmt(doc.assets.investments)}</li>
-            <li>Equity v nemovitostech: {fmt(doc.assets.existingPropertyEquity)}</li>
+            <li>Vlastní kapitál v nemovitostech: {fmt(doc.assets.existingPropertyEquity)}</li>
             <li>Zajištění (CZ): {fmt(doc.assets.availableCollateral)}</li>
             <li className="border-t border-border pt-2 font-semibold">
               Model vlastních zdrojů: {fmt(doc.assets.totalOwnFundsModel)}
@@ -349,7 +349,7 @@ function PassportContent({ doc }: { doc: FinancialPassportDocument }) {
         <Section title="Historie připravenosti">
           <div className="flex items-center gap-2 text-muted-gold">
             <History className="h-4 w-4" />
-            <span className="text-xs font-bold uppercase tracking-wide">Timeline</span>
+            <span className="text-xs font-bold uppercase tracking-wide">Časová osa</span>
           </div>
           <ul className="mt-4 space-y-4">
             {timeline.slice(0, 8).map((e) => (
@@ -392,7 +392,7 @@ function PassportContent({ doc }: { doc: FinancialPassportDocument }) {
           href={routes.copilot}
           className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-3 text-sm font-semibold"
         >
-          Zeptat se Copilota
+          Zeptat se Finančního AI průvodce
           <Sparkles className="h-4 w-4" />
         </Link>
       </div>
@@ -415,7 +415,7 @@ export function FinancialPassportView() {
     return (
       <div className="mx-auto max-w-2xl px-4 py-20 text-center">
         <TrendingUp className="mx-auto h-12 w-12 text-deep-teal" />
-        <h1 className="mt-4 font-heading text-2xl font-bold">Financial Passport</h1>
+        <h1 className="mt-4 font-heading text-2xl font-bold">Finanční pas</h1>
         <p className="mt-3 text-muted-foreground">
           Zatím nemáte uložený profil. Vyplňte{" "}
           <Link href={routes.navrhNaMiru} className="font-semibold text-deep-teal underline">
@@ -433,7 +433,7 @@ export function FinancialPassportView() {
       <div className="border-b border-border bg-deep-teal text-white">
         <div className="mx-auto max-w-5xl px-4 py-10">
           <p className="text-xs font-bold uppercase tracking-widest text-muted-gold">
-            Financial Passport
+            Finanční pas
           </p>
           <h1 className="mt-2 font-heading text-3xl font-black md:text-4xl">
             Váš finančně-realitní profil

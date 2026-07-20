@@ -1,11 +1,5 @@
 import type { AcademyMediaBundle } from "@/lib/academy/types";
-
-function statusLabel(status: string): string {
-  if (status === "PLANNED") return "COMING SOON";
-  if (status === "LIVE") return "LIVE";
-  if (status === "PROCESSING") return "BETA";
-  return status;
-}
+import { mediaStatusLabel } from "@/lib/i18n/labels";
 
 export function AcademyMediaPlaceholders({
   media,
@@ -25,7 +19,7 @@ export function AcademyMediaPlaceholders({
             7. Video 30–60 s
           </p>
           <span className="rounded border border-stone-300 bg-stone-200 px-1.5 py-0.5 text-[10px] font-bold">
-            {statusLabel(media.video.status)}
+            {mediaStatusLabel(media.video.status)}
           </span>
         </div>
         {videoPlanned ? (
@@ -33,13 +27,13 @@ export function AcademyMediaPlaceholders({
             <div>
               <p className="font-semibold text-text-dark">{lessonTitle}</p>
               <p className="mt-1">
-                Placeholder — žádný falešný soubor.
+                Video zatím není k dispozici — nepřidáváme falešný soubor.
                 <br />
                 Cíl: {media.video.targetDurationSec?.min ?? 30}–
                 {media.video.targetDurationSec?.max ?? 60} s
               </p>
               <p className="mt-2 text-[10px]">
-                Workflow: script → natáčení → captions → transcript → LIVE src
+                Postup: scénář → natáčení → titulky → přepis → zveřejnění
               </p>
             </div>
           </div>
@@ -68,14 +62,14 @@ export function AcademyMediaPlaceholders({
             8. Audio verze
           </p>
           <span className="rounded border border-stone-300 bg-stone-200 px-1.5 py-0.5 text-[10px] font-bold">
-            {statusLabel(media.audio.status)}
+            {mediaStatusLabel(media.audio.status)}
           </span>
         </div>
         {audioPlanned ? (
           <div className="mt-3 rounded-lg bg-white px-4 py-8 text-center text-xs text-muted-foreground">
-            Audio placeholder — nahrávka až po produkci.
+            Audio zatím není k dispozici — nahrávka až po produkci.
             <br />
-            Transcript: {media.transcript?.status ?? "PLANNED"}
+            Přepis: {mediaStatusLabel(media.transcript?.status ?? "PLANNED")}
           </div>
         ) : (
           <audio className="mt-3 w-full" controls src={media.audio.src!} />

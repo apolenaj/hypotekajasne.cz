@@ -82,8 +82,8 @@ const PORTAL_TABS: { id: B2bPortalTab; label: string; Icon: LucideIcon }[] = [
   { id: "agent", label: "Makléř / analýza", Icon: Users },
   { id: "developer", label: "Developer", Icon: Building2 },
   { id: "partner", label: "Hypoteční partner", Icon: Landmark },
-  { id: "billing", label: "Billing", Icon: FileText },
-  { id: "audit", label: "Audit log", Icon: ClipboardList },
+  { id: "billing", label: "Fakturace", Icon: FileText },
+  { id: "audit", label: "Auditní záznam", Icon: ClipboardList },
   { id: "architecture", label: "Architektura", Icon: Shield },
 ];
 
@@ -133,7 +133,7 @@ export function B2bPortalView() {
 
   const onSubmitAndOrder = (planId: (typeof BILLING_PLAN_IDS)[number] = "single_analysis") => {
     if (!org || !member) return;
-    let store = loadB2bPortalStore();
+    const store = loadB2bPortalStore();
     const { store: s1, submission } = submitProperty({
       store,
       orgId: org.id,
@@ -220,24 +220,24 @@ export function B2bPortalView() {
           <div className="flex flex-wrap items-center gap-2">
             <FeatureStatusBadge status={B2B_PORTAL_FEATURE_STATUS} />
             <span className="text-xs font-bold uppercase tracking-widest text-muted-gold">
-              B2B Professional Portal · SaaS
+              Profesionální B2B portál · SaaS
             </span>
           </div>
           <h1 className="mt-2 font-heading text-3xl font-black md:text-4xl">
             Profesionální portál pro partnery
           </h1>
           <p className="mt-2 max-w-3xl text-sm text-emerald-50/90">
-            Makléři, kanceláře, developeři a hypoteční partneři — organizace, role, billing-ready
-            objednávky analýz, reporty, engagement a qualified interest se souhlasem.
+            Makléři, kanceláře, developeři a hypoteční partneři — organizace, role, fakturace,
+            objednávky analýz, reporty, engagement a kvalifikovaný zájem se souhlasem.
           </p>
 
-          <div className="mt-6 flex flex-wrap items-end gap-3">
-            <label className="text-xs font-semibold">
+          <div className="mt-6 flex max-w-full min-w-0 flex-wrap items-end gap-3">
+            <label className="min-w-0 max-w-full text-xs font-semibold">
               Organizace
               <select
                 value={org?.id ?? ""}
                 onChange={(e) => onSwitchOrg(e.target.value)}
-                className="mt-1 block rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white"
+                className="mt-1 block max-w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white"
               >
                 {orgOptions.map((o) => (
                   <option key={o.id} value={o.id} className="text-black">
@@ -255,32 +255,37 @@ export function B2bPortalView() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-6xl space-y-6 px-4 py-8">
+      <div className="mx-auto max-w-6xl min-w-0 space-y-6 px-4 py-8">
         <MajetioIntelligenceBadge />
         <B2bDataProvenanceLegend />
 
-        <nav className="flex flex-wrap gap-2 border-b border-border pb-2">
-          {PORTAL_TABS.map(({ id, label, Icon }) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => setTab(id)}
-              className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold ${
-                tab === id
-                  ? "bg-deep-teal text-white"
-                  : "border border-border bg-white text-foreground"
-              }`}
-            >
-              <Icon className="h-3.5 w-3.5" />
-              {label}
-            </button>
-          ))}
+        <nav
+          className="max-w-full min-w-0 overflow-x-auto overscroll-x-contain border-b border-border pb-2 [scrollbar-width:thin]"
+          aria-label="Sekce portálu"
+        >
+          <div className="flex w-max min-w-full gap-2">
+            {PORTAL_TABS.map(({ id, label, Icon }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setTab(id)}
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-xs font-bold sm:px-4 ${
+                  tab === id
+                    ? "bg-deep-teal text-white"
+                    : "border border-border bg-white text-foreground"
+                }`}
+              >
+                <Icon className="h-3.5 w-3.5 shrink-0" />
+                {label}
+              </button>
+            ))}
+          </div>
         </nav>
 
         {tab === "agent" && member && memberHasPermission(member.role, "analysis.order") ? (
           <div className="grid gap-6 lg:grid-cols-2">
             <section className="rounded-2xl border border-border bg-white p-5">
-              <h2 className="font-heading text-lg font-bold">Submit property + objednat analýzu</h2>
+              <h2 className="font-heading text-lg font-bold">Odeslat nemovitost a objednat analýzu</h2>
               <p className="mt-1 text-xs text-muted-foreground">
                 Skóre se vypočte ihned — platba ho nemění. Cena jednotlivé analýzy:{" "}
                 {formatPlanPrice("single_analysis")}.
@@ -325,7 +330,7 @@ export function B2bPortalView() {
                   onClick={() => onSubmitAndOrder("single_analysis")}
                   className="rounded-full bg-deep-teal px-5 py-2.5 text-sm font-bold text-white"
                 >
-                  Objednat analýzu (5 000 Kč)
+                  Objednat analýzu ({formatPlanPrice("single_analysis")})
                 </button>
                 <button
                   type="button"
@@ -411,7 +416,7 @@ export function B2bPortalView() {
                                 className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs font-bold"
                               >
                                 <Link2 className="h-3 w-3" />
-                                Share link
+                                Odkaz ke sdílení
                               </Link>
                               <button
                                 type="button"
@@ -459,7 +464,7 @@ export function B2bPortalView() {
 
             {dash.interests.length > 0 ? (
               <section className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-5 lg:col-span-2">
-                <h2 className="font-heading text-lg font-bold">Qualified interest (consent)</h2>
+                <h2 className="font-heading text-lg font-bold">Kvalifikovaný zájem (souhlas)</h2>
                 <ul className="mt-3 space-y-2 text-sm">
                   {dash.interests.map((l) => (
                     <li key={l.id} className="rounded-lg border border-emerald-200 bg-white p-3">
@@ -521,7 +526,7 @@ export function B2bPortalView() {
 
             {dash.interests.length > 0 ? (
               <section className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-5">
-                <h2 className="font-heading text-lg font-bold">Qualified interest (consent)</h2>
+                <h2 className="font-heading text-lg font-bold">Kvalifikovaný zájem (souhlas)</h2>
                 <ul className="mt-3 space-y-2 text-sm">
                   {dash.interests.map((l) => (
                     <li key={l.id} className="rounded-lg border border-emerald-200 bg-white p-3">
@@ -604,7 +609,7 @@ export function B2bPortalView() {
 
         {tab === "billing" ? (
           <section className="rounded-2xl border border-border bg-white p-5">
-            <h2 className="font-heading text-lg font-bold">Billing-ready struktura</h2>
+            <h2 className="font-heading text-lg font-bold">Struktura připravená pro fakturaci</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {BILLING_PLAN_IDS.map((planId) => {
                 const plan = dash.billingPlans[planId];
@@ -621,25 +626,30 @@ export function B2bPortalView() {
                       {formatPlanPrice(planId)}
                     </p>
                     {plan.status === "coming_soon" ? (
-                      <span className="text-xs font-bold text-amber-700">COMING_SOON</span>
+                      <span className="text-xs font-bold text-amber-700">
+                        Připravujeme
+                      </span>
                     ) : null}
                   </div>
                 );
               })}
             </div>
             <p className="mt-4 text-xs text-muted-foreground">
-              Faktury: draft → pending_payment → paid. Pole externalPaymentIntentId připraveno pro
-              Stripe. Subscription enterprise — architektura hotová, aktivace později.
+              Fakturace a předplatné pro týmy připravujeme. Jednotlivé analýzy
+              lze evidovat už teď.
             </p>
           </section>
         ) : null}
 
         {tab === "audit" ? (
           <section className="rounded-2xl border border-border bg-white p-5">
-            <h2 className="font-heading text-lg font-bold">Audit log</h2>
+            <h2 className="font-heading text-lg font-bold">Auditní záznam</h2>
             <ul className="mt-4 max-h-96 space-y-1 overflow-y-auto text-xs">
               {dash.recentAudit.map((e) => (
-                <li key={e.id} className="rounded border border-border px-3 py-2 font-mono">
+                <li
+                  key={e.id}
+                  className="break-all rounded border border-border px-3 py-2 font-mono"
+                >
                   {new Date(e.at).toLocaleString("cs-CZ")} · {auditActionLabel(e.action)} ·{" "}
                   {e.resourceType}/{e.resourceId}
                 </li>
@@ -654,7 +664,7 @@ export function B2bPortalView() {
         {tab === "architecture" ? (
           <section className="space-y-4">
             <div className="rounded-2xl border border-border bg-white p-5">
-              <h2 className="font-heading text-lg font-bold">SaaS vrstvy</h2>
+              <h2 className="font-heading text-lg font-bold">Vrstvy portálu</h2>
               <ul className="mt-3 space-y-3">
                 {B2B_ARCHITECTURE_LAYERS.map((layer) => (
                   <li key={layer.id} className="flex gap-2 text-sm">
@@ -668,7 +678,7 @@ export function B2bPortalView() {
               </ul>
             </div>
             <div className="rounded-2xl border-2 border-deep-teal/30 bg-[#eef3f1] p-5">
-              <h3 className="font-heading text-sm font-bold">Score isolation (enforce)</h3>
+              <h3 className="font-heading text-sm font-bold">Izolace skóre (pravidla)</h3>
               <ul className="mt-2 list-disc space-y-1 pl-5 text-xs">
                 {B2B_SCORE_ISOLATION_RULES.map((r) => (
                   <li key={r}>{r}</li>
@@ -679,7 +689,7 @@ export function B2bPortalView() {
               href={routes.reportEngine}
               className="inline-flex text-sm font-bold text-deep-teal underline"
             >
-              Report Engine →
+              Reporty →
             </Link>
           </section>
         ) : null}

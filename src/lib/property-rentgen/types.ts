@@ -6,15 +6,15 @@
 export type ClaimKind = "DATA" | "MODEL" | "ODHAD" | "NEOVERENO";
 
 export const CLAIM_KIND_LABELS: Record<ClaimKind, string> = {
-  DATA: "DATA",
-  MODEL: "MODEL",
-  ODHAD: "ODHAD",
-  NEOVERENO: "NEOVĚŘENO",
+  DATA: "Data",
+  MODEL: "Modelový výpočet",
+  ODHAD: "Odhad",
+  NEOVERENO: "Neověřeno",
 };
 
 export const CLAIM_KIND_DESCRIPTIONS: Record<ClaimKind, string> = {
-  DATA: "Údaj zadaný uživatelem nebo ověřený ze zdroje.",
-  MODEL: "Orientační model platformy — ne live kotace ani právní posudek.",
+  DATA: "Údaj zadaný vámi nebo ověřený ze zdroje.",
+  MODEL: "Orientační model platformy — ne živá kotace ani právní posudek.",
   ODHAD: "Hrubý odhad z dostupných vstupů; vyžaduje ověření.",
   NEOVERENO: "Bez ověřeného zdroje — nezobrazujeme jako fakt.",
 };

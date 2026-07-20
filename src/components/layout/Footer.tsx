@@ -111,8 +111,8 @@ export function Footer() {
             vyhrazena.
           </p>
           <p className="max-w-md text-center text-xs text-muted-foreground sm:text-right">
-            Informační platforma — nejsme banka ani licencovaný poradce. Právní
-            texty vyžadují review českým právníkem před produkcí.
+            Informační platforma — nejsme banka ani licencovaný poradce. Před
+            rozhodnutím si ověřte aktuální podmínky u odborníka.
           </p>
         </div>
       </div>

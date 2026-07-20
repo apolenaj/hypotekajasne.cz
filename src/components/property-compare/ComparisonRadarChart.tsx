@@ -11,7 +11,7 @@ import {
 import type { ComparePropertyMetrics } from "@/lib/property-compare/types";
 
 const DIM_LABELS: Record<keyof ComparePropertyMetrics["radar"], string> = {
-  cashFlow: "Cash flow",
+  cashFlow: "Peněžní tok",
   yield: "Výnos",
   appreciation: "Růst",
   liquidity: "Likvidita",

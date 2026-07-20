@@ -22,10 +22,10 @@ type InvestmentEnginePanelProps = {
 };
 
 const SCENARIOS: { id: ScenarioId; label: string }[] = [
-  { id: "bear", label: "Bear" },
-  { id: "base", label: "Base" },
-  { id: "bull", label: "Bull" },
-  { id: "custom", label: "Custom" },
+  { id: "bear", label: "Pesimistický" },
+  { id: "base", label: "Základní" },
+  { id: "bull", label: "Optimistický" },
+  { id: "custom", label: "Vlastní" },
 ];
 
 function Field({
@@ -85,7 +85,12 @@ function MetricCard({
 
 function pct(ratio: number | null): string {
   const p = asPercent(ratio);
-  return p == null ? "—" : `${p.toFixed(2)} %`;
+  return p == null
+    ? "—"
+    : `${p.toLocaleString("cs-CZ", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}\u00a0%`;
 }
 
 export function InvestmentEnginePanel({
@@ -259,7 +264,7 @@ export function InvestmentEnginePanel({
       </div>
 
       {scenario === "custom" && (
-        <div className="grid gap-3 rounded-xl border border-border bg-[#f7f8f7] p-4 sm:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 rounded-xl border border-border bg-[#f7f8f7] p-4 sm:grid-cols-2">
           <Field id="c-vac" label="Δ Neobsazenost (p.b.)">
             <Input
               id="c-vac"
@@ -307,8 +312,8 @@ export function InvestmentEnginePanel({
         </div>
       )}
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        <Field id="price" label="Kupní cena" tip="Purchase price">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <Field id="price" label="Kupní cena" tip="Kupní cena nemovitosti">
           <Input
             id="price"
             type="number"
@@ -317,7 +322,7 @@ export function InvestmentEnginePanel({
             className="h-10"
           />
         </Field>
-        <Field id="down" label="Akontace / down payment">
+        <Field id="down" label="Vlastní prostředky">
           <Input
             id="down"
             type="number"
@@ -326,7 +331,7 @@ export function InvestmentEnginePanel({
             className="h-10"
           />
         </Field>
-        <Field id="loan" label="Úvěr (loan)">
+        <Field id="loan" label="Výše úvěru">
           <Input
             id="loan"
             type="number"
@@ -335,7 +340,7 @@ export function InvestmentEnginePanel({
             className="h-10"
           />
         </Field>
-        <Field id="rate" label="Sazba % p.a." tip="Null/0 u pure cash modelu bez dluhu">
+        <Field id="rate" label="Úroková sazba % p.a." tip="0 u modelu jen z vlastních zdrojů, bez dluhu">
           <Input
             id="rate"
             type="number"
@@ -345,7 +350,7 @@ export function InvestmentEnginePanel({
             className="h-10"
           />
         </Field>
-        <Field id="term" label="Splatnost (roky)">
+        <Field id="term" label="Doba splatnosti (roky)">
           <Input
             id="term"
             type="number"
@@ -354,7 +359,7 @@ export function InvestmentEnginePanel({
             className="h-10"
           />
         </Field>
-        <Field id="rent" label="Hrubý nájem / měs.">
+        <Field id="rent" label="Měsíční nájemné (hrubé)">
           <Input
             id="rent"
             type="number"
@@ -373,7 +378,7 @@ export function InvestmentEnginePanel({
             className="h-10"
           />
         </Field>
-        <Field id="mgmt" label="Správa % z ef. nájmu">
+        <Field id="mgmt" label="Správa nemovitosti % z ef. nájmu">
           <Input
             id="mgmt"
             type="number"
@@ -383,7 +388,7 @@ export function InvestmentEnginePanel({
             className="h-10"
           />
         </Field>
-        <Field id="svc" label="Service charges / rok">
+        <Field id="svc" label="Provozní poplatky / rok">
           <Input
             id="svc"
             type="number"
@@ -410,7 +415,7 @@ export function InvestmentEnginePanel({
             className="h-10"
           />
         </Field>
-        <Field id="itax" label="Daň z příjmu assumption %">
+        <Field id="itax" label="Předpoklad daně z příjmu %">
           <Input
             id="itax"
             type="number"
@@ -420,7 +425,7 @@ export function InvestmentEnginePanel({
             className="h-10"
           />
         </Field>
-        <Field id="maint" label="Údržba / rok">
+        <Field id="maint" label="Údržba a opravy / rok">
           <Input
             id="maint"
             type="number"
@@ -429,7 +434,7 @@ export function InvestmentEnginePanel({
             className="h-10"
           />
         </Field>
-        <Field id="capex" label="Capex rezerva / rok">
+        <Field id="capex" label="Rezerva na investice (capex) / rok">
           <Input
             id="capex"
             type="number"
@@ -476,7 +481,7 @@ export function InvestmentEnginePanel({
             className="h-10"
           />
         </Field>
-        <Field id="pg" label="Růst ceny % p.a.">
+        <Field id="pg" label="Roční růst hodnoty % p.a.">
           <Input
             id="pg"
             type="number"
@@ -496,7 +501,7 @@ export function InvestmentEnginePanel({
             className="h-10"
           />
         </Field>
-        <Field id="hold" label="Holding period (roky)">
+        <Field id="hold" label="Doba držení (roky)">
           <Input
             id="hold"
             type="number"
@@ -507,14 +512,52 @@ export function InvestmentEnginePanel({
         </Field>
       </div>
 
+      {/* Primární výsledky */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <MetricCard
+          label="Měsíční peněžní tok"
+          tip={INVESTMENT_METRIC_TOOLTIPS.monthlyCashFlow}
+          value={money(result.monthlyCashFlow)}
+          accent
+        />
+        <MetricCard
+          label="Roční peněžní tok"
+          tip={INVESTMENT_METRIC_TOOLTIPS.annualCashFlow}
+          value={money(result.annualCashFlow)}
+          accent
+        />
+        <MetricCard
+          label="Hrubý výnos"
+          tip={INVESTMENT_METRIC_TOOLTIPS.grossYield}
+          value={pct(result.grossYield)}
+          accent
+        />
+        <MetricCard
+          label="Čistý výnos"
+          tip={INVESTMENT_METRIC_TOOLTIPS.netYield}
+          value={pct(result.netYield)}
+        />
+        <MetricCard
+          label="Výnos vloženého vlastního kapitálu"
+          tip={INVESTMENT_METRIC_TOOLTIPS.cashOnCashReturn}
+          value={pct(result.cashOnCashReturn)}
+        />
+        <MetricCard
+          label="Celkový výnos"
+          tip={INVESTMENT_METRIC_TOOLTIPS.totalReturn}
+          value={money(result.totalReturn)}
+          accent
+        />
+      </div>
+
       {/* Waterfall */}
       <section className="rounded-2xl border border-border bg-white p-5">
         <h4 className="font-heading text-lg font-bold text-text-dark">
-          Cash flow waterfall
+          Rozklad peněžního toku
         </h4>
         <p className="mt-1 text-xs text-muted-foreground">
           Hrubý nájem → neobsazenost → provoz → správa → daně → dluhová služba →
-          čistý cash flow
+          čistý peněžní tok
         </p>
         <ul className="mt-4 divide-y divide-border">
           {result.waterfall.map((line) => (
@@ -541,87 +584,65 @@ export function InvestmentEnginePanel({
         </ul>
       </section>
 
-      {/* Metrics */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        <MetricCard
-          label="Gross Yield"
-          tip={INVESTMENT_METRIC_TOOLTIPS.grossYield}
-          value={pct(result.grossYield)}
-          accent
-        />
-        <MetricCard
-          label="NOI"
-          tip={INVESTMENT_METRIC_TOOLTIPS.noi}
-          value={money(result.noi)}
-        />
-        <MetricCard
-          label="Net Yield"
-          tip={INVESTMENT_METRIC_TOOLTIPS.netYield}
-          value={pct(result.netYield)}
-        />
-        <MetricCard
-          label="Měsíční cash flow"
-          tip={INVESTMENT_METRIC_TOOLTIPS.monthlyCashFlow}
-          value={money(result.monthlyCashFlow)}
-        />
-        <MetricCard
-          label="Roční cash flow"
-          tip={INVESTMENT_METRIC_TOOLTIPS.annualCashFlow}
-          value={money(result.annualCashFlow)}
-          accent
-        />
-        <MetricCard
-          label="Cash-on-Cash Return"
-          tip={INVESTMENT_METRIC_TOOLTIPS.cashOnCashReturn}
-          value={pct(result.cashOnCashReturn)}
-        />
-        <MetricCard
-          label="ROE (rok 1)"
-          tip={INVESTMENT_METRIC_TOOLTIPS.roe}
-          value={pct(result.roeYear1)}
-        />
-        <MetricCard
-          label="DSCR"
-          tip={INVESTMENT_METRIC_TOOLTIPS.dscr}
-          value={result.dscr == null ? "—" : `${result.dscr.toFixed(2)}×`}
-        />
-        <MetricCard
-          label="Break-even occupancy"
-          tip={INVESTMENT_METRIC_TOOLTIPS.breakEvenOccupancy}
-          value={pct(result.breakEvenOccupancy)}
-        />
-        <MetricCard
-          label="IRR"
-          tip={INVESTMENT_METRIC_TOOLTIPS.irr}
-          value={pct(result.irr)}
-        />
-        <MetricCard
-          label="XIRR"
-          tip={INVESTMENT_METRIC_TOOLTIPS.xirr}
-          value={pct(result.xirr)}
-        />
-        <MetricCard
-          label="Equity build-up"
-          tip={INVESTMENT_METRIC_TOOLTIPS.equityBuildUp}
-          value={money(result.equityBuildUp)}
-        />
-        <MetricCard
-          label="Remaining debt"
-          tip={INVESTMENT_METRIC_TOOLTIPS.remainingDebt}
-          value={money(result.remainingDebt)}
-        />
-        <MetricCard
-          label="Exit proceeds"
-          tip={INVESTMENT_METRIC_TOOLTIPS.exitProceeds}
-          value={money(result.exitProceeds)}
-        />
-        <MetricCard
-          label="Total return"
-          tip={INVESTMENT_METRIC_TOOLTIPS.totalReturn}
-          value={money(result.totalReturn)}
-          accent
-        />
-      </div>
+      <details className="rounded-xl border border-border bg-white p-4">
+        <summary className="cursor-pointer font-semibold text-deep-teal">
+          Pokročilé výsledky
+        </summary>
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <MetricCard
+            label="NOI"
+            tip={INVESTMENT_METRIC_TOOLTIPS.noi}
+            value={money(result.noi)}
+          />
+          <MetricCard
+            label="ROE (rok 1)"
+            tip={INVESTMENT_METRIC_TOOLTIPS.roe}
+            value={pct(result.roeYear1)}
+          />
+          <MetricCard
+            label="DSCR"
+            tip={INVESTMENT_METRIC_TOOLTIPS.dscr}
+            value={
+              result.dscr == null
+                ? "—"
+                : `${result.dscr.toLocaleString("cs-CZ", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}×`
+            }
+          />
+          <MetricCard
+            label="Minimální potřebná obsazenost"
+            tip={INVESTMENT_METRIC_TOOLTIPS.breakEvenOccupancy}
+            value={pct(result.breakEvenOccupancy)}
+          />
+          <MetricCard
+            label="IRR"
+            tip={INVESTMENT_METRIC_TOOLTIPS.irr}
+            value={pct(result.irr)}
+          />
+          <MetricCard
+            label="XIRR"
+            tip={INVESTMENT_METRIC_TOOLTIPS.xirr}
+            value={pct(result.xirr)}
+          />
+          <MetricCard
+            label="Nárůst vlastního kapitálu"
+            tip={INVESTMENT_METRIC_TOOLTIPS.equityBuildUp}
+            value={money(result.equityBuildUp)}
+          />
+          <MetricCard
+            label="Zůstatek dluhu"
+            tip={INVESTMENT_METRIC_TOOLTIPS.remainingDebt}
+            value={money(result.remainingDebt)}
+          />
+          <MetricCard
+            label="Výnos z prodeje"
+            tip={INVESTMENT_METRIC_TOOLTIPS.exitProceeds}
+            value={money(result.exitProceeds)}
+          />
+        </div>
+      </details>
 
       <details className="rounded-xl border border-border bg-[#f7f8f7] p-4 text-sm">
         <summary className="cursor-pointer font-semibold text-deep-teal">

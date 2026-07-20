@@ -29,7 +29,7 @@ function applyStress(
     const twin = twinMap.get(r.twinId);
     let value = r.valueCzk ?? 0;
     let rent = r.monthlyGrossRentCzk ?? 0;
-    let debt = r.debtCzk ?? 0;
+    const debt = r.debtCzk ?? 0;
     let payment = r.monthlyDebtServiceCzk ?? 0;
     const currency = twin?.location.currencyCode ?? "CZK";
 
@@ -110,7 +110,7 @@ const SCENARIO_META: Record<
     description: "Oslabení cizí měny u assetů/příjmů mimo CZK.",
   },
   combined_recession: {
-    label: "Combined recession",
+    label: "Kombinovaná recese",
     description: "Kombinace: hodnoty −15 %, nájem −10 %, 3m vacancy, sazby +2 p.b., FX −15 %.",
   },
 };

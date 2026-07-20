@@ -69,9 +69,10 @@ describe("dashboard persona + relevance", () => {
       hasTimelineChange: false,
       completeness: 80,
     });
-    assert.ok(widgets.length <= 6);
+    assert.ok(widgets.length <= 7);
     assert.ok(widgets.length >= 3);
     assert.ok(widgets.some((w) => w.id === "next_best_action"));
+    assert.ok(widgets.some((w) => w.id === "safe_buying_power"));
     // Should not dump all 10
     assert.ok(widgets.length < 10);
   });
@@ -85,7 +86,8 @@ describe("dashboard persona + relevance", () => {
       hasTimelineChange: false,
       completeness: 0,
     });
-    assert.ok(widgets.length <= 4);
+    assert.ok(widgets.length <= 6);
+    assert.ok(widgets.some((w) => w.id === "next_best_action"));
   });
 });
 

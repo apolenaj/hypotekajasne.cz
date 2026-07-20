@@ -64,7 +64,7 @@ export function buildMarketPulseDashboard(input: {
       disclaimer: RADAR_DISCLAIMER,
     },
     methodology: [
-      "Každý insight vychází z konkrétního datového zdroje — DATA / MODEL / NEOVERENO.",
+      "Každý insight vychází z konkrétního datového zdroje — Data / Modelový výpočet / Neověřeno.",
       "Neuvádíme „nejlepší čas koupit“ ani investiční doporučení.",
       "CZ hypoteční sazby LIVE; ceny/nájmy/yield z ročních modelových snapshotů.",
       "Supply, DOM a měsíční trendy zobrazíme až s ověřeným feedem.",

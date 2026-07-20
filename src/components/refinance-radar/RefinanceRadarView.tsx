@@ -27,6 +27,7 @@ import {
 } from "@/components/property-rentgen/ClaimBadge";
 import { useCurrentRates } from "@/lib/rates";
 import { routes } from "@/lib/routes";
+import { FEATURE_STATUS_LABELS } from "@/lib/majetio/types";
 import {
   DEMO_REFINANCE_PROFILE,
   REFINANCE_RADAR_FEATURE_STATUS,
@@ -181,8 +182,14 @@ export function RefinanceRadarView() {
 
   if (!ready || !model) {
     return (
-      <div className="mx-auto max-w-5xl px-4 py-16 text-sm text-muted-foreground">
-        Načítám Refinance Radar…
+      <div className="mx-auto max-w-5xl space-y-4 px-4 py-16">
+        <div className="h-8 w-56 animate-pulse rounded bg-slate-200" />
+        <div className="h-32 animate-pulse rounded-2xl bg-slate-100" />
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="h-24 animate-pulse rounded-2xl bg-slate-100" />
+          <div className="h-24 animate-pulse rounded-2xl bg-slate-100" />
+        </div>
+        <p className="sr-only">Načítám hlídač refinancování</p>
       </div>
     );
   }
@@ -191,15 +198,16 @@ export function RefinanceRadarView() {
   const isUrgent = monthsToFixation != null && monthsToFixation <= 3;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#eef3f1] to-white">
+    <div className="min-h-screen min-w-0 bg-gradient-to-b from-[#eef3f1] to-white">
       {/* ---- Header ---- */}
       <header className="border-b border-border bg-deep-teal text-white">
         <div className="mx-auto max-w-5xl px-4 py-10">
           <p className="text-xs font-bold uppercase tracking-widest text-muted-gold">
-            Refinance Radar · {REFINANCE_RADAR_FEATURE_STATUS}
+            Hlídač refinancování ·{" "}
+            {FEATURE_STATUS_LABELS[REFINANCE_RADAR_FEATURE_STATUS]}
           </p>
           <h1 className="mt-2 font-heading text-3xl font-black md:text-4xl">
-            Refinance Radar
+            Hlídač refinancování
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-emerald-50/90">
             Sledujte svou fixaci, porovnejte scénáře a rozhodujte se s jasnou
@@ -360,13 +368,13 @@ export function RefinanceRadarView() {
           </p>
           <div className="divide-y divide-border">
             {paymentScenarios.map((sc) => (
-              <div key={sc.id} className="flex items-center justify-between py-3">
-                <div>
+              <div key={sc.id} className="flex min-w-0 flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
                   <p className="text-sm font-medium">{sc.label}</p>
                   <p className="text-xs text-muted-foreground">{fmtPct(sc.ratePercent)}</p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="font-heading text-lg font-bold text-deep-teal">
+                <div className="flex min-w-0 flex-wrap items-center gap-2 sm:justify-end">
+                  <span className="font-heading text-lg font-bold tabular-nums text-deep-teal">
                     {fmtCzk(sc.monthlyPaymentCzk)}
                   </span>
                   <ClaimBadge kind={sc.claimKind} />
@@ -457,7 +465,7 @@ export function RefinanceRadarView() {
         {/* ---- Stay vs Refinance ---- */}
         <section className="rounded-2xl border border-border bg-white p-6 shadow-sm">
           <h2 className="mb-1 font-heading text-xl font-bold text-deep-teal">
-            Stay vs. Refinance
+            Zůstat vs. refinancovat
           </h2>
           <p className="mb-4 text-xs text-muted-foreground">
             {comparison.summary}
@@ -467,7 +475,7 @@ export function RefinanceRadarView() {
           <div className="mb-6 grid gap-3 sm:grid-cols-3">
             {[
               {
-                label: "Break-even",
+                label: "Bod zvratu",
                 value: comparison.breakEvenMonths != null
                   ? `${comparison.breakEvenMonths} měs.`
                   : "Neurčitelný",
@@ -496,8 +504,8 @@ export function RefinanceRadarView() {
           </div>
 
           {/* Detail table */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
+          <div className="max-w-full min-w-0 overflow-x-auto rounded-lg border border-border">
+            <table className="w-full min-w-[36rem] text-left">
               <thead>
                 <tr className="border-b border-border">
                   <th className="py-2 pr-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">

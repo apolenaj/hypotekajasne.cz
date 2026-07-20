@@ -48,7 +48,7 @@ export function sourcesSection(
     kind: "sources",
     title: sectionTitle("sources"),
     summary:
-      "Každé právní tvrzení výše má source, datum a status. Níže souhrn kontroly.",
+      "Každé právní tvrzení výše má zdroj, datum a status. Níže souhrn kontroly.",
     lastLegalReview,
     sources: [NOT_LEGAL_ADVICE, ...sources],
   };

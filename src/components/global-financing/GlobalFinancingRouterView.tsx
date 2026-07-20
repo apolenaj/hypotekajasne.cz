@@ -102,7 +102,7 @@ function RouteDetail({ route }: { route: FinancingRouteCard }) {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-muted-gold">
-            Route {route.routeLetter} · detail
+            Trasa {route.routeLetter} · detail
           </p>
           <h3 className="mt-1 font-heading text-xl font-bold text-deep-teal">
             {route.label}
@@ -245,7 +245,7 @@ export function GlobalFinancingRouterView() {
   if (!ready || !map) {
     return (
       <div className="mx-auto max-w-6xl px-4 py-16 text-sm text-muted-foreground">
-        Načítám Global Financing Router…
+        Načítám Mapu globálního financování…
       </div>
     );
   }
@@ -256,12 +256,12 @@ export function GlobalFinancingRouterView() {
         <div className="mx-auto max-w-6xl px-4 py-10">
           <div className="flex flex-wrap items-center gap-3">
             <p className="text-xs font-bold uppercase tracking-widest text-muted-gold">
-              Global Financing Router
+              Mapa globálního financování
             </p>
             <FeatureStatusBadge status={GLOBAL_FINANCING_FEATURE_STATUS} />
           </div>
           <h1 className="mt-2 font-heading text-3xl font-black md:text-4xl">
-            Global Financing Router
+            Mapa globálního financování
           </h1>
           <p className="mt-2 max-w-3xl text-sm text-emerald-50/90">
             Zadejte profil — router zobrazí možné cesty financování. Nejedna
@@ -451,7 +451,7 @@ export function GlobalFinancingRouterView() {
               onClick={handleCalculate}
               className="mt-5 rounded-full bg-deep-teal px-6 py-2 text-sm font-semibold text-white"
             >
-              Zobrazit Financing Map
+              Zobrazit mapu financování
             </button>
           </section>
         )}
@@ -459,7 +459,7 @@ export function GlobalFinancingRouterView() {
         <section className="rounded-2xl border border-border bg-white p-6 shadow-sm">
           <h2 className="mb-1 flex items-center gap-2 font-heading text-xl font-bold text-deep-teal">
             <Globe className="h-5 w-5" />
-            Financing Map
+            Mapa financování
           </h2>
           <p className="mb-6 text-xs text-muted-foreground">
             {map.originLabel} → {map.destinationLabel} ·{" "}

@@ -9,7 +9,7 @@ export const ANONYMOUS_DEMO_REPORT: DemoReport = {
   title: "Ukázkový report (anonymní demo)",
   subtitle: "Byt · Praha · ilustrativní vstup — ne konkrétní inzerát",
   disclaimer:
-    "Toto je anonymní demo pro ilustraci výstupu Investičního rentgenu. Nejde o analýzu reálné nabídky. Každý údaj má typ DATA / MODEL / ODHAD / NEOVĚŘENO.",
+    "Toto je anonymní demo pro ilustraci výstupu Investičního rentgenu. Nejde o analýzu reálné nabídky. Každý údaj má typ Data / Modelový výpočet / Odhad / Neověřeno.",
   metrics: [
     {
       id: "price",
@@ -55,17 +55,17 @@ export const ANONYMOUS_DEMO_REPORT: DemoReport = {
     },
     {
       id: "financing",
-      label: "Financing fit (základ)",
-      display: "LTV ~76 % při equity 2 000 000 Kč",
+      label: "Vhodnost financování (základ)",
+      display: "LTV ~76 % při vlastním kapitálu 2 000 000 Kč",
       kind: "ODHAD",
       note: "Neposuzuje bonitu ani schválení bankou.",
     },
     {
       id: "net_yield",
       label: "Čistý výnos",
-      display: "Na vyžádání v Premium",
+      display: "Na vyžádání v Prémiové analýze",
       kind: "NEOVERENO",
-      note: "Bez ověřených nákladů nevymýšlíme čistý výnos ve free/demo.",
+      note: "Bez ověřených nákladů nevymýšlíme čistý výnos v bezplatném demu.",
     },
     {
       id: "legal",
@@ -91,24 +91,24 @@ export const ANONYMOUS_DEMO_REPORT: DemoReport = {
     {
       id: "sensitivity",
       label: "Citlivost na sazbu",
-      display: "Premium scénáře",
+      display: "Prémiové scénáře",
       kind: "MODEL",
       note: "Kompletní citlivostní analýza je v placeném reportu.",
     },
   ],
   redFlags: [
     {
-      text: "Demo: žádný silný red flag z čísel — absence flagu ≠ absence rizika.",
+      text: "Demo: žádný silný rizikový signál z čísel — absence varování ≠ absence rizika.",
       kind: "ODHAD",
     },
     {
-      text: "Právní a technický stav: NEOVĚŘENO (záměrně).",
+      text: "Právní a technický stav: Neověřeno (záměrně).",
       kind: "NEOVERENO",
     },
   ],
   financingFit: {
     value:
-      "Při equity 2 mil. Kč a ceně 8,4 mil. Kč je orientační LTV ~76 %. ODHAD — finální posouzení provádí banka/licencovaný partner.",
+      "Při vlastním kapitálu 2 mil. Kč a ceně 8,4 mil. Kč je orientační LTV ~76 %. Odhad — finální posouzení provádí banka/licencovaný partner.",
     kind: "ODHAD",
   },
 };
@@ -116,26 +116,26 @@ export const ANONYMOUS_DEMO_REPORT: DemoReport = {
 export const RENTGEN_FAQ: { q: string; a: string }[] = [
   {
     q: "Co je Investiční rentgen?",
-    a: "Nástroj HypotékaJasně / Majetio ekosystému pro rychlý preview nemovitosti a cestu ke kompletní Majetio Property Analysis. Free vrstva ukáže orientační výnos, cenu/m², základní financing fit a red flags — vždy s označením DATA, MODEL, ODHAD nebo NEOVĚŘENO.",
+    a: "Nástroj HypotékaJasně pro rychlý náhled na nemovitost a cestu ke kompletní analýze s Majetio. Bezplatná vrstva ukáže orientační výnos, cenu/m², základní vhodnost financování a rizikové faktory — vždy s označením Data, Modelový výpočet, Odhad nebo Neověřeno.",
   },
   {
-    q: "Proč některé údaje říkají NEOVĚŘENO?",
+    q: "Proč některé údaje říkají Neověřeno?",
     a: "Protože nevymýšlíme právní ani technická fakta bez zdroje. Dokud nemáme ověřený podklad, údaj neprodáváme jako fakt.",
   },
   {
     q: "Umíte načíst inzerát z URL?",
-    a: "URL můžete vložit jako referenci. Automatické parsování obsahu inzerátu jako ověřená DATA zatím neprovádíme — údaje doplňte manuálně, nebo objednejte Premium analýzu.",
+    a: "URL můžete vložit jako referenci. Automatické parsování obsahu inzerátu jako ověřená Data zatím neprovádíme — údaje doplňte ručně, nebo objednejte Prémiovou analýzu.",
   },
   {
-    q: "Co obsahuje Premium?",
-    a: "Kompletní Majetio Property Analysis (cena konfigurovatelná v produktové konfiguraci, výchozí 4 990/5 000 Kč): rozšířené metriky, modelové scénáře, checklist due diligence a příprava podkladů. Neobsahuje závazné právní posouzení, technický průzkum na místě ani schválení úvěru.",
+    q: "Co obsahuje Prémiová analýza?",
+    a: "Kompletní analýza nemovitosti za 4 990 Kč: rozšířené metriky, modelové scénáře, checklist due diligence a příprava podkladů. Neobsahuje závazné právní posouzení, technický průzkum na místě ani schválení úvěru.",
   },
   {
-    q: "Je free preview investiční doporučení?",
+    q: "Je bezplatný náhled investiční doporučení?",
     a: "Ne. Jde o orientační model a odhady pro rozhodnutí, zda má smysl jít do hloubky. Finální posouzení financování provádí banka nebo licencovaný partner.",
   },
   {
     q: "Mohu nahrát dokumenty a fotky?",
-    a: "Upload je v architektuře produktu připravený a postupně se zapíná. Zatím použijte manuální vstup nebo Premium objednávku s předáním podkladů partnerovi.",
+    a: "Nahrávání dokumentů připravujeme. Zatím použijte ruční vstup nebo Prémiovou objednávku s předáním podkladů partnerovi.",
   },
 ];

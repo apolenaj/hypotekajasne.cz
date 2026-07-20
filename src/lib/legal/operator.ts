@@ -20,10 +20,11 @@ export type OperatorIdentity = {
   /** URL veřejného výpisu (ARES / justice.cz) — po ověření */
   publicRegisterUrl: string | null;
   /**
-   * true = provozovatel je vyplněn dostatečně pro produkční zveřejnění.
-   * false = zobrazit TODO / required config banner.
+   * true = provozovatel je vyplněn dostatečně pro produkční zveřejnění IČO.
+   * false = IČO a registr ve veřejném UI neuvádíme (žádné TODO texty).
    */
   isProductionReady: boolean;
+  /** Interní — názvy chybějících env (ne renderovat klientovi) */
   missingFields: string[];
 };
 
@@ -99,5 +100,14 @@ export function formatOperatorAddress(op: OperatorIdentity): string {
 }
 
 export function operatorDisplayName(op: OperatorIdentity): string {
-  return op.legalName ?? "Provozovatel platformy Hypotéka Jasně (právní jméno — TODO config)";
+  return op.legalName ?? "Provozovatel platformy Hypotéka Jasně";
+}
+
+/** Placená analýza ke koupi — jen když je provozovatel i checkout připraven. */
+export function isPaidAnalysisCommerciallyAvailable(): boolean {
+  const op = getOperatorIdentity();
+  const checkoutLive =
+    process.env.PAID_ANALYSIS_CHECKOUT_LIVE === "true" ||
+    process.env.NEXT_PUBLIC_PAID_ANALYSIS_CHECKOUT_LIVE === "true";
+  return op.isProductionReady && checkoutLive;
 }

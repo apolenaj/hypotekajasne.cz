@@ -62,7 +62,7 @@ export const article: MagazineArticle = {
   sources: [
     { label: "Dossier SAE (Dubaj)", url: `${routes.pruvodceInvestora}/dubaj` },
     { label: "Akademie: Off-plan", url: "/akademie/off-plan" },
-    { label: "Financing catalog (developer plans)", url: routes.metodika },
+    { label: "Katalog financování (developerské plány)", url: routes.metodika },
   ],
   relatedTools: [
     { label: "Průvodce — Dubaj", href: `${routes.pruvodceInvestora}/dubaj` },

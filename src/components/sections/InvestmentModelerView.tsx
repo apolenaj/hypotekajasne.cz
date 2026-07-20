@@ -245,7 +245,7 @@ function ModelerForm({
               inputMode="numeric"
               className={inputClass}
               value={formatNumber(form.rent || "")}
-              placeholder="Auto"
+              placeholder="Automaticky"
               onChange={(e) => updateForm("rent", parseNumber(e.target.value))}
             />
           </FormField>
@@ -295,7 +295,7 @@ function ModelerForm({
               inputMode="numeric"
               className={inputClass}
               value={formatNumber(form.monthlyPayment || "")}
-              placeholder="Auto"
+              placeholder="Automaticky"
               onChange={(e) =>
                 updateForm("monthlyPayment", parseNumber(e.target.value))
               }
@@ -357,15 +357,16 @@ function KpiCards({
   ).yield.toFixed(2);
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-5">
+    /* xl: 4 cols — at lg the modeler sits in col-span-8 (~650px), so 4 KPI cards overflow currency */
+    <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="min-w-0 rounded-2xl border border-emerald-100 bg-emerald-50 p-5">
         <p className="text-sm font-bold text-emerald-800">Čistý roční výnos</p>
-        <p className="mt-1 text-2xl font-black text-emerald-900">
+        <p className="mt-1 break-words text-xl font-black tabular-nums text-emerald-900 sm:text-2xl">
           {netYield.toFixed(2)} %
         </p>
       </div>
       <div
-        className={`rounded-2xl border p-5 ${
+        className={`min-w-0 rounded-2xl border p-5 ${
           cashFlow >= 0
             ? "border-blue-100 bg-blue-50"
             : "border-orange-100 bg-orange-50"
@@ -376,10 +377,10 @@ function KpiCards({
             cashFlow >= 0 ? "text-blue-800" : "text-orange-800"
           }`}
         >
-          Měsíční Cash-Flow
+          Měsíční peněžní tok
         </p>
         <p
-          className={`mt-1 text-2xl font-black ${
+          className={`mt-1 break-words text-xl font-black tabular-nums sm:text-2xl ${
             cashFlow >= 0 ? "text-blue-900" : "text-orange-900"
           }`}
         >
@@ -387,19 +388,19 @@ function KpiCards({
           {formatCzk(cashFlow)}
         </p>
       </div>
-      <div className="rounded-2xl border border-violet-100 bg-violet-50 p-5">
+      <div className="min-w-0 rounded-2xl border border-violet-100 bg-violet-50 p-5">
         <p className="text-sm font-bold text-violet-800">
           Predikovaná hodnota za 10 let
         </p>
-        <p className="mt-1 text-2xl font-black text-violet-900">
+        <p className="mt-1 break-words text-xl font-black tabular-nums text-violet-900 sm:text-2xl">
           {formatCzk(propertyValue10y)}
         </p>
       </div>
-      <div className="rounded-2xl border border-teal-100 bg-teal-50 p-5">
+      <div className="min-w-0 rounded-2xl border border-teal-100 bg-teal-50 p-5">
         <p className="text-sm font-bold text-teal-800">
           Reálné bohatství (30 let)
         </p>
-        <p className="mt-1 text-2xl font-black text-teal-900">
+        <p className="mt-1 break-words text-xl font-black tabular-nums text-teal-900 sm:text-2xl">
           {formatCzk(realWealth30y)}
         </p>
         {crossoverYear && (
@@ -473,17 +474,18 @@ function SnowballChart({
           ? ` Hypotéka splacena v roce ${acceleratedPayoffYear}.`
           : " Hypotéka není splacena do 30 let."}
       </p>
-      <div className="h-72 w-full min-h-0">
+      <div className="h-72 w-full min-h-0 min-w-0 overflow-hidden">
         <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-          <LineChart data={data}>
+          <LineChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="rok" fontSize={12} interval={4} />
             <YAxis
+              width={48}
               tickFormatter={(val) => `${(Number(val) / 1_000_000).toFixed(1)}M`}
               fontSize={12}
             />
             <Tooltip formatter={(value) => formatCzk(Number(value ?? 0))} />
-            <Legend />
+            <Legend wrapperStyle={{ fontSize: 12 }} />
             <Line
               type="monotone"
               dataKey="hodnotaNemovitosti"
@@ -554,17 +556,18 @@ function CrossoverChart({
           hypotéku do 30 let.
         </p>
       )}
-      <div className="h-72 w-full min-h-0">
+      <div className="h-72 w-full min-h-0 min-w-0 overflow-hidden">
         <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-          <LineChart data={data}>
+          <LineChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="rok" fontSize={12} interval={4} />
             <YAxis
+              width={48}
               tickFormatter={(val) => `${(Number(val) / 1_000_000).toFixed(1)}M`}
               fontSize={12}
             />
             <Tooltip formatter={(value) => formatCzk(Number(value ?? 0))} />
-            <Legend />
+            <Legend wrapperStyle={{ fontSize: 12 }} />
             <Line
               type="monotone"
               dataKey="zustatekHypoteky"
@@ -612,17 +615,18 @@ function RealWealthChart({ data }: { data: ChartProjectionPoint[] }) {
         akcie) v nominální hodnotě oproti reálné kupní síle znehodnocené
         inflací.
       </p>
-      <div className="h-72 w-full min-h-0">
+      <div className="h-72 w-full min-h-0 min-w-0 overflow-hidden">
         <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-          <AreaChart data={data}>
+          <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="rok" fontSize={12} interval={4} />
             <YAxis
+              width={48}
               tickFormatter={(val) => `${(Number(val) / 1_000_000).toFixed(1)}M`}
               fontSize={12}
             />
             <Tooltip formatter={(value) => formatCzk(Number(value ?? 0))} />
-            <Legend />
+            <Legend wrapperStyle={{ fontSize: 12 }} />
             <Area
               type="monotone"
               dataKey="nominalniBohatstvi"
@@ -691,7 +695,7 @@ function InflationSummary({
   realWealth: number;
 }) {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
         <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
           Kumulativní nájem (30 let)
@@ -833,8 +837,8 @@ function InvestmentModelerInner() {
       </section>
 
       <div className="mx-auto max-w-7xl px-4 py-10">
-        <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
-          <aside className="lg:col-span-4">
+        <div className="grid min-w-0 grid-cols-1 gap-10 lg:grid-cols-12">
+          <aside className="min-w-0 lg:col-span-4">
             <div className="sticky top-24 rounded-2xl border border-gray-200 bg-white p-6 shadow-lg shadow-gray-900/5 ring-1 ring-gray-900/5">
               <h2 className="mb-6 flex items-center gap-2 text-lg font-bold text-gray-900">
                 <TrendingUp className="h-5 w-5 text-deep-teal" />
@@ -844,7 +848,7 @@ function InvestmentModelerInner() {
             </div>
           </aside>
 
-          <main className="space-y-8 lg:col-span-8">
+          <main className="min-w-0 space-y-8 lg:col-span-8">
             <KpiCards
               netYield={active.netYieldAnnual}
               cashFlow={analysis.input.cashFlow}

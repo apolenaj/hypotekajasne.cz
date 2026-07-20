@@ -6,9 +6,9 @@ import { crumbs } from "@/lib/seo/breadcrumbs";
 import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Due Diligence Engine — prověrka nemovitosti",
+  title: "Dynamická prověrka nemovitosti",
   description:
-    "Personalizovaný checklist LEGAL–EXIT dle typu nemovitosti. Traffic light GREY default — unknown není green. Human-expert escalation.",
+    "Personalizovaný checklist LEGAL–EXIT dle typu nemovitosti. Semafor výchozí šedý — unknown není green. Eskalace k lidskému specialistovi.",
   path: routes.dueDiligence,
 });
 
@@ -18,7 +18,7 @@ export default function DueDiligencePage() {
       <div className="border-b border-border bg-[#f7f8f7]">
         <div className="mx-auto max-w-6xl px-4 py-3">
           <Breadcrumbs
-            items={crumbs({ name: "Due Diligence", path: routes.dueDiligence })}
+            items={crumbs({ name: "Dynamická prověrka", path: routes.dueDiligence })}
           />
         </div>
       </div>

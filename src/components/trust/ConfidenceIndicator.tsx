@@ -46,8 +46,8 @@ export function ConfidenceIndicator({
         className="h-1.5 overflow-hidden rounded-full bg-slate-200"
       >
         <span id={id} className="sr-only">
-          Confidence {pct} percent
-          {status === "MODELLED" ? " (model capped)" : ""}
+          Důvěra {pct} procent
+          {status === "MODELLED" ? " (modelový strop)" : ""}
         </span>
         <div
           className={cn(

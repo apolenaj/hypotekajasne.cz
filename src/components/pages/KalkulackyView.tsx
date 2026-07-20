@@ -24,7 +24,7 @@ export function KalkulackyView() {
       <div className="border-b border-gray-100 bg-gray-50">
         <div className="container mx-auto px-4 py-6 lg:px-8">
           <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-deep-teal">
-            Decision Lab
+            Laboratoř rozhodnutí
           </p>
           <div className="flex flex-wrap gap-4 text-sm">
             <Link

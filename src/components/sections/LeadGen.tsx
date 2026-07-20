@@ -92,7 +92,7 @@ export function LeadGen() {
             />
             <FloatingInput
               id="email"
-              label="Email"
+              label="E-mail"
               type="email"
               value={formData.email}
               onChange={(v) => setFormData({ ...formData, email: v })}

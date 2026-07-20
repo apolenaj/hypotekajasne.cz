@@ -115,7 +115,7 @@ export function OfferStrategyView() {
   if (!ready || !model || !sliderSnap) {
     return (
       <div className="mx-auto max-w-6xl px-4 py-16 text-sm text-muted-foreground">
-        Načítám Offer Strategy Assistant…
+        Načítám Asistenta strategie nabídky…
       </div>
     );
   }
@@ -131,7 +131,7 @@ export function OfferStrategyView() {
             <ClaimBadge kind="MODEL" />
           </div>
           <h1 className="mt-2 font-heading text-3xl font-black">
-            Offer Strategy Assistant
+            Asistent strategie nabídky
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-emerald-50/90">
             MODEL strategie nabídky — ne garantovaná valuace. Bez manipulace a
@@ -150,9 +150,9 @@ export function OfferStrategyView() {
             {(
               [
                 { k: "propertyLabel" as const, l: "Nemovitost", type: "text" },
-                { k: "askingPriceCzk" as const, l: "List price (Kč)", type: "number" },
-                { k: "fairValueLowCzk" as const, l: "Fair value min (MODEL)", type: "number" },
-                { k: "fairValueHighCzk" as const, l: "Fair value max (MODEL)", type: "number" },
+                { k: "askingPriceCzk" as const, l: "Nabídková cena (Kč)", type: "number" },
+                { k: "fairValueLowCzk" as const, l: "Odhadovaná férová hodnota min (MODEL)", type: "number" },
+                { k: "fairValueHighCzk" as const, l: "Odhadovaná férová hodnota max (MODEL)", type: "number" },
                 { k: "daysOnMarket" as const, l: "Dní na trhu", type: "number" },
                 { k: "rentMonthlyCzk" as const, l: "Nájem/měs. (MODEL)", type: "number" },
                 { k: "targetNetYield" as const, l: "Cíl čistého výnosu (%)", type: "number" },
@@ -239,19 +239,19 @@ export function OfferStrategyView() {
         {/* Output summary */}
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
-            { l: "List price", v: formatOfferCzk(input.askingPriceCzk) },
+            { l: "Nabídková cena", v: formatOfferCzk(input.askingPriceCzk) },
             {
-              l: "Estimated range",
+              l: "Odhadované pásmo",
               v: `${formatOfferCzk(input.fairValueLowCzk)} – ${formatOfferCzk(input.fairValueHighCzk)}`,
             },
-            { l: "Opening (MODEL)", v: formatOfferCzk(output.openingScenarioCzk) },
-            { l: "Target (MODEL)", v: formatOfferCzk(output.targetPriceCzk) },
+            { l: "Otevírací (MODEL)", v: formatOfferCzk(output.openingScenarioCzk) },
+            { l: "Cílová (MODEL)", v: formatOfferCzk(output.targetPriceCzk) },
             {
-              l: "Max investment (MODEL)",
+              l: "Maximální investice (MODEL)",
               v: formatOfferCzk(output.maximumEconomicallySensibleCzk),
             },
             {
-              l: "Negotiation margin",
+              l: "Vyjednávací rezerva",
               v: `${formatOfferCzk(output.negotiationMarginCzk)} (${output.negotiationMarginPercent} %)`,
             },
           ].map(({ l, v }) => (
@@ -285,16 +285,16 @@ export function OfferStrategyView() {
           <p className="mt-2 text-center font-heading text-2xl font-black text-deep-teal">
             {formatOfferCzk(sliderPrice ?? output.targetPriceCzk)}
           </p>
-          <div className="mt-4 grid gap-3 sm:grid-cols-4">
+          <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-3">
             {[
               { l: "Hrubý výnos", v: formatOfferPct(sliderSnap.grossYield) },
               { l: "Čistý výnos", v: formatOfferPct(sliderSnap.netYield) },
-              { l: "Cash flow/měs.", v: formatOfferCzk(sliderSnap.monthlyCashFlowCzk) },
+              { l: "Peněžní tok/měs.", v: formatOfferCzk(sliderSnap.monthlyCashFlowCzk) },
               {
                 l: "IRR (MODEL)",
                 v: sliderSnap.irr != null ? formatOfferPct(sliderSnap.irr) : "—",
               },
-              { l: "Vlastní zdroje", v: formatOfferCzk(sliderSnap.ownFundsCzk) },
+              { l: "Vlastní prostředky", v: formatOfferCzk(sliderSnap.ownFundsCzk) },
             ].map(({ l, v }) => (
               <div key={l} className="rounded-xl bg-muted/40 p-3 text-center">
                 <p className="text-xs text-muted-foreground">{l}</p>
@@ -349,7 +349,7 @@ export function OfferStrategyView() {
             href={routes.dealRoom}
             className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-deep-teal underline"
           >
-            Pokračovat v Deal Room
+            Pokračovat v Transakční místnosti
             <ChevronRight className="h-4 w-4" />
           </Link>
         </section>

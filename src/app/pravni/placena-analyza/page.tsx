@@ -4,7 +4,7 @@ import { LegalView } from "@/components/sections/LegalView";
 export const metadata: Metadata = {
   title: "Podmínky placené analýzy | HypotékaJasně.cz",
   description:
-    "Cena, scope, delivery, reklamace a odstoupení u digitální Premium analýzy — draft k legal review.",
+    "Stav placené analýzy nemovitosti, plánovaný rozsah a podmínky — služba se připravuje.",
 };
 
 export default function PlacenaAnalyzaPage() {

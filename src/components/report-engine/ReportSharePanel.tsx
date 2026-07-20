@@ -67,8 +67,8 @@ export function ReportSharePanel({ report, onSharesChange }: ReportSharePanelPro
         Sdílení reportu
       </h3>
       <p className="mt-1 text-xs text-muted-foreground">
-        Token s expirací · volitelné heslo · revoke kdykoli. Defaultně bez citlivých dat (příjmy,
-        přesné zůstatky).
+        Odkaz s expirací, volitelné heslo a možnost kdykoli zrušit přístup.
+        Ve výchozím nastavení bez citlivých údajů (příjmy, přesné zůstatky).
       </p>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -105,8 +105,8 @@ export function ReportSharePanel({ report, onSharesChange }: ReportSharePanelPro
           className="mt-0.5"
         />
         <span>
-          <strong>Zobrazit citlivá data</strong> — výslovně povolte PII a přesné částky ve sdílené
-          verzi. Default je vypnuto.
+          <strong>Zobrazit citlivá data</strong> — výslovně povolte osobní údaje a přesné částky ve sdílené
+          verzi. Ve výchozím nastavení je vypnuto.
         </span>
       </label>
 
@@ -115,7 +115,7 @@ export function ReportSharePanel({ report, onSharesChange }: ReportSharePanelPro
         onClick={onCreate}
         className="mt-4 rounded-full bg-deep-teal px-5 py-2.5 text-sm font-bold text-white"
       >
-        Vytvořit share link
+        Vytvořit odkaz ke sdílení
       </button>
 
       {lastLink ? (
@@ -154,7 +154,7 @@ export function ReportSharePanel({ report, onSharesChange }: ReportSharePanelPro
                   ) : null}
                   <div className="text-muted-foreground">
                     exp. {new Date(s.expiresAt).toLocaleString("cs-CZ")}
-                    {revoked ? " · REVOKED" : expired ? " · EXPIRED" : ""}
+                    {revoked ? " · zrušeno" : expired ? " · vypršelo" : ""}
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -173,7 +173,7 @@ export function ReportSharePanel({ report, onSharesChange }: ReportSharePanelPro
                         className="inline-flex items-center gap-1 rounded border border-red-200 bg-red-50 px-2 py-1 font-semibold text-red-800"
                       >
                         <ShieldOff className="h-3 w-3" />
-                        Revoke
+                        Zrušit přístup
                       </button>
                     </>
                   ) : null}

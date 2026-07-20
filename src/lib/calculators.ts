@@ -1,3 +1,5 @@
+import { formatMoney, type MoneyCurrency } from "@/lib/money";
+
 export type CountryId =
   | "cz"
   | "dubai"
@@ -429,12 +431,5 @@ export function formatCurrency(
   amount: number,
   currency: CurrencyCode
 ): string {
-  const formatted = new Intl.NumberFormat("cs-CZ", {
-    style: "decimal",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(Math.round(amount));
-
-  const suffix = currency === "CZK" ? "Kč" : currency;
-  return `${formatted}\u00a0${suffix}`;
+  return formatMoney(amount, currency as MoneyCurrency);
 }

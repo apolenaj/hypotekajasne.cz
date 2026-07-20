@@ -192,7 +192,7 @@ export function buildMarketMetrics(
               value: liveRate,
               unit: "percent_pa",
               country: countryId,
-              source: "Supabase bank_rates / current_rates",
+              source: "Oficiální weby českých bank",
               sourceType: "supabase",
               status: "LIVE",
               confidence: 0.9,

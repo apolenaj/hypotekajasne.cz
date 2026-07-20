@@ -101,9 +101,9 @@ export function buildMortgageReadinessReport(
     methodology: block("methodology", "Metodika", PLATFORM_METHODOLOGY.map((m, i) => kv(String(i + 1), m))),
     disclaimers: block("disclaimers", "Disclaimer", PLATFORM_DISCLAIMERS.map((d, i) => kv(String(i + 1), d))),
     nextSteps: standardNextSteps([
-      "Doplňte Financial Passport pro personalizaci.",
+      "Doplňte Finanční pas pro personalizaci.",
       "Ověřte DSTI/LTV u konkrétní banky.",
-      "Document Vault — checklist dokumentů.",
+      "Dokumentový trezor — checklist dokumentů.",
     ]),
   };
 }
@@ -177,7 +177,7 @@ export function buildPropertyAnalysisReport(
     nextSteps: standardNextSteps([
       "Due Diligence Engine pro právní checklist.",
       "Investiční rentgen modelář pro hlubší scénáře.",
-      "Deal Room po vážném zájmu.",
+      "Transakční místnost po vážném zájmu.",
     ]),
   };
 }
@@ -254,7 +254,7 @@ export function buildPropertyComparisonReport(
     methodology: block("methodology", "Metodika", PLATFORM_METHODOLOGY.map((m, i) => kv(String(i + 1), m))),
     disclaimers: block("disclaimers", "Disclaimer", PLATFORM_DISCLAIMERS.map((d, i) => kv(String(i + 1), d))),
     nextSteps: standardNextSteps([
-      "Offer Strategy Assistant pro etickou nabídku.",
+      "Strategie nabídky pro etickou nabídku.",
       "Sledování vybrané nemovitosti ve watchlistu.",
     ]),
   };
@@ -313,16 +313,16 @@ export function buildInvestmentPassportReport(
       kv("Překážky", doc.obstacles.join("; ") || "—", "MODEL"),
     ], { prose: doc.improvements.slice(0, 3) }),
     assumptions: block("assumptions", "Předpoklady", [
-      kv("Financial Passport", "Algoritmický model — ne schválení", "MODEL"),
+      kv("Finanční pas", "Algoritmický model — ne schválení", "MODEL"),
       kv("Zajištění CZ", "Zahrnuto v modelu equity", "MODEL"),
     ]),
-    sources: standardSources([kv("Financial Passport", "src/lib/financial-passport/build.ts", "MODEL")]),
+    sources: standardSources([kv("Finanční pas", "src/lib/financial-passport/build.ts", "MODEL")]),
     dataFreshness: block("dataFreshness", "Aktuálnost dat", standardFreshness(now)),
     methodology: block("methodology", "Metodika", PLATFORM_METHODOLOGY.map((m, i) => kv(String(i + 1), m))),
     disclaimers: block("disclaimers", "Disclaimer", PLATFORM_DISCLAIMERS.map((d, i) => kv(String(i + 1), d))),
     nextSteps: standardNextSteps([
       "Investiční rentgen pro konkrétní nemovitost.",
-      "Portfolio OS při více investicích.",
+      "Správa portfolia při více investicích.",
     ]),
   };
 }
@@ -377,13 +377,13 @@ export function buildPortfolioRiskReport(
       kv("Hodnoty nemovitostí", "Poslední user/twin observation", "MODEL"),
       kv("Stress testy", "Scénáře MODEL — ne predikce", "MODEL"),
     ]),
-    sources: standardSources([kv("Portfolio OS", "src/lib/portfolio-os/build.ts", "MODEL")]),
+    sources: standardSources([kv("Správa portfolia", "src/lib/portfolio-os/build.ts", "MODEL")]),
     dataFreshness: block("dataFreshness", "Aktuálnost dat", standardFreshness(now)),
     methodology: block("methodology", "Metodika", PLATFORM_METHODOLOGY.map((m, i) => kv(String(i + 1), m))),
     disclaimers: block("disclaimers", "Disclaimer", PLATFORM_DISCLAIMERS.map((d, i) => kv(String(i + 1), d))),
     nextSteps: standardNextSteps([
       "Review koncentrace dle alertů.",
-      "Refinance Radar u blížící se fixace.",
+      "Radar refinancování u blížící se fixace.",
     ]),
   };
 }
@@ -432,20 +432,20 @@ export function buildRefinanceReport(
     ]),
     outputs: block("outputs", "Výstupy", [
       kv("Stay vs Refinance", dash.comparison.summary, "MODEL"),
-      kv("Break-even", dash.comparison.breakEvenMonths != null ? `${dash.comparison.breakEvenMonths} měsíců` : "—", "MODEL"),
+      kv("Bod zvratu", dash.comparison.breakEvenMonths != null ? `${dash.comparison.breakEvenMonths} měsíců` : "—", "MODEL"),
       kv("Poplatky refinancování", fmtCzk(dash.comparison.upfrontRefinanceCostsCzk), "MODEL"),
     ], { prose: [dash.comparison.summary] }),
     assumptions: block("assumptions", "Předpoklady", [
       kv("Anuita", "MODEL na zadaném zůstatku", "MODEL"),
       kv("Penále předčasného splacení", dash.profile.earlyRepaymentPenaltyCzk != null ? fmtCzk(dash.profile.earlyRepaymentPenaltyCzk) : "Neznámé", "ODHAD"),
     ]),
-    sources: standardSources([kv("Refinance Radar", "src/lib/refinance-radar/build.ts", "MODEL")]),
+    sources: standardSources([kv("Radar refinancování", "src/lib/refinance-radar/build.ts", "MODEL")]),
     dataFreshness: block("dataFreshness", "Aktuálnost dat", standardFreshness(now)),
     methodology: block("methodology", "Metodika", PLATFORM_METHODOLOGY.map((m, i) => kv(String(i + 1), m))),
     disclaimers: block("disclaimers", "Disclaimer", PLATFORM_DISCLAIMERS.map((d, i) => kv(String(i + 1), d))),
     nextSteps: standardNextSteps([
       "Konzultace s hypotečním specialistou před výpovědí fixace.",
-      "Document Vault — smlouvy a výpovědi.",
+      "Dokumentový trezor — smlouvy a výpovědi.",
     ]),
   };
 }

@@ -41,7 +41,7 @@ export function RpsnDisplay({
     value: hasValue ? rpsn : null,
     unit: "percent_pa",
     country: "cz",
-    source: sourceUrl ?? "Supabase bank_rates / current_rates",
+    source: sourceUrl ?? "Oficiální weby českých bank",
     sourceUrl,
     sourceType: "supabase",
     status: declaredStatus ?? (hasValue ? "LIVE" : "STALE"),

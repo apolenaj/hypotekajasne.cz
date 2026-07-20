@@ -119,7 +119,7 @@ export function MortgageProductCard({
         <LastUpdated
           at={product.scrapedAt}
           status={effectiveStatus}
-          label="Scraped"
+          label="Ze zdroje banky"
         />
         {product.sourceUrl && (
           <a

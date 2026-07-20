@@ -25,7 +25,7 @@ export function profileCompleteness(
 ): number {
   if (!doc) return 0;
   let n = 0;
-  let total = 6;
+  const total = 6;
   if (doc.propertyGoals.purpose !== "unknown") n += 1;
   if (doc.income.totalNetIncome > 0) n += 1;
   if (doc.assets.totalOwnFundsModel > 0) n += 1;

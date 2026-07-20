@@ -859,7 +859,7 @@ export function toolContactSpecialist(): ToolBundle {
       {
         id: "legal:roles",
         label: "Role v ekosystému",
-        source: "Trust Center",
+        source: "Centrum důvěry",
         updatedAt: null,
         claimKind: "DATA",
         href: routes.duvera,

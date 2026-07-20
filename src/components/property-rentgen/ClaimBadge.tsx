@@ -23,7 +23,7 @@ export function ClaimBadge({
     <span
       title={CLAIM_KIND_DESCRIPTIONS[kind]}
       className={cn(
-        "inline-flex shrink-0 items-center rounded border px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide",
+        "inline-flex shrink-0 items-center rounded border px-2 py-0.5 text-[11px] font-semibold leading-tight",
         KIND_STYLES[kind],
         className
       )}

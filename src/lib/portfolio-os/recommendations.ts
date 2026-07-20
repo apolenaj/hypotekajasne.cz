@@ -21,15 +21,16 @@ export function buildPortfolioRecommendations(input: {
       {
         id: "need_multi",
         priority: 100,
-        headline: "Portfolio OS vyžaduje více vlastněných nemovitostí",
+        headline: "Moje portfolio vyžaduje více vlastněných nemovitostí",
         explanation:
-          "Přidejte alespoň 2 owned Digital Twins pro smysluplné souhrny a stress testy.",
+          "Přidejte alespoň 2 digitální karty nemovitostí pro smysluplné souhrny a stress testy.",
         relatedPropertyIds: rows.map((r) => r.twinId),
         scenarios: [
           {
             id: "a",
             label: "Scénář A",
-            description: "Doplňte druhou nemovitost do Digital Twin (owned).",
+            description:
+              "Doplňte druhou nemovitost do Digitální karty nemovitosti (vlastněnou).",
           },
         ],
         sourceData: { keys: ["portfolio.count"], snapshot: { count: rows.length } },
@@ -166,14 +167,14 @@ export function buildPortfolioRecommendations(input: {
     recs.push({
       id: "recession_cf_negative",
       priority: 75,
-      headline: "Combined recession scénář vede k zápornému portfoliovému CF",
+      headline: "Scénář kombinované recese vede k zápornému portfoliovému CF",
       explanation: `Model: ${combined.deltaSummary}. Posílení liquidity reserve nebo úprava nákladů — scénáře, ne prodej.`,
       relatedPropertyIds: rows.map((r) => r.twinId),
       scenarios: [
         {
           id: "a",
           label: "Scénář A",
-          description: "Navýšit rezervu z Financial Passport / vlastních zdrojů.",
+          description: "Navýšit rezervu z Finančního pasu / vlastních zdrojů.",
         },
         {
           id: "b",

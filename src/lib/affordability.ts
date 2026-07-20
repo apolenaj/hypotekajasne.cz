@@ -1,5 +1,5 @@
 /**
- * Lehký affordability model (stejná logika jako OnboardingWizard).
+ * Lehký affordability model (sdílená logika s mortgage readiness / kalkulačkami).
  * MODELLED — banky rozhodují individuálně.
  */
 

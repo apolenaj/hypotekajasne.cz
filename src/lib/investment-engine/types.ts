@@ -135,27 +135,27 @@ export const SCENARIO_PRESETS: Record<
 
 export const INVESTMENT_METRIC_TOOLTIPS = {
   grossYield:
-    "Gross Yield = roční hrubý nájem (12× měsíční) / kupní cena. Neodečítá neobsazenost, provoz ani dluh.",
-  noi: "NOI (Net Operating Income) = efektivní nájem po neobsazenosti − provozní náklady − správa. Před daní z příjmu a před splátkou úvěru.",
+    "Hrubý výnos = roční hrubý nájem (12× měsíční) / kupní cena. Neodečítá neobsazenost, provoz ani dluh.",
+  noi: "NOI (provozní výsledek, Net Operating Income) = efektivní nájem po neobsazenosti − provozní náklady − správa. Před daní z příjmu a před splátkou úvěru.",
   netYield:
-    "Net Yield (cap rate styl) = NOI / kupní cena. Nezahrnuje financování.",
+    "Čistý výnos (cap rate styl) = NOI / kupní cena. Nezahrnuje financování.",
   monthlyCashFlow:
-    "Měsíční cash flow = roční čistý CF po dani assumption a dluhové službě / 12.",
+    "Měsíční peněžní tok = roční čistý peněžní tok po předpokladu daně a dluhové službě / 12.",
   annualCashFlow:
-    "Roční čistý cash flow z waterfall: po neobsazenosti, provozu, správě, dani a dluhové službě.",
+    "Roční čistý peněžní tok: po neobsazenosti, provozu, správě, dani a dluhové službě.",
   cashOnCashReturn:
-    "Cash-on-Cash Return = roční čistý cash flow / počáteční equity (akontace + pořizovací náklady + vybavení). Nejde o „ROI“ z hrubého nájmu.",
-  roe: "ROE (rok 1) = roční čistý cash flow / počáteční equity. Shodný základ s Cash-on-Cash v roce 1.",
-  dscr: "DSCR = NOI / roční dluhová služba. Pod 1.0 znamená, že provozní výsledek nepokrývá splátky.",
+    "Výnos vloženého vlastního kapitálu = roční čistý peněžní tok / počáteční vlastní kapitál (akontace + pořizovací náklady + vybavení). Nejde o „ROI“ z hrubého nájmu.",
+  roe: "ROE (rok 1) = roční čistý peněžní tok / počáteční vlastní kapitál. Stejný základ jako výnos vloženého kapitálu v roce 1.",
+  dscr: "DSCR (krytí dluhové služby) = NOI / roční dluhová služba. Pod 1,0 znamená, že provozní výsledek nepokrývá splátky.",
   breakEvenOccupancy:
-    "Break-even occupancy = (provoz + správa + dluhová služba) / hrubý roční nájem. Minimální obsazenost k pokrytí těchto položek (před daní z příjmu).",
-  irr: "IRR = vnitřní výnosové procento z počáteční equity, ročních CF a exit proceeds za holding period.",
-  xirr: "XIRR = IRR s explicitními ročními daty cash flow (stejný model, jiná numerická cesta).",
+    "Minimální potřebná obsazenost = (provoz + správa + dluhová služba) / hrubý roční nájem. Minimální obsazenost k pokrytí těchto položek (před daní z příjmu).",
+  irr: "IRR (vnitřní výnosové procento) = výnos z počátečního vlastního kapitálu, ročních peněžních toků a výnosu z prodeje za dobu držení.",
+  xirr: "XIRR = IRR s explicitními ročními daty peněžních toků (stejný model, jiná numerická cesta).",
   equityBuildUp:
-    "Equity build-up = jistina splacená během holding period (počáteční úvěr − zůstatek).",
-  remainingDebt: "Zůstatek úvěru po holding period při anuitním splácení.",
+    "Nárůst vlastního kapitálu = jistina splacená během doby držení (počáteční úvěr − zůstatek).",
+  remainingDebt: "Zůstatek úvěru po době držení při anuitním splácení.",
   exitProceeds:
-    "Exit proceeds = prodejní cena po selling costs − zůstatek dluhu. Prodejní cena = cena × (1+růst)^n × (1+FX)^n.",
+    "Výnos z prodeje = prodejní cena po nákladech prodeje − zůstatek dluhu. Prodejní cena = cena × (1+růst)^n × (1+FX)^n.",
   totalReturn:
-    "Total return = součet ročních CF za holding + exit proceeds − počáteční equity.",
+    "Celkový výnos = součet ročních peněžních toků za dobu držení + výnos z prodeje − počáteční vlastní kapitál.",
 } as const;

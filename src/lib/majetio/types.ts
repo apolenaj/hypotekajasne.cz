@@ -5,9 +5,9 @@
 export type FeatureStatus = "LIVE" | "BETA" | "COMING_SOON";
 
 export const FEATURE_STATUS_LABELS: Record<FeatureStatus, string> = {
-  LIVE: "LIVE",
-  BETA: "BETA",
-  COMING_SOON: "COMING SOON",
+  LIVE: "Dostupné",
+  BETA: "Beta (ověřujeme)",
+  COMING_SOON: "Připravujeme",
 };
 
 /** Jednotný Financial Passport — jen financní / kvalifikační signály, ne PII. */

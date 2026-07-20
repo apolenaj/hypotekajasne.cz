@@ -113,7 +113,10 @@ function euBase(
         {
           label: "Roční daně + správa",
           range: "lokálně individuální",
-          claim: modelledClaim("Holding costs are municipal and community specific.", name),
+          claim: modelledClaim(
+            "Průběžné roční náklady závisí na obci a společenství vlastníků.",
+            name
+          ),
         },
       ],
     },
@@ -170,7 +173,7 @@ function euBase(
     sourcesSection(
       {
         text: `Poslední právní review: ${LEGAL_REVIEW_AS_OF}`,
-        source: "HypotékaJasně.cz editorial legal review",
+        source: "Editorial HypotékaJasně.cz (po kontrole)",
         sourceUrl: null,
         asOf: LEGAL_REVIEW_AS_OF,
         status: "VERIFIED",

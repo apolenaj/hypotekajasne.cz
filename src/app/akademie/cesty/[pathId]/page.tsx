@@ -23,8 +23,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const path = getLearningPath(pathId as LearningPathId);
   if (!path) {
     return buildPageMetadata({
-      title: "Learning path",
-      description: "Path nenalezen.",
+      title: "Vzdělávací cesta",
+      description: "Cesta nenalezena.",
       path: `${routes.akademie}/cesty/${pathId}`,
     });
   }
@@ -47,7 +47,7 @@ export default async function AcademyPathPage({ params }: Props) {
           <Breadcrumbs
             items={crumbs(
               { name: "Akademie", path: routes.akademie },
-              { name: "Learning paths", path: `${routes.akademie}/cesty` },
+              { name: "Vzdělávací cesty", path: `${routes.akademie}/cesty` },
               { name: path.title, path: `${routes.akademie}/cesty/${pathId}` }
             )}
           />

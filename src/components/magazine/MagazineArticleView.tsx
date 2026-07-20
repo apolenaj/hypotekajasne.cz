@@ -17,6 +17,7 @@ import {
   personJsonLd,
 } from "@/lib/seo/json-ld";
 import { formatDate as formatDateLocale } from "@/lib/i18n/format";
+import { MAGAZINE_UI_CS } from "@/lib/i18n/ui-cs";
 
 function formatDate(iso: string): string {
   return formatDateLocale(iso, "cs", "long");
@@ -104,11 +105,13 @@ export function MagazineArticleView({ article }: { article: MagazineArticle }) {
             {article.description}
           </p>
           <p className="mt-4 text-xs text-muted-foreground">
-            Autor: {author.name} · Review: {reviewer.name}
+            {MAGAZINE_UI_CS.author}: {author.name} ·{" "}
+            {MAGAZINE_UI_CS.expertReview}: {reviewer.name}
             <br />
-            Publikováno {formatDate(article.publishedAt)} · Aktualizace{" "}
-            {formatDate(article.updatedAt)} · Fact-check{" "}
-            {formatDate(article.factCheckedAt)} · {article.readingMinutes} min
+            {MAGAZINE_UI_CS.published} {formatDate(article.publishedAt)} ·{" "}
+            {MAGAZINE_UI_CS.updated} {formatDate(article.updatedAt)} ·{" "}
+            {MAGAZINE_UI_CS.factCheck} {formatDate(article.factCheckedAt)} ·{" "}
+            {article.readingMinutes} {MAGAZINE_UI_CS.readingMinutes}
           </p>
           <div className="mt-3 flex flex-wrap gap-1.5">
             {article.clusters.map((c) => (
@@ -156,7 +159,10 @@ export function MagazineArticleView({ article }: { article: MagazineArticle }) {
               }
               if (block.type === "ul") {
                 return (
-                  <ul key={i} className="list-disc space-y-2 pl-5 text-muted-foreground">
+                  <ul
+                    key={i}
+                    className="list-disc space-y-2 pl-5 text-muted-foreground"
+                  >
                     {block.items.map((item) => (
                       <li key={item}>{item}</li>
                     ))}
@@ -180,7 +186,7 @@ export function MagazineArticleView({ article }: { article: MagazineArticle }) {
 
           <section className="mt-12 border-t border-border pt-8">
             <h2 className="font-heading text-lg font-bold text-text-dark">
-              Sources
+              {MAGAZINE_UI_CS.sources}
             </h2>
             <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground">
               {article.sources.map((s) => (
@@ -201,13 +207,19 @@ export function MagazineArticleView({ article }: { article: MagazineArticle }) {
           </section>
 
           <section className="mt-10 grid gap-4 sm:grid-cols-2">
-            <PersonBox title="Autor" personId={article.authorId} />
-            <PersonBox title="Reviewer" personId={article.reviewerId} />
+            <PersonBox
+              title={MAGAZINE_UI_CS.author}
+              personId={article.authorId}
+            />
+            <PersonBox
+              title={MAGAZINE_UI_CS.expertReview}
+              personId={article.reviewerId}
+            />
           </section>
 
           <section className="mt-10">
             <h2 className="font-heading text-lg font-bold text-text-dark">
-              Related calculators & tools
+              {MAGAZINE_UI_CS.relatedCalculators}
             </h2>
             <ul className="mt-3 flex flex-wrap gap-2">
               {article.relatedTools.map((t) => (
@@ -226,7 +238,7 @@ export function MagazineArticleView({ article }: { article: MagazineArticle }) {
           {related.length > 0 ? (
             <section className="mt-10">
               <h2 className="font-heading text-lg font-bold text-text-dark">
-                Související články
+                {MAGAZINE_UI_CS.relatedArticles}
               </h2>
               <ul className="mt-3 space-y-2">
                 {related.map((r) => (
@@ -246,7 +258,7 @@ export function MagazineArticleView({ article }: { article: MagazineArticle }) {
           {next && next.slug !== article.slug ? (
             <section className="mt-10 rounded-xl border border-border p-5">
               <p className="text-xs font-bold uppercase text-muted-foreground">
-                Další článek
+                {MAGAZINE_UI_CS.nextArticle}
               </p>
               <Link
                 href={getArticlePath(next.slug)}
@@ -265,7 +277,7 @@ export function MagazineArticleView({ article }: { article: MagazineArticle }) {
         <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">
           <div>
             <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
-              Obsah
+              {MAGAZINE_UI_CS.contents}
             </p>
             <nav className="mt-2 space-y-1 text-sm">
               {toc.map((h) => (
@@ -281,7 +293,7 @@ export function MagazineArticleView({ article }: { article: MagazineArticle }) {
           </div>
           <div>
             <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
-              Témata
+              {MAGAZINE_UI_CS.topics}
             </p>
             <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
               {article.financialTopics.map((t) => (

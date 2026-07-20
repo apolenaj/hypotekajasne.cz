@@ -7,6 +7,7 @@ import {
   markQuizPassed,
   saveAcademyProgressStore,
 } from "@/lib/academy/gamification";
+import { ACADEMY_UI_CS } from "@/lib/i18n/ui-cs";
 import { cn } from "@/lib/utils";
 
 export function AcademyQuiz({
@@ -15,12 +16,13 @@ export function AcademyQuiz({
 }: {
   questions: AcademyQuizQuestion[];
   lessonSlug?: string;
-}) {  const [answers, setAnswers] = useState<Record<string, number>>({});
+}) {
+  const [answers, setAnswers] = useState<Record<string, number>>({});
   const [revealed, setRevealed] = useState(false);
 
   if (!questions.length) {
     return (
-      <p className="text-sm text-muted-foreground">Quiz připravujeme.</p>
+      <p className="text-sm text-muted-foreground">{ACADEMY_UI_CS.quizEmpty}</p>
     );
   }
 
@@ -39,15 +41,18 @@ export function AcademyQuiz({
             {q.options.map((opt, i) => {
               const selected = answers[q.id] === i;
               const show =
-                revealed &&
-                (i === q.correctIndex || selected);
+                revealed && (i === q.correctIndex || selected);
               return (
                 <label
                   key={opt}
                   className={cn(
                     "flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 text-sm",
-                    selected ? "border-deep-teal bg-deep-teal/5" : "border-border",
-                    revealed && i === q.correctIndex && "border-emerald-500 bg-emerald-50",
+                    selected
+                      ? "border-deep-teal bg-deep-teal/5"
+                      : "border-border",
+                    revealed &&
+                      i === q.correctIndex &&
+                      "border-emerald-500 bg-emerald-50",
                     revealed &&
                       selected &&
                       i !== q.correctIndex &&
@@ -97,8 +102,8 @@ export function AcademyQuiz({
         className="rounded-lg bg-deep-teal px-4 py-2 text-sm font-semibold text-white disabled:opacity-40"
       >
         {revealed
-          ? `Výsledek: ${score}/${questions.length}`
-          : "Vyhodnotit quiz"}
+          ? `${ACADEMY_UI_CS.quizResult}: ${score}/${questions.length}`
+          : ACADEMY_UI_CS.quizSubmit}
       </button>
     </div>
   );

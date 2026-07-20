@@ -41,9 +41,18 @@ export function formatDataValue(
   const unit = record.unit;
   let formatted: string;
   if (unit === "percent" || unit === "percent_pa" || unit === "ltv_percent") {
-    formatted = `${v.toFixed(decimals)} %`;
+    formatted = `${v.toLocaleString("cs-CZ", {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    })} %`;
+    if (unit === "percent_pa") {
+      formatted = `${formatted} p. a.`;
+    }
   } else if (unit === "ratio") {
-    formatted = v.toFixed(decimals);
+    formatted = v.toLocaleString("cs-CZ", {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    });
   } else if (unit === "years") {
     formatted = `${v} let`;
   } else if (unit === "months") {
@@ -66,15 +75,15 @@ export function formatDataValue(
 export function statusBadgeLabel(status: DataStatus): string {
   switch (status) {
     case "LIVE":
-      return "LIVE";
+      return "Aktuální data";
     case "VERIFIED":
-      return "VERIFIED";
+      return "Ověřeno";
     case "MODELLED":
-      return "MODEL";
+      return "Modelový výpočet";
     case "PARTNER_QUOTE":
-      return "PARTNER QUOTE";
+      return "Nabídka partnera";
     case "STALE":
-      return "STALE";
+      return "Čeká na aktualizaci";
     default:
       return status;
   }
@@ -84,15 +93,15 @@ export function statusBadgeLabel(status: DataStatus): string {
 export function statusDescription(status: DataStatus): string {
   switch (status) {
     case "LIVE":
-      return "Živá data ze zdroje (scraper / API), podléhají freshness thresholdu.";
+      return "Údaj ze zdroje, který pravidelně kontrolujeme. Stále nejde o závaznou nabídku banky.";
     case "VERIFIED":
-      return "Manuálně ověřený editorial nebo oficiální limit (např. ČNB).";
+      return "Manuálně ověřený editorial nebo oficiální rámec (např. ČNB).";
     case "MODELLED":
-      return "Orientační model — není skutečná bankovní nabídka ani live kotace.";
+      return "Orientační modelový výpočet — není skutečná bankovní nabídka ani živá kotace.";
     case "PARTNER_QUOTE":
-      return "Partnerský / insider údaj — ověřený provozovatelem, ne veřejný lístek.";
+      return "Údaj od partnera — ověřený provozovatelem, ne veřejný ceník.";
     case "STALE":
-      return "Neaktuální nebo chybějící data — ověřujeme, neinventujeme.";
+      return "Neaktuální nebo chybějící data — ověřujeme, čísla nevymýšlíme.";
     default:
       return "";
   }

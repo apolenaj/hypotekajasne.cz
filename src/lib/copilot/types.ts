@@ -118,7 +118,7 @@ export type CopilotOrchestratorResult = {
 };
 
 export const COPILOT_SYSTEM_DISCLAIMER =
-  "HypotékaJasně Copilot pracuje jen s ověřenými daty platformy, výsledky kalkulaček a vaším lokálním profilem. Nejde o schválení úvěru ani o regulované osobní finanční doporučení — finální posouzení dělá banka / licencovaný specialista.";
+  "HypotékaJasně Finanční AI průvodce pracuje jen s ověřenými daty platformy, výsledky kalkulaček a vaším lokálním profilem. Nejde o schválení úvěru ani o regulované osobní finanční doporučení — finální posouzení dělá banka / licencovaný specialista.";
 
 export const COPILOT_FORBIDDEN_PROMISES = [
   "schválíme vám úvěr",

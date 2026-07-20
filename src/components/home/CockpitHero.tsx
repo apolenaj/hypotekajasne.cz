@@ -2,15 +2,18 @@
 
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { DecisionSnapshot } from "@/components/home/DecisionSnapshot";
 import { routes } from "@/lib/routes";
 
+/**
+ * Kompaktní prémiový hero — max ~650–720px, dva sloupce, bez prázdné pravé plochy.
+ */
 export function CockpitHero() {
   return (
     <section
       aria-labelledby="home-hero-heading"
-      className="relative isolate min-h-[min(92svh,820px)] overflow-hidden bg-deep-teal text-white"
+      className="relative isolate overflow-hidden bg-deep-teal text-white"
     >
-      {/* Full-bleed atmosphere — subtle mesh, not glassmorphism */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.35]"
         aria-hidden
@@ -31,40 +34,46 @@ export function CockpitHero() {
         }}
       />
 
-      <div className="relative z-10 mx-auto flex min-h-[min(92svh,820px)] max-w-7xl flex-col justify-end px-4 pb-14 pt-28 sm:px-6 sm:pb-16 sm:pt-32 lg:justify-center lg:px-8 lg:pb-20 lg:pt-24">
-        <p className="home-reveal mb-4 font-heading text-3xl font-semibold tracking-tight text-muted-gold sm:text-4xl lg:text-5xl xl:text-[3.5rem]">
-          HypotékaJasně
-        </p>
+      <div className="relative z-10 mx-auto grid max-h-[720px] max-w-7xl gap-8 px-4 py-10 sm:px-6 sm:py-12 lg:grid-cols-12 lg:items-center lg:gap-10 lg:px-8 lg:py-14 xl:max-h-[680px]">
+        <div className="lg:col-span-6 xl:col-span-7">
+          <p className="home-reveal font-heading text-2xl font-semibold tracking-tight text-muted-gold sm:text-3xl lg:text-[2rem]">
+            HypotékaJasně
+          </p>
 
-        <h1
-          id="home-hero-heading"
-          className="home-reveal home-reveal-delay-1 max-w-4xl font-heading text-[1.65rem] font-bold leading-[1.2] tracking-tight text-white/95 sm:text-3xl lg:text-4xl xl:text-[2.75rem]"
-        >
-          Zjistěte, co si můžete dovolit.
-          <span className="mt-1 block text-white/90">
-            Kde koupit. Jak to financovat.
-          </span>
-        </h1>
-
-        <p className="home-reveal home-reveal-delay-2 mt-5 max-w-xl text-base leading-relaxed text-white/75 sm:text-lg">
-          Decision cockpit pro bydlení i investice — živá data z českých bank,
-          srovnání trhů a jasný další krok. Bez marketingových superlativů.
-        </p>
-
-        <div className="home-reveal home-reveal-delay-3 mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-          <Link
-            href="#kolik-si-mohu-dovolit"
-            className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-muted-gold px-6 text-sm font-semibold text-text-dark transition-colors hover:bg-muted-gold-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-deep-teal"
+          <h1
+            id="home-hero-heading"
+            className="home-reveal home-reveal-delay-1 mt-3 max-w-xl font-heading text-[1.45rem] font-bold leading-[1.25] tracking-tight text-white/95 sm:text-3xl lg:text-[2.15rem]"
           >
-            Spočítat, co si mohu dovolit
-            <ArrowRight className="h-4 w-4" aria-hidden />
-          </Link>
-          <Link
-            href={routes.pruvodceInvestora}
-            className="inline-flex h-12 items-center justify-center rounded-lg border border-white/25 bg-transparent px-6 text-sm font-medium text-white transition-colors hover:border-white/50 hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-deep-teal"
-          >
-            Prozkoumat destinace
-          </Link>
+            Zjistěte, co si můžete dovolit.
+            <span className="mt-1 block text-white/90">
+              Kde koupit. Jak to financovat.
+            </span>
+          </h1>
+
+          <p className="home-reveal home-reveal-delay-2 mt-4 max-w-lg text-sm leading-relaxed text-white/75 sm:text-base">
+            Hypotéky, investice a nemovitosti na jednom místě. Aktuální data,
+            srozumitelné výpočty a jasný další krok.
+          </p>
+
+          <div className="home-reveal home-reveal-delay-3 mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Link
+              href="#kolik-si-mohu-dovolit"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-muted-gold px-5 text-sm font-semibold text-text-dark transition-colors hover:bg-muted-gold-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-deep-teal"
+            >
+              Spočítat, co si mohu dovolit
+              <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
+            <Link
+              href={routes.pruvodceInvestora}
+              className="inline-flex h-11 items-center justify-center rounded-lg border border-white/25 bg-transparent px-5 text-sm font-medium text-white transition-colors hover:border-white/50 hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-deep-teal"
+            >
+              Prozkoumat investiční trhy
+            </Link>
+          </div>
+        </div>
+
+        <div className="lg:col-span-6 xl:col-span-5">
+          <DecisionSnapshot />
         </div>
       </div>
     </section>

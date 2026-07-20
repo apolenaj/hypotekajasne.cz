@@ -37,25 +37,25 @@ export type MethodologyTopic =
 
 export const METHODOLOGY_BLURBS: Record<MethodologyTopic, string> = {
   rates:
-    "CZ sazby stahujeme scraperem z oficiálních webů bank / agregátorů do Supabase (bank_rates, current_rates). Cron běží pravidelně. Chybějící sazba bez pojištění se u většiny bank doplňuje orientačně (+0,3 p.b.) a musí být označená jako MODEL — nikdy jako LIVE.",
+    "Sazby českých bank bereme z oficiálních webů bank (a ověřených agregátorů). Kontrolujeme je pravidelně. Chybí-li sazba bez pojištění, doplníme ji jen jako orientační modelový výpočet (+0,3 p. b.) — nikdy jako aktuální data.",
   rpsn:
-    "RPSN bereme ze stejného zdroje jako sazbu, pokud je ve zdroji uvedené. Pokud chybí, zobrazíme „Na vyžádání“ — RPSN si nevymýšlíme.",
+    "RPSN zobrazíme, jen když je ve zdroji uvedené. Jinak „Na vyžádání“ — RPSN si nevymýšlíme.",
   ltv:
-    "Limity LTV / DTI vycházejí z makroobezřetnostních doporučení ČNB (VERIFIED). UI prahy DSTI (~40–45 %) jsou interní model bankovní praxe, ne plošný limit ČNB.",
+    "Limity LTV a DTI vycházejí z makroobezřetnostních doporučení ČNB (ověřeno). Orientační prahy DSTI v nástrojích jsou model bankovní praxe, ne plošný limit ČNB.",
   yields:
-    "Hrubé výnosy na homepage a v kalkulačkách jsou MODELLED defaulty (countryConfigs / market-metrics). Nejsou live kotace z nabídky. Skutečný čistý výnos závisí na daních, správě a obsazenosti.",
+    "Hrubé výnosy na webu a v kalkulačkách jsou modelové výchozí hodnoty pro srovnání. Nejsou živou kotací z nabídky. Čistý výnos závisí na daních, správě a obsazenosti.",
   prices:
-    "Referenční ceny a €/m² jsou orientační MODELLED hodnoty pro UX a srovnání. Nejde o aktuální tržní nabídku konkrétní nemovitosti.",
+    "Referenční ceny a cena za m² jsou orientační modelové hodnoty pro UX a srovnání — ne aktuální nabídka konkrétní nemovitosti.",
   historical:
-    "Historické řady ČR jsou editorial snapshoty s interpolací. Zahraniční historie je často škálovaná z ČR — vždy MODELLED, ne oficiální statistika.",
+    "Historické řady jsou editorial snapshoty (u zahraničí často ilustrativní). Vždy jako modelový výpočet, ne oficiální statistika.",
   predictions:
-    "Scénáře růstu (konzervativní / střední / dynamický) jsou modelové projekce, ne predikce budoucnosti. Nejde o investiční doporučení.",
+    "Scénáře růstu (konzervativní / střední / dynamický) jsou modelové projekce, ne předpověď budoucnosti ani investiční doporučení.",
   legal:
-    "Právní a daňové informace zemí jsou editorial (VERIFIED po kontrole). Nejsou individuální právní radou — před koupí ověřte lokálního právníka.",
+    "Právní a daňové přehledy zemí jsou editorial po kontrole. Nejsou individuální právní radou — před koupí ověřte lokálního právníka.",
   scoring:
-    "Market matching (Osobní investiční průvodce) počítá organické Overall Match 0–100 jako vážený součet fitů napříč 10 dimenzemi: required capital, financing availability, target yield, volatility/risk, ownership security, liquidity, currency risk, regulation, investment horizon, intended use. Fit = 100 − |atribut trhu − ideál z formuláře|. Váhy jsou veřejné na /metodika. Placené partnerství organické skóre nemění — sponzoring musí být explicitně označen mimo ranking.",
+    "Osobní investiční průvodce počítá organické skóre 0–100 jako vážený součet shody napříč dimenzemi (kapitál, financování, výnos, riziko, vlastnictví, likvidita, měna, regulace, horizont, účel). Placené partnerství organické skóre nemění — sponzoring musí být označen mimo žebříček.",
   general:
-    "HypotékaJasně je datová platforma: každé důležité číslo má status (LIVE / VERIFIED / MODEL / PARTNER QUOTE / STALE), zdroj a datum. MODEL nikdy nevydáváme za LIVE.",
+    "Každé důležité číslo má status (aktuální data / ověřeno / modelový výpočet / nabídka partnera / čeká na aktualizaci), zdroj a datum. Modelový výpočet nikdy nevydáváme za aktuální data.",
 };
 
 export type CountryProvenanceItem = {
@@ -78,29 +78,29 @@ export function getCountryProvenance(
       domain: "rates",
       status: isCz ? "LIVE" : "MODELLED",
       source: isCz
-        ? "Supabase bank_rates / current_rates (scraper 6 bank)"
-        : "Interní modelové defaulty (countryConfigs) — bez live bankovního lístku",
+        ? "Oficiální weby českých bank"
+        : "Modelové výchozí hodnoty — bez živého bankovního lístku",
       lastVerifiedAt: isCz ? null : "2026-04-01",
       notes: isCz
-        ? "Čerstvost: threshold 48 h od lastFetchedAt → STALE."
-        : "Pro cizí trhy zobrazujeme MODEL, ne LIVE nabídku banky.",
+        ? "Při delší neaktualizaci označíme jako „Čeká na aktualizaci“."
+        : "Pro cizí trhy zobrazujeme modelový výpočet, ne živou nabídku banky.",
     },
     {
       label: "RPSN",
       domain: "rpsn",
       status: isCz ? "LIVE" : "STALE",
       source: isCz
-        ? "Scraper / oficiální příklad banky (nullable)"
+        ? "Oficiální podklady banky (pokud uvádí RPSN)"
         : "Není k dispozici — Na vyžádání",
       lastVerifiedAt: null,
-      notes: "Null RPSN se nikdy nedoplňuje fiktivním offsetem.",
+      notes: "Chybějící RPSN nikdy nedoplňujeme fiktivním číslem.",
     },
     {
       label: "LTV / DTI limity",
       domain: "ltv",
       status: isCz ? "VERIFIED" : "MODELLED",
       source: isCz
-        ? "ČNB makroobezřetnostní doporučení"
+        ? "ČNB — makroobezřetnostní doporučení"
         : "Obecný popis trhu (editorial) — ověřte lokální limity",
       lastVerifiedAt: "2026-04-01",
       notes: isCz
@@ -111,23 +111,23 @@ export function getCountryProvenance(
       label: "Tržní ceny / výnosy",
       domain: "yields",
       status: "MODELLED",
-      source: "countryConfigs + market-metrics (orientační)",
+      source: "Orientační modelová pásma pro srovnání",
       lastVerifiedAt: "2026-04-01",
-      notes: "Orientační pásma pro srovnání, ne nabídka nemovitosti.",
+      notes: "Nejde o nabídku konkrétní nemovitosti.",
     },
     {
       label: "Historie a predikce",
       domain: "historical",
       status: "MODELLED",
-      source: "historical-data.ts / prediction-configs.ts",
+      source: "Ilustrativní model / editorial",
       lastVerifiedAt: "2026-04-01",
-      notes: "Ilustrativní model — ne oficiální prognóza.",
+      notes: "Nejde o oficiální prognózu.",
     },
     {
       label: "Právní / daňový přehled",
       domain: "legal",
       status: "VERIFIED",
-      source: "Editorial country-info / country-detail",
+      source: "Editorial přehled země",
       lastVerifiedAt: "2026-04-01",
       notes: "Není individuální právní rada.",
     },

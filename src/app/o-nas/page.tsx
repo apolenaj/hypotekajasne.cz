@@ -5,7 +5,7 @@ import { LeadGen } from "@/components/sections/LeadGen";
 export const metadata: Metadata = {
   title: "O nás | HypotékaJasně.cz",
   description:
-    "Tým HypotékaJasně.cz: role, vzdělání, odpovědnost za obsah. Trust Center — kdo co dělá a jak vyděláváme.",
+    "Tým HypotékaJasně.cz: role, vzdělání, odpovědnost za obsah. Centrum důvěry — kdo co dělá a jak vyděláváme.",
 };
 
 export default function ONasPage() {

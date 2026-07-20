@@ -18,9 +18,9 @@ const CHANGELOG: {
 }[] = [
   {
     date: "2026-07-19",
-    area: "Trust Center",
+    area: "Centrum důvěry",
     summary:
-      "Spouštění Trust Center stránek; odstranění nepodložených formulací ze stránky O nás.",
+      "Spouštění stránek Centra důvěry; odstranění nepodložených formulací ze stránky O nás.",
     href: routes.duvera,
   },
   {
@@ -42,7 +42,7 @@ export default function OpravyPage() {
   return (
     <TrustPageShell
       currentPath="/opravy-a-aktualizace"
-      eyebrow="Trust Center"
+      eyebrow="Centrum důvěry"
       title="Opravy a aktualizace"
       lead="Když opravíme chybu v datech nebo YMYL textu, zapíšeme to sem. Bez tichých přepisů historie."
     >

@@ -46,7 +46,7 @@ export function ProvenanceInline({
         <StaleDataAlert
           message={
             isStaleByAge
-              ? "Překročen freshness threshold — automaticky STALE. Zobrazujeme upozornění místo vymyšlených čísel."
+              ? "Data jsou starší, než očekáváme — ověřujeme je. Čísla si nevymýšlíme."
               : undefined
           }
         />

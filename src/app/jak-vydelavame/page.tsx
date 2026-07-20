@@ -14,7 +14,7 @@ export default function JakVydelavamePage() {
   return (
     <TrustPageShell
       currentPath="/jak-vydelavame"
-      eyebrow="Trust Center"
+      eyebrow="Centrum důvěry"
       title="Jak vyděláváme"
       lead="Používání kalkulaček, akademie a připravenosti je pro vás zdarma. Platforma je financována B2B spoluprací."
     >
@@ -55,7 +55,7 @@ export default function JakVydelavamePage() {
         <p className="mt-2 text-sm text-muted-foreground">
           Modelové limity, skóre a scénáře nejsou závaznou nabídkou. Detail rolí:{" "}
           <Link href={routes.duvera} className="text-deep-teal underline">
-            Trust Center
+            Centrum důvěry
           </Link>
           .
         </p>

@@ -6,9 +6,9 @@ import { crumbs } from "@/lib/seo/breadcrumbs";
 import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "AI Property & Mortgage Copilot",
+  title: "Finanční AI průvodce",
   description:
-    "Důvěryhodný copilot nad ověřenými daty a kalkulačkami HypotékaJasně — citace DATA/MODEL/ODHAD, audit log, bez příslibu schválení.",
+    "Finanční AI průvodce nad ověřenými daty a kalkulačkami HypotékaJasně — citace, audit log, bez příslibu schválení.",
   path: routes.copilot,
 });
 
@@ -18,7 +18,10 @@ export default function CopilotPage() {
       <div className="border-b border-border bg-[#f7f8f7]">
         <div className="mx-auto max-w-6xl px-4 py-3">
           <Breadcrumbs
-            items={crumbs({ name: "AI Copilot", path: routes.copilot })}
+            items={crumbs({
+              name: "Finanční AI průvodce",
+              path: routes.copilot,
+            })}
           />
         </div>
       </div>

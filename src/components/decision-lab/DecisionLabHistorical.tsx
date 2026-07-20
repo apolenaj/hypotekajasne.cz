@@ -113,7 +113,7 @@ export function DecisionLabHistorical({ countryId }: Props) {
     <div className="space-y-6">
       <div>
         <p className="text-sm font-semibold text-deep-teal">
-          Decision Lab · Historický stroj času
+          Laboratoř rozhodnutí · Historický stroj času
         </p>
         <p className="mt-1 text-sm text-muted-foreground">
           Volitelná aktiva, jasné oddělení nominálních a reálných (CPI) výsledků.

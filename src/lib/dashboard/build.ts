@@ -106,7 +106,7 @@ function buildMarketRates(
       relevanceNote:
         purpose === "refinance"
           ? "Relevantní pro srovnání při refinancování / refixaci."
-          : "Odpovídá účelu v Financial Passportu.",
+          : "Odpovídá účelu ve Finančním pasu.",
       updatedAt,
     });
   }

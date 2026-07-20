@@ -20,25 +20,25 @@ export function RentgenHero() {
           Analýza nemovitosti, které můžete věřit jen tolik, kolik mají data
         </h1>
         <p className="mt-5 max-w-2xl text-base leading-relaxed text-white/85 sm:text-lg">
-          Server-rendered přehled metrik, free preview a cesta ke{" "}
+          Bezplatný náhled a cesta ke{" "}
           <strong className="font-semibold text-white">
-            Kompletní Majetio Property Analysis
+            kompletní analýze nemovitosti
           </strong>
-          . Každý údaj označíme jako DATA, MODEL, ODHAD nebo NEOVĚŘENO — právní
-          a technická fakta bez zdroje nevymýšlíme.
+          . Každý údaj označíme jako Data, Modelový výpočet, Odhad nebo
+          Neověřeno — právní a technická fakta bez zdroje nevymýšlíme.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <a
             href="#nastroj"
             className="inline-flex items-center justify-center rounded-lg bg-muted-gold px-6 py-3 text-sm font-bold text-[#0b3d3a] transition hover:bg-muted-gold-light"
           >
-            Spustit free preview
+            Spustit bezplatný náhled
           </a>
           <a
             href="#cena"
             className="inline-flex items-center justify-center rounded-lg border border-white/30 px-6 py-3 text-sm font-bold text-white hover:bg-white/10"
           >
-            Premium {formatAnalysisPrice()}
+            Prémiové {formatAnalysisPrice()}
           </a>
         </div>
       </div>
@@ -55,22 +55,22 @@ export function RentgenValueProp() {
         </h2>
         <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground sm:text-base">
           Chcete rychle pochopit, jestli má nemovitost smysl zkoumat dál — ne
-          falešnou jistotu. Free vrstva je crawlable a srozumitelná; hloubka je
-          v Premium reportu Majetio.
+          falešnou jistotu. Bezplatný náhled je srozumitelný; hloubka je v
+          Prémiové analýze.
         </p>
         <ul className="mt-8 grid gap-4 sm:grid-cols-3">
           {[
             {
-              t: "SSR first",
-              d: "Klíčový obsah (H1, metriky, demo, FAQ, cena) je ve HTML bez čekání na JS.",
+              t: "Transparentní označení údajů",
+              d: "Data / Modelový výpočet / Odhad / Neověřeno u každého důležitého čísla.",
             },
             {
-              t: "Transparentní claimy",
-              d: "DATA / MODEL / ODHAD / NEOVĚŘENO u každého důležitého čísla.",
+              t: "Bez vymyšlených faktů",
+              d: "Právní a technické závěry bez zdroje neprodáváme jako jistotu.",
             },
             {
-              t: "Monetizace bez lži",
-              d: "Free preview konvertuje na kompletní analýzu — bez vymyšlených právních závěrů.",
+              t: "Jasná cesta dál",
+              d: "Bezplatný náhled → Prémiová analýza — bez zbytečného žargonu.",
             },
           ].map((item) => (
             <li
@@ -104,7 +104,7 @@ export function RentgenWhatWeAnalyze() {
           Co analyzujeme
         </h2>
         <p className="mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">
-          Tři vstupy: URL inzerátu (reference), manuální údaje, později upload
+          Tři vstupy: URL inzerátu (reference), manuální údaje, později nahrání
           dokumentů a fotek. Výstup vždy odděluje ověřené od modelu.
         </p>
         <ol className="mt-8 grid gap-4 sm:grid-cols-3">
@@ -112,17 +112,17 @@ export function RentgenWhatWeAnalyze() {
             {
               n: "1",
               t: "Vložit URL",
-              d: "Uložíme odkaz jako referenci. Obsah inzerátu automaticky neprohlašujeme za DATA.",
+              d: "Uložíme odkaz jako referenci. Obsah inzerátu automaticky neprohlašujeme za Data.",
             },
             {
               n: "2",
               t: "Manuální údaje",
-              d: "Cena, m², lokalita, nájem, equity — základ free preview.",
+              d: "Cena, m², lokalita, nájem, vlastní kapitál — základ bezplatného náhledu.",
             },
             {
               n: "3",
-              t: "Upload (připravujeme)",
-              d: "Dokumenty a fotky pro Premium due diligence — architektura ready, UI postupně.",
+              t: "Nahrání dokumentů (připravujeme)",
+              d: "Dokumenty a fotky pro prémiovou kontrolu nemovitosti — připravujeme.",
             },
           ].map((s) => (
             <li
@@ -154,7 +154,7 @@ export function RentgenMetricsGrid() {
           12 hlavních metrik
         </h2>
         <p className="mt-3 text-sm text-muted-foreground">
-          Free preview pokrývá základ; zbytek je v Premium reportu.
+          Bezplatný náhled pokrývá základ; zbytek je v Prémiovém reportu.
         </p>
         <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {RENTGEN_METRICS_CATALOG.map((m) => (
@@ -168,7 +168,7 @@ export function RentgenMetricsGrid() {
               </div>
               <p className="mt-2 text-xs text-muted-foreground">{m.description}</p>
               <p className="mt-2 text-[10px] font-bold uppercase tracking-wide text-deep-teal">
-                {m.tier === "free" ? "Free preview" : "Premium"}
+                {m.tier === "free" ? "Bezplatný náhled" : "Prémiové"}
               </p>
             </li>
           ))}
@@ -230,14 +230,14 @@ export function RentgenDemoReport() {
           </div>
           <div className="border-t border-border bg-[#f7f8f7] px-5 py-4">
             <p className="text-xs font-semibold uppercase text-deep-teal">
-              Financing fit
+              Vhodnost financování
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
               <ClaimBadge kind={demo.financingFit.kind} className="mr-2" />
               {demo.financingFit.value}
             </p>
             <p className="mt-3 text-xs font-semibold uppercase text-amber-800">
-              Red flags
+              Varovné signály
             </p>
             <ul className="mt-1 space-y-1">
               {demo.redFlags.map((f) => (
@@ -273,10 +273,7 @@ export function RentgenFaq() {
               <dt className="font-semibold text-text-dark">{item.q}</dt>
               <dd className="mt-2 text-sm leading-relaxed text-muted-foreground">
                 {item.a.includes("4 990")
-                  ? item.a.replace(
-                      /4 990\/5 000 Kč/g,
-                      formatAnalysisPrice()
-                    )
+                  ? item.a.replace(/4 990 Kč/g, formatAnalysisPrice())
                   : item.a}
               </dd>
             </div>
@@ -300,48 +297,45 @@ export function RentgenPricing() {
           id="pricing-heading"
           className="font-heading text-2xl font-bold text-text-dark sm:text-3xl"
         >
-          Pricing & funnel
+          Ceník a postup objednávky
         </h2>
         <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
-          Free preview → rozhodnutí → Premium analýza. Cena je konfigurovatelná
-          v produktové konfiguraci (ne hardcode marketingu).
+          Bezplatný náhled → rozhodnutí → Prémiová analýza za{" "}
+          {formatAnalysisPrice()}.
         </p>
 
         <div className="mt-8 grid gap-5 lg:grid-cols-2">
           <div className="rounded-2xl border border-border bg-white p-6">
             <p className="text-xs font-bold uppercase tracking-wide text-deep-teal">
-              Free
+              Bezplatný
             </p>
             <p className="mt-2 font-heading text-2xl font-bold text-text-dark">
-              Preview
+              Náhled
             </p>
             <p className="mt-1 text-sm text-muted-foreground">0 Kč</p>
             <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
               <li>Orientační výnos</li>
               <li>Cena / m²</li>
-              <li>Základní financing fit</li>
-              <li>Základní red flags</li>
+              <li>Základní vhodnost financování</li>
+              <li>Základní varovné signály</li>
             </ul>
             <a
               href="#nastroj"
               className="mt-6 inline-flex w-full items-center justify-center rounded-lg bg-deep-teal px-4 py-3 text-sm font-bold text-white"
             >
-              Spustit preview
+              Spustit náhled
             </a>
           </div>
 
           <div className="rounded-2xl border-2 border-muted-gold bg-white p-6 shadow-sm">
             <p className="text-xs font-bold uppercase tracking-wide text-muted-gold">
-              Premium
+              Prémiové
             </p>
             <p className="mt-2 font-heading text-2xl font-bold text-text-dark">
               {p.productName}
             </p>
             <p className="mt-1 text-2xl font-bold tabular-nums text-deep-teal">
               {formatAnalysisPrice(p)}
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              productId: {p.productId}
             </p>
             <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
               {p.includes.map((i) => (
@@ -381,7 +375,7 @@ export function RentgenBottomCta() {
           Připraveni na konkrétní nemovitost?
         </h2>
         <p className="mt-3 text-sm text-white/80">
-          Začněte free preview — Premium report objednáte, až budete mít jasno.
+          Začněte bezplatným náhledem — Prémiový report objednáte, až budete mít jasno.
         </p>
         <a
           href="#nastroj"
@@ -390,11 +384,10 @@ export function RentgenBottomCta() {
           Přejít na nástroj
         </a>
         <p className="mt-4 text-xs text-white/60">
-          Pokročilý 30letý modelář zůstává na{" "}
+          Pokročilý 30letý modelář:{" "}
           <Link href={routes.investicniRentgenModelar} className="underline">
-            /investicni-rentgen/modelar
+            Investiční rentgen — modelář
           </Link>
-          .
         </p>
       </div>
     </section>

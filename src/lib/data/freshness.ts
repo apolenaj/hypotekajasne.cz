@@ -136,7 +136,7 @@ export function withEffectiveStatus<T extends DataRecord["value"]>(
     status: effectiveStatus,
     notes:
       effectiveStatus === "STALE" && record.status !== "STALE"
-        ? [record.notes, "Automaticky označeno jako STALE (překročen freshness threshold)."]
+        ? [record.notes, "Automaticky označeno jako „Čeká na aktualizaci“ (data jsou starší)."]
             .filter(Boolean)
             .join(" ")
         : record.notes,

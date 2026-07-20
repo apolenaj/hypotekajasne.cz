@@ -91,7 +91,7 @@ export function DueDiligenceView() {
   if (!ready || !model) {
     return (
       <div className="mx-auto max-w-6xl px-4 py-16 text-sm text-muted-foreground">
-        Načítám Due Diligence Engine…
+        Načítám Dynamickou prověrku nemovitosti…
       </div>
     );
   }
@@ -108,7 +108,7 @@ export function DueDiligenceView() {
         <div className="mx-auto max-w-6xl px-4 py-10">
           <FeatureStatusBadge status={DUE_DILIGENCE_FEATURE_STATUS} />
           <h1 className="mt-2 font-heading text-3xl font-black">
-            Dynamic Due Diligence Engine
+            Dynamická prověrka nemovitosti
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-emerald-50/90">
             Personalizovaný checklist dle typu nemovitosti. Unknown není Green —
@@ -144,7 +144,7 @@ export function DueDiligenceView() {
         </section>
 
         {/* Summary traffic lights */}
-        <section className="grid gap-4 sm:grid-cols-4">
+        <section className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {(
             [
               ["GREEN", model.summary.verifiedCount],
@@ -176,7 +176,7 @@ export function DueDiligenceView() {
           <section className="rounded-2xl border border-red-200 bg-red-50 p-6">
             <h2 className="flex items-center gap-2 font-heading text-lg font-bold text-red-900">
               <ShieldAlert className="h-5 w-5" />
-              Human-expert escalation
+              Eskalace k lidskému specialistovi
             </h2>
             <p className="mt-2 text-sm text-red-900/90">{model.escalation.reason}</p>
             <Link
@@ -238,7 +238,7 @@ export function DueDiligenceView() {
               </div>
               <dl className="mt-3 grid gap-1 text-xs sm:grid-cols-2">
                 <div>
-                  <dt className="font-semibold">Evidence</dt>
+                  <dt className="font-semibold">Podklady</dt>
                   <dd>{item.evidence ?? "—"}</dd>
                 </div>
                 <div>
@@ -274,7 +274,7 @@ export function DueDiligenceView() {
               )}
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
                 <input
-                  placeholder="Evidence…"
+                  placeholder="Podklady…"
                   defaultValue={item.evidence ?? ""}
                   onBlur={(e) =>
                     updateItem(item.id, { evidence: e.target.value || undefined })
@@ -315,10 +315,10 @@ export function DueDiligenceView() {
           <ClaimLegend />
           <div className="mt-4 flex flex-wrap gap-3">
             <Link href={routes.dealRoom} className="text-sm text-deep-teal underline">
-              Deal Room →
+              Transakční místnost →
             </Link>
             <Link href={routes.documentVault} className="text-sm text-deep-teal underline">
-              Document Vault →
+              Dokumentový trezor →
             </Link>
           </div>
         </section>

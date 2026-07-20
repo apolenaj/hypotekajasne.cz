@@ -10,7 +10,7 @@ type Props = { params: Promise<{ id: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   return buildPageMetadata({
-    title: "Deal Room — transakce",
+    title: "Transakční místnost — transakce",
     description: "Workspace pro konkrétní transakci s nemovitostí.",
     path: `${routes.dealRoom}/${id}`,
   });
@@ -24,7 +24,7 @@ export default async function DealRoomWorkspacePage({ params }: Props) {
         <div className="mx-auto max-w-6xl px-4 py-3">
           <Breadcrumbs
             items={[
-              ...crumbs({ name: "Deal Room", path: routes.dealRoom }),
+              ...crumbs({ name: "Transakční místnost", path: routes.dealRoom }),
               { name: "Workspace", path: `${routes.dealRoom}/${id}` },
             ]}
           />

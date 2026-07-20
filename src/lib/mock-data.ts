@@ -85,105 +85,16 @@ export const consultationCountries = [
   { value: "slovakia", label: "Slovensko" },
 ];
 
-export type NavLinkItem = {
-  href: string;
-  label: string;
-  external?: boolean;
-};
+import type { NavLinkItem } from "@/lib/navigation";
+import {
+  primaryNavLinks,
+  secondaryNavGroups,
+} from "@/lib/navigation";
 
-/** Tři hlavní cesty — vždy viditelné v hlavičce */
-export const primaryNavLinks: NavLinkItem[] = [
-  {
-    href: routes.dashboard,
-    label: "Můj dashboard",
-  },
-  {
-    href: routes.kalkulacky.root,
-    label: "Zjistit, kolik si mohu půjčit",
-  },
-  {
-    href: routes.investicniPas,
-    label: "Vybrat vhodnou zemi",
-  },
-  {
-    href: routes.investicniRentgen,
-    label: "Analyzovat nemovitost",
-  },
-];
+export type { NavLinkItem };
+export { primaryNavLinks, secondaryNavGroups };
 
-/** Sekundární rozbalovací menu */
-export const secondaryNavGroups: {
-  id: "nastroje" | "trhy" | "akademie" | "o-nas";
-  label: string;
-  items: NavLinkItem[];
-}[] = [
-  {
-    id: "nastroje",
-    label: "Nástroje",
-    items: [
-      { href: routes.financniPas, label: "Financial Passport" },
-      { href: routes.portfolio, label: "Portfolio OS" },
-      { href: routes.refinanceRadar, label: "Refinance Radar" },
-      { href: routes.globalFinancing, label: "Global Financing Router" },
-      { href: routes.documentVault, label: "Document Vault" },
-      { href: routes.dealRoom, label: "Deal Room" },
-      { href: routes.offerStrategy, label: "Offer Strategy" },
-      { href: routes.dueDiligence, label: "Due Diligence" },
-      { href: routes.marketPulse, label: "Market Pulse" },
-      { href: routes.alertCenter, label: "Alert Center" },
-      { href: routes.reportEngine, label: "Report Engine" },
-      { href: routes.b2bPortal, label: "B2B Portal" },
-      { href: routes.sledovani, label: "Sledování nemovitostí" },
-      { href: routes.copilot, label: "AI Copilot" },
-      { href: routes.kalkulacky.root, label: "Hypoteční kalkulačka" },
-      { href: routes.investicniPas, label: "Investiční pas" },
-      { href: routes.investicniRentgen, label: "Investiční rentgen" },
-      { href: routes.investicniRentgenPorovnani, label: "Porovnání nemovitostí" },
-      { href: routes.kalkulacky.koupeVsNajem, label: "Koupě × Nájem" },
-      { href: routes.kalkulacky.historickyVyvoj, label: "Historický vývoj" },
-      { href: routes.kalkulacky.potencialniVyvoj, label: "Potenciální vývoj" },
-      {
-        href: "https://majetio.cz",
-        label: "Majetio.cz",
-        external: true,
-      },
-    ],
-  },
-  {
-    id: "trhy",
-    label: "Trhy",
-    items: [
-      { href: getCountryGuidePath("cz"), label: "Česká republika" },
-      { href: getCountryGuidePath("dubai"), label: "SAE / Dubaj" },
-      { href: getCountryGuidePath("spain"), label: "Španělsko" },
-      { href: getCountryGuidePath("italy"), label: "Itálie" },
-      { href: getCountryGuidePath("croatia"), label: "Chorvatsko" },
-      { href: getCountryGuidePath("bali"), label: "Bali (Indonésie)" },
-      { href: getCountryGuidePath("saudi"), label: "Saúdská Arábie" },
-      { href: getCountryGuidePath("slovakia"), label: "Slovensko" },
-    ],
-  },
-  {
-    id: "akademie",
-    label: "Akademie",
-    items: [
-      { href: routes.hypotecniAkademie, label: "Hypoteční akademie" },
-      { href: routes.clanky, label: "Články" },
-      { href: routes.faq, label: "FAQ" },
-    ],
-  },
-  {
-    id: "o-nas",
-    label: "O nás",
-    items: [
-      { href: routes.oNas, label: "O nás" },
-      { href: routes.oMajetio, label: "O Majetio.cz" },
-      { href: routes.kontakt, label: "Kontakt" },
-    ],
-  },
-];
-
-/** @deprecated Prefer primaryNavLinks / secondaryNavGroups */
+/** @deprecated Prefer `@/lib/navigation` desktopNav */
 export const mainNavLinks = primaryNavLinks;
 /** @deprecated Prefer secondaryNavGroups */
 export const expertNavLinks = secondaryNavGroups.flatMap((g) => g.items);
@@ -196,15 +107,16 @@ export const navLinks = [
 export const footerLinks = {
   legal: [
     { href: routes.legal.gdpr, label: "GDPR" },
+    { href: routes.legal.cookies, label: "Zásady cookies" },
     { href: routes.legal.smlouvy, label: "Smlouvy" },
     { href: routes.legal.zasady, label: "Zásady" },
   ],
   company: [
     { href: routes.kontakt, label: "Kontakt" },
-    { href: routes.faq, label: "FAQ" },
-    { href: routes.dashboard, label: "Můj dashboard" },
-    { href: routes.financniPas, label: "Financial Passport" },
-    { href: routes.copilot, label: "AI Copilot" },
+    { href: routes.faq, label: "Časté otázky" },
+    { href: routes.dashboard, label: "Můj přehled" },
+    { href: routes.financniPas, label: "Finanční pas" },
+    { href: routes.copilot, label: "Finanční AI průvodce" },
     { href: routes.oNas, label: "O nás" },
   ],
 };
@@ -628,7 +540,7 @@ export const financingDetailsData: Record<string, FinancingDetail[]> = {
       id: "bali-cash",
       title: "Hotovost / Fázované platby",
       shortDesc: "Lokální hypotéky pro cizince prakticky neexistují.",
-      rates: "N/A",
+      rates: "Bez bankovního úvěru (hotovost)",
       howItWorks:
         "V Indonésii cizinec (bez KITAS a příjmů) nedostane bankovní hypotéku. Nakupuje se za hotové, případně developer povolí splátky po dobu výstavby vily (typicky 12-18 měsíců).",
       idealFor:

@@ -27,11 +27,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="cs" className={`${inter.variable} ${playfair.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col font-sans">
+      <body className="flex min-h-full max-w-full min-w-0 flex-col font-sans">
         <JsonLdScript data={[organizationJsonLd(), webSiteJsonLd()]} />
         <Providers>
           <Navbar />
-          <main className="flex-1">{children}</main>
+          <main className="min-w-0 flex-1 pb-[var(--cookie-banner-pad,0px)]">{children}</main>
           <Footer />
         </Providers>
       </body>

@@ -41,15 +41,15 @@ export function Dialog({
         aria-modal="true"
         aria-label={title}
         className={cn(
-          "absolute left-1/2 top-1/2 w-[calc(100%-2rem)] max-w-3xl -translate-x-1/2 -translate-y-1/2",
+          "absolute left-1/2 top-1/2 flex max-h-[min(90vh,40rem)] w-[calc(100%-2rem)] max-w-3xl -translate-x-1/2 -translate-y-1/2 flex-col",
           "rounded-3xl bg-white shadow-2xl ring-1 ring-gray-900/10 overflow-hidden",
           "animate-in fade-in zoom-in-95 duration-200"
         )}
       >
-        <div className="flex items-start justify-between gap-4 border-b border-gray-900/5 bg-slate-50/70 px-6 py-5">
-          <div>
+        <div className="flex shrink-0 items-start justify-between gap-4 border-b border-gray-900/5 bg-slate-50/70 px-4 py-4 sm:px-6 sm:py-5">
+          <div className="min-w-0">
             {title && (
-              <p className="font-heading text-xl sm:text-2xl font-bold text-text-dark leading-tight">
+              <p className="font-heading text-xl sm:text-2xl font-bold text-text-dark leading-tight break-words">
                 {title}
               </p>
             )}
@@ -60,13 +60,13 @@ export function Dialog({
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white ring-1 ring-gray-900/10 text-muted-foreground hover:text-text-dark hover:bg-slate-50 transition-colors"
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white ring-1 ring-gray-900/10 text-muted-foreground hover:text-text-dark hover:bg-slate-50 transition-colors"
             aria-label="Zavřít dialog"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
-        <div className="p-6 sm:p-8">{children}</div>
+        <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6 sm:px-8">{children}</div>
       </div>
     </div>,
     document.body

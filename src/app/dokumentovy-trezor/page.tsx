@@ -6,7 +6,7 @@ import { crumbs } from "@/lib/seo/breadcrumbs";
 import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Document Vault — bezpečné uložení hypotečních dokumentů",
+  title: "Dokumentový trezor — bezpečné uložení hypotečních dokumentů",
   description:
     "Šifrovaný trezor dokumentů, checklist dle situace, AI extrakce faktických pozorování a sdílení se specialistou po explicitním souhlasu.",
   path: routes.documentVault,
@@ -18,7 +18,7 @@ export default function DocumentVaultPage() {
       <div className="border-b border-border bg-[#f7f8f7]">
         <div className="mx-auto max-w-6xl px-4 py-3">
           <Breadcrumbs
-            items={crumbs({ name: "Document Vault", path: routes.documentVault })}
+            items={crumbs({ name: "Dokumentový trezor", path: routes.documentVault })}
           />
         </div>
       </div>

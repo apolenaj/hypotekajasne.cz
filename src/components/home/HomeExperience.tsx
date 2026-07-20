@@ -7,6 +7,7 @@ import { LiveDataTrustBar } from "@/components/home/LiveDataTrustBar";
 import { IntentPaths } from "@/components/home/IntentPaths";
 import { AffordabilityWidget } from "@/components/home/AffordabilityWidget";
 import { DestinationDataGrid } from "@/components/home/DestinationDataGrid";
+import { HomePlatformSections } from "@/components/home/HomePlatformSections";
 import { resolveHomeMode, setHomeMode } from "@/lib/dashboard";
 import { loadFinancialProfile } from "@/lib/financial-passport";
 
@@ -25,29 +26,29 @@ function MarketingHome({ onEnterDashboard }: { onEnterDashboard: () => void }) {
   return (
     <>
       {hasProfile ? (
-        <div className="border-b border-border bg-[#f3f8f6] px-4 py-3 text-center text-sm">
-          Máte uložený Financial Passport.{" "}
+        <div className="border-b border-border bg-[#f3f8f6] px-4 py-2.5 text-center text-sm">
+          Máte uložený Finanční pas.{" "}
           <button
             type="button"
             onClick={onEnterDashboard}
             className="font-bold text-deep-teal underline"
           >
-            Otevřít personalizovaný dashboard
+            Otevřít personalizovaný přehled
           </button>
         </div>
       ) : null}
       <CockpitHero />
-      <LiveDataTrustBar />
       <IntentPaths />
+      <LiveDataTrustBar />
       <AffordabilityWidget />
       <DestinationDataGrid />
+      <HomePlatformSections />
     </>
   );
 }
 
 /**
  * Progressive home: marketing cockpit OR personalized dashboard.
- * “Přihlášení” = lokální profil + preference (účet zatím není).
  */
 export function HomeExperience() {
   const ready = useIsClient();
@@ -73,7 +74,7 @@ export function HomeExperience() {
     return (
       <>
         <CockpitHero />
-        <LiveDataTrustBar />
+        <IntentPaths />
       </>
     );
   }

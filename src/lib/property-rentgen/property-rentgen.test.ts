@@ -9,12 +9,12 @@ import {
 } from "@/lib/property-rentgen";
 
 describe("PROPERTY_ANALYSIS_PRICING", () => {
-  it("defaults to 4990/5000 Kč display", () => {
+  it("defaults to single 4 990 Kč display", () => {
     assert.equal(PROPERTY_ANALYSIS_PRICING.amountCzk, 4990);
-    assert.equal(PROPERTY_ANALYSIS_PRICING.listAmountCzk, 5000);
-    assert.match(formatAnalysisPrice(), /4[\s\u00a0\u202f]?990\/5[\s\u00a0\u202f]?000\s*Kč/);
+    assert.match(formatAnalysisPrice(), /4[\s\u00a0\u202f]?990\s*Kč/);
+    assert.ok(!formatAnalysisPrice().includes("/"));
     assert.ok(
-      formatAnalysisPriceLabel().includes("Kompletní Majetio Property Analysis")
+      formatAnalysisPriceLabel().includes("Kompletní analýza nemovitosti")
     );
   });
 });

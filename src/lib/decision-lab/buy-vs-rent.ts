@@ -141,10 +141,11 @@ export function simulateBuyVsRent(input: BuyVsRentInput): BuyVsRentResult {
     chartMeta: {
       title: "Koupě vs. nájem — čisté jmění",
       methodology:
-        "Porovnává čisté jmění kupujícího (hodnota nemovitosti − zůstatek úvěru) s portfoliem nájemce (akontace+tx investované alternativním výnosem ± rozdíl ročních nákladů). Break-even = první rok dominance dle těchto předpokladů.",
-      source: "Decision Lab model (HypotékaJasně.cz)",
+        "Porovnává čisté jmění kupujícího (hodnota nemovitosti − zůstatek úvěru) s portfoliem nájemce (akontace+tx investované alternativním výnosem ± rozdíl ročních nákladů). Bod zvratu = první rok dominance dle těchto předpokladů.",
+      source: "Laboratoř rozhodnutí (HypotékaJasně.cz)",
       sourceUrl: null,
-      statusNote: "MODELLED — výsledky závisí na vstupech, ne na historické jistotě.",
+      statusNote:
+        "MODELOVÝ VÝPOČET — výsledky závisí na vstupech, ne na historické jistotě.",
     },
   };
 }

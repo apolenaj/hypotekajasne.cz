@@ -1,4 +1,5 @@
 import { calculateAnnuityPayment } from "@/lib/calculators";
+import { formatMoney } from "@/lib/money";
 import {
   getAdjustedMetrics,
   getPurposeModifier,
@@ -436,10 +437,5 @@ export function generateModelerSwot(
 }
 
 export function formatCzk(amount: number): string {
-  return (
-    new Intl.NumberFormat("cs-CZ", {
-      style: "decimal",
-      maximumFractionDigits: 0,
-    }).format(Math.round(amount)) + " CZK"
-  );
+  return formatMoney(amount, "CZK");
 }

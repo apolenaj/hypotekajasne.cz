@@ -26,7 +26,7 @@ export function LiveDataTrustBar({ className }: { className?: string }) {
 
   const rateLabel =
     hasLive && typeof live.value === "number"
-      ? `od ${live.value.toFixed(2)} %`
+      ? `od ${live.value.toLocaleString("cs-CZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %`
       : null;
 
   return (

@@ -38,9 +38,9 @@ export function ReportSharePageClient({ token }: ReportSharePageClientProps) {
   if (!access.ok) {
     const needsPassword = access.reason === "password_required" || access.reason === "password_invalid";
     const messages: Record<string, string> = {
-      not_found: "Odkaz nebyl nalezen — může být neplatný nebo z jiného prohlížeče (BETA: localStorage).",
+      not_found: "Odkaz nebyl nalezen — může být neplatný nebo z jiného prohlížeče.",
       expired: "Platnost odkazu vypršela.",
-      revoked: "Přístup byl zrušen (revoke).",
+      revoked: "Přístup byl zrušen.",
       password_required: "Tento report je chráněn heslem.",
       password_invalid: "Nesprávné heslo.",
     };

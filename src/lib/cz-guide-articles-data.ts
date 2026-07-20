@@ -27,7 +27,7 @@ export const czGuideArticlesData: CzGuideArticle[] = [
         <li><strong>Vyšší šanci na schválení:</strong> U nižšího LTV jsou banky benevolentnější při posuzování vašich dalších výdajů.</li>
       </ul>
       <h3>Kde vzít vlastní zdroje?</h3>
-      <p>Kromě hotovosti na účtu můžete jako vlastní zdroj použít i dozajištění jinou nemovitostí (např. bytem rodičů). Tím LTV uměle snížíte, často i na méně než 50 %, čímž dosáhnete na ty absolutně nejlepší VIP sazby na trhu.</p>
+      <p>Kromě hotovosti na účtu můžete jako vlastní zdroj použít i dozajištění jinou nemovitostí (např. bytem rodičů). Tím LTV uměle snížíte, často i na méně než 50 %, čímž můžete dosáhnout na výhodnější sazby u některých bank (model — ověřte individuálně).</p>
     `,
   },
   {

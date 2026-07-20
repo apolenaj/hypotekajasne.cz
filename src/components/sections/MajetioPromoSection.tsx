@@ -21,10 +21,10 @@ export function MajetioPromoSection() {
               Od kvalifikace k výběru nemovitosti
             </h2>
             <p className="mt-5 text-base leading-relaxed text-emerald-50/90 sm:text-lg">
-              Hypotéka Jasně připraví Financial Passport (rozpočet, účel,
-              profil). Majetio slouží k discovery a analýze konkrétních
-              nabídek — bez marketingových počtů „stovek nemovitostí“, dokud
-              data nejsou ověřená.
+              Hypotéka Jasně připraví Finanční pas (rozpočet, účel, profil).
+              Majetio slouží k vyhledání a analýze konkrétních nabídek — bez
+              marketingových počtů „stovek nemovitostí“, dokud data nejsou
+              ověřená.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link

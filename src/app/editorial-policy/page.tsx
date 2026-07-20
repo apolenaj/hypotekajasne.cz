@@ -4,7 +4,7 @@ import { TrustPageShell } from "@/components/trust/TrustPageShell";
 import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = {
-  title: "Editorial policy | HypotékaJasně.cz",
+  title: "Redakční zásady | HypotékaJasně.cz",
   description:
     "Jak píšeme YMYL obsah: autor, review, zdroje, aktualizace, zákaz nepodložených slibů.",
 };
@@ -13,8 +13,8 @@ export default function EditorialPolicyPage() {
   return (
     <TrustPageShell
       currentPath="/editorial-policy"
-      eyebrow="Trust Center"
-      title="Editorial policy"
+      eyebrow="Centrum důvěry"
+      title="Redakční zásady"
       lead="Pravidla pro magazín, akademii a marketingové texty — zejména YMYL (finance)."
     >
       <section>
@@ -24,8 +24,8 @@ export default function EditorialPolicyPage() {
         <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground">
           <li>Autor a reviewer (jména v Trust / magazine people registry)</li>
           <li>publishedAt, updatedAt, factCheckedAt</li>
-          <li>Sources — primární nebo metodika platformy</li>
-          <li>Oddělení DATA / MODEL / ODHAD / NEOVĚŘENO</li>
+          <li>Zdroje — primární nebo metodika platformy</li>
+          <li>Oddělení Data / Modelový výpočet / Odhad / Neověřeno</li>
         </ul>
       </section>
 

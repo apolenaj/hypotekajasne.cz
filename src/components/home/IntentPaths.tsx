@@ -42,14 +42,14 @@ const PATHS: IntentPath[] = [
     id: "refinance",
     title: "Chci refinancovat",
     description: "Porovnejte současnou splátku s aktuálními nabídkami sledovaných bank.",
-    nextStep: "Porovnat nabídky bank",
-    href: routes.kalkulacky.root,
+    nextStep: "Otevřít radar refinancování",
+    href: routes.refinanceRadar,
     icon: RefreshCw,
   },
   {
     id: "abroad",
     title: "Chci koupit v zahraničí",
-    description: "Vlastnictví, financovatelnost a rizika po destinacích — data-first.",
+    description: "Vlastnictví, financovatelnost a rizika po destinacích — nejdřív data.",
     nextStep: "Vybrat destinaci",
     href: routes.pruvodceInvestora,
     icon: Globe2,
@@ -62,10 +62,10 @@ export function IntentPaths() {
       aria-labelledby="intent-paths-heading"
       className="border-b border-border bg-[#f7f8f7]"
     >
-      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
         <div className="max-w-2xl">
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-deep-teal">
-            Kam dál
+            Pro koho to je
           </p>
           <h2
             id="intent-paths-heading"
@@ -74,11 +74,11 @@ export function IntentPaths() {
             Čtyři jasné cesty
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground sm:text-base">
-            Vyberte záměr — každá cesta má jeden další krok, ne obecný marketing.
+            Vyberte záměr — každá cesta má jeden další krok.
           </p>
         </div>
 
-        <ul className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
+        <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
           {PATHS.map((path) => {
             const Icon = path.icon;
             return (

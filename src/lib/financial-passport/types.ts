@@ -290,4 +290,4 @@ export type FinancialPassportDocument = {
 };
 
 export const PASSPORT_CLAIM_NOTE =
-  "Financial Passport je algoritmický orientační model HypotékaJasně — ne schválení úvěru ani regulované osobní doporučení. Finální posouzení provádí banka / licencovaný partner.";
+  "Finanční pas je algoritmický orientační model HypotékaJasně — ne schválení úvěru ani regulované osobní doporučení. Finální posouzení provádí banka / licencovaný partner.";

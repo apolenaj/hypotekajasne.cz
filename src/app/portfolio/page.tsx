@@ -6,9 +6,9 @@ import { crumbs } from "@/lib/seo/breadcrumbs";
 import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Portfolio OS — správa více nemovitostí",
+  title: "Moje portfolio — správa více nemovitostí",
   description:
-    "Souhrn portfolia, koncentrace rizik, stress testy a explainable scénáře. Export pro účetního. Bez pokynů k prodeji.",
+    "Souhrn portfolia, koncentrace rizik, stress testy a srozumitelné scénáře. Export pro účetního. Bez pokynů k prodeji.",
   path: routes.portfolio,
 });
 
@@ -18,7 +18,7 @@ export default function PortfolioPage() {
       <div className="border-b border-border bg-[#f7f8f7]">
         <div className="mx-auto max-w-6xl px-4 py-3">
           <Breadcrumbs
-            items={crumbs({ name: "Portfolio OS", path: routes.portfolio })}
+            items={crumbs({ name: "Moje portfolio", path: routes.portfolio })}
           />
         </div>
       </div>

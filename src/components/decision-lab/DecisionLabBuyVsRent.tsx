@@ -104,7 +104,7 @@ export function DecisionLabBuyVsRent({ countryId }: Props) {
   return (
     <div className="space-y-6">
       <div className="rounded-2xl border border-deep-teal/20 bg-deep-teal/5 p-4">
-        <p className="text-sm font-semibold text-deep-teal">Decision Lab · Koupě vs. nájem</p>
+        <p className="text-sm font-semibold text-deep-teal">Laboratoř rozhodnutí · Koupě vs. nájem</p>
         <p className="mt-2 text-base font-medium text-text-dark leading-relaxed">
           {result.verdictSentence}
         </p>
@@ -113,17 +113,17 @@ export function DecisionLabBuyVsRent({ countryId }: Props) {
         </p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        {field("bvr-price", "Cena", price, setPrice)}
-        {field("bvr-rent", "Nájem / měs.", rent, setRent)}
-        {field("bvr-rate", "Sazba %", rate, setRate, 0.1)}
-        {field("bvr-down", "Akontace", down, setDown)}
-        {field("bvr-maint", "Maintenance %", maintenance, setMaintenance, 0.1)}
-        {field("bvr-tx", "Transaction costs %", tx, setTx, 0.1)}
-        {field("bvr-pg", "Růst ceny %", propGrowth, setPropGrowth, 0.1)}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {field("bvr-price", "Kupní cena", price, setPrice)}
+        {field("bvr-rent", "Měsíční nájemné", rent, setRent)}
+        {field("bvr-rate", "Úroková sazba %", rate, setRate, 0.1)}
+        {field("bvr-down", "Vlastní prostředky", down, setDown)}
+        {field("bvr-maint", "Údržba a opravy %", maintenance, setMaintenance, 0.1)}
+        {field("bvr-tx", "Transakční náklady %", tx, setTx, 0.1)}
+        {field("bvr-pg", "Roční růst hodnoty %", propGrowth, setPropGrowth, 0.1)}
         {field("bvr-rg", "Růst nájmu %", rentGrowth, setRentGrowth, 0.1)}
-        {field("bvr-alt", "Alt. výnos kapitálu %", altReturn, setAltReturn, 0.1)}
-        {field("bvr-h", "Horizont (roky)", horizon, setHorizon)}
+        {field("bvr-alt", "Alternativní výnos kapitálu %", altReturn, setAltReturn, 0.1)}
+        {field("bvr-h", "Doba splatnosti / horizont (roky)", horizon, setHorizon)}
       </div>
 
       <DecisionLabChartFrame

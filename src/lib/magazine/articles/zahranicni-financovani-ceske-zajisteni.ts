@@ -42,15 +42,15 @@ export const article: MagazineArticle = {
     {
       type: "h2",
       id: "passport",
-      text: "Financial Passport před discovery",
+      text: "Finanční pas před vyhledáváním nemovitostí",
     },
     {
       type: "p",
-      text: "Nejdřív kvalifikace (safe budget, purpose), teprve pak Majetio discovery. Handoff nepřenáší PII.",
+      text: "Nejdřív kvalifikace (bezpečný rozpočet, účel), teprve pak Majetio. Předání nepřenáší osobní údaje.",
     },
   ],
   sources: [
-    { label: "O Majetio / Financial Passport", url: routes.oMajetio },
+    { label: "O Majetio / Finanční pas", url: routes.oMajetio },
     { label: "Akademie: Americká hypotéka", url: "/akademie/americka-hypoteka" },
   ],
   relatedTools: [

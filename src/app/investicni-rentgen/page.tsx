@@ -10,12 +10,11 @@ import {
   RentgenWhatWeAnalyze,
 } from "@/components/property-rentgen/RentgenLandingSections";
 import { RentgenToolIsland } from "@/components/property-rentgen/RentgenToolIsland";
-import { formatAnalysisPriceLabel } from "@/lib/property-rentgen";
+import { formatAnalysisPrice, formatAnalysisPriceLabel } from "@/lib/property-rentgen";
 
 export const metadata: Metadata = {
   title: "Investiční rentgen | Analýza nemovitosti | HypotékaJasně.cz",
-  description:
-    "SSR analýza nemovitosti: free preview (výnos, cena/m², financing fit, red flags) a Kompletní Majetio Property Analysis. DATA / MODEL / ODHAD / NEOVĚŘENO.",
+  description: `Bezplatný náhled a kompletní analýza nemovitosti za ${formatAnalysisPrice()}. Údaje označujeme jako Data, Modelový výpočet, Odhad nebo Neověřeno.`,
 };
 
 export default function InvesticniRentgenPage() {
@@ -26,7 +25,6 @@ export default function InvesticniRentgenPage() {
       <RentgenWhatWeAnalyze />
       <RentgenMetricsGrid />
       <RentgenDemoReport />
-      {/* Client island — hydratace až po SSR obsahu */}
       <RentgenToolIsland />
       <RentgenPricing />
       <RentgenFaq />

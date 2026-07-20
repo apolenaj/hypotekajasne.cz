@@ -22,7 +22,7 @@ const pillars = [
     icon: BarChart3,
     title: "Data s uvedeným statusem",
     description:
-      "Sazby, výnosy a skóre mají status (LIVE / MODEL / ODHAD…). Chybějící údaj nevymýšlíme — viz /metodika a /zdroje.",
+      "Sazby, výnosy a skóre mají status (aktuální data / modelový výpočet / odhad…). Chybějící údaj nevymýšlíme — viz /metodika a /zdroje.",
   },
   {
     icon: Code2,
@@ -95,7 +95,7 @@ export function AboutUsView() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.12),transparent_55%)]" />
         <div className="relative z-10 mx-auto max-w-5xl px-4 text-center">
           <span className="mb-6 block text-sm font-bold tracking-widest text-emerald-200/90 uppercase">
-            O nás · Trust Center
+            O nás · Centrum důvěry
           </span>
           <h1 className="font-heading mb-6 text-4xl leading-tight font-extrabold text-white md:text-5xl">
             Lidé a role za HypotékaJasně.cz
@@ -105,7 +105,7 @@ export function AboutUsView() {
             licencovaný specialista. Úvěr schvaluje banka. Do 30 sekund víte, komu
             dáváte data — detail v{" "}
             <Link href={routes.duvera} className="underline decoration-white/40">
-              Trust Center
+              Centru důvěry
             </Link>
             .
           </p>
@@ -321,7 +321,7 @@ export function AboutUsView() {
               href={routes.duvera}
               className="rounded-full border border-emerald-200 bg-white px-8 py-4 font-bold text-emerald-900 transition-colors hover:bg-gray-50"
             >
-              Trust Center
+              Centrum důvěry
             </Link>
           </div>
         </div>

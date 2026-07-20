@@ -29,22 +29,22 @@ export const DOSSIER_SECTION_IDS = [
 export type DossierSectionId = (typeof DOSSIER_SECTION_IDS)[number];
 
 export const DOSSIER_SECTION_TITLES: Record<DossierSectionId, string> = {
-  executive_summary: "1. Executive summary",
-  suitability: "2. Pro koho je trh vhodný",
-  ownership: "3. Ownership model",
-  financing: "4. Financování — rezident / nerezident",
-  transaction_costs: "5. Transakční náklady",
-  holding_costs: "6. Roční holding costs",
-  rental_tax: "7. Zdanění nájmu",
-  exit: "8. Exit / prodej",
-  inheritance: "9. Dědictví",
-  fx_risk: "10. Měnové riziko",
-  developer_risk: "11. Riziko developera",
-  short_term_rentals: "12. Regulace krátkodobých nájmů",
-  purchase_timeline: "13. Proces koupě — timeline",
-  red_flags: "14. Red flags",
-  sources: "15. Sources & last legal review",
-  cta: "16. CTA — Majetio / financování",
+  executive_summary: "Rychlý přehled",
+  suitability: "Pro koho je trh vhodný",
+  ownership: "Vlastnictví",
+  financing: "Financování",
+  transaction_costs: "Transakční náklady",
+  holding_costs: "Průběžné roční náklady",
+  rental_tax: "Zdanění nájmu",
+  exit: "Prodej a ukončení investice",
+  inheritance: "Dědictví",
+  fx_risk: "Měnové riziko",
+  developer_risk: "Riziko developera",
+  short_term_rentals: "Regulace krátkodobých nájmů",
+  purchase_timeline: "Proces koupě",
+  red_flags: "Rizikové faktory",
+  sources: "Zdroje a metodika",
+  cta: "Další krok — Majetio",
 };
 
 /** Právní / regulatorní tvrzení s provenance. */

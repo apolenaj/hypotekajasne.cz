@@ -1,15 +1,14 @@
 /**
- * Konfigurovatelná cena Premium analýzy.
- * UI nikdy hardcoduje částku mimo tento objekt (+ env override).
+ * Cena Prémiové analýzy nemovitosti — jedna hodnota pro celé UI.
+ * Override: NEXT_PUBLIC_PROPERTY_ANALYSIS_PRICE_CZK
  */
 
 export type PropertyAnalysisPricing = {
+  /** Interní ID (ne zobrazovat ve veřejném UI) */
   productId: string;
   productName: string;
-  /** Aktuální prodejní cena v Kč */
+  /** Prodejní cena v Kč */
   amountCzk: number;
-  /** Horní / listová kotace (např. 5 000) — pro zobrazení „4 990/5 000 Kč“ */
-  listAmountCzk: number;
   currency: "CZK";
   ctaLabel: string;
   includes: string[];
@@ -24,20 +23,16 @@ function envAmount(key: string, fallback: number): number {
   return Number.isFinite(n) && n > 0 ? Math.round(n) : fallback;
 }
 
-/**
- * Default: 4 990 / 5 000 Kč.
- * Override: NEXT_PUBLIC_PROPERTY_ANALYSIS_PRICE_CZK, NEXT_PUBLIC_PROPERTY_ANALYSIS_LIST_CZK
- */
+/** Obchodní rozhodnutí: 4 990 Kč všude. */
 export const PROPERTY_ANALYSIS_PRICING: PropertyAnalysisPricing = {
   productId: "majetio-property-analysis-v1",
-  productName: "Kompletní Majetio Property Analysis",
+  productName: "Kompletní analýza nemovitosti",
   amountCzk: envAmount("NEXT_PUBLIC_PROPERTY_ANALYSIS_PRICE_CZK", 4990),
-  listAmountCzk: envAmount("NEXT_PUBLIC_PROPERTY_ANALYSIS_LIST_CZK", 5000),
   currency: "CZK",
-  ctaLabel: "Objednat Premium analýzu",
+  ctaLabel: "Objednat Prémiovou analýzu",
   includes: [
-    "Rozšířené metriky nad free preview",
-    "Modelové scénáře cash-flow a citlivosti",
+    "Rozšířené metriky nad bezplatný náhled",
+    "Modelové scénáře peněžního toku a citlivosti",
     "Checklist due diligence (otázky — ne právní posudek)",
     "Příprava podkladů pro licencovaného partnera",
   ],
@@ -48,15 +43,20 @@ export const PROPERTY_ANALYSIS_PRICING: PropertyAnalysisPricing = {
   ],
 };
 
+/** @deprecated — listová cena zrušena; alias pro zpětnou kompatibilitu */
+export function getListAmountCzk(
+  pricing: PropertyAnalysisPricing = PROPERTY_ANALYSIS_PRICING
+): number {
+  return pricing.amountCzk;
+}
+
 export function formatAnalysisPrice(
   pricing: PropertyAnalysisPricing = PROPERTY_ANALYSIS_PRICING
 ): string {
-  const fmt = (n: number) =>
-    n.toLocaleString("cs-CZ", { maximumFractionDigits: 0 });
-  if (pricing.amountCzk === pricing.listAmountCzk) {
-    return `${fmt(pricing.amountCzk)} Kč`;
-  }
-  return `${fmt(pricing.amountCzk)}/${fmt(pricing.listAmountCzk)} Kč`;
+  const fmt = pricing.amountCzk.toLocaleString("cs-CZ", {
+    maximumFractionDigits: 0,
+  });
+  return `${fmt}\u00a0Kč`;
 }
 
 export function formatAnalysisPriceLabel(

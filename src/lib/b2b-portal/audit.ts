@@ -47,7 +47,7 @@ export function auditActionLabel(action: B2bAuditAction): string {
     analysis_delivered: "Doručení analýzy",
     share_created: "Vytvoření share linku",
     engagement_tracked: "Engagement (anonymní)",
-    interest_received: "Qualified interest (consent)",
+    interest_received: "Kvalifikovaný zájem (souhlas)",
     project_updated: "Aktualizace projektu",
     role_changed: "Změna role",
   };

@@ -19,6 +19,10 @@ import {
   videoObjectJsonLd,
   type JsonLd,
 } from "@/lib/seo/json-ld";
+import {
+  contentChannelLabel,
+  mediaStatusLabel,
+} from "@/lib/i18n/labels";
 
 function Section({
   id,
@@ -107,7 +111,7 @@ export function AcademyLessonView({ lesson }: { lesson: AcademyLesson }) {
             {lesson.description}
           </p>
           <p className="mt-2 text-xs text-white/60">
-            Aktualizace {lesson.updatedAt} · text SSR / indexovatelný
+            Aktualizace {lesson.updatedAt}
           </p>
         </div>
       </header>
@@ -148,8 +152,8 @@ export function AcademyLessonView({ lesson }: { lesson: AcademyLesson }) {
               lessonTitle={lesson.title}
             />
             <p className="mt-3 text-xs text-muted-foreground">
-              Bod 8 (audio) je ve stejném media bloku výše — bez falešných
-              souborů, dokud status ≠ LIVE.
+              Bod 8 (audio) je ve stejném bloku výše — bez falešných souborů,
+              dokud není status „Dostupné“.
             </p>
             {video.status === "LIVE" &&
             (video.transcript || lesson.media.transcript?.text) ? (
@@ -166,11 +170,11 @@ export function AcademyLessonView({ lesson }: { lesson: AcademyLesson }) {
             ) : null}
           </Section>
 
-          <Section id="quiz" n={9} title="Quiz">
+          <Section id="quiz" n={9} title="Kvíz">
             <AcademyQuiz questions={lesson.quiz} lessonSlug={lesson.slug} />
           </Section>
 
-          <Section id="faq" n={10} title="FAQ">
+          <Section id="faq" n={10} title="Časté otázky">
             <dl className="space-y-4">
               {lesson.faq.map((item) => (
                 <div key={item.q}>
@@ -181,7 +185,7 @@ export function AcademyLessonView({ lesson }: { lesson: AcademyLesson }) {
             </dl>
           </Section>
 
-          <Section id="sources" n={11} title="Sources">
+          <Section id="sources" n={11} title="Zdroje">
             <ul className="list-disc space-y-2 pl-5">
               {lesson.sources.map((s) => (
                 <li key={s.label}>
@@ -200,7 +204,7 @@ export function AcademyLessonView({ lesson }: { lesson: AcademyLesson }) {
             </ul>
           </Section>
 
-          <Section id="tools" n={12} title="Related tools">
+          <Section id="tools" n={12} title="Související nástroje">
             <ul className="flex flex-wrap gap-2">
               {lesson.relatedTools.map((t) => (
                 <li key={t.href}>
@@ -215,7 +219,7 @@ export function AcademyLessonView({ lesson }: { lesson: AcademyLesson }) {
             </ul>
           </Section>
 
-          <Section id="cta" n={13} title="CTA">
+          <Section id="cta" n={13} title="Další krok">
             <Link
               href={lesson.cta.href}
               className="inline-flex rounded-lg bg-deep-teal px-5 py-3 text-sm font-bold text-white"
@@ -228,10 +232,10 @@ export function AcademyLessonView({ lesson }: { lesson: AcademyLesson }) {
 
           <section className="py-8">
             <h2 className="font-heading text-lg font-bold text-text-dark">
-              Content reuse pipeline
+              Další formáty obsahu
             </h2>
             <p className="mt-2 text-xs text-muted-foreground">
-              Jeden kanonický obsah → SEO článek · video · short · audio ·
+              Jeden kanonický obsah → článek · video · krátké video · audio ·
               e-book · newsletter.
             </p>
             <ul className="mt-4 grid gap-2 sm:grid-cols-2">
@@ -240,10 +244,10 @@ export function AcademyLessonView({ lesson }: { lesson: AcademyLesson }) {
                   key={d.channel}
                   className="rounded-lg border border-border px-3 py-2 text-xs"
                 >
-                  <span className="font-semibold uppercase text-deep-teal">
-                    {d.channel}
+                  <span className="font-semibold text-deep-teal">
+                    {contentChannelLabel(d.channel)}
                   </span>{" "}
-                  · {d.status}
+                  · {mediaStatusLabel(d.status)}
                   {d.notes ? (
                     <span className="mt-0.5 block text-muted-foreground">
                       {d.notes}

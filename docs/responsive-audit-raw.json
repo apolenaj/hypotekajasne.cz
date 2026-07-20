@@ -1,0 +1,9 @@
+[
+  {
+    "route": "/",
+    "viewport": "1280x720",
+    "problem": "Keyboard Tab OK (25/25)",
+    "severity": "info",
+    "fix": "—"
+  }
+]

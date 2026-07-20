@@ -6,9 +6,9 @@ import { crumbs } from "@/lib/seo/breadcrumbs";
 import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Global Financing Router — mapa cest financování",
+  title: "Mapa globálního financování — cesty financování",
   description:
-    "Porovnejte lokální hypotéku, české zajištěné financování, developer plán, hotovost a kombinace. Bez jediného doporučení — s riziky, dokumenty a partnery.",
+    "Porovnejte lokální hypotéku, české zajištěné financování, platební plán developera, hotovost a kombinace. Bez jediného doporučení — s riziky, dokumenty a partnery.",
   path: routes.globalFinancing,
 });
 
@@ -19,7 +19,7 @@ export default function GlobalFinancingPage() {
         <div className="mx-auto max-w-6xl px-4 py-3">
           <Breadcrumbs
             items={crumbs({
-              name: "Global Financing Router",
+              name: "Mapa globálního financování",
               path: routes.globalFinancing,
             })}
           />

@@ -6,9 +6,9 @@ import { crumbs } from "@/lib/seo/breadcrumbs";
 import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Alert Center — centrální upozornění",
+  title: "Centrum upozornění — centrální upozornění",
   description:
-    "Personalizované alerty: sazby (LTV kontext), fixace, dokumenty, regulace, Deal Room. Deduplication, preference immediate/digest, notification channels s consent.",
+    "Personalizované alerty: sazby (LTV kontext), fixace, dokumenty, regulace, transakční místnost. Deduplication, preference immediate/digest, notification channels s consent.",
   path: routes.alertCenter,
 });
 
@@ -18,7 +18,7 @@ export default function AlertCenterPage() {
       <div className="border-b border-border bg-[#f7f8f7]">
         <div className="mx-auto max-w-4xl px-4 py-3">
           <Breadcrumbs
-            items={crumbs({ name: "Alert Center", path: routes.alertCenter })}
+            items={crumbs({ name: "Centrum upozornění", path: routes.alertCenter })}
           />
         </div>
       </div>

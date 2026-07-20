@@ -60,7 +60,7 @@ export function FormConsentFields({
     <fieldset className={className ?? "space-y-3 rounded-xl border border-border bg-slate-50 px-3 py-3 text-left text-xs leading-relaxed text-muted-foreground sm:text-sm"}>
       <legend className="sr-only">Souhlasy se zpracováním údajů</legend>
       <p className="text-[11px] font-semibold uppercase tracking-wide text-deep-teal">
-        Souhlasy · verze {CONSENT_POLICY_VERSION}
+        Verze zásad: {CONSENT_POLICY_VERSION}
       </p>
 
       <label className="flex items-start gap-2.5">

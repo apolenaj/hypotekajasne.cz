@@ -108,9 +108,9 @@ const WELCOME: CopilotMessage = {
   id: "welcome",
   role: "assistant",
   content: [
-    "## Property & Mortgage Copilot",
+    "## Finanční AI průvodce",
     "",
-    "Nejsem obecné ChatGPT. Odpovídám jen z **ověřených nástrojů a dat** HypotékaJasně — s citací DATA / MODEL / ODHAD.",
+    "Nejsem obecné ChatGPT. Odpovídám jen z **ověřených nástrojů a dat** HypotékaJasně — s citací Data / Modelový výpočet / Odhad.",
     "",
     "Zkuste rychlou akci níže, nebo se zeptejte např. na dostupnost, skóre, stress test sazby nebo Praha vs Dubaj.",
     "",
@@ -221,11 +221,11 @@ export function CopilotView() {
           <div className="flex items-center gap-2 text-muted-gold">
             <Sparkles className="h-5 w-5" />
             <span className="text-xs font-bold uppercase tracking-widest">
-              Trusted Copilot
+              Finanční AI průvodce
             </span>
           </div>
           <h1 className="mt-3 font-heading text-3xl font-black md:text-5xl">
-            Property & Mortgage Copilot
+            Finanční AI průvodce
           </h1>
           <p className="mt-3 max-w-2xl text-base text-emerald-50/90 md:text-lg">
             Inteligentní vrstva nad kalkulačkami a daty platformy — s citacemi,
@@ -234,7 +234,7 @@ export function CopilotView() {
         </div>
       </section>
 
-      <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 lg:grid-cols-[280px_1fr_300px]">
+      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 py-8 lg:grid-cols-[280px_1fr_300px]">
         {/* Left: profile + properties */}
         <aside className="space-y-4">
           <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
@@ -346,7 +346,7 @@ export function CopilotView() {
                   <>
                     <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-deep-teal">
                       <Bot className="h-3.5 w-3.5" />
-                      Copilot
+                      Finanční AI průvodce
                       {m.intent ? (
                         <span className="font-normal text-muted-foreground">
                           · {m.intent}
@@ -391,7 +391,7 @@ export function CopilotView() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               disabled={busy}
-              aria-label="Zpráva pro Copilot"
+              aria-label="Zpráva pro Finanční AI průvodce"
             />
             <button
               type="submit"

@@ -108,13 +108,14 @@ export function simulateFutureLab(input: FutureLabInput): FutureLabResult {
     series,
     reinvestmentEnabled,
     chartMeta: {
-      title: "Future simulator — Decision Lab",
+      title: "Simulátor budoucnosti — Laboratoř rozhodnutí",
       methodology: reinvestmentEnabled
         ? "Hodnota nemovitosti roste propGrowth. Nájem roste rentGrowth a je reinvestován sazbou reinvestmentReturn. Reálné hodnoty = nominální / kumulativní inflace."
         : "Hodnota nemovitosti roste propGrowth. Nájem roste rentGrowth a pouze se sčítá (bez úročení). Reálné hodnoty = nominální / kumulativní inflace.",
-      source: "Decision Lab future model + country default yields",
+      source: "Model Laboratoře rozhodnutí + výchozí výnosy zemí",
       sourceUrl: null,
-      statusNote: "MODELLED — scénáře Bear/Base/Bull jsou ilustrativní delty, ne forecast.",
+      statusNote:
+        "MODELOVÝ VÝPOČET — scénáře pesimistický/základní/optimistický jsou ilustrativní změny, ne forecast.",
     },
     assumptionsList: [
       `Scénář: ${input.scenario.toUpperCase()}`,

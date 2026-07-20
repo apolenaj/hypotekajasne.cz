@@ -250,7 +250,7 @@ export function renderReportHtml(
   <div class="report-shell">
     ${renderWhiteLabel(wl)}
     <header class="${headerClass}">
-      <div class="eyebrow">Professional Report · ${esc(doc.type.replace(/_/g, " "))}</div>
+      <div class="eyebrow">Profesionální report · ${esc(doc.type.replace(/_/g, " "))}</div>
       <h1>${esc(doc.title)}</h1>
       <div class="meta">
         Vygenerováno ${esc(new Date(doc.generatedAt).toLocaleString("cs-CZ"))}
@@ -262,7 +262,7 @@ export function renderReportHtml(
     ${sections}
     <p class="footer-note">
       HypotékaJasně.cz — informační platforma. Report engine ${esc(REPORT_VERSION)}.
-      ${mode === "pdf" ? "PDF-ready HTML — tisk do PDF přes prohlížeč." : ""}
+      ${mode === "pdf" ? "HTML připravené pro PDF — tisk do PDF přes prohlížeč." : ""}
     </p>
   </div>
 </body>

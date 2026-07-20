@@ -772,7 +772,7 @@ export function MortgageReadinessWizard() {
                   href={routes.financniPas}
                   className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white hover:bg-white/25"
                 >
-                  Otevřít Financial Passport (7 dimenzí + simulace)
+                  Otevřít Finanční pas (7 dimenzí + simulace)
                   <ArrowRight className="h-4 w-4" />
                 </a>
               </div>
@@ -910,9 +910,9 @@ export function MortgageReadinessWizard() {
                 ) : null}
               </div>
               <p className="text-xs text-muted-foreground">
-                Financial Passport předá jen rozpočet, equity, účel, zemi a
-                anonymní attribution (llid/ref/UTM) — žádné osobní údaje.
-                Status handoffu: BETA.
+                Finanční pas předá jen rozpočet, vlastní kapitál, účel, zemi a
+                anonymní označení zdroje návštěvy — žádné osobní údaje.
+                Předání partnerovi je v beta režimu.
               </p>
 
               <section className="rounded-xl border border-border p-5">

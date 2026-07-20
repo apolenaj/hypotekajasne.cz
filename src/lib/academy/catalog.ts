@@ -23,7 +23,7 @@ function lesson(
 export const ACADEMY_LESSONS: AcademyLesson[] = [
   lesson({
     slug: "ltv",
-    title: "LTV (Loan to Value)",
+    title: "LTV (poměr úvěru k hodnotě)",
     shortLabel: "LTV",
     description:
       "Poměr úvěru k hodnotě nemovitosti — klíčový limit hypotečního rizika.",
@@ -186,7 +186,7 @@ export const ACADEMY_LESSONS: AcademyLesson[] = [
 
   lesson({
     slug: "dti",
-    title: "DTI (Debt to Income)",
+    title: "DTI (dluh k příjmu)",
     shortLabel: "DTI",
     description: "Poměr celkového dluhu k ročnímu příjmu.",
     simplySaid:
@@ -233,7 +233,7 @@ export const ACADEMY_LESSONS: AcademyLesson[] = [
 
   lesson({
     slug: "dsti",
-    title: "DSTI (Debt Service to Income)",
+    title: "DSTI (dluhová služba k příjmu)",
     shortLabel: "DSTI",
     description: "Podíl měsíčních splátek na čistých příjmech.",
     simplySaid:
@@ -368,7 +368,7 @@ export const ACADEMY_LESSONS: AcademyLesson[] = [
 
   lesson({
     slug: "snowball",
-    title: "Sněhová koule (Snowball)",
+    title: "Sněhová koule (postupné splácení)",
     shortLabel: "Sněhová koule",
     description: "Reinvestice CF do mimořádných splátek nebo dalšího aktiva.",
     simplySaid:
@@ -462,7 +462,7 @@ export const ACADEMY_LESSONS: AcademyLesson[] = [
 
   lesson({
     slug: "freehold-vs-leasehold",
-    title: "Freehold vs. Leasehold",
+    title: "Volné vlastnictví vs. nájemní právo (freehold / leasehold)",
     shortLabel: "Freehold / Leasehold",
     description: "Dva odlišné typy vlastnictví — zejména v zahraničí.",
     simplySaid:
@@ -510,7 +510,7 @@ export const ACADEMY_LESSONS: AcademyLesson[] = [
 
   lesson({
     slug: "off-plan",
-    title: "Off-plan investice",
+    title: "Koupě před dokončením (off-plan)",
     shortLabel: "Off-plan",
     description: "Koupě před dokončením — podle plánů a fází výstavby.",
     simplySaid:
@@ -596,7 +596,7 @@ export const ACADEMY_LESSONS: AcademyLesson[] = [
       { label: "Právní / transakční praxe (editorial)", url: routes.metodika },
     ],
     relatedTools: [
-      { label: "FAQ", href: routes.faq },
+      { label: "Časté otázky", href: routes.faq },
     ],
     cta: {
       label: "Přečíst FAQ",

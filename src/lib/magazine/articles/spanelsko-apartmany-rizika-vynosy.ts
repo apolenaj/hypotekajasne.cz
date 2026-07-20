@@ -60,8 +60,8 @@ export const article: MagazineArticle = {
     },
   ],
   sources: [
-    { label: "Country dossier Španělsko", url: `${routes.pruvodceInvestora}/spanelsko` },
-    { label: "Metodika výnosů (MODELLED)", url: routes.metodika },
+    { label: "Dossier země — Španělsko", url: `${routes.pruvodceInvestora}/spanelsko` },
+    { label: "Metodika výnosů (modelový výpočet)", url: routes.metodika },
   ],
   relatedTools: [
     { label: "Průvodce investora — Španělsko", href: `${routes.pruvodceInvestora}/spanelsko` },

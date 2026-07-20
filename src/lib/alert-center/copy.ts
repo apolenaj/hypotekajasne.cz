@@ -46,7 +46,7 @@ export function buildLtvRateChangeAlert(input: {
     severity: Math.abs(delta) >= 0.25 ? "important" : "notable",
     priority: down ? 2 : 3,
     title: `Referenční sazba u profilu ${ltvLabel} ${fmtPpb(delta)}`,
-    reason: `Agregovaná sazba s pojištěním: ${fmtPct(input.previousRate)} % → ${fmtPct(input.currentRate)} % (LIVE bank_rates).`,
+    reason: `Agregovaná sazba s pojištěním: ${fmtPct(input.previousRate)} % → ${fmtPct(input.currentRate)} % (aktuální data bank).`,
     action: input.action,
     expiresAt,
     dataSource: {
@@ -189,7 +189,7 @@ export function buildDocumentExpiryAlert(input: {
       status: "VERIFIED",
       fetchedAt: now.toISOString(),
     },
-    whyExplanation: `Dokument je ve vašem Document Vault s vyplněnou expirací. AI extrakce nebo ruční zadání — ne právní závěr o platnosti.`,
+    whyExplanation: `Dokument je ve vašem dokumentovém trezoru s vyplněnou expirací. AI extrakce nebo ruční zadání — ne právní závěr o platnosti.`,
     fingerprint: buildFingerprint(
       "DOCUMENT_EXPIRY",
       input.documentId,
@@ -253,7 +253,7 @@ export function buildDealTaskAlert(input: {
     priority: input.overdue ? 1 : 3,
     title: input.overdue
       ? `Úkol po termínu: ${input.title}`
-      : `Úkol v Deal Room: ${input.title}`,
+      : `Úkol v transakční místnosti: ${input.title}`,
     reason: input.dueAt
       ? `Termín: ${new Date(input.dueAt).toLocaleDateString("cs-CZ")}.`
       : "Otevřený úkol ve workspace transakce.",
@@ -266,7 +266,7 @@ export function buildDealTaskAlert(input: {
       status: "LIVE",
       fetchedAt: now.toISOString(),
     },
-    whyExplanation: `Máte aktivní Deal Room — úkol je přiřazen vaší transakci, ne obecná notifikace.`,
+    whyExplanation: `Máte aktivní transakční místnost — úkol je přiřazen vaší transakci, ne obecná notifikace.`,
     fingerprint: buildFingerprint("DEAL_TASK", input.dealId, input.taskId),
     createdAt: now.toISOString(),
     readAt: null,
@@ -299,7 +299,7 @@ export function buildPortfolioRiskAlert(input: {
       status: "MODELLED",
       fetchedAt: now.toISOString(),
     },
-    whyExplanation: `Máte nemovitosti v Portfolio OS — koncentrace nebo riziko vypočteno z vašich zadaných hodnot (MODEL).`,
+    whyExplanation: `Máte nemovitosti ve správě portfolia — koncentrace nebo riziko vypočteno z vašich zadaných hodnot (modelový výpočet).`,
     fingerprint: buildFingerprint("PORTFOLIO_RISK", "portfolio", input.alertId),
     createdAt: now.toISOString(),
     readAt: null,

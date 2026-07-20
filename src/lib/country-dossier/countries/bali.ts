@@ -44,8 +44,8 @@ export const baliDossier: CountryDossier = assemble(
       lanes: [
         {
           audience: "both",
-          title: "Developer payment plan",
-          summary: "Fázované platby — schedule, ne anuita.",
+          title: "Platební plán developera",
+          summary: "Fázované platby — harmonogram, ne anuita. LTV se nepoužívá.",
           linkedOptions: ["DEVELOPER_PAYMENT_PLAN"],
         },
         {
@@ -134,7 +134,7 @@ export const baliDossier: CountryDossier = assemble(
     sourcesSection(
       {
         text: `Poslední právní review dossieru Bali: ${LEGAL_REVIEW_AS_OF}`,
-        source: "HypotékaJasně.cz editorial legal review",
+        source: "Editorial HypotékaJasně.cz (po kontrole)",
         sourceUrl: null,
         asOf: LEGAL_REVIEW_AS_OF,
         status: "VERIFIED",

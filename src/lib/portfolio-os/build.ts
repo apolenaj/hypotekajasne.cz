@@ -85,23 +85,23 @@ function buildSummary(
     propertyCount: rows.length,
     propertiesWithValidValue: withValue.length,
     totalPropertyValue: summaryMetric(
-      "Total property value",
+      "Hodnota nemovitostí",
       totalValue > 0 ? totalValue : null,
       withValue.length === rows.length ? "DATA" : "MODEL",
       blockers,
-      { unit: "CZK", formula: "Σ latest value observations" }
+      { unit: "CZK", formula: "Σ posledních pozorování hodnoty" }
     ),
     totalEquity: summaryMetric(
-      "Total equity",
+      "Vlastní kapitál",
       rows.every((r) => r.equityCzk != null) ? totalEquity : null,
       "MODEL",
       rows.some((r) => r.equityCzk == null)
-        ? ["Některé twins nemají equity — chybí value nebo balance."]
+        ? ["U některých twinů chybí vlastní kapitál — chybí hodnota nebo zůstatek úvěru."]
         : [],
       { unit: "CZK" }
     ),
     totalDebt: summaryMetric(
-      "Total debt",
+      "Celkový dluh",
       totalDebt > 0 ? totalDebt : null,
       "DATA",
       [],
@@ -112,42 +112,42 @@ function buildSummary(
       ltv != null ? Math.round(ltv * 1000) / 1000 : null,
       "MODEL",
       totalValue <= 0 ? ["LTV vyžaduje součet hodnot."] : [],
-      { formula: "totalDebt / totalPropertyValue" }
+      { formula: "celkový dluh / hodnota nemovitostí" }
     ),
     monthlyGrossRent: summaryMetric(
-      "Monthly gross rent",
+      "Hrubé nájemné / měs.",
       totalRent > 0 ? totalRent : null,
       "DATA",
       [],
       { unit: "CZK" }
     ),
     monthlyNetCashFlow: summaryMetric(
-      "Monthly net cash flow",
+      "Čistý cash flow / měs.",
       rows.length > 0 ? Math.round(totalCf) : null,
       "MODEL",
       [],
       { unit: "CZK", formula: "Σ (nájem − opex − splátka) / měsíc" }
     ),
     weightedYield: summaryMetric(
-      "Weighted yield",
+      "Vážený výnos",
       weightedYield != null ? Math.round(weightedYield * 1000) / 1000 : null,
       "MODEL",
       [],
-      { formula: "Σ (yield × value weight)" }
+      { formula: "Σ (výnos × váha hodnoty)" }
     ),
     debtService: summaryMetric(
-      "Debt service",
+      "Dluhová služba",
       totalDebtService > 0 ? totalDebtService : null,
       "DATA",
       [],
       { unit: "CZK/měs." }
     ),
     liquidityReserve: summaryMetric(
-      "Liquidity reserve",
+      "Likvidní rezerva",
       liquidityReserveCzk,
       liquidityReserveCzk != null ? "DATA" : "NEOVERENO",
       liquidityReserveCzk == null
-        ? ["Doplňte vlastní zdroje ve Financial Passportu."]
+        ? ["Doplňte vlastní zdroje ve Finančním pasu."]
         : [],
       { unit: "CZK" }
     ),
@@ -220,7 +220,7 @@ export function buildPortfolioOs(input: {
     stressTests,
     recommendations,
     methodology: [
-      "Portfolio OS agreguje owned Digital Twins — hodnoty jen z value observations.",
+      "Moje portfolio agreguje digitální karty nemovitostí — hodnoty jen z pozorování ceny.",
       "LTV, weighted yield a CF jsou MODEL — ne bankovní schválení.",
       "Stress testy jsou orientační šoky na stejném modelu.",
       "Doporučení jsou explainable scénáře A/B/C — bez pokynu k prodeji.",

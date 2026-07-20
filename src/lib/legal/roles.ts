@@ -44,7 +44,7 @@ export const PROCESSING_ROLES: ProcessingRole[] = [
     label: "Majetio",
     gdprRole: "independent_controller",
     description:
-      "Property discovery — oddělená služba. Handoff jen v rozsahu Financial Passport / attribution, ne jako skrytý marketingový souhlas.",
+      "Vyhledání a analýza nemovitostí — oddělená služba. Předání jen v rozsahu Finančního pasu a attribution, ne jako skrytý marketingový souhlas.",
   },
   {
     id: "broker_developer",

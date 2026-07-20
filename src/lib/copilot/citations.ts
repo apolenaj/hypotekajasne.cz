@@ -40,7 +40,7 @@ export function methodologyCitation(): CopilotCitation {
   return {
     id: "metodika",
     label: "Metodika modelů HypotékaJasně",
-    source: "Trust Center / metodika",
+    source: "Centrum důvěry / metodika",
     updatedAt: null,
     claimKind: "MODEL",
     href: routes.metodika,

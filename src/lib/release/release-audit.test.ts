@@ -23,6 +23,24 @@ function walk(dir: string, out: string[] = []): string[] {
   return out;
 }
 
+/** Public UI surfaces — components + pages + faq/nav/ui-cs strings */
+function publicUiFiles(): string[] {
+  return walk(ROOT).filter((f) => {
+    if (f.includes(`${join("app", "en")}`)) return false;
+    if (f.includes(`${join("app", "api")}`)) return false;
+    if (f.includes("ui-en.ts")) return false;
+    if (f.includes(".test.ts")) return false;
+    if (f.includes("release-audit")) return false;
+    if (f.includes("CookieConsentProvider")) return false;
+    if (f.includes(`${join("components")}`)) return true;
+    if (f.includes(`${join("app")}`) && f.endsWith("page.tsx")) return true;
+    if (f.includes(`${join("lib", "faq")}`)) return true;
+    if (f.includes(`${join("lib", "i18n", "ui-cs.ts")}`)) return true;
+    if (f.endsWith(`${join("lib", "navigation.ts")}`)) return true;
+    return false;
+  });
+}
+
 describe("release audit scanners", () => {
   const forbiddenPhoto = ["Fotografie", "brzy"].join(" ");
   const forbiddenRoi = ["Extrémně vysoké ROI", "(až 15 %)"].join(" ");
@@ -54,7 +72,7 @@ describe("release audit scanners", () => {
   });
 
   it("analytics taxonomy is non-empty and stable count", () => {
-    assert.equal(ANALYTICS_EVENTS.length, 15);
+    assert.equal(ANALYTICS_EVENTS.length, 17);
   });
 
   it("AboutUs uses honest photo placeholder copy", () => {
@@ -64,5 +82,36 @@ describe("release audit scanners", () => {
     );
     assert.ok(about.includes("Fotografie zatím není dodána"));
     assert.ok(!about.includes("Fotografie brzy"));
+  });
+
+  it("forbids developer jargon in public CS UI surfaces", () => {
+    const forbidden = [
+      "localStorage",
+      "signed URL",
+      "Source of Truth",
+      "Data provenance",
+      "(revoke)",
+      " · REVOKED",
+      "Trust Center",
+      "In-app:",
+      "Web push:",
+      "share link",
+      "encrypted object storage",
+    ];
+    for (const f of publicUiFiles()) {
+      const text = readFileSync(f, "utf8");
+      for (const phrase of forbidden) {
+        assert.ok(
+          !text.includes(phrase),
+          `Forbidden production wording "${phrase}" in ${f}`
+        );
+      }
+    }
+  });
+
+  it("FAQ nav label is Czech", () => {
+    const nav = readFileSync(join(ROOT, "lib/navigation.ts"), "utf8");
+    assert.ok(nav.includes('label: "Časté otázky"'));
+    assert.ok(!nav.includes('label: "FAQ"'));
   });
 });

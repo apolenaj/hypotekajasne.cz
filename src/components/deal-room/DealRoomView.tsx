@@ -141,7 +141,7 @@ export function DealRoomView({ workspaceId }: Props) {
   if (!ready || !workspace || !dashboard) {
     return (
       <div className="mx-auto max-w-6xl px-4 py-16 text-sm text-muted-foreground">
-        Deal Room nenalezen —{" "}
+        Transakční místnost nenalezena —{" "}
         <Link href={routes.dealRoom} className="underline">
           vytvořit nový
         </Link>
@@ -158,7 +158,7 @@ export function DealRoomView({ workspaceId }: Props) {
         <div className="mx-auto max-w-6xl px-4 py-8">
           <div className="flex flex-wrap items-center gap-2">
             <FeatureStatusBadge status={DEAL_ROOM_FEATURE_STATUS} />
-            <span className="text-xs text-emerald-100/80">Deal Room</span>
+            <span className="text-xs text-emerald-100/80">Transakční místnost</span>
           </div>
           <h1 className="mt-2 font-heading text-2xl font-black md:text-3xl">
             {ws.property.title}
@@ -247,26 +247,26 @@ export function DealRoomView({ workspaceId }: Props) {
           {section === "financing" && (
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">
-                Propojeno s Global Financing Router a Document Vault.
+                Propojeno s Mapou globálního financování a Dokumentovým trezorem.
               </p>
               <div className="flex flex-wrap gap-2">
                 <Link
                   href={routes.globalFinancing}
                   className="rounded-full bg-deep-teal/10 px-4 py-2 text-sm font-semibold text-deep-teal"
                 >
-                  Global Financing Router
+                  Mapa globálního financování
                 </Link>
                 <Link
                   href={routes.documentVault}
                   className="rounded-full border border-border px-4 py-2 text-sm font-semibold"
                 >
-                  Document Vault
+                  Dokumentový trezor
                 </Link>
                 <Link
                   href={routes.refinanceRadar}
                   className="rounded-full border border-border px-4 py-2 text-sm font-semibold"
                 >
-                  Refinance Radar
+                  Radar refinancování
                 </Link>
               </div>
             </div>
@@ -296,7 +296,7 @@ export function DealRoomView({ workspaceId }: Props) {
               </p>
               {ws.documents.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  Zatím žádné dokumenty — propojte Document Vault.
+                  Zatím žádné dokumenty — propojte Dokumentový trezor.
                 </p>
               ) : (
                 ws.documents.map((doc) => (
@@ -366,7 +366,7 @@ export function DealRoomView({ workspaceId }: Props) {
                 href={routes.documentVault}
                 className="inline-block text-sm text-deep-teal underline"
               >
-                Document Vault →
+                Dokumentový trezor →
               </Link>
             </div>
           )}
@@ -541,7 +541,7 @@ export function DealRoomLandingView() {
       <header className="border-b border-border bg-deep-teal text-white">
         <div className="mx-auto max-w-6xl px-4 py-10">
           <FeatureStatusBadge status={DEAL_ROOM_FEATURE_STATUS} />
-          <h1 className="mt-2 font-heading text-3xl font-black">Property Deal Room</h1>
+          <h1 className="mt-2 font-heading text-3xl font-black">Transakční místnost</h1>
           <p className="mt-2 max-w-2xl text-sm text-emerald-50/90">
             Jeden workspace pro transakci — místo chaosu z WhatsAppu, e-mailů a PDF
             příloh.
@@ -577,7 +577,7 @@ export function DealRoomLandingView() {
             onClick={loadDemo}
             className="mt-3 w-full rounded-full border border-border py-2 text-sm"
           >
-            Otevřít demo Deal Room
+            Otevřít demo transakční místnosti
           </button>
         </div>
       </main>

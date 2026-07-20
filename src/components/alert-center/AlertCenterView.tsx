@@ -115,7 +115,24 @@ function AlertCard({
           {alert.whyExplanation}
           <br />
           <span className="text-muted-foreground">
-            Zdroj: {alert.dataSource.module}
+            Typ údaje:{" "}
+            {alert.dataSource.claimKind === "DATA"
+              ? "Data"
+              : alert.dataSource.claimKind === "MODEL"
+                ? "Modelový výpočet"
+                : alert.dataSource.claimKind === "ODHAD"
+                  ? "Odhad"
+                  : "Neověřeno"}{" "}
+            ·{" "}
+            {alert.dataSource.status === "LIVE"
+              ? "Aktuální data"
+              : alert.dataSource.status === "VERIFIED"
+                ? "Ověřeno"
+                : alert.dataSource.status === "MODELLED"
+                  ? "Modelový výpočet"
+                  : alert.dataSource.status === "PARTNER_QUOTE"
+                    ? "Nabídka partnera"
+                    : "Čeká na aktualizaci"}
             {alert.dataSource.recordId ? ` · ${alert.dataSource.recordId}` : ""}
           </span>
         </p>
@@ -180,7 +197,7 @@ export function AlertCenterView() {
   if (!ready || !store || !dashboard) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-16 text-sm text-muted-foreground">
-        Načítám Alert Center…
+        Načítám Centrum upozornění…
       </div>
     );
   }
@@ -197,7 +214,7 @@ export function AlertCenterView() {
       <header className="border-b border-border bg-deep-teal text-white">
         <div className="mx-auto max-w-4xl px-4 py-10">
           <FeatureStatusBadge status={ALERT_CENTER_FEATURE_STATUS} />
-          <h1 className="mt-2 font-heading text-3xl font-black">Alert Center</h1>
+          <h1 className="mt-2 font-heading text-3xl font-black">Centrum upozornění</h1>
           <p className="mt-2 max-w-xl text-sm text-emerald-50/90">
             Centrální alerty ze sazeb, fixace, dokumentů, regulace a transakcí.
             Deduplication — ne pět alertů o stejné změně.
@@ -369,13 +386,13 @@ export function AlertCenterView() {
           <ClaimLegend />
           <div className="mt-4 flex flex-wrap gap-3 text-sm">
             <Link href={routes.refinanceRadar} className="text-deep-teal underline">
-              Refinance Radar
+              Radar refinancování
             </Link>
             <Link href={routes.sledovani} className="text-deep-teal underline">
-              Watchlist
+              Sledování
             </Link>
             <Link href={routes.documentVault} className="text-deep-teal underline">
-              Document Vault
+              Dokumentový trezor
             </Link>
           </div>
         </section>

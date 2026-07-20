@@ -20,7 +20,7 @@ export type FinancingRoutePathId = (typeof FINANCING_ROUTE_PATH_IDS)[number];
 export const FINANCING_ROUTE_PATH_LABELS: Record<FinancingRoutePathId, string> = {
   LOCAL_MORTGAGE: "Lokální hypotéka",
   CZECH_EQUITY_LOAN: "České zajištěné financování",
-  DEVELOPER_PAYMENT_PLAN: "Developer payment plan",
+  DEVELOPER_PAYMENT_PLAN: "Platební plán developera",
   CASH: "Hotovost",
   COMBINATION: "Kombinace cest",
   UNAVAILABLE: "V datech nepodporováno",

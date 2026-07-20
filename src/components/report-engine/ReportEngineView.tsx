@@ -90,16 +90,16 @@ export function ReportEngineView() {
           <div className="flex flex-wrap items-center gap-2">
             <FeatureStatusBadge status={REPORT_ENGINE_FEATURE_STATUS} />
             <span className="text-xs font-bold uppercase tracking-widest text-muted-gold">
-              Share / Export Engine
+              Sdílení a export
             </span>
           </div>
           <h1 className="mt-2 font-heading text-3xl font-black md:text-4xl">
             Profesionální reporty
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-emerald-50/90">
-            Investment-bank kvalita: vstupy, výstupy, předpoklady, zdroje, freshness, metodika,
-            disclaimer a next steps. Web · tisk · PDF-ready HTML. Sdílení s expiring tokenem —
-            citlivá data defaultně maskována.
+            Investment-bank kvalita: vstupy, výstupy, předpoklady, zdroje, čerstvost dat, metodika,
+            disclaimer a další kroky. Web · tisk · HTML připravené pro PDF. Sdílení s časově
+            omezeným tokenem — citlivá data defaultně maskována.
           </p>
         </div>
       </header>
@@ -126,7 +126,7 @@ export function ReportEngineView() {
         </section>
 
         <section className="rounded-2xl border border-dashed border-deep-teal/30 bg-white p-5">
-          <h2 className="font-heading text-sm font-bold">White-label (B2B)</h2>
+          <h2 className="font-heading text-sm font-bold">Vlastní značka (B2B)</h2>
           <p className="mt-1 text-xs text-muted-foreground">
             Logo agenta, firma a kontakt — metodika a zdroje HypotékaJasně/Majetio zůstávají
             transparentní.
@@ -191,7 +191,7 @@ export function ReportEngineView() {
                     className="inline-flex items-center gap-1 rounded-full border border-border bg-white px-4 py-2 text-xs font-bold"
                   >
                     <FileDown className="h-3.5 w-3.5" />
-                    PDF-ready HTML
+                    HTML připravené pro PDF
                   </button>
                 </>
               ) : null}

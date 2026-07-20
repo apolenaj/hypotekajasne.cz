@@ -55,7 +55,7 @@ export function FinancingMap({
                   : "border-border bg-white hover:border-deep-teal/40"
               }`}
             >
-              Route {route.routeLetter}
+              Trasa {route.routeLetter}
             </button>
           ))}
         </div>
@@ -80,7 +80,7 @@ export function FinancingMap({
             <div className="flex items-start justify-between gap-2">
               <div>
                 <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                  Route {route.routeLetter}
+                  Trasa {route.routeLetter}
                 </p>
                 <p className="mt-1 font-heading text-base font-bold text-foreground">
                   {route.label}

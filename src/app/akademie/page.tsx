@@ -12,7 +12,7 @@ import { courseListJsonLd } from "@/lib/seo/json-ld";
 export const metadata: Metadata = buildPageMetadata({
   title: "Hypoteční akademie",
   description:
-    "Learning hub: LTV, RPSN, DSTI, DTI, fixace a další — SSR lekce s definicemi, FAQ a mini kalkulačkami.",
+    "Vzdělávací centrum: LTV, RPSN, DSTI, DTI, fixace a další — lekce s definicemi, častými otázkami a mini kalkulačkami.",
   path: routes.akademie,
 });
 
@@ -30,7 +30,7 @@ export default function AkademieHubPage() {
         data={courseListJsonLd({
           name: "Hypoteční akademie",
           description:
-            "SSR lekce hypotečních pojmů s příklady, FAQ a mini kalkulačkami.",
+            "Lekce hypotečních pojmů s příklady, častými otázkami a mini kalkulačkami.",
           path: routes.akademie,
           courses: ACADEMY_LESSONS.map((l) => ({
             name: l.title,
@@ -42,15 +42,15 @@ export default function AkademieHubPage() {
       <header className="border-b border-border bg-gradient-to-br from-[#0b3d3a] via-[#0f4c48] to-[#1a5c4a] text-white">
         <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-gold">
-            Learning hub
+            Vzdělávací centrum
           </p>
           <h1 className="mt-3 font-heading text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
             Hypoteční akademie
           </h1>
           <p className="mt-4 max-w-2xl text-base text-white/85 sm:text-lg">
-            Každý pojem má vlastní SEO URL. Text je server-rendered —
-            „Jednoduše řečeno“, příklad, výpočet, banka/investor, chyba, quiz a
-            CTA. Video/audio připravené jako infrastruktura, ne falešné soubory.
+            Každý pojem má vlastní stránku. Text obsahuje „Jednoduše řečeno“,
+            příklad, výpočet, pohled banky/investora, častou chybu, kvíz a další
+            krok. Video a audio přidáváme až po produkci — bez falešných souborů.
           </p>
         </div>
       </header>
@@ -64,7 +64,7 @@ export default function AkademieHubPage() {
                 className="block h-full rounded-2xl border border-border bg-[#f7f8f7] p-5 transition hover:border-deep-teal/40 hover:bg-white"
               >
                 <p className="text-xs font-bold uppercase tracking-wide text-deep-teal">
-                  /akademie/{l.slug}
+                  Lekce
                 </p>
                 <h2 className="mt-2 font-heading text-lg font-bold text-text-dark">
                   {l.title}
@@ -78,11 +78,7 @@ export default function AkademieHubPage() {
         </ul>
 
         <p className="mt-10 text-sm text-muted-foreground">
-          Starší adresa{" "}
-          <Link href={routes.hypotecniAkademie} className="underline">
-            /hypotecni-akademie
-          </Link>{" "}
-          přesměrovává sem.
+          Starší odkaz na Hypoteční akademii přesměrovává sem.
         </p>
 
         <div className="mt-16 border-t border-border pt-12">

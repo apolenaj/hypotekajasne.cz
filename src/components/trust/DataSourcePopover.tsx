@@ -101,13 +101,13 @@ export function DataSourcePopover({
             ref={panelRef}
             id={titleId}
             role="dialog"
-            aria-label="Provenience dat"
+            aria-label="Původ dat"
             style={{ top: pos.top, left: pos.left, width: 320 }}
             className="fixed z-[60] max-h-[min(70vh,420px)] overflow-y-auto rounded-xl border border-border bg-white p-4 shadow-xl shadow-slate-900/10"
           >
             <div className="flex items-start justify-between gap-2">
               <p className="text-sm font-semibold text-text-dark">
-                Provenience
+                Původ dat
               </p>
               <DataStatusBadge status={status} />
             </div>

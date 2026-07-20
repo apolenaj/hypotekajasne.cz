@@ -124,21 +124,27 @@ export function SmartWatchlistView() {
 
   if (!ready) {
     return (
-      <div className="mx-auto max-w-4xl px-4 py-16 text-sm text-muted-foreground">
-        Načítám sledování…
+      <div className="mx-auto max-w-4xl space-y-4 px-4 py-16">
+        <div className="h-8 w-56 animate-pulse rounded bg-slate-200" />
+        <div className="h-40 animate-pulse rounded-2xl bg-slate-100" />
+        <div className="h-40 animate-pulse rounded-2xl bg-slate-100" />
+        <p className="sr-only">Načítám sledované nemovitosti</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#eef3f1] to-white">
+    <div className="min-h-screen min-w-0 bg-gradient-to-b from-[#eef3f1] to-white">
       <header className="border-b border-border bg-deep-teal text-white">
         <div className="mx-auto max-w-4xl px-4 py-10">
           <p className="text-xs font-bold uppercase tracking-widest text-muted-gold">
-            Retention · Majetio sync {MAJETIO_WATCH_SYNC_STATUS}
+            Součást Mého dashboardu
+            {MAJETIO_WATCH_SYNC_STATUS === "COMING_SOON"
+              ? " · synchronizace Majetio již brzy"
+              : ""}
           </p>
           <h1 className="mt-2 font-heading text-3xl font-black md:text-4xl">
-            Smart Property Watchlist
+            Sledované nemovitosti
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-emerald-50/90">
             Sledujte nemovitost, město, oblast, projekt, typ nebo cenové / výnosové
@@ -195,14 +201,27 @@ export function SmartWatchlistView() {
         {tab === "targets" ? (
           <div className="mt-6 space-y-3">
             {targets.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Zatím nic nesledujete. Přidejte nemovitost nebo filtr — nebo
-                uložte cenu v{" "}
-                <Link href={routes.copilot} className="underline">
-                  Copilotu
-                </Link>
-                .
-              </p>
+              <div className="rounded-xl border border-dashed border-border bg-[#f7f8f7] p-4">
+                <p className="text-sm text-muted-foreground">
+                  Zatím nic nesledujete. Přidejte nemovitost nebo filtr — nebo
+                  uložte cenu ve Finančním AI průvodci.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setTab("add")}
+                    className="inline-flex h-10 items-center rounded-lg bg-deep-teal px-4 text-sm font-semibold text-white"
+                  >
+                    Přidat sledování
+                  </button>
+                  <Link
+                    href={routes.copilot}
+                    className="inline-flex h-10 items-center rounded-lg border border-deep-teal/30 px-4 text-sm font-semibold text-deep-teal"
+                  >
+                    Otevřít Finanční AI průvodce
+                  </Link>
+                </div>
+              </div>
             ) : (
               targets.map((t) => (
                 <article
@@ -371,12 +390,23 @@ export function SmartWatchlistView() {
               </ul>
             )}
             <section className="rounded-xl border border-dashed border-border p-4 text-xs text-muted-foreground">
-              <p className="font-semibold text-text-dark">Email / push</p>
+              <p className="font-semibold text-text-dark">Upozornění v aplikaci / e-mail</p>
               <p className="mt-1">
-                In-app: {NOTIFY_CHANNELS.in_app.status}. Email:{" "}
-                {NOTIFY_CHANNELS.email.status}. Web push:{" "}
-                {NOTIFY_CHANNELS.web_push.status}. Architektura je oddělená —
-                bez odesílání bez souhlasu.
+                V aplikaci:{" "}
+                {NOTIFY_CHANNELS.in_app.status === "LIVE"
+                  ? "dostupné"
+                  : NOTIFY_CHANNELS.in_app.status === "BETA"
+                    ? "beta"
+                    : "připravujeme"}
+                . E-mail:{" "}
+                {NOTIFY_CHANNELS.email.status === "LIVE"
+                  ? "dostupné"
+                  : "připravujeme"}
+                . Push v prohlížeči:{" "}
+                {NOTIFY_CHANNELS.web_push.status === "LIVE"
+                  ? "dostupné"
+                  : "připravujeme"}
+                . Nic neodesíláme bez vašeho souhlasu.
               </p>
             </section>
           </div>
@@ -533,14 +563,14 @@ export function SmartWatchlistView() {
                 />
                 <input
                   className="h-10 rounded-lg border px-3 text-sm"
-                  placeholder="Min score"
+                  placeholder="Min. skóre"
                   value={filterMinScore}
                   onChange={(e) => setFilterMinScore(e.target.value)}
                 />
               </div>
               <p className="text-xs text-muted-foreground">
-                Match proti inventáři Majetio až po sync feedu (COMING_SOON) —
-                filtr se uloží lokálně už teď.
+                Porovnání s nabídkami Majetio připravujeme — filtr se uloží
+                lokálně už teď.
               </p>
               <button
                 type="submit"

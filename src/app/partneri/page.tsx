@@ -17,7 +17,7 @@ export default function PartneriPage() {
   return (
     <TrustPageShell
       currentPath="/partneri"
-      eyebrow="Trust Center"
+      eyebrow="Centrum důvěry"
       title="Partneři"
       lead="Hypotéka Jasně předává poptávky licencovaným specialistům. Níže je připravená struktura partnera — registrační údaje doplníme po ověření, nevymýšlíme je."
     >
@@ -62,8 +62,12 @@ export default function PartneriPage() {
                   JERRS / veřejný registr
                 </dt>
                 <dd className="mt-0.5">
-                  <span className="mr-2 rounded border border-stone-300 bg-stone-100 px-1.5 py-0.5 text-[10px] font-bold uppercase">
-                    {p.jerrsStatus.replace(/_/g, " ")}
+                  <span className="mr-2 rounded border border-stone-300 bg-stone-100 px-1.5 py-0.5 text-[10px] font-bold">
+                    {p.jerrsStatus === "LIVE"
+                      ? "Ověřeno"
+                      : p.jerrsStatus === "PENDING_VERIFICATION"
+                        ? "Čeká na ověření"
+                        : "Připravujeme"}
                   </span>
                   {p.jerrsVerificationUrl ? (
                     <a
@@ -99,7 +103,7 @@ export default function PartneriPage() {
       <p className="text-sm text-muted-foreground">
         Role v ekosystému:{" "}
         <Link href={routes.duvera} className="text-deep-teal underline">
-          Trust Center
+          Centrum důvěry
         </Link>
         . Majetio:{" "}
         <Link href={routes.oMajetio} className="text-deep-teal underline">

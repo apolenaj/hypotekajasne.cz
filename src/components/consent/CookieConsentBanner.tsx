@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useCookieConsent } from "@/components/consent/CookieConsentProvider";
 import { COOKIE_POLICY_VERSION } from "@/lib/legal/consent-versions";
 import type { CookieConsentRecord } from "@/lib/consent/records";
@@ -79,6 +79,18 @@ export function CookieConsentBanner() {
     record,
   } = useCookieConsent();
 
+  // Reserve space so fixed banner does not cover bottom CTAs
+  useEffect(() => {
+    if (!openBanner) {
+      document.documentElement.style.removeProperty("--cookie-banner-pad");
+      return;
+    }
+    document.documentElement.style.setProperty("--cookie-banner-pad", "12rem");
+    return () => {
+      document.documentElement.style.removeProperty("--cookie-banner-pad");
+    };
+  }, [openBanner]);
+
   if (!ready || !openBanner) return null;
 
   return (
@@ -86,7 +98,7 @@ export function CookieConsentBanner() {
       role="dialog"
       aria-labelledby="cookie-consent-title"
       aria-modal="false"
-      className="fixed inset-x-0 bottom-0 z-[100] p-3 sm:p-5"
+      className="fixed inset-x-0 bottom-0 z-[100] max-h-[min(70vh,32rem)] overflow-y-auto p-3 sm:p-5"
     >
       <div className="mx-auto max-w-3xl rounded-2xl border border-border bg-white p-4 shadow-2xl shadow-black/15 sm:p-6">
         <p
@@ -106,7 +118,7 @@ export function CookieConsentBanner() {
             href={routes.legal.cookies}
             className="font-semibold text-deep-teal underline"
           >
-            Cookie policy
+            Zásady cookies
           </Link>
           {" · "}
           <Link
@@ -138,7 +150,7 @@ export function CookieConsentBanner() {
             }}
             className={cn(btnBase, "bg-deep-teal text-white hover:opacity-95")}
           >
-            Accept all
+            Přijmout vše
           </button>
           <button
             type="button"
@@ -154,7 +166,7 @@ export function CookieConsentBanner() {
               "border-2 border-deep-teal bg-white text-deep-teal hover:bg-deep-teal/5"
             )}
           >
-            Reject optional
+            Odmítnout volitelné
           </button>
           <button
             type="button"
@@ -164,7 +176,7 @@ export function CookieConsentBanner() {
               "border-2 border-border bg-white text-text-dark hover:bg-slate-50"
             )}
           >
-            Settings
+            Nastavení
           </button>
         </div>
       </div>

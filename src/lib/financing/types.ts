@@ -19,7 +19,7 @@ export type FinancingOptionId = (typeof FINANCING_OPTION_IDS)[number];
 export const FINANCING_OPTION_LABELS: Record<FinancingOptionId, string> = {
   LOCAL_MORTGAGE: "Lokální bankovní hypotéka",
   CZECH_EQUITY_LOAN: "České zajištěné financování (americká hypotéka)",
-  DEVELOPER_PAYMENT_PLAN: "Developer payment plan",
+  DEVELOPER_PAYMENT_PLAN: "Platební plán developera",
   CASH: "Hotovost",
   PRIVATE_FINANCE: "Soukromé financování",
   UNAVAILABLE: "Financování nedostupné v datech",

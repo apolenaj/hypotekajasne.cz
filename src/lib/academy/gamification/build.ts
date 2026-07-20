@@ -28,10 +28,10 @@ export function buildGamificationDashboard(
     recommendations: recommendLessons(),
     characters: ACADEMY_CHARACTERS,
     methodology: [
-      "Progress 0–100 % z vážených kroků — lekce, quiz, kalkulačka, praktický úkol.",
-      "Žádné streaks, žádné casino body — jen smysluplné badges.",
-      "Post-lesson CTA: education → tool → personalized result.",
-      "Copilot doporučení vychází z Financial Passport (MODEL), ne z halucinací.",
+      "Průběh 0–100 % z vážených kroků — lekce, kvíz, kalkulačka, praktický úkol.",
+      "Žádné série (streaks), žádné casino body — jen smysluplné odznaky.",
+      "Po lekci: vzdělávání → nástroj → personalizovaný výsledek.",
+      "Doporučení AI průvodce vychází z Finančního pasu (model), ne z halucinací.",
       "Postavy (Igor, Bohouš, …) jsou vizuální vrstva pro budoucí video — ne zdroj pravdy.",
     ],
   };

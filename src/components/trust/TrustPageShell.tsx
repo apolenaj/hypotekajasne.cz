@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 export function TrustNav({ currentPath }: { currentPath?: string }) {
   return (
     <nav
-      aria-label="Trust Center"
+      aria-label="Centrum důvěry"
       className="border-b border-border bg-[#f7f8f7]"
     >
       <div className="mx-auto flex max-w-3xl flex-wrap gap-2 px-4 py-3 sm:px-6">

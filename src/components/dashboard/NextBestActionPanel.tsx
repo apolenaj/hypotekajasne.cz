@@ -40,7 +40,12 @@ function RecommendationCard({
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-            Priorita {rec.priority} · {rec.urgency}
+            Priorita {rec.priority} ·{" "}
+            {rec.urgency === "high"
+              ? "vysoká"
+              : rec.urgency === "medium"
+                ? "střední"
+                : "nízká"}
           </p>
           <h3 className="mt-1 font-heading text-lg font-bold text-deep-teal">
             {rec.action}
@@ -142,9 +147,12 @@ export function NextBestActionPanel({
   if (recommendations.length === 0) {
     return (
       <section className="rounded-2xl border border-border bg-white p-5 shadow-sm">
-        <h2 className="font-heading text-base font-bold">Doporučujeme nyní</h2>
+        <h2 className="font-heading text-base font-bold">
+          Doporučený další krok
+        </h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Žádné aktivní doporučení — buď je vše hotové, nebo jste je skryli / odložili.
+          Žádné aktivní doporučení — buď je vše hotové, nebo jste je skryli /
+          odložili.
         </p>
       </section>
     );
@@ -154,10 +162,11 @@ export function NextBestActionPanel({
     <section className="space-y-3">
       <div>
         <h2 className="font-heading text-lg font-bold text-text-dark">
-          Doporučujeme nyní
+          Doporučený další krok
         </h2>
         <p className="text-sm text-muted-foreground">
-          Rule-based engine · 1–{recommendations.length} nejlogičtější kroky (ne black-box).
+          Pravidlový systém · 1–{recommendations.length} nejlogičtější kroky
+          (vysvětlitelné, ne black-box).
         </p>
       </div>
       <div className="space-y-3">

@@ -28,14 +28,14 @@ export const czDossier: CountryDossier = assemble(
     narrative("suitability", "Pro koho dává ČR smysl", [
       { text: "Rezidenti a daňoví rezidenti ČR s dokumentovaným příjmem." },
       { text: "Investoři hledající likvidnější trh v CZK bez FX rizika vůči korunovým závazkům." },
-      { text: "Méně vhodné jako spekulace na krátký horizont bez rezervy na holding costs." },
+      { text: "Méně vhodné jako spekulace na krátký horizont bez rezervy na průběžné náklady." },
     ]),
     {
       id: "ownership",
       kind: "ownership",
       title: sectionTitle("ownership"),
-      summary: "Freehold zápisem do katastru nemovitostí.",
-      modelLabel: "Freehold (katastr)",
+      summary: "Volné vlastnictví zápisem do katastru nemovitostí.",
+      modelLabel: "Volné vlastnictví (katastr)",
       bullets: [
         { text: TITLE_TRANSFER_CZ_CLAIM.text, claim: TITLE_TRANSFER_CZ_CLAIM },
         { text: "Vlastnické právo vzniká zápisem do katastru, nikoli samotným podpisem smlouvy." },
@@ -205,7 +205,7 @@ export const czDossier: CountryDossier = assemble(
     sourcesSection(
       {
         text: `Poslední právní review dossieru ČR: ${LEGAL_REVIEW_AS_OF}`,
-        source: "HypotékaJasně.cz editorial legal review",
+        source: "Editorial HypotékaJasně.cz (po kontrole)",
         sourceUrl: null,
         asOf: LEGAL_REVIEW_AS_OF,
         status: "VERIFIED",

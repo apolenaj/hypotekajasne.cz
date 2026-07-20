@@ -17,6 +17,8 @@ import {
   type LearningPathId,
 } from "@/lib/academy/gamification";
 import { getAcademyLessonPath } from "@/lib/academy";
+import { ACADEMY_UI_CS } from "@/lib/i18n/ui-cs";
+import { learningStepKindLabel } from "@/lib/i18n/labels";
 
 function subscribeNoop() {
   return () => {};
@@ -30,29 +32,34 @@ function ProgressRing({ percent }: { percent: number }) {
   const c = 2 * Math.PI * r;
   const offset = c - (percent / 100) * c;
   return (
-    <svg width="88" height="88" className="-rotate-90">
-      <circle cx="44" cy="44" r={r} fill="none" stroke="#e5e7eb" strokeWidth="8" />
-      <circle
-        cx="44"
-        cy="44"
-        r={r}
-        fill="none"
-        stroke="#0f4c48"
-        strokeWidth="8"
-        strokeDasharray={c}
-        strokeDashoffset={offset}
-        strokeLinecap="round"
-      />
-      <text
-        x="44"
-        y="48"
-        textAnchor="middle"
-        className="rotate-90 fill-foreground text-sm font-bold"
-        style={{ transformOrigin: "44px 44px" }}
-      >
-        {percent}%
-      </text>
-    </svg>
+    <div className="flex flex-col items-center gap-1">
+      <svg width="88" height="88" className="-rotate-90" aria-hidden>
+        <circle cx="44" cy="44" r={r} fill="none" stroke="#e5e7eb" strokeWidth="8" />
+        <circle
+          cx="44"
+          cy="44"
+          r={r}
+          fill="none"
+          stroke="#0f4c48"
+          strokeWidth="8"
+          strokeDasharray={c}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+        />
+        <text
+          x="44"
+          y="48"
+          textAnchor="middle"
+          className="rotate-90 fill-foreground text-sm font-bold"
+          style={{ transformOrigin: "44px 44px" }}
+        >
+          {percent}%
+        </text>
+      </svg>
+      <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+        {ACADEMY_UI_CS.progress}
+      </span>
+    </div>
   );
 }
 
@@ -73,7 +80,7 @@ export function AcademyPathsHub() {
 
   if (!ready || !dashboard) {
     return (
-      <div className="py-8 text-sm text-muted-foreground">Načítám learning paths…</div>
+      <div className="py-8 text-sm text-muted-foreground">Načítám vzdělávací cesty…</div>
     );
   }
 
@@ -82,7 +89,7 @@ export function AcademyPathsHub() {
       <div className="flex flex-wrap items-center gap-2">
         <FeatureStatusBadge status={ACADEMY_GAMIFICATION_FEATURE_STATUS} />
         <span className="text-xs text-muted-foreground">
-          Bez streaků · smysluplné badges · education → tool
+          Bez streaků · smysluplné odznaky · vzdělávání → nástroj
         </span>
       </div>
 
@@ -131,7 +138,7 @@ export function AcademyPathsHub() {
       <div>
         <h2 className="flex items-center gap-2 font-heading text-lg font-bold">
           <BookOpen className="h-5 w-5" />
-          Learning paths
+          Vzdělávací cesty
         </h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           {LEARNING_PATHS.map((path) => {
@@ -165,7 +172,7 @@ export function AcademyPathsHub() {
       <div>
         <h2 className="flex items-center gap-2 font-heading text-lg font-bold">
           <Award className="h-5 w-5" />
-          Badges
+          {ACADEMY_UI_CS.badges}
         </h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {dashboard.availableBadges.map((badge) => {
@@ -182,6 +189,11 @@ export function AcademyPathsHub() {
                     {badge.unlockCriteria}
                   </p>
                 )}
+                {earned ? (
+                  <p className="mt-2 text-[10px] font-semibold text-amber-800">
+                    {ACADEMY_UI_CS.completed}
+                  </p>
+                ) : null}
               </div>
             );
           })}
@@ -192,7 +204,8 @@ export function AcademyPathsHub() {
       <div>
         <h2 className="font-heading text-lg font-bold">Postavy pro budoucí videa</h2>
         <p className="mt-1 text-xs text-muted-foreground">
-          Vizuální vrstva — ne nahrazují odbornou důvěryhodnost ani DATA/MODEL badge.
+          Vizuální vrstva — ne nahrazují odbornou důvěryhodnost ani označení
+          Data / Modelový výpočet.
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {dashboard.characters.map((c) => (
@@ -248,7 +261,8 @@ export function AcademyPathDetail({ pathId }: { pathId: LearningPathId }) {
                 <span className="mr-2 font-bold text-muted-foreground">{i + 1}.</span>
                 {step.label}
                 <span className="ml-2 text-xs text-muted-foreground">
-                  · {step.estimatedMinutes} min · {step.kind}
+                  · {step.estimatedMinutes} min ·{" "}
+                  {learningStepKindLabel(step.kind)}
                 </span>
               </span>
               <ChevronRight className="h-4 w-4 shrink-0" />

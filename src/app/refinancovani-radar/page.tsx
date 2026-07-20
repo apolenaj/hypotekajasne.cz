@@ -6,9 +6,9 @@ import { RefinanceRadarView } from "@/components/refinance-radar/RefinanceRadarV
 import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Refinance Radar — sledujte fixaci a porovnejte refinancování",
+  title: "Hlídač refinancování — sledujte fixaci a porovnejte nabídky",
   description:
-    "Personalizované alerty k fixaci, scénáře splátky (MODEL), Stay vs Refinance porovnání s poplatky, pojištěním a dobou splácení. CTA na specialistu.",
+    "Personalizovaná upozornění k fixaci, scénáře splátky (model), Zůstat vs. refinancovat. CTA na specialistu.",
   path: routes.refinanceRadar,
 });
 
@@ -18,7 +18,7 @@ export default function RefinanceRadarPage() {
       <div className="border-b border-border bg-[#f7f8f7]">
         <div className="mx-auto max-w-5xl px-4 py-3">
           <Breadcrumbs
-            items={crumbs({ name: "Refinance Radar", path: routes.refinanceRadar })}
+            items={crumbs({ name: "Hlídač refinancování", path: routes.refinanceRadar })}
           />
         </div>
       </div>

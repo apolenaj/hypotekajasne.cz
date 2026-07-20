@@ -100,13 +100,13 @@ export function simulateHistoricalLab(
     endReal: last.real,
     cpiMultiple: end.cpi / start.cpi,
     chartMeta: {
-      title: "Historický stroj času — Decision Lab",
+      title: "Historický stroj času — Laboratoř rozhodnutí",
       methodology:
-        "Nominální hodnoty sledují modelové výnosy aktiv. Reálné = nominální / (CPI_t / CPI_start). U zahraničí jde o škálovaný model z CZ snapshotů (MODELLED), ne o oficiální časovou řadu dané země. Páka: konstantní nominální dluh, růst ceny dle indexu bytu.",
-      source: "historical-data.ts snapshots + Decision Lab assumptions",
+        "Nominální hodnoty sledují modelové výnosy aktiv. Reálné = nominální / (CPI_t / CPI_start). U zahraničí jde o škálovaný model z CZ snapshotů (modelový výpočet), ne o oficiální časovou řadu dané země. Páka: konstantní nominální dluh, růst ceny dle indexu bytu.",
+      source: "historické snapshoty + předpoklady Laboratoře rozhodnutí",
       sourceUrl: null,
       statusNote:
-        "MODELLED — spoření/termín/akcie používají fixní modelové sazby, ne live produkty.",
+        "MODELOVÝ VÝPOČET — spoření/termín/akcie používají fixní modelové sazby, ne živé produkty.",
     },
     assumptions: [
       `Start ${input.startYear} → ${HISTORICAL_END_YEAR}, kapitál ${Math.round(input.initialCash)}.`,

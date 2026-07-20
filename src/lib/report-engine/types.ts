@@ -18,12 +18,12 @@ export const REPORT_TYPES = [
 export type ReportType = (typeof REPORT_TYPES)[number];
 
 export const REPORT_TYPE_LABELS: Record<ReportType, string> = {
-  mortgage_readiness: "Mortgage Readiness Report",
-  property_analysis: "Property Analysis Report",
-  property_comparison: "Property Comparison Report",
-  investment_passport: "Investment Passport",
-  portfolio_risk: "Portfolio Risk Report",
-  refinance: "Refinance Report",
+  mortgage_readiness: "Report připravenosti na hypotéku",
+  property_analysis: "Report analýzy nemovitosti",
+  property_comparison: "Report porovnání nemovitostí",
+  investment_passport: "Investiční pas",
+  portfolio_risk: "Report rizika portfolia",
+  refinance: "Report refinancování",
 };
 
 export type ReportSensitivity = "private" | "shareable_summary";

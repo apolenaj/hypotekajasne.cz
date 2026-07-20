@@ -112,7 +112,7 @@ export function ReportDocumentView({ report, mode = "web" }: ReportDocumentViewP
       <header className="border-b border-border bg-deep-teal text-white print:border-stone-300 print:bg-white print:text-black">
         <div className="mx-auto max-w-4xl px-4 py-10 print:py-6">
           <p className="text-xs font-bold uppercase tracking-widest text-muted-gold print:text-stone-600">
-            Professional Report · {report.type.replace(/_/g, " ")}
+            Profesionální report · {report.type.replace(/_/g, " ")}
           </p>
           <h1 className="mt-2 font-heading text-3xl font-black md:text-4xl">{report.title}</h1>
           <p className="mt-2 text-sm text-emerald-50/90 print:text-stone-700">

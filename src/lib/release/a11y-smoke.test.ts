@@ -17,18 +17,21 @@ describe("a11y smoke (static)", () => {
     );
     assert.ok(banner.includes('role="dialog"'));
     assert.ok(banner.includes("aria-labelledby"));
-    assert.ok(banner.includes("Accept all"));
-    assert.ok(banner.includes("Reject optional"));
-    assert.ok(banner.includes("Settings"));
+    assert.ok(banner.includes("Přijmout vše"));
+    assert.ok(banner.includes("Odmítnout volitelné"));
+    assert.ok(banner.includes("Nastavení"));
   });
 
-  it("home hero has single h1 id", () => {
+  it("home hero has single h1 id and Czech subheadline", () => {
     const hero = readFileSync(
       join(ROOT, "components/home/CockpitHero.tsx"),
       "utf8"
     );
     assert.ok(hero.includes("home-hero-heading"));
     assert.ok(hero.includes("<h1"));
+    assert.ok(hero.includes("Hypotéky, investice a nemovitosti"));
+    assert.ok(!hero.includes("Decision cockpit"));
+    assert.ok(hero.includes("DecisionSnapshot") || hero.includes("max-h-[720px]"));
   });
 
   it("breadcrumbs expose nav aria-label", () => {
@@ -37,5 +40,17 @@ describe("a11y smoke (static)", () => {
       "utf8"
     );
     assert.ok(bc.includes('aria-label="Drobečková navigace"'));
+  });
+
+  it("site header is sticky with compact desktop nav landmark", () => {
+    const nav = readFileSync(
+      join(ROOT, "components/layout/Navbar.tsx"),
+      "utf8"
+    );
+    assert.ok(nav.includes("sticky top-0"));
+    assert.ok(nav.includes('aria-label="Hlavní navigace"'));
+    assert.ok(nav.includes("desktopNav.hypoteka"));
+    assert.ok(nav.includes("desktopNav.investice"));
+    assert.ok(nav.includes("min-h-11"));
   });
 });

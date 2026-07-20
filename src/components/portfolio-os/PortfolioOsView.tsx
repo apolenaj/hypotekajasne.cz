@@ -79,8 +79,13 @@ export function PortfolioOsView() {
 
   if (!ready || !model) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-16 text-sm text-muted-foreground">
-        Načítám Portfolio OS…
+      <div className="mx-auto max-w-6xl space-y-4 px-4 py-16">
+        <div className="h-8 w-48 animate-pulse rounded bg-slate-200" />
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="h-28 animate-pulse rounded-2xl bg-slate-100" />
+          <div className="h-28 animate-pulse rounded-2xl bg-slate-100" />
+        </div>
+        <p className="sr-only">Načítám moje portfolio</p>
       </div>
     );
   }
@@ -88,17 +93,17 @@ export function PortfolioOsView() {
   const s = model.summary;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#eef3f1] to-white">
+    <div className="min-h-screen min-w-0 bg-gradient-to-b from-[#eef3f1] to-white">
       <header className="border-b border-border bg-deep-teal text-white">
         <div className="mx-auto max-w-6xl px-4 py-10">
           <p className="text-xs font-bold uppercase tracking-widest text-muted-gold">
-            Portfolio OS · Digital Twin aggregation
+            Součást Mého dashboardu · digitální karty nemovitostí
           </p>
           <h1 className="mt-2 font-heading text-3xl font-black md:text-4xl">
-            Portfolio OS
+            Moje portfolio
           </h1>
           <p className="mt-2 max-w-3xl text-sm text-emerald-50/90">
-            Souhrn více nemovitostí, koncentrace rizik, stress testy a explainable
+            Souhrn více nemovitostí, koncentrace rizik, stress testy a srozumitelné
             scénáře — bez pokynů k prodeji.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
@@ -114,13 +119,13 @@ export function PortfolioOsView() {
               href={routes.financniPas}
               className="rounded-full border border-white/30 px-4 py-2 text-sm font-semibold"
             >
-              Financial Passport
+              Finanční pas
             </Link>
             <Link
               href={routes.sledovani}
               className="rounded-full border border-white/30 px-4 py-2 text-sm font-semibold"
             >
-              Digital Twin / Watchlist
+              Digitální karta nemovitosti / sledování
             </Link>
           </div>
         </div>
@@ -131,7 +136,7 @@ export function PortfolioOsView() {
         <section>
           <h2 className="mb-3 flex items-center gap-2 font-heading text-lg font-bold">
             <BarChart3 className="h-5 w-5 text-deep-teal" />
-            Portfolio summary
+            Souhrn portfolia
           </h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {(
@@ -155,7 +160,8 @@ export function PortfolioOsView() {
                   {m.label}
                 </p>
                 <p className="mt-1 text-xl font-bold tabular-nums">
-                  {m.label.includes("LTV") || m.label.includes("Yield")
+                  {m.label.includes("LTV") ||
+                  m.label.toLowerCase().includes("výnos")
                     ? m.value != null
                       ? fmtPct(Number(m.value))
                       : "—"
@@ -174,9 +180,9 @@ export function PortfolioOsView() {
         <section className="grid gap-4 md:grid-cols-3">
           {(
             [
-              ["Currency exposure", s.currencyExposure, PieChart],
-              ["Country exposure", s.countryExposure, Layers],
-              ["Property-type exposure", s.propertyTypeExposure, BarChart3],
+              ["Měnová expozice", s.currencyExposure, PieChart],
+              ["Expozice podle země", s.countryExposure, Layers],
+              ["Expozice podle typu nemovitosti", s.propertyTypeExposure, BarChart3],
             ] as const
           ).map(([title, slices, Icon]) => (
             <div
@@ -205,7 +211,7 @@ export function PortfolioOsView() {
         <section>
           <h2 className="mb-3 flex items-center gap-2 font-heading text-lg font-bold">
             <AlertTriangle className="h-5 w-5 text-muted-gold" />
-            Risk concentration
+            Koncentrace rizik
           </h2>
           <div className="space-y-3">
             {model.concentrationAlerts.map((a) => (
@@ -229,17 +235,17 @@ export function PortfolioOsView() {
         <section>
           <h2 className="mb-3 flex items-center gap-2 font-heading text-lg font-bold">
             <Shield className="h-5 w-5 text-deep-teal" />
-            Scenario stress tests
+            Scénářové stress testy
           </h2>
           <div className="overflow-x-auto rounded-xl border border-border bg-white">
             <table className="w-full min-w-[640px] text-sm">
               <thead>
                 <tr className="border-b bg-[#f7f8f7]">
                   <th className="px-3 py-2 text-left">Scénář</th>
-                  <th className="px-3 py-2">Equity (base → stress)</th>
+                  <th className="px-3 py-2">Vlastní kapitál (základ → stress)</th>
                   <th className="px-3 py-2">LTV</th>
-                  <th className="px-3 py-2">CF/měs.</th>
-                  <th className="px-3 py-2 text-left">Delta</th>
+                  <th className="px-3 py-2">Tok/měs.</th>
+                  <th className="px-3 py-2 text-left">Rozdíl</th>
                 </tr>
               </thead>
               <tbody>
@@ -280,7 +286,7 @@ export function PortfolioOsView() {
         <section>
           <h2 className="mb-3 flex items-center gap-2 font-heading text-lg font-bold">
             <Sparkles className="h-5 w-5 text-muted-gold" />
-            Portfolio recommendations
+            Doporučení k portfoliu
           </h2>
           <div className="space-y-4">
             {model.recommendations.map((rec) => (
@@ -308,18 +314,18 @@ export function PortfolioOsView() {
 
         {/* Properties table */}
         <section>
-          <h2 className="mb-3 font-heading text-lg font-bold">Per-property</h2>
+          <h2 className="mb-3 font-heading text-lg font-bold">Jednotlivé nemovitosti</h2>
           <div className="overflow-x-auto rounded-xl border border-border bg-white">
             <table className="w-full min-w-[720px] text-sm">
               <thead>
                 <tr className="border-b bg-[#f7f8f7]">
                   <th className="px-3 py-2 text-left">Nemovitost</th>
                   <th className="px-3 py-2">Hodnota</th>
-                  <th className="px-3 py-2">Equity</th>
+                  <th className="px-3 py-2">Vlastní kapitál</th>
                   <th className="px-3 py-2">Dluh</th>
                   <th className="px-3 py-2">Nájem</th>
-                  <th className="px-3 py-2">CF</th>
-                  <th className="px-3 py-2">Risk</th>
+                  <th className="px-3 py-2">Tok</th>
+                  <th className="px-3 py-2">Riziko</th>
                 </tr>
               </thead>
               <tbody>

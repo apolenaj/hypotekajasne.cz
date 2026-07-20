@@ -34,7 +34,7 @@ export const messages: Record<Locale, MessageTree> = {
         "Informační platforma: hypoteční data ČR, srovnání trhů, kalkulačky a handoff na licencovaného partnera — ne banka.",
     },
     nav: {
-      trust: "Trust Center",
+      trust: "Centrum důvěry",
       methodology: "Metodika",
       contact: "Kontakt",
     },
@@ -73,5 +73,6 @@ export function t(locale: Locale): MessageTree {
 /**
  * Routes with a published human EN version (hreflang pair).
  * Expand only when real EN copy exists — never auto-MT.
+ * Academy (/akademie) and Magazine (/clanky) stay CS-only until EN trees land.
  */
 export const PUBLISHED_EN_PATHS = new Set<string>(["/en"]);

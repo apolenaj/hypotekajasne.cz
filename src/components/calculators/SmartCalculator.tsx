@@ -23,15 +23,16 @@ export function SmartCalculator({ country }: SmartCalculatorProps) {
           <div className="max-w-2xl">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-emerald-700">
               <Sparkles className="h-3.5 w-3.5" />
-              Investment engine
+              Investiční engine
             </div>
             <h3 className="font-heading text-2xl font-bold text-text-dark lg:text-3xl">
               Investiční kalkulace — {config.label}
             </h3>
             <p className="mt-2 leading-relaxed text-muted-foreground">
-              Jednotný výpočetní engine pro všechny trhy: NOI, Cash-on-Cash Return,
-              DSCR, IRR/XIRR a waterfall cash flow. Matematika je oddělená od UI.
-              Neuvádíme „Cash-on-Cash ROI“ z hrubého nájmu.
+              Jednotný výpočetní engine pro všechny trhy: NOI, výnos vloženého
+              vlastního kapitálu, DSCR, IRR/XIRR a rozklad peněžního toku.
+              Matematika je oddělená od UI. Neuvádíme „ROI z hrubého nájmu“ jako
+              výnos vloženého kapitálu.
             </p>
           </div>
 

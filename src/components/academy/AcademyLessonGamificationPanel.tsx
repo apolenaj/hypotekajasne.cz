@@ -24,7 +24,7 @@ export function AcademyLessonGamificationPanel({ lessonSlug }: { lessonSlug: str
   return (
     <section className="mt-8 rounded-2xl border-2 border-deep-teal/30 bg-[#eef3f1] p-6">
       <p className="text-xs font-bold uppercase tracking-wide text-deep-teal">
-        Education → tool → váš výsledek
+        Vzdělávání → nástroj → váš výsledek
       </p>
       <h2 className="mt-2 font-heading text-lg font-bold">Co dál?</h2>
       <p className="mt-1 text-sm text-muted-foreground">{bridge.description}</p>

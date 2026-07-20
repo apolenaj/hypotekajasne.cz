@@ -36,7 +36,7 @@ export default async function DekujemePage({ searchParams }: PageProps) {
           {sourceLabel
             ? `Údaje z nástroje „${sourceLabel}“ jsme bezpečně přijali.`
             : "Vaše kontaktní údaje jsme bezpečně přijali."}{" "}
-          Náš specialista se vám ozve do 24 hodin.
+          Licencovaný partner se vám ozve do 24 hodin.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Link

@@ -1,14 +1,12 @@
 import Link from "next/link";
 import { Scale } from "lucide-react";
 import {
-  ANALYTICS_LEGAL_BASIS,
   CONSENT_POLICY_VERSION,
   COOKIE_POLICY_VERSION,
   CONSENT_PURPOSES,
   formatOperatorAddress,
   getOperatorIdentity,
   getPaidAnalysisTerms,
-  LAWYER_REVIEW_NOTICE,
   operatorDisplayName,
   PROCESSING_ROLES,
   REGULATED_BOUNDARIES,
@@ -25,48 +23,49 @@ export type LegalPageType =
 
 const LEGAL_META: Record<
   LegalPageType,
-  { title: string; subtitle: string }
+  { title: string; subtitle: string; navLabel: string }
 > = {
   gdpr: {
     title: "Ochrana osobních údajů (GDPR)",
     subtitle: "Správce, účely, souhlasy a práva subjektů údajů.",
+    navLabel: "GDPR",
   },
   smlouvy: {
     title: "Smlouvy a podmínky užití",
     subtitle: "Rámec používání webu a regulované hranice.",
+    navLabel: "Smlouvy",
   },
   zasady: {
     title: "Zásady používání platformy",
     subtitle: "Transparentnost obsahu a chování uživatelů.",
+    navLabel: "Zásady",
   },
   cookies: {
-    title: "Cookie policy",
+    title: "Zásady cookies",
     subtitle:
       "Nezbytné / analytické / marketingové — analytika jen se souhlasem.",
+    navLabel: "Zásady cookies",
   },
   "placena-analyza": {
     title: "Podmínky placené analýzy",
-    subtitle: "Cena, scope, dodání, reklamace a odstoupení (digitální služba).",
+    subtitle: "Cena, rozsah a stav služby (digitální obsah).",
+    navLabel: "Placená analýza",
   },
 };
 
-function LawyerBanner() {
-  return (
-    <div className="mb-6 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm leading-relaxed text-amber-950">
-      <p className="font-bold">Legal review required</p>
-      <p className="mt-1">{LAWYER_REVIEW_NOTICE}</p>
-    </div>
-  );
-}
+const GDPR_ROLE_CS: Record<string, string> = {
+  controller: "správce",
+  processor: "zpracovatel",
+  independent_controller: "samostatný správce",
+  not_processor: "nezpracovává osobní údaje pro nás",
+};
 
 function OperatorBlock() {
   const op = getOperatorIdentity();
   return (
     <div className="rounded-xl border border-border bg-slate-50 px-4 py-3 text-sm">
       <p className="font-semibold text-text-dark">Provozovatel / správce</p>
-      <p className="mt-1 text-muted-foreground">
-        {operatorDisplayName(op)}
-      </p>
+      <p className="mt-1 text-muted-foreground">{operatorDisplayName(op)}</p>
       <p className="mt-1 text-muted-foreground">
         {formatOperatorAddress(op)}
       </p>
@@ -74,30 +73,24 @@ function OperatorBlock() {
         E-mail: {op.email} · Tel: {op.phone}
       </p>
       <dl className="mt-3 grid gap-1 text-xs sm:grid-cols-2">
-        <div>
-          <dt className="font-bold uppercase text-muted-foreground">IČO</dt>
-          <dd>
-            {op.ico ?? (
-              <span className="text-amber-800">
-                TODO — LEGAL_OPERATOR_ICO (nezveřejňujeme falešné IČO)
-              </span>
-            )}
-          </dd>
-        </div>
-        <div>
-          <dt className="font-bold uppercase text-muted-foreground">DIČ</dt>
-          <dd>
-            {op.dic ?? (
-              <span className="text-muted-foreground">Neuvedeno / N/A</span>
-            )}
-          </dd>
-        </div>
-        <div className="sm:col-span-2">
-          <dt className="font-bold uppercase text-muted-foreground">
-            Veřejný registr
-          </dt>
-          <dd>
-            {op.publicRegisterUrl ? (
+        {op.ico ? (
+          <div>
+            <dt className="font-bold uppercase text-muted-foreground">IČO</dt>
+            <dd>{op.ico}</dd>
+          </div>
+        ) : null}
+        {op.dic ? (
+          <div>
+            <dt className="font-bold uppercase text-muted-foreground">DIČ</dt>
+            <dd>{op.dic}</dd>
+          </div>
+        ) : null}
+        {op.publicRegisterUrl ? (
+          <div className="sm:col-span-2">
+            <dt className="font-bold uppercase text-muted-foreground">
+              Veřejný registr
+            </dt>
+            <dd>
               <a
                 href={op.publicRegisterUrl}
                 className="text-deep-teal underline"
@@ -106,19 +99,14 @@ function OperatorBlock() {
               >
                 Otevřít výpis
               </a>
-            ) : (
-              <span className="text-amber-800">
-                TODO — LEGAL_OPERATOR_REGISTER_URL
-              </span>
-            )}
-          </dd>
-        </div>
+            </dd>
+          </div>
+        ) : null}
       </dl>
       {!op.isProductionReady ? (
-        <p className="mt-3 rounded-lg border border-amber-200 bg-amber-100/80 px-3 py-2 text-xs text-amber-950">
-          <strong>REQUIRED CONFIG:</strong>{" "}
-          {op.missingFields.join("; ")}. Doplňte env před produkcí — nevymýšlíme
-          právní identitu.
+        <p className="mt-3 text-xs text-muted-foreground">
+          Úplná obchodní identifikace (právní jméno, IČO) bude doplněna před
+          spuštěním placených služeb. Kontaktní údaje výše slouží ke komunikaci.
         </p>
       ) : null}
     </div>
@@ -137,7 +125,7 @@ function RegulatedBoundariesBox() {
       <p className="mt-3">
         Role v ekosystému:{" "}
         <Link href={routes.duvera} className="font-semibold underline">
-          Trust Center
+          Centrum důvěry
         </Link>
         .
       </p>
@@ -149,7 +137,6 @@ function GdprContent() {
   const op = getOperatorIdentity();
   return (
     <div className="space-y-8 text-gray-700 leading-relaxed">
-      <LawyerBanner />
       <OperatorBlock />
       <RegulatedBoundariesBox />
 
@@ -165,7 +152,7 @@ function GdprContent() {
             >
               <p className="font-semibold text-text-dark">{r.label}</p>
               <p className="text-xs font-medium text-deep-teal">
-                GDPR role: {r.gdprRole}
+                Role: {GDPR_ROLE_CS[r.gdprRole] ?? r.gdprRole}
               </p>
               <p className="mt-1 text-muted-foreground">{r.description}</p>
             </li>
@@ -185,9 +172,9 @@ function GdprContent() {
           </li>
           <li>
             Technické údaje nezbytné pro provoz (bezpečnost, session). Analytika
-            a marketing cookies jen po souhlasu — viz{" "}
+            a marketingové cookies jen po souhlasu — viz{" "}
             <Link href={routes.legal.cookies} className="text-deep-teal underline">
-              Cookie policy
+              Zásady cookies
             </Link>
             .
           </li>
@@ -196,12 +183,14 @@ function GdprContent() {
 
       <section>
         <h3 className="mb-3 text-xl font-bold text-gray-900">
-          3. Právní základy a souhlasy (verze {CONSENT_POLICY_VERSION})
+          3. Právní základy a souhlasy
         </h3>
         <p className="mb-3 text-sm">
-          <strong>Odeslání formuláře není univerzální marketingový souhlas.</strong>{" "}
-          Marketing je samostatný checkbox. Partner-specific transfer je
-          samostatný souhlas s uvedeným rozsahem.
+          <strong>
+            Odeslání formuláře není univerzální marketingový souhlas.
+          </strong>{" "}
+          Marketing je samostatný checkbox. Předání partnerovi je samostatný
+          souhlas s uvedeným rozsahem.
         </p>
         <ul className="list-disc space-y-2 pl-5 text-sm">
           <li>
@@ -210,34 +199,33 @@ function GdprContent() {
           </li>
           <li>
             <strong>Předání partnerovi:</strong>{" "}
-            {CONSENT_PURPOSES.partner_transfer.description} Základ: souhlas (čl.
-            6 odst. 1 písm. a) GDPR).
+            {CONSENT_PURPOSES.partner_transfer.description} Základ: souhlas
+            (čl. 6 odst. 1 písm. a) GDPR).
           </li>
           <li>
             <strong>Marketing:</strong> {CONSENT_PURPOSES.marketing.description}
           </li>
           <li>
-            <strong>Analytické cookies:</strong> právní základ ={" "}
-            <em>consent</em> (ANALYTICS_LEGAL_BASIS=
-            {ANALYTICS_LEGAL_BASIS}).{" "}
+            <strong>Analytické cookies:</strong> právní základ = souhlas.{" "}
             <strong className="text-text-dark">
               Nepoužíváme oprávněný zájem pro analytické cookies.
             </strong>{" "}
-            Technické řešení spouští analytiku až po Accept / Settings.
+            Analytiku spouštíme až po „Přijmout vše“ nebo po výslovném zapnutí v
+            nastavení.
           </li>
         </ul>
       </section>
 
       <section>
         <h3 className="mb-3 text-xl font-bold text-gray-900">
-          4. Partner-specific předání
+          4. Předání partnerovi
         </h3>
         <p>
-          Údaje předáváme jen pokud zaškrtnete partner transfer a jen v rozsahu
-          (např. licencovaný hypoteční specialista, Majetio). Nejde o blanket
-          předání všem makléřům/developerům. Detail partnerů:{" "}
+          Údaje předáme jen pokud zaškrtnete souhlas s předáním a jen v uvedeném
+          rozsahu (např. licencovaný hypoteční specialista, Majetio). Nejde o
+          plošné předání všem makléřům. Partneři:{" "}
           <Link href={routes.partneri} className="text-deep-teal underline">
-            /partneri
+            Partneři
           </Link>
           .
         </p>
@@ -246,9 +234,10 @@ function GdprContent() {
       <section>
         <h3 className="mb-3 text-xl font-bold text-gray-900">5. Doba uchování</h3>
         <p>
-          Poptávky: typicky až 3 roky nebo do odvolání souhlasu / žádosti o
-          výmaz (draft — potvrdí právník). Cookie preference: do změny nebo
-          smazání localStorage.
+          Preference cookies ukládáme ve vašem prohlížeči do změny nebo smazání.
+          Doba uchování poptávek a marketingových souhlasů bude upřesněna po
+          doplnění provozovatele — do té doby můžete požádat o výmaz na{" "}
+          {op.email}.
         </p>
       </section>
 
@@ -257,16 +246,16 @@ function GdprContent() {
         <ul className="list-disc space-y-2 pl-5">
           <li>Přístup, oprava, výmaz, omezení, námitka, přenositelnost.</li>
           <li>
-            Odvolání souhlasu (marketing / partner transfer / cookies) na{" "}
-            {op.email} — bez vlivu na zákonnost před odvoláním.
+            Odvolání souhlasu (marketing / předání partnerovi / cookies) na{" "}
+            {op.email} — bez vlivu na zákonnost zpracování před odvoláním.
           </li>
           <li>Stížnost u ÚOOÚ.</li>
         </ul>
       </section>
 
       <p className="text-xs text-muted-foreground">
-        Verze zásad: {CONSENT_POLICY_VERSION}. Cookie policy verze:{" "}
-        {COOKIE_POLICY_VERSION}.
+        Verze zásad ochrany osobních údajů: {CONSENT_POLICY_VERSION}. Verze
+        zásad cookies: {COOKIE_POLICY_VERSION}.
       </p>
     </div>
   );
@@ -275,23 +264,23 @@ function GdprContent() {
 function CookiesContent() {
   return (
     <div className="space-y-8 text-gray-700 leading-relaxed">
-      <LawyerBanner />
       <OperatorBlock />
       <p>
-        Tato Cookie policy je{" "}
-        <strong>sjednocená s GDPR</strong>: analytika i marketing cookies
-        vyžadují aktivní souhlas. Stejné tvrzení musí držet banner (Accept all /
-        Reject optional / Settings) i technické načítání skriptů.
+        Tyto zásady odpovídají skutečnému chování webu: analytické i
+        marketingové cookies spouštíme{" "}
+        <strong>až po aktivním souhlasu</strong>. Banner nabízí „Přijmout vše“,
+        „Odmítnout volitelné“ a „Nastavení“. Preference ukládáme ve vašem
+        prohlížeči.
       </p>
       <ul className="list-disc space-y-3 pl-5">
         <li>
-          <strong>Nezbytné:</strong> provoz webu, bezpečnost, uložení cookie
-          preference. Nelze vypnout.
+          <strong>Nezbytné:</strong> provoz webu, bezpečnost, uložení preference
+          cookies. Nelze vypnout.
         </li>
         <li>
           <strong>Analytické:</strong>{" "}
-          {CONSENT_PURPOSES.cookie_analytics.description} Právní základ:{" "}
-          <code className="text-xs">consent</code> — nikoli legitimate interest.
+          {CONSENT_PURPOSES.cookie_analytics.description} Právní základ: souhlas
+          — nikoli oprávněný zájem.
         </li>
         <li>
           <strong>Marketingové:</strong>{" "}
@@ -299,13 +288,13 @@ function CookiesContent() {
         </li>
       </ul>
       <p className="text-sm">
-        Preference změníte přes „Nastavení cookies“ v patičce. Verze:{" "}
+        Preference změníte přes „Nastavení cookies“ v patičce. Verze zásad:{" "}
         {COOKIE_POLICY_VERSION}.
       </p>
       <p className="text-sm">
         Související:{" "}
         <Link href={routes.legal.gdpr} className="text-deep-teal underline">
-          GDPR
+          Ochrana osobních údajů
         </Link>
         .
       </p>
@@ -316,7 +305,6 @@ function CookiesContent() {
 function SmlouvyContent() {
   return (
     <div className="space-y-8 text-gray-700 leading-relaxed">
-      <LawyerBanner />
       <OperatorBlock />
       <RegulatedBoundariesBox />
       <p>
@@ -326,7 +314,7 @@ function SmlouvyContent() {
       <h3 className="text-xl font-bold text-gray-900">1. Povaha služeb</h3>
       <p>
         Portál je technologická a vzdělávací platforma. Modelové výpočty nejsou
-        závaznou nabídkou banky. Handoff na partnera jen se souhlasem.
+        závaznou nabídkou banky. Předání partnerovi jen se souhlasem.
       </p>
       <h3 className="text-xl font-bold text-gray-900">2. Kalkulačky</h3>
       <p>
@@ -336,12 +324,12 @@ function SmlouvyContent() {
         3. Placená digitální analýza
       </h3>
       <p>
-        Podmínky budoucí placené služby:{" "}
+        Stav a podmínky:{" "}
         <Link
           href={routes.legal.placenaAnalyza}
           className="text-deep-teal underline"
         >
-          /pravni/placena-analyza
+          Podmínky placené analýzy
         </Link>
         .
       </p>
@@ -358,19 +346,22 @@ function SmlouvyContent() {
 function ZasadyContent() {
   return (
     <div className="space-y-8 text-gray-700 leading-relaxed">
-      <LawyerBanner />
       <RegulatedBoundariesBox />
       <p>
         Zásady doplňují smlouvy. Cookies:{" "}
         <Link href={routes.legal.cookies} className="text-deep-teal underline">
-          Cookie policy
+          Zásady cookies
         </Link>{" "}
         (analytika jen se souhlasem — shodně s GDPR).
       </p>
       <h3 className="text-xl font-bold text-gray-900">Transparentnost</h3>
       <ul className="list-disc space-y-2 pl-5">
         <li>
-          Organické skóre se neprodává. Sponzoring je označen — viz metodika.
+          Organické skóre se neprodává. Sponzoring je označen — viz{" "}
+          <Link href={routes.metodika} className="text-deep-teal underline">
+            metodika
+          </Link>
+          .
         </li>
         <li>
           Odměna od partnera při realizaci — viz{" "}
@@ -378,14 +369,15 @@ function ZasadyContent() {
             href={routes.jakVydelavame}
             className="text-deep-teal underline"
           >
-            /jak-vydelavame
+            Jak vyděláváme
           </Link>
           .
         </li>
       </ul>
       <h3 className="text-xl font-bold text-gray-900">Chování uživatelů</h3>
       <p>
-        Zákaz scrapingu a falešných poptávek. Kontaktní údaje musí být pravdivé.
+        Zákaz automatizovaného scrapingu a falešných poptávek. Kontaktní údaje
+        musí být pravdivé.
       </p>
     </div>
   );
@@ -395,53 +387,76 @@ function PlacenaAnalyzaContent() {
   const t = getPaidAnalysisTerms();
   return (
     <div className="space-y-8 text-gray-700 leading-relaxed">
-      <LawyerBanner />
       <OperatorBlock />
       <RegulatedBoundariesBox />
+
+      {!t.commerciallyAvailable ? (
+        <div className="rounded-xl border border-deep-teal/30 bg-deep-teal/5 px-4 py-3 text-sm text-text-dark">
+          <p className="font-semibold">Připravujeme</p>
+          <p className="mt-1 text-muted-foreground">
+            Placená analýza zatím není k dispozici ke koupi. Můžete zanechat
+            kontakt v Investičním rentgenu — jde o evidenci zájmu, ne o
+            objednávku.
+          </p>
+        </div>
+      ) : null}
+
       <p className="rounded-xl border border-border bg-slate-50 px-4 py-3 text-sm">
-        Produkt: <strong>{t.productName}</strong> ({t.productId}) · Cena:{" "}
-        <strong>{t.priceLabel}</strong> · Verze podmínek: {t.version}
+        Produkt: <strong>{t.productName}</strong>
+        {t.commerciallyAvailable ? (
+          <>
+            {" "}
+            · Orientační cena: <strong>{t.priceLabel}</strong>
+          </>
+        ) : null}{" "}
+        · Verze textu: {t.version}
       </p>
+
+      {t.commerciallyAvailable ? (
+        <section>
+          <h3 className="mb-2 text-xl font-bold text-gray-900">Cena</h3>
+          <p>
+            {t.priceLabel} ({t.currency}).
+          </p>
+        </section>
+      ) : null}
+
       <section>
-        <h3 className="mb-2 text-xl font-bold text-gray-900">Cena</h3>
-        <p>
-          {t.priceLabel} ({t.currency}). Konfigurovatelné přes env —
-          PROPERTY_ANALYSIS_PRICING.
-        </p>
-      </section>
-      <section>
-        <h3 className="mb-2 text-xl font-bold text-gray-900">Scope</h3>
+        <h3 className="mb-2 text-xl font-bold text-gray-900">Plánovaný rozsah</h3>
         <ul className="list-disc space-y-1 pl-5 text-sm">
           {t.scope.map((s) => (
             <li key={s}>{s}</li>
           ))}
         </ul>
-        <p className="mt-2 text-sm font-semibold">Mimo scope:</p>
+        <p className="mt-2 text-sm font-semibold">Mimo rozsah:</p>
         <ul className="list-disc space-y-1 pl-5 text-sm">
           {t.outOfScope.map((s) => (
             <li key={s}>{s}</li>
           ))}
         </ul>
       </section>
+
       <section>
-        <h3 className="mb-2 text-xl font-bold text-gray-900">Delivery</h3>
+        <h3 className="mb-2 text-xl font-bold text-gray-900">Dodání</h3>
         <ul className="list-disc space-y-1 pl-5 text-sm">
           {t.delivery.map((s) => (
             <li key={s}>{s}</li>
           ))}
         </ul>
       </section>
+
       <section>
-        <h3 className="mb-2 text-xl font-bold text-gray-900">Complaint</h3>
+        <h3 className="mb-2 text-xl font-bold text-gray-900">Reklamace</h3>
         <ul className="list-disc space-y-1 pl-5 text-sm">
           {t.complaint.map((s) => (
             <li key={s}>{s}</li>
           ))}
         </ul>
       </section>
+
       <section>
         <h3 className="mb-2 text-xl font-bold text-gray-900">
-          Cancellation / withdrawal
+          Zrušení / odstoupení
         </h3>
         <ul className="list-disc space-y-1 pl-5 text-sm">
           {t.cancellationWithdrawal.map((s) => (
@@ -449,9 +464,10 @@ function PlacenaAnalyzaContent() {
           ))}
         </ul>
       </section>
+
       <section>
         <h3 className="mb-2 text-xl font-bold text-gray-900">
-          Digital service terms
+          Poznámky k digitální službě
         </h3>
         <ul className="list-disc space-y-1 pl-5 text-sm">
           {t.digitalServiceNotes.map((s) => (
@@ -459,9 +475,6 @@ function PlacenaAnalyzaContent() {
           ))}
         </ul>
       </section>
-      <p className="text-xs italic text-muted-foreground">
-        {t.lawyerReviewNotice}
-      </p>
     </div>
   );
 }
@@ -502,7 +515,7 @@ export function LegalView({ type }: { type: LegalPageType }) {
                     : "rounded-full border border-white/30 px-3 py-1 text-white/90 hover:bg-white/10"
                 }
               >
-                {LEGAL_META[key].title.split(" ")[0]}
+                {LEGAL_META[key].navLabel}
               </Link>
             ))}
           </nav>

@@ -115,7 +115,7 @@ export function collectFixationAlerts(ctx: AlertCollectContext): CentralAlert[] 
       modelPaymentCzk: modelPay,
       marketRate,
       loanId: profile.id,
-      action: { label: "Refinance Radar", href: routes.refinanceRadar },
+      action: { label: "Radar refinancování", href: routes.refinanceRadar },
       now,
     }),
   ];
@@ -149,7 +149,7 @@ export function collectWatchlistAlerts(ctx: AlertCollectContext): CentralAlert[]
             targetId: t.id,
             previousCzk: t.previousPriceCzk,
             currentCzk: t.priceCzk,
-            action: { label: "Watchlist", href: routes.sledovani },
+            action: { label: "Sledování", href: routes.sledovani },
             claimKind: c.claimKind,
             now,
           })
@@ -209,7 +209,7 @@ export function collectDocumentAlerts(ctx: AlertCollectContext): CentralAlert[] 
         label: doc.label,
         expiresAt: doc.expiresAt,
         daysUntil,
-        action: { label: "Document Vault", href: routes.documentVault },
+        action: { label: "Dokumentový trezor", href: routes.documentVault },
         now,
       })
     );
@@ -230,7 +230,7 @@ export function collectRegulatoryAlerts(ctx: AlertCollectContext): CentralAlert[
       title: e.title,
       summary: e.summary,
       effectiveDate: e.effectiveDate,
-      action: { label: "Market Pulse", href: routes.marketPulse },
+      action: { label: "Tržní puls", href: routes.marketPulse },
       now,
     })
   );
@@ -253,7 +253,7 @@ export function collectDealTaskAlerts(ctx: AlertCollectContext): CentralAlert[] 
         dueAt: t.dueAt,
         overdue,
         action: {
-          label: "Deal Room",
+          label: "Transakční místnost",
           href: `${routes.dealRoom}/${workspace.id}`,
         },
         now,
@@ -270,7 +270,7 @@ export function collectPortfolioAlerts(ctx: AlertCollectContext): CentralAlert[]
       alertId: a.id,
       headline: a.headline,
       explanation: a.explanation,
-      action: { label: "Portfolio OS", href: routes.portfolio },
+      action: { label: "Správa portfolia", href: routes.portfolio },
     })
   );
 }
@@ -309,7 +309,7 @@ export function collectRefinanceRadarAlerts(ctx: AlertCollectContext): CentralAl
     priority: (a.milestoneMonths != null && a.milestoneMonths <= 3 ? 1 : 2) as 1 | 2,
     title: a.title,
     reason: a.body,
-    action: { label: "Refinance Radar", href: routes.refinanceRadar },
+    action: { label: "Radar refinancování", href: routes.refinanceRadar },
     expiresAt: null,
     dataSource: {
       module: "src/lib/refinance-radar/alerts.ts",

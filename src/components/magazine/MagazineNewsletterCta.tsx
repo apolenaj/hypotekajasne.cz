@@ -22,10 +22,10 @@ export function MagazineNewsletterCta() {
     setError(null);
     setLoading(true);
     const result = await submitLead({
-      name: "Newsletter",
+      name: "Novinky e-mailem",
       email: email.trim(),
       source: "newsletter",
-      notes: "Newsletter — SEO magazín",
+      notes: "Novinky e-mailem — Magazín",
       metadata: { channel: "magazine_newsletter" },
       consent: toConsentRecord(consent, "/clanky"),
     });
@@ -41,7 +41,7 @@ export function MagazineNewsletterCta() {
   return (
     <div className="rounded-2xl bg-deep-teal px-6 py-10 text-center text-white sm:px-10">
       <Mail className="mx-auto h-8 w-8 text-muted-gold" />
-      <h2 className="mt-4 font-heading text-2xl font-bold">Newsletter</h2>
+      <h2 className="mt-4 font-heading text-2xl font-bold">Novinky e-mailem</h2>
       <p className="mx-auto mt-2 max-w-lg text-sm text-white/80">
         Jednou měsíčně: sazby, regulace, zahraniční financování. Bez spamových
         „tipů na zbohatnutí“. Vyžaduje výslovný marketingový souhlas.

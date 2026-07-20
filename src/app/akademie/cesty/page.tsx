@@ -7,9 +7,9 @@ import { crumbs } from "@/lib/seo/breadcrumbs";
 import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Learning paths | Hypoteční akademie",
+  title: "Vzdělávací cesty | Hypoteční akademie",
   description:
-    "První bydlení, OSVČ, refinancování, investice, zahraničí — progress 0–100 %, badges bez streaků, education → tool.",
+    "První bydlení, OSVČ, refinancování, investice, zahraničí — průběh 0–100 %, odznaky bez sérií, vzdělávání → nástroj.",
   path: `${routes.akademie}/cesty`,
 });
 
@@ -21,16 +21,16 @@ export default function AcademyPathsPage() {
           <Breadcrumbs
             items={crumbs(
               { name: "Akademie", path: routes.akademie },
-              { name: "Learning paths", path: `${routes.akademie}/cesty` }
+              { name: "Vzdělávací cesty", path: `${routes.akademie}/cesty` }
             )}
           />
         </div>
       </div>
       <header className="border-b border-border bg-gradient-to-br from-[#0b3d3a] to-[#1a5c4a] text-white">
         <div className="mx-auto max-w-5xl px-4 py-12">
-          <h1 className="font-heading text-3xl font-bold">Learning paths</h1>
+          <h1 className="font-heading text-3xl font-bold">Vzdělávací cesty</h1>
           <p className="mt-2 max-w-xl text-sm text-white/85">
-            Gamifikace bez infantilizace — smysluplný progress, ne casino streaks.
+            Gamifikace bez infantilizace — smysluplný průběh, ne herní série.
           </p>
         </div>
       </header>

@@ -124,13 +124,13 @@ function ForeignFinancingToolInner({ country }: ForeignFinancingToolProps) {
     <div className="space-y-8">
       <header className="rounded-2xl border border-border bg-white p-5 sm:p-6">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-deep-teal">
-          Financing · {config.label}
+          Financování · {config.label}
         </p>
         <h2 className="mt-1 font-heading text-2xl font-bold text-text-dark sm:text-3xl">
           Kalkulačka financování
         </h2>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          Oddělujeme bankovní hypotéku, developer payment plan, české zajištění
+          Oddělujeme bankovní hypotéku, platební plán developera, české zajištění
           a hotovost. Bez ověřených dat produkt nevymýšlíme.
         </p>
       </header>
@@ -138,29 +138,90 @@ function ForeignFinancingToolInner({ country }: ForeignFinancingToolProps) {
       <section className="space-y-3">
         <h3 className="font-semibold text-text-dark">Typ financování</h3>
         <div className="grid gap-2 sm:grid-cols-2">
-          {products.map((p) => (
-            <button
-              key={p.option}
-              type="button"
-              onClick={() => setOption(p.option)}
-              className={cn(
-                "rounded-xl border p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal",
-                option === p.option
-                  ? "border-deep-teal bg-deep-teal/5 ring-1 ring-deep-teal/30"
-                  : "border-border bg-white hover:border-deep-teal/40"
-              )}
-            >
-              <p className="font-semibold text-text-dark">{p.label}</p>
-              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                {p.description}
-              </p>
-              {p.maxLtvPercent != null && p.maxLtvPercent > 0 && (
-                <p className="mt-2 text-xs font-medium text-deep-teal">
-                  Max LTV v modelu: {p.maxLtvPercent} %
+          {products.map((p) => {
+            const isBankLoan =
+              p.option === "LOCAL_MORTGAGE" || p.option === "CZECH_EQUITY_LOAN";
+            const audience =
+              p.option === "CZECH_EQUITY_LOAN"
+                ? "Klient se zástavou v ČR"
+                : p.option === "DEVELOPER_PAYMENT_PLAN"
+                  ? "Kupující u developera (off-plan)"
+                  : p.option === "CASH"
+                    ? "Hotovostní nákup"
+                    : "Nerezident / lokální banka";
+            const ownFundsNote =
+              p.option === "DEVELOPER_PAYMENT_PLAN"
+                ? "Podle fází plánu (ne LTV)"
+                : p.maxLtvPercent != null && p.maxLtvPercent > 0
+                  ? `Min. cca ${100 - p.maxLtvPercent} % (model)`
+                  : p.option === "CASH"
+                    ? "100 % kupní ceny"
+                    : "Individuálně";
+            const availability =
+              p.rateAvailability === "LIVE"
+                ? "Živá data"
+                : p.rateAvailability === "VERIFIED"
+                  ? "Ověřeno"
+                  : p.calculable
+                    ? "Model fází / dostupný výpočet"
+                    : "Data ověřujeme";
+
+            return (
+              <button
+                key={p.option}
+                type="button"
+                onClick={() => setOption(p.option)}
+                className={cn(
+                  "rounded-xl border p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal",
+                  option === p.option
+                    ? "border-deep-teal bg-deep-teal/5 ring-1 ring-deep-teal/30"
+                    : "border-border bg-white hover:border-deep-teal/40"
+                )}
+              >
+                <p className="font-semibold text-text-dark">{p.label}</p>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                  {p.description}
                 </p>
-              )}
-            </button>
-          ))}
+                <dl className="mt-3 grid grid-cols-1 gap-1.5 text-[11px] sm:grid-cols-2">
+                  <div>
+                    <dt className="text-muted-foreground">Typ</dt>
+                    <dd className="font-medium text-text-dark">{p.label}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-muted-foreground">Měna</dt>
+                    <dd className="font-medium text-text-dark">
+                      {p.currency === "CZK" ? "Kč (CZK)" : p.currency}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-muted-foreground">Pro koho</dt>
+                    <dd className="font-medium text-text-dark">{audience}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-muted-foreground">Vlastní zdroje</dt>
+                    <dd className="font-medium text-text-dark">{ownFundsNote}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-muted-foreground">Dostupnost</dt>
+                    <dd className="font-medium text-text-dark">{availability}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-muted-foreground">Zdroj</dt>
+                    <dd className="font-medium text-text-dark">
+                      {p.source ?? "Data ověřujeme"}
+                    </dd>
+                  </div>
+                </dl>
+                {isBankLoan &&
+                  p.maxLtvPercent != null &&
+                  p.maxLtvPercent > 0 && (
+                    <p className="mt-2 text-xs font-medium text-deep-teal">
+                      Max LTV v modelu: {p.maxLtvPercent} %
+                    </p>
+                  )}
+              </button>
+            );
+          })}
         </div>
       </section>
 
@@ -188,14 +249,14 @@ function ForeignFinancingToolInner({ country }: ForeignFinancingToolProps) {
             label="Cena nemovitosti"
             value={price}
             onChange={setPrice}
-            suffix={config.currency}
+            suffix={config.currency === "CZK" ? "Kč" : config.currency}
           />
           <MoneyField
             id="fx-savings"
-            label="Vlastní zdroje"
+            label="Vlastní prostředky"
             value={savings}
             onChange={setSavings}
-            suffix={config.currency}
+            suffix={config.currency === "CZK" ? "Kč" : config.currency}
           />
           {(option === "CZECH_EQUITY_LOAN" ||
             (option === "LOCAL_MORTGAGE" && result.calculable)) && (
@@ -237,19 +298,36 @@ function ForeignFinancingToolInner({ country }: ForeignFinancingToolProps) {
               {fmt(result.financedAmount)}
             </p>
           </div>
-          <div className="rounded-lg border border-border bg-white p-4">
-            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
-              LTV
-            </p>
-            <p className="mt-1 font-heading text-xl font-bold tabular-nums">
-              {result.ltv != null ? `${result.ltv} %` : missingDataLabel(null)}
-            </p>
-            {result.maxLtvPercent != null && result.maxLtvPercent > 0 && (
-              <p className="mt-1 text-xs text-muted-foreground">
-                Strop v modelu: {result.maxLtvPercent} %
+          {option !== "DEVELOPER_PAYMENT_PLAN" && (
+            <div className="rounded-lg border border-border bg-white p-4">
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                LTV
               </p>
-            )}
-          </div>
+              <p className="mt-1 font-heading text-xl font-bold tabular-nums">
+                {result.ltv != null
+                  ? `${result.ltv} %`
+                  : missingDataLabel(null)}
+              </p>
+              {result.maxLtvPercent != null && result.maxLtvPercent > 0 && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Strop v modelu: {result.maxLtvPercent} %
+                </p>
+              )}
+            </div>
+          )}
+          {option === "DEVELOPER_PAYMENT_PLAN" && (
+            <div className="rounded-lg border border-border bg-white p-4">
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                Podíl vlastních plateb
+              </p>
+              <p className="mt-1 font-heading text-xl font-bold tabular-nums">
+                100 % ceny
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Nejde o bankovní LTV — platíte developerovi ve fázích.
+              </p>
+            </div>
+          )}
           <div className="rounded-lg border border-border bg-white p-4">
             <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
               {option === "DEVELOPER_PAYMENT_PLAN"
@@ -324,10 +402,10 @@ function ForeignFinancingToolInner({ country }: ForeignFinancingToolProps) {
           <div className="rounded-xl border border-border bg-white p-4 sm:p-5">
             <h4 className="inline-flex items-center gap-2 font-semibold text-text-dark">
               <Landmark className="h-4 w-4 text-deep-teal" />
-              Harmonogram plateb (schedule)
+              Harmonogram plateb
             </h4>
             <p className="mt-1 text-xs text-muted-foreground">
-              Booking → výstavba → handover → post-handover. Bez anuitní sazby.
+              Rezervace → výstavba → předání → po předání. Bez anuitní sazby.
             </p>
             <ul className="mt-3 divide-y divide-border">
               {result.developerPhases.map((phase) => (

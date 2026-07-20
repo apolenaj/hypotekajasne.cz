@@ -259,9 +259,9 @@ function InvestorLeadForm({ countryName }: { countryName: string }) {
             }
             className="w-full p-3 rounded-xl border border-gray-300 bg-white"
           >
-            <option value="do-5m">Do 5 000 000 CZK</option>
-            <option value="5-10m">5 000 000 – 10 000 000 CZK</option>
-            <option value="10m+">10 000 000 CZK a více</option>
+            <option value="do-5m">Do 5 000 000 Kč</option>
+            <option value="5-10m">5 000 000 – 10 000 000 Kč</option>
+            <option value="10m+">10 000 000 Kč a více</option>
           </select>
         </div>
 
@@ -360,12 +360,12 @@ export function CountryInvestmentHub({ countryId }: CountryInvestmentHubProps) {
           <span className="text-emerald-400 font-bold tracking-widest uppercase text-sm mb-4 block drop-shadow-md">
             Komplexní investiční průvodce
           </span>
-          <h1 className="font-heading text-5xl md:text-7xl font-extrabold text-white mb-6 leading-tight drop-shadow-lg">
+          <h1 className="mb-6 font-heading text-3xl font-extrabold leading-tight text-white drop-shadow-lg sm:text-5xl md:text-7xl">
             Trh nemovitostí:
             <br />
             {heroTitle}
           </h1>
-          <p className="text-xl text-gray-200 drop-shadow-md font-medium max-w-2xl mx-auto">
+          <p className="mx-auto max-w-2xl text-base font-medium text-gray-200 drop-shadow-md sm:text-xl">
             {data.subtitle}
           </p>
         </div>
@@ -373,12 +373,12 @@ export function CountryInvestmentHub({ countryId }: CountryInvestmentHubProps) {
 
       <div className="sticky top-16 z-40 bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4">
-          <ul className="flex overflow-x-auto space-x-8 text-sm font-bold text-gray-600 py-4 hide-scrollbar">
+          <ul className="-mx-4 flex gap-6 overflow-x-auto px-4 text-sm font-bold text-gray-600 py-4 [scrollbar-width:thin] sm:mx-0 sm:px-0">
             {SUB_NAV_LINKS.map((link) => (
-              <li key={link.href}>
+              <li key={link.href} className="shrink-0">
                 <a
                   href={link.href}
-                  className="hover:text-emerald-700 whitespace-nowrap transition-colors"
+                  className="whitespace-nowrap transition-colors hover:text-emerald-700"
                 >
                   {link.label}
                 </a>

@@ -52,6 +52,13 @@ export {
   type ProvenanceFields,
 } from "@/lib/data/provenance";
 
+export {
+  PUBLIC_DOMAIN_SOURCE,
+  PUBLIC_METHODOLOGY_BLURBS,
+  PUBLIC_STATUS_MEANINGS,
+  publicFreshnessHint,
+} from "@/lib/data/public-methodology";
+
 export { REGULATORY_RECORDS } from "@/lib/data/static-regulatory";
 
 export {

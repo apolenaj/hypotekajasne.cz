@@ -9,11 +9,13 @@ import {
 } from "@/lib/magazine";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import { routes } from "@/lib/routes";
+import { MAGAZINE_UI_CS } from "@/lib/i18n/ui-cs";
+import { formatDate } from "@/lib/i18n/format";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Magazín — články o hypotékách a investicích",
   description:
-    "SEO magazín o hypotékách, refinancování, OSVČ a zahraničním financování. YMYL: autor, review, zdroje, aktualizace.",
+    "Články o hypotékách, refinancování, OSVČ a zahraničním financování. Každý text má autora, odbornou kontrolu, zdroje a datum aktualizace.",
   path: routes.clanky,
 });
 
@@ -39,14 +41,13 @@ export default async function ClankyHubPage({
       <header className="border-b border-border bg-gradient-to-br from-[#0b3d3a] via-[#0f4c48] to-[#1a5c4a] text-white">
         <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6 lg:px-8">
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-gold">
-            SEO magazín
+            {MAGAZINE_UI_CS.hubEyebrow}
           </p>
           <h1 className="mt-3 font-heading text-3xl font-bold sm:text-4xl">
-            Články a analýzy
+            {MAGAZINE_UI_CS.hubTitle}
           </h1>
           <p className="mt-3 max-w-2xl text-sm text-white/85 sm:text-base">
-            Každý článek má vlastní URL, autora, review, aktualizaci a zdroje.
-            Žádné image-only karty bez obsahu.
+            {MAGAZINE_UI_CS.hubLead}
           </p>
         </div>
       </header>
@@ -61,7 +62,7 @@ export default async function ClankyHubPage({
                 : "rounded-full border border-border px-3 py-1 text-xs font-semibold text-muted-foreground"
             }
           >
-            Vše
+            {MAGAZINE_UI_CS.all}
           </Link>
           {TOPICAL_CLUSTERS.map((c) => (
             <Link
@@ -91,7 +92,7 @@ export default async function ClankyHubPage({
             />
             <div className="p-6">
               <p className="text-xs font-bold uppercase text-deep-teal">
-                Featured · {featured.category}
+                {MAGAZINE_UI_CS.featured} · {featured.category}
               </p>
               <h2 className="mt-2 font-heading text-2xl font-bold text-text-dark">
                 {featured.title}
@@ -111,7 +112,7 @@ export default async function ClankyHubPage({
                 className="block h-full rounded-xl border border-border p-5 transition hover:border-deep-teal/40"
               >
                 <p className="text-[11px] font-bold uppercase text-deep-teal">
-                  /clanky/{m.slug}
+                  {m.category}
                 </p>
                 <h2 className="mt-2 font-heading text-lg font-bold text-text-dark">
                   {m.title}
@@ -120,7 +121,9 @@ export default async function ClankyHubPage({
                   {m.description}
                 </p>
                 <p className="mt-3 text-xs text-muted-foreground">
-                  {m.category} · {m.readingMinutes} min · update {m.updatedAt}
+                  {m.readingMinutes} {MAGAZINE_UI_CS.readingMinutes} ·{" "}
+                  {MAGAZINE_UI_CS.updated}{" "}
+                  {formatDate(m.updatedAt, "cs", "short")}
                 </p>
               </Link>
             </li>
@@ -129,7 +132,7 @@ export default async function ClankyHubPage({
 
         {sorted.length === 0 ? (
           <p className="mt-8 text-sm text-muted-foreground">
-            V tomto clusteru zatím nejsou články — připravujeme.
+            {MAGAZINE_UI_CS.emptyCluster}
           </p>
         ) : null}
 

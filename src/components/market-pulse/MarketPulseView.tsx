@@ -110,7 +110,7 @@ function MetricRow({
       </button>
       {open && (
         <div className="mt-3 space-y-2 border-t pt-3">
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {PULSE_TIMEFRAMES.map((tf) => {
               const t = card.trends.find((x) => x.timeframe === tf);
               return (
@@ -182,7 +182,7 @@ export function MarketPulseView() {
   if (!ready || !dashboard || !market || !store) {
     return (
       <div className="mx-auto max-w-6xl px-4 py-16 text-sm text-muted-foreground">
-        Načítám Market Pulse…
+        Načítám Tržní puls…
       </div>
     );
   }
@@ -194,7 +194,7 @@ export function MarketPulseView() {
       <header className="border-b border-border bg-deep-teal text-white">
         <div className="mx-auto max-w-6xl px-4 py-10">
           <FeatureStatusBadge status={MARKET_PULSE_FEATURE_STATUS} />
-          <h1 className="mt-2 font-heading text-3xl font-black">Market Pulse</h1>
+          <h1 className="mt-2 font-heading text-3xl font-black">Tržní puls</h1>
           <p className="mt-2 max-w-2xl text-sm text-emerald-50/90">
             Aktuální vývoj trhů ze skutečných a modelových dat — bez clickbaitu a
             bez „nejlepšího času koupit“.
@@ -405,7 +405,7 @@ export function MarketPulseView() {
         <section className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-900">
           <AlertTriangle className="mb-1 inline h-4 w-4" />
           Nepoužíváme formulace typu „Teď je nejlepší čas koupit“. Každý insight odkazuje na
-          zdroj a typ tvrzení (DATA / MODEL / NEOVERENO).
+          zdroj a typ tvrzení (Data / Modelový výpočet / Neověřeno).
         </section>
       </main>
     </div>

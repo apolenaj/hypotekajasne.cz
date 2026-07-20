@@ -13,7 +13,7 @@ function fmt(n: number | string | null | undefined): string {
  */
 export function buildAdvisorExportRows(result: PortfolioOsResult): string[][] {
   const rows: string[][] = [
-    ["Portfolio OS — export pro poradce/účetní"],
+    ["Moje portfolio — export pro poradce/účetní"],
     ["Vygenerováno", result.generatedAt],
     [],
     ["SOUHRN", "Hodnota", "Claim", "Blockery"],

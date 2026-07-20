@@ -9,9 +9,9 @@ import {
 import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = {
-  title: "Trust Center | HypotékaJasně.cz",
+  title: "Centrum důvěry | HypotékaJasně.cz",
   description:
-    "Komu dáváte data, kdo poskytuje kterou službu, jak vyděláváme a kde najdete metodiku, partnery a editorial policy.",
+    "Komu dáváte data, kdo poskytuje kterou službu, jak vyděláváme a kde najdete metodiku, partnery a redakční zásady.",
 };
 
 export default function DuveraPage() {
@@ -19,7 +19,7 @@ export default function DuveraPage() {
     <TrustPageShell
       currentPath="/duvera"
       eyebrow="Důvěryhodnost"
-      title="Trust Center"
+      title="Centrum důvěry"
       lead="Do 30 sekund: Hypotéka Jasně je technologická platforma. Úvěr schvaluje banka. Individuální zprostředkování dělá licencovaný specialista. Majetio slouží k nemovitostem."
     >
       <section>
@@ -60,7 +60,7 @@ export default function DuveraPage() {
 
       <section>
         <h2 className="font-heading text-xl font-semibold text-text-dark">
-          Dokumenty Trust Center
+          Dokumenty Centra důvěry
         </h2>
         <ul className="mt-4 grid gap-2 sm:grid-cols-2">
           {TRUST_NAV.filter((i) => i.href !== "/duvera").map((item) => (

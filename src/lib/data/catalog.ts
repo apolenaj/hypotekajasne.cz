@@ -57,7 +57,6 @@ export const DATA_CATALOG: DataCatalogEntry[] = [
       "src/lib/rates.ts",
       "src/components/calculators/MortgageCalculator.tsx",
       "src/components/calculators/AdvancedCalculator.tsx",
-      "src/components/sections/OnboardingWizard.tsx",
       "src/components/mortgage-readiness/MortgageReadinessWizard.tsx",
     ],
     canonicalModule: "supabase:current_rates (+ fallback bank_rates)",

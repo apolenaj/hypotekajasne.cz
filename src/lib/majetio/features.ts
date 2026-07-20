@@ -18,7 +18,7 @@ export const ECOSYSTEM_FEATURES: EcosystemFeature[] = [
     name: "Hypoteční připravenost",
     owner: "hypoteka-jasne",
     status: "LIVE",
-    description: "Kvalifikace a Financial Passport (orientační model).",
+    description: "Kvalifikace a Finanční pas (orientační model).",
   },
   {
     id: "hj.market_matching",
@@ -29,21 +29,21 @@ export const ECOSYSTEM_FEATURES: EcosystemFeature[] = [
   },
   {
     id: "hj.rentgen",
-    name: "Investiční rentgen (SSR + free preview)",
+    name: "Investiční rentgen (náhled + prémiová analýza)",
     owner: "hypoteka-jasne",
     status: "LIVE",
-    description: "Vstup do property analysis funnelu.",
+    description: "Vstup do analýzy konkrétní nemovitosti.",
   },
   {
     id: "shared.financial_passport",
-    name: "Financial Passport handoff",
+    name: "Předání Finančního pasu",
     owner: "shared",
     status: "BETA",
-    description: "Bezpečný přenos rozpočtových parametrů HJ → Majetio.",
+    description: "Bezpečný přenos rozpočtových parametrů HypotékaJasně → Majetio.",
   },
   {
     id: "majetio.discovery",
-    name: "Property discovery",
+    name: "Prohlížení nabídek (Majetio)",
     owner: "majetio",
     status: "BETA",
     description:
@@ -51,144 +51,144 @@ export const ECOSYSTEM_FEATURES: EcosystemFeature[] = [
   },
   {
     id: "majetio.property_analysis",
-    name: "Majetio Property Analysis",
+    name: "Analýza nemovitosti Majetio",
     owner: "majetio",
     status: "BETA",
     description: "Placená hloubková analýza konkrétní nemovitosti.",
   },
   {
     id: "majetio.affordability_widget",
-    name: "Mohu si to dovolit? (property detail)",
+    name: "Mohu si to dovolit? (detail nemovitosti)",
     owner: "shared",
     status: "COMING_SOON",
-    description: "API contract připraven; UI na Majetio property detail.",
+    description: "Rozhraní připraveno; UI na detailu nemovitosti v Majetio.",
   },
   {
     id: "shared.sso",
-    name: "Cross-platform SSO",
+    name: "Jednotné přihlášení napříč platformami",
     owner: "shared",
     status: "COMING_SOON",
     description:
-      "Architektura připravena; plný auth systém zatím nenasazujeme.",
+      "Architektura připravena; plný autentizační systém zatím nenasazujeme.",
   },
   {
     id: "shared.smart_watchlist",
-    name: "Smart Property Watchlist",
+    name: "Chytrý seznam sledování",
     owner: "shared",
     status: "BETA",
     description:
-      "Lokální sledování + in-app alerty; Majetio sync a email/push COMING_SOON.",
+      "Lokální sledování + upozornění v aplikaci; synchronizace s Majetio a e-mail/push už brzy.",
   },
   {
     id: "hj.property_compare",
-    name: "Property Compare (2–5)",
+    name: "Porovnání nemovitostí (2–5)",
     owner: "hypoteka-jasne",
     status: "BETA",
     description:
-      "Profesionální srovnání s category winners, trade-offs a shareable linkem.",
+      "Profesionální srovnání s vítězi kategorií, kompromisy a odkazem ke sdílení.",
   },
   {
     id: "shared.digital_twin",
-    name: "Property Digital Twin",
+    name: "Digitální dvojče nemovitosti",
     owner: "shared",
     status: "COMING_SOON",
     description:
-      "Dlouhodobý profil nemovitosti — value provenance, timeline, portfolio + Copilot.",
+      "Dlouhodobý profil nemovitosti — původ hodnoty, časová osa, portfolio a AI asistent.",
   },
   {
     id: "hj.academy_gamification",
-    name: "Academy Gamification Layer",
+    name: "Vzdělávací cesty a odznaky",
     owner: "hypoteka-jasne",
     status: "BETA",
     description:
-      "Learning paths, 0–100 % progress, meaningful badges, situational Copilot recommendations, character system — no streaks.",
+      "Vzdělávací cesty, postup 0–100 %, smysluplné odznaky, doporučení AI asistenta dle situace — bez streaků.",
   },
   {
     id: "hj.b2b_portal",
-    name: "B2B Professional Portal",
+    name: "Profesionální B2B portál",
     owner: "hypoteka-jasne",
     status: "BETA",
     description:
-      "SaaS vrstva pro makléře, kanceláře, developery a hypoteční partnery — org accounts, roles, billing-ready analýzy 5 000 Kč, reporty, engagement, audit. Score isolation: platba neovlivňuje skóre.",
+      "SaaS vrstva pro makléře, kanceláře, developery a hypoteční partnery — organizace, role, analýzy připravené k fakturaci, reporty, engagement, audit. Izolace skóre: platba neovlivňuje skóre.",
   },
   {
     id: "hj.report_engine",
-    name: "Professional Share/Export Report Engine",
+    name: "Sdílení a export reportů",
     owner: "hypoteka-jasne",
     status: "BETA",
     description:
-      "6 report types — web, print, PDF-ready HTML. Expiring share token, optional password, revoke, PII masking default. White-label B2B with transparent HJ/Majetio methodology.",
+      "6 typů reportů — web, tisk, HTML připravené pro PDF. Expirující odkaz, volitelné heslo, odvolání, výchozí maskování osobních údajů. Vlastní značka B2B s transparentní metodikou HypotékaJasně/Majetio.",
   },
   {
     id: "hj.alert_center",
-    name: "Alert Center",
+    name: "Centrum upozornění",
     owner: "hypoteka-jasne",
     status: "BETA",
     description:
-      "Centrální alerty s deduplication, LTV-specific rate copy, preference immediate/digest, notification channels (in-app LIVE, email/push COMING_SOON + consent).",
+      "Centrální upozornění s deduplikací, textací sazeb podle LTV, preference ihned/souhrn, kanály (v aplikaci v provozu, e-mail/push už brzy + souhlas).",
   },
   {
     id: "hj.market_pulse",
-    name: "Market Pulse Dashboard",
+    name: "Tržní puls",
     owner: "hypoteka-jasne",
     status: "BETA",
     description:
-      "Trendy sazeb, cen, nájmů, yieldu a regulační changelog. Opportunity Radar upozorňuje — negarantuje investici. CZ sazby LIVE.",
+      "Trendy sazeb, cen, nájmů, výnosů a regulační změny. Radar příležitostí upozorňuje — negarantuje investici. CZ sazby z aktuálních dat.",
   },
   {
     id: "hj.due_diligence",
-    name: "Dynamic Due Diligence Engine",
+    name: "Dynamická prověrka nemovitosti",
     owner: "hypoteka-jasne",
     status: "BETA",
     description:
-      "Personalizovaný checklist LEGAL–EXIT dle typu nemovitosti. GREY default — unknown není green. Human-expert escalation.",
+      "Personalizovaný checklist LEGAL–EXIT dle typu nemovitosti. Šedá jako výchozí — neznámé není zelené. Eskalace k lidskému specialistovi.",
   },
   {
     id: "hj.offer_strategy",
-    name: "Offer Strategy Assistant",
+    name: "Asistent strategie nabídky",
     owner: "hypoteka-jasne",
     status: "BETA",
     description:
-      "MODEL strategie nabídky, scenario slider, investment metrics, etický draft textu.",
+      "Modelová strategie nabídky, posuvník scénářů, investiční metriky, etický návrh textu.",
   },
   {
     id: "hj.deal_room",
-    name: "Property Deal Room",
+    name: "Transakční místnost",
     owner: "hypoteka-jasne",
     status: "BETA",
     description:
-      "Workspace pro transakci — timeline, role, permission-based documents, Majetio + specialist handoff.",
+      "Pracovní prostor pro transakci — časová osa, role, dokumenty dle oprávnění, předání Majetio a specialistovi.",
   },
   {
     id: "hj.document_vault",
-    name: "Document Vault",
+    name: "Dokumentový trezor",
     owner: "hypoteka-jasne",
     status: "BETA",
     description:
-      "Secure mortgage & property document vault — encryption, checklist, AI extraction (factual), consent-based specialist handoff.",
+      "Zabezpečený trezor hypotečních a majetkových dokumentů — šifrování, checklist, faktická AI extrakce, předání specialistovi se souhlasem.",
   },
   {
     id: "hj.global_financing_router",
-    name: "Global Financing Router",
+    name: "Mapa globálního financování",
     owner: "hypoteka-jasne",
     status: "BETA",
     description:
-      "Mapa cest financování podle rezidence a země nemovitosti — bez jediného doporučení, partner-ready marketplace.",
+      "Mapa cest financování podle rezidence a země nemovitosti — bez jediného doporučení, připraveno pro partnery.",
   },
   {
     id: "hj.refinance_radar",
-    name: "Refinance Radar",
+    name: "Radar refinancování",
     owner: "hypoteka-jasne",
     status: "BETA",
     description:
-      "Personalizované alerty k fixaci, scénáře splátky (MODEL), Stay vs Refinance porovnání, CTA na specialistu.",
+      "Personalizovaná upozornění k fixaci, scénáře splátky (model), srovnání zůstat vs. refinancovat, výzva ke specialistovi.",
   },
   {
     id: "hj.portfolio_os",
-    name: "Portfolio OS",
+    name: "Správa portfolia",
     owner: "hypoteka-jasne",
     status: "BETA",
     description:
-      "Agregace více owned twins: summary, koncentrace, stress, explainable scénáře, export.",
+      "Agregace více vlastněných digitálních dvojčat: shrnutí, koncentrace, zátěžové testy, vysvětlitelné scénáře, export.",
   },
 ];

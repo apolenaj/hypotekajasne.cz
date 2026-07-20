@@ -90,7 +90,7 @@ export const PARTNER_TRANSFER_SCOPE_LABELS: Record<
 > = {
   mortgage_specialist:
     "Licencovaný hypoteční specialista (viz /partneri)",
-  majetio: "Majetio — property discovery / Financial Passport",
+  majetio: "Majetio — vyhledání a analýza nemovitostí / Finanční pas",
   broker_developer: "Makléř / developer (pouze pokud výslovně zvoleno)",
   none: "Bez předání třetí straně",
 };

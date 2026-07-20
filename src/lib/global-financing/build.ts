@@ -36,7 +36,7 @@ function buildMapGraph(
     nodes.push({
       id: nodeId,
       type: "route",
-      label: `Route ${route.routeLetter}`,
+      label: `Trasa ${route.routeLetter}`,
       sublabel: route.label,
       routeCard: route,
     });

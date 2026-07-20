@@ -27,8 +27,8 @@ export function buildFreePreview(
   mode: RentgenInputMode
 ): FreePreviewResult {
   const limitations: string[] = [
-    "Free preview není kompletní due diligence ani nabídka banky.",
-    "Právní a technická fakta bez zdroje označujeme jako NEOVĚŘENO a nevyplňujeme je.",
+    "Bezplatný náhled není kompletní due diligence ani nabídka banky.",
+    "Právní a technická fakta bez zdroje označujeme jako Neověřeno a nevyplňujeme je.",
   ];
 
   if (mode === "url" && input.listingUrl.trim()) {
@@ -38,7 +38,7 @@ export function buildFreePreview(
   }
   if (mode === "upload") {
     limitations.push(
-      "Upload dokumentů/fotek je v přípravě — zatím použijte manuální údaje nebo Premium."
+      "Nahrání dokumentů a fotek připravujeme — zatím použijte manuální údaje nebo Prémiovou analýzu."
     );
   }
 
@@ -84,7 +84,7 @@ export function buildFreePreview(
     orientationalYieldPa = {
       value: market.yield,
       kind: "MODEL",
-      note: `Modelový hrubý yield lokality „${input.city}“ — ne garantovaný výnos.`,
+      note: `Modelový hrubý výnos lokality „${input.city}“ — ne garantovaný výnos.`,
     };
   } else if (input.purpose === "own_use") {
     orientationalYieldPa = {
@@ -96,7 +96,7 @@ export function buildFreePreview(
     orientationalYieldPa = {
       value: null,
       kind: "NEOVERENO",
-      note: "Doplňte cenu a nájem, nebo lokalitu pro modelový yield.",
+      note: "Doplňte cenu a nájem, nebo lokalitu pro modelový výnos.",
     };
   }
 
@@ -107,7 +107,7 @@ export function buildFreePreview(
     const ltvRounded = Math.round(ltv);
     if (equity <= 0) {
       financingFit = {
-        value: `Bez zadané equity — modelové LTV by bylo ~${ltvRounded} % (celá cena úvěrem). ODHAD, ne posouzení banky.`,
+        value: `Bez zadaného vlastního kapitálu — modelové LTV by bylo ~${ltvRounded} % (celá cena úvěrem). Odhad, ne posouzení banky.`,
         kind: "ODHAD",
       };
     } else if (ltvRounded > 90) {
@@ -122,13 +122,13 @@ export function buildFreePreview(
       };
     } else {
       financingFit = {
-        value: `Orientační LTV ~${ltvRounded} % při zadané equity. ODHAD financing fit — finální posouzení banka/partner.`,
+        value: `Orientační LTV ~${ltvRounded} % při zadaném vlastním kapitálu. Odhad financovatelnosti — finální posouzení banka/partner.`,
         kind: "ODHAD",
       };
     }
   } else {
     financingFit = {
-      value: "Doplňte kupní cenu (a ideálně equity) pro základní financing fit.",
+      value: "Doplňte kupní cenu (a ideálně vlastní kapitál) pro základní odhad financovatelnosti.",
       kind: "NEOVERENO",
     };
   }
@@ -173,7 +173,7 @@ export function buildFreePreview(
   }
   if (redFlags.length === 0) {
     redFlags.push({
-      text: "Z dostupných vstupů nevyplynul silný red flag. Absence flagu ≠ absence rizika.",
+      text: "Z dostupných vstupů nevyplynul silný rizikový signál. Absence varování ≠ absence rizika.",
       kind: "ODHAD",
     });
   }

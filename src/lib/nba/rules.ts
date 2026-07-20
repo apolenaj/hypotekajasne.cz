@@ -12,13 +12,13 @@ function daysFromNow(now: Date, days: number): string {
 export const NBA_RULES: NbaRule[] = [
   {
     id: "start_readiness",
-    name: "Chybí Financial Passport / připravenost",
+    name: "Chybí Finanční pas / připravenost",
     priority: 100,
     when: (c) => !c.hasProfile,
     build: () => ({
       action: "Spusťte Hypoteční připravenost",
       reason:
-        "Bez lokálního profilu neumíme spočítat safe buying power ani personalizovat další kroky.",
+        "Bez lokálního profilu neumíme spočítat bezpečný rozpočet ani personalizovat další kroky.",
       expectedBenefit:
         "Získáte orientační skóre připravenosti a rozpočet (MODEL) — bez příslibu schválení.",
       expiresAt: null,
@@ -65,7 +65,7 @@ export const NBA_RULES: NbaRule[] = [
       action: "Nejdříve zlepšete finanční připravenost",
       reason: `Vaše modelové skóre je ${c.readinessScore}/100 — pod prahem 50. Další kroky (nemovitost, handoff) mají nižší smysl, dokud se nezvedne základ.`,
       expectedBenefit:
-        "Simulace v Financial Passportu ukáže nejrychlejší páky (závazky, zdroje, příjem).",
+        "Simulace ve Finančním pasu ukáže nejrychlejší páky (závazky, zdroje, příjem).",
       expiresAt: null,
       sourceData: {
         keys: ["readiness.overall"],
@@ -119,7 +119,7 @@ export const NBA_RULES: NbaRule[] = [
         claimKind: "DATA",
         snapshot: { completeness: c.profileCompleteness },
       },
-      blockingIssues: ["Neúplný Financial Passport"],
+      blockingIssues: ["Neúplný Finanční pas"],
       href: routes.navrhNaMiru,
       urgency: "medium",
     }),
@@ -210,7 +210,7 @@ export const NBA_RULES: NbaRule[] = [
   },
   {
     id: "start_smart_watchlist",
-    name: "Založit Smart Watchlist",
+    name: "Založit sledované nemovitosti",
     priority: 72,
     when: (c) =>
       c.hasProfile &&
@@ -218,7 +218,7 @@ export const NBA_RULES: NbaRule[] = [
       !c.hasSavedProperty &&
       (c.readinessScore == null || c.readinessScore <= 75),
     build: () => ({
-      action: "Přidejte nemovitost nebo filtr do Smart Watchlistu",
+      action: "Přidejte nemovitost nebo filtr do Sledovaných nemovitostí",
       reason:
         "Sledování ceny, stáří inzerátu a modelové splátky je hlavní retention funkce — alerty jen z dostupných dat.",
       expectedBenefit: "Vrátíte se, když se něco skutečně změní (throttle proti spamu).",
@@ -240,7 +240,7 @@ export const NBA_RULES: NbaRule[] = [
     when: (c) => Boolean(c.propertyOverBudgetLabel),
     build: (c) => ({
       action: "Zkontrolujte financování uložené nemovitosti",
-      reason: `„${c.propertyOverBudgetLabel}“ je nad modelovým stropem z Financial Passportu.`,
+      reason: `„${c.propertyOverBudgetLabel}“ je nad modelovým stropem z Finančního pasu.`,
       expectedBenefit:
         "Upravíte cíl, zdroje nebo splátku dřív, než budete řešit rezervaci.",
       expiresAt: null,
@@ -291,7 +291,7 @@ export const NBA_RULES: NbaRule[] = [
     build: (c) => ({
       action: "Spustit investiční analýzu",
       reason: "Máte uloženou nemovitost — free preview v Rentgenu doplní yield / rizika s claim statusem.",
-      expectedBenefit: "DATA / MODEL / ODHAD metrik místo dojmů z inzerátu.",
+      expectedBenefit: "Data / Modelový výpočet / Odhad metrik místo dojmů z inzerátu.",
       expiresAt: null,
       sourceData: {
         keys: ["watchlist.count"],
@@ -315,7 +315,7 @@ export const NBA_RULES: NbaRule[] = [
     build: (c) => ({
       action: c.topLeverTitle ?? "Zlepšete připravenost o další stupeň",
       reason: `Skóre ${c.readinessScore}/100 je solidní základ, ale do „připraven k průzkumu“ zbývá prostor.`,
-      expectedBenefit: "Konkrétní páka z Financial Passportu (simulace).",
+      expectedBenefit: "Konkrétní páka z Finančního pasu (simulace).",
       expiresAt: null,
       sourceData: {
         keys: ["readiness.overall", "readiness.topLevers"],

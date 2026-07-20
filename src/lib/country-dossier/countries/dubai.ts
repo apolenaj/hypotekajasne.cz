@@ -19,39 +19,39 @@ const FREEHOLD_ZONES = reviewClaim(
 export const dubaiDossier: CountryDossier = assemble(
   "dubai",
   "SAE (Dubaj)",
-  "Freehold v designovaných zónách, developer payment plans a oddělená non-resident hypotéka.",
+  "Volné vlastnictví v designovaných zónách, platební plány developera a oddělená hypotéka pro nerezidenty.",
   [
-    narrative("executive_summary", "Likvidní off-plan i secondary trh s důrazem na due diligence developera a zóny vlastnictví.", [
+    narrative("executive_summary", "Likvidní trh ve výstavbě i secondary s důrazem na due diligence developera a zóny vlastnictví.", [
       { text: FREEHOLD_ZONES.text, claim: FREEHOLD_ZONES },
-      { text: "Developer payment plan ≠ bankovní hypotéka — jde o schedule plateb." },
+      { text: "Platební plán developera ≠ bankovní hypotéka — jde o rozvrh plateb." },
       { text: "Daň z příjmu fyzických osob z nájmu často nízká/nulová v lokálním režimu — ověřte aktuální federal/emirate pravidla a domovskou rezidenci." },
     ]),
     narrative("suitability", "Vhodné pro investory s kapitálem na vyšší vstup a tolerancí k FX (AED) a developer riziku.", [
-      { text: "Méně vhodné bez rezervy na service charges a bez právní kontroly SPA." },
+      { text: "Méně vhodné bez rezervy na provozní poplatky (service charges) a bez právní kontroly kupní smlouvy." },
     ]),
     {
       id: "ownership",
       kind: "ownership",
       title: sectionTitle("ownership"),
-      summary: "Freehold / leasehold dle zóny a projektu.",
-      modelLabel: "Freehold (designated) / jinak omezeno",
+      summary: "Volné vlastnictví / nájemní právo dle zóny a projektu.",
+      modelLabel: "Volné vlastnictví (designované zóny) / jinak omezeno",
       bullets: [{ text: FREEHOLD_ZONES.text, claim: FREEHOLD_ZONES }],
     },
     {
       id: "financing",
       kind: "financing",
       title: sectionTitle("financing"),
-      summary: "Tři oddělené produkty: developer plan, non-resident mortgage (LTV typicky nižší), české zajištění.",
+      summary: "Tři oddělené produkty: platební plán developera, hypotéka pro nerezidenty (LTV typicky nižší), české zajištění.",
       lanes: [
         {
           audience: "both",
-          title: "Developer payment plan",
-          summary: "Booking → výstavba → handover → post-handover. Bez anuitní sazby banky.",
+          title: "Platební plán developera",
+          summary: "Rezervace → výstavba → předání → po předání. Bez anuitní sazby banky. LTV se nepoužívá.",
           linkedOptions: ["DEVELOPER_PAYMENT_PLAN"],
         },
         {
           audience: "non_resident",
-          title: "Non-resident hypotéka",
+          title: "Hypotéka pro nerezidenty",
           summary: "Lokální bankovní produkt — v modelu max LTV 50 %, sazbu individuálně ověřujeme.",
           linkedOptions: ["LOCAL_MORTGAGE"],
           claim: modelledClaim(
@@ -72,10 +72,10 @@ export const dubaiDossier: CountryDossier = assemble(
       id: "transaction_costs",
       kind: "costs",
       title: sectionTitle("transaction_costs"),
-      summary: "DLD poplatky, agent, převod.",
+      summary: "Poplatky DLD, agent, převod.",
       lines: [
         {
-          label: "DLD transfer fee",
+          label: "Poplatek za převod (DLD)",
           range: "orientačně kolem 4 % + admin",
           claim: modelledClaim("Sazby se mohou měnit — ověřte u DLD / právníka.", "Dubai Land Department"),
         },
@@ -85,10 +85,10 @@ export const dubaiDossier: CountryDossier = assemble(
       id: "holding_costs",
       kind: "costs",
       title: sectionTitle("holding_costs"),
-      summary: "Service charges jsou často významná roční položka.",
+      summary: "Provozní poplatky (service charges) jsou často významná roční položka.",
       lines: [
         {
-          label: "Service charges",
+          label: "Provozní poplatky",
           range: "AED / sq.ft — projektově",
           claim: modelledClaim("Liší se věží a správcem.", "RERA / community"),
         },
@@ -128,9 +128,9 @@ export const dubaiDossier: CountryDossier = assemble(
       summary: "Od rezervace po title deed.",
       steps: [
         { order: 1, title: "Výběr + due diligence", detail: "Zóna, developer, Oqood/title.", durationHint: "1–3 týdny" },
-        { order: 2, title: "SPA / booking", detail: "Rezervační platba dle plánu.", durationHint: "1 týden" },
-        { order: 3, title: "Financování / schedule", detail: "Bankovní NOC nebo developer schedule.", durationHint: "2–6 týdnů" },
-        { order: 4, title: "Transfer / handover", detail: "DLD, title deed.", durationHint: "dle projektu" },
+        { order: 2, title: "Kupní smlouva / rezervace", detail: "Rezervační platba dle plánu.", durationHint: "1 týden" },
+        { order: 3, title: "Financování / harmonogram", detail: "Bankovní NOC nebo platební plán developera.", durationHint: "2–6 týdnů" },
+        { order: 4, title: "Převod / předání", detail: "DLD, list vlastnictví.", durationHint: "dle projektu" },
       ],
     },
     {
@@ -147,7 +147,7 @@ export const dubaiDossier: CountryDossier = assemble(
     sourcesSection(
       {
         text: `Poslední právní review dossieru Dubaj: ${LEGAL_REVIEW_AS_OF}`,
-        source: "HypotékaJasně.cz editorial legal review",
+        source: "Editorial HypotékaJasně.cz (po kontrole)",
         sourceUrl: null,
         asOf: LEGAL_REVIEW_AS_OF,
         status: "VERIFIED",

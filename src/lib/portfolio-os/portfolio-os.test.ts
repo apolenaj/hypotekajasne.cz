@@ -76,10 +76,10 @@ describe("Portfolio OS", () => {
       liquidityReserveCzk: 100_000,
     });
     const csv = buildAdvisorExportCsv(r);
-    assert.match(csv, /Portfolio OS/);
+    assert.match(csv, /Moje portfolio/);
     assert.match(csv, /STRESS TESTY/);
     assert.match(csv, /METODIKA/);
-    assert.match(csv, /Total property value/);
+    assert.match(csv, /Hodnota nemovitostí/);
   });
 
   it("feature status is BETA", () => {

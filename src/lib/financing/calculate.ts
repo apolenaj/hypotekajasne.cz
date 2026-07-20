@@ -119,9 +119,13 @@ export function calculateFinancing(
     const plan = calculateDeveloperPlanSchedule(price, schedule);
     return {
       ...base,
+      // Platební plán developera ≠ bankovní úvěr — LTV nezobrazujeme
+      ltv: null,
+      maxLtvPercent: null,
+      ltvExceedsMax: false,
       calculable: true,
       message:
-        "Developer payment plan není bankovní hypotéka — jde o rozvrh plateb developerovi.",
+        "Platební plán developera není bankovní hypotéka — jde o rozvrh plateb developerovi.",
       financedAmount: price,
       ratePercentPa: null,
       monthlyPayment: plan.peakMonthlyPayment,

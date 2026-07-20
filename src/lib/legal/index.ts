@@ -2,6 +2,7 @@ export {
   getOperatorIdentity,
   formatOperatorAddress,
   operatorDisplayName,
+  isPaidAnalysisCommerciallyAvailable,
   type OperatorIdentity,
 } from "@/lib/legal/operator";
 export {

@@ -42,7 +42,7 @@ export function AffordabilityWidget() {
       aria-labelledby="affordability-heading"
       className="scroll-mt-24 border-b border-border bg-white"
     >
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-12 lg:gap-12 lg:px-8 lg:py-16">
+      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-12 lg:gap-10 lg:px-8 lg:py-12">
         <div className="lg:col-span-5">
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-deep-teal">
             Mini-widget
@@ -115,21 +115,21 @@ export function AffordabilityWidget() {
             </div>
 
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-lg border border-border bg-white p-4">
+              <div className="min-w-0 rounded-lg border border-border bg-white p-4">
                 <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
                   Max. úvěr
                 </p>
-                <p className="mt-1 font-heading text-2xl font-bold tabular-nums text-text-dark sm:text-3xl">
+                <p className="mt-1 break-words font-heading text-xl font-bold tabular-nums text-text-dark sm:text-2xl lg:text-3xl">
                   {result.hasRate || result.maxLoan > 0
                     ? formatCurrency(result.maxLoan, "CZK")
                     : missingDataLabel("STALE")}
                 </p>
               </div>
-              <div className="rounded-lg border border-border bg-white p-4">
+              <div className="min-w-0 rounded-lg border border-border bg-white p-4">
                 <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
                   Max. cena nemovitosti
                 </p>
-                <p className="mt-1 font-heading text-2xl font-bold tabular-nums text-deep-teal sm:text-3xl">
+                <p className="mt-1 break-words font-heading text-xl font-bold tabular-nums text-deep-teal sm:text-2xl lg:text-3xl">
                   {result.maxPropertyPrice > 0
                     ? formatCurrency(result.maxPropertyPrice, "CZK")
                     : missingDataLabel(null)}

@@ -31,7 +31,7 @@ export function BuyVsRentSection({
         {!embedded && (
           <header className="mb-8">
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-deep-teal">
-              Decision Lab
+              Laboratoř rozhodnutí
             </p>
             <h2 className="mt-1 font-heading text-3xl font-bold text-text-dark">
               Koupě vs. nájem

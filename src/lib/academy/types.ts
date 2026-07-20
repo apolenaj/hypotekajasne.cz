@@ -157,7 +157,7 @@ export const DEFAULT_DERIVATIVES = (
     channel: "seo_article",
     status: "LIVE",
     href: `/akademie/${slug}`,
-    notes: "Kanonická SSR lekce",
+    notes: "Kanonická lekce akademie",
   },
   {
     channel: "video",

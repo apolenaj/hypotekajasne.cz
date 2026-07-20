@@ -193,7 +193,7 @@ export function DocumentVaultView() {
   if (!ready) {
     return (
       <div className="mx-auto max-w-6xl px-4 py-16 text-sm text-muted-foreground">
-        Načítám Document Vault…
+        Načítám Dokumentový trezor…
       </div>
     );
   }
@@ -204,7 +204,7 @@ export function DocumentVaultView() {
         <div className="mx-auto max-w-6xl px-4 py-10">
           <div className="flex flex-wrap items-center gap-3">
             <p className="text-xs font-bold uppercase tracking-widest text-muted-gold">
-              Mortgage & Property Document Vault
+              Trezor hypotečních a majetkových dokumentů
             </p>
             <FeatureStatusBadge status={DOCUMENT_VAULT_FEATURE_STATUS} />
             <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-bold">
@@ -212,7 +212,7 @@ export function DocumentVaultView() {
             </span>
           </div>
           <h1 className="mt-2 font-heading text-3xl font-black md:text-4xl">
-            Document Vault
+            Dokumentový trezor
           </h1>
           <p className="mt-2 max-w-3xl text-sm text-emerald-50/90">
             Bezpečné uložení metadata dokumentů, AI extrakce faktických
@@ -231,7 +231,7 @@ export function DocumentVaultView() {
               href={routes.financniPas}
               className="rounded-full border border-white/30 px-4 py-2 text-sm font-semibold"
             >
-              Financial Passport
+              Finanční pas
             </Link>
           </div>
         </div>
@@ -239,7 +239,7 @@ export function DocumentVaultView() {
 
       <main className="mx-auto max-w-6xl space-y-8 px-4 py-10">
         {/* KPI */}
-        <section className="grid gap-4 sm:grid-cols-4">
+        <section className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {[
             {
               label: "Checklist",
@@ -305,7 +305,8 @@ export function DocumentVaultView() {
             Přidat dokument (metadata)
           </h2>
           <p className="mb-4 text-xs text-muted-foreground">
-            BETA — binární obsah neukládáme do localStorage. Production = encrypted object storage + signed URL.
+            Beta — ukládáme jen metadata dokumentu, ne soubor samotný. Šifrované
+            úložiště souborů připravujeme.
           </p>
           <div className="flex flex-wrap gap-3">
             <select
@@ -471,7 +472,7 @@ export function DocumentVaultView() {
             </button>
           </div>
           <div className="rounded-2xl border border-border bg-white p-5">
-            <h3 className="mb-3 font-heading font-bold">Audit log (metadata)</h3>
+            <h3 className="mb-3 font-heading font-bold">Auditní záznam (metadata)</h3>
             <ul className="max-h-40 space-y-1 overflow-y-auto text-xs text-muted-foreground">
               {auditLogs.slice(0, 8).map((e) => (
                 <li key={e.id}>

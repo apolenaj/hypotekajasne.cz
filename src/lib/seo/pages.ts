@@ -47,100 +47,100 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
   },
   {
     path: routes.copilot,
-    title: "AI Property & Mortgage Copilot",
+    title: "Finanční AI průvodce",
     description:
-      "Důvěryhodný copilot nad ověřenými daty a kalkulačkami — citace DATA/MODEL/ODHAD, bez halucinací sazeb.",
+      "Finanční AI průvodce nad ověřenými daty a kalkulačkami — citace, bez halucinací sazeb.",
     priority: 0.9,
   },
   {
     path: routes.financniPas,
-    title: "Financial Passport — váš finančně-realitní profil",
+    title: "Finanční pas — váš finančně-realitní profil",
     description:
       "Centrální profil dostupnosti, rizik a připravenosti s dimenzionálním skóre, timeline a simulacemi.",
     priority: 0.92,
   },
   {
     path: routes.b2bPortal,
-    title: "B2B Professional Portal — partner SaaS",
+    title: "Profesionální B2B portál — partner SaaS",
     description:
-      "Organizace, role, objednávky Property Analysis 5 000 Kč, tracking, reporty Majetio Property Intelligence, developer projekty, billing-ready fakturace, audit. Platba neovlivňuje investiční skóre.",
+      "Organizace, role, objednávky analýzy nemovitosti, tracking, reporty Majetio, developer projekty, fakturace, audit. Platba neovlivňuje investiční skóre.",
     priority: 0.89,
   },
   {
     path: routes.reportEngine,
-    title: "Report Engine — profesionální export a sdílení",
+    title: "Profesionální reporty — export a sdílení",
     description:
-      "Mortgage Readiness, Property Analysis, Comparison, Investment Passport, Portfolio Risk, Refinance. Web, tisk, PDF-ready HTML. Expiring token, heslo, revoke, maskování PII.",
+      "Připravenost na hypotéku, analýza nemovitosti, porovnání, investiční pas, riziko portfolia, refinancování. Web, tisk, HTML připravené pro PDF. Časově omezený token, heslo, revoke, maskování PII.",
     priority: 0.88,
   },
   {
     path: routes.alertCenter,
-    title: "Alert Center — centrální upozornění",
+    title: "Centrum upozornění — centrální upozornění",
     description:
       "Personalizované alerty: sazby v LTV kontextu, fixace, dokumenty, regulace. Deduplication a preference doručení. Email/push vyžadují consent.",
     priority: 0.87,
   },
   {
     path: routes.marketPulse,
-    title: "Market Pulse — vývoj trhů bez clickbaitu",
+    title: "Tržní puls — vývoj trhů bez clickbaitu",
     description:
       "Trendy sazeb, cen, nájmů a yieldu pro podporované trhy. Opportunity Radar upozorňuje na shodu s kritérii — ne garantuje investici.",
     priority: 0.86,
   },
   {
     path: routes.dueDiligence,
-    title: "Due Diligence Engine — prověrka nemovitosti",
+    title: "Dynamická prověrka nemovitosti",
     description:
-      "Personalizovaný checklist LEGAL–EXIT dle typu nemovitosti. Traffic light GREY default — unknown není green. Human-expert escalation.",
+      "Personalizovaný checklist LEGAL–EXIT dle typu nemovitosti. Semafor výchozí šedý — unknown není green. Eskalace k lidskému specialistovi.",
     priority: 0.85,
   },
   {
     path: routes.offerStrategy,
-    title: "Offer Strategy Assistant — strategie nabídky",
+    title: "Strategie nabídky — asistent",
     description:
       "MODEL opening, target, max cena, scenario slider yield/CF/IRR a etický návrh textu. Ne znalecký posudek.",
     priority: 0.83,
   },
   {
     path: routes.dealRoom,
-    title: "Property Deal Room — workspace pro transakci",
+    title: "Transakční místnost — workspace pro transakci",
     description:
       "Timeline, dokumenty s permission modelem, kontakty a úkoly. Vznikne po „Mám vážný zájem“. Nahrazuje chaos z WhatsAppu a e-mailů.",
     priority: 0.84,
   },
   {
     path: routes.documentVault,
-    title: "Document Vault — bezpečné uložení hypotečních dokumentů",
+    title: "Dokumentový trezor — bezpečné uložení hypotečních dokumentů",
     description:
-      "Šifrovaný trezor, checklist dle situace, AI extrakce faktických pozorování, audit log a sdílení se specialistou po souhlasu.",
+      "Šifrovaný trezor, checklist dle situace, AI extrakce faktických pozorování, auditní záznam a sdílení se specialistou po souhlasu.",
     priority: 0.85,
   },
   {
     path: routes.globalFinancing,
-    title: "Global Financing Router — mapa cest financování",
+    title: "Mapa globálního financování — cesty financování",
     description:
-      "Porovnejte lokální hypotéku, české zajištěné financování, developer plán, hotovost a kombinace. Partner-ready architektura pro marketplace.",
+      "Porovnejte lokální hypotéku, české zajištěné financování, plán developera, hotovost a kombinace. Partner-ready architektura pro marketplace.",
     priority: 0.88,
   },
   {
     path: routes.refinanceRadar,
-    title: "Refinance Radar — sledujte fixaci a porovnejte refinancování",
+    title: "Hlídač refinancování — sledujte fixaci a porovnejte nabídky",
     description:
-      "Personalizované alerty k fixaci, scénáře splátky (MODEL), Stay vs Refinance porovnání s poplatky a pojištěním. CTA na specialistu.",
+      "Personalizovaná upozornění k fixaci, scénáře splátky (model), Zůstat vs. refinancovat porovnání s poplatky a pojištěním. CTA na specialistu.",
     priority: 0.87,
   },
   {
     path: routes.portfolio,
-    title: "Portfolio OS — správa více nemovitostí",
+    title: "Moje portfolio — správa více nemovitostí",
     description:
-      "Souhrn hodnoty, equity, LTV, cash flow, koncentrace rizik a stress testy. Export pro poradce.",
+      "Souhrn hodnoty, vlastní kapitál, LTV, cash flow, koncentrace rizik a stress testy. Export pro poradce.",
     priority: 0.86,
   },
   {
     path: routes.sledovani,
-    title: "Smart Watchlist — sledování nemovitostí",
+    title: "Sledované nemovitosti",
     description:
-      "Sledujte nemovitosti, města a filtry. Alerty jen z dostupných dat — propojeno s Majetio, bez spamu.",
+      "Sledujte nemovitosti, města a filtry. Upozornění jen z dostupných dat — propojeno s Majetio, bez spamu.",
     priority: 0.88,
   },
   {
@@ -154,7 +154,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     path: routes.investicniRentgen,
     title: "Investiční rentgen nemovitosti",
     description:
-      "Free preview metrik a Premium analýza s jasným claim statusem DATA / MODEL / ODHAD.",
+      "Bezplatný náhled metrik a Prémiová analýza nemovitosti. Údaje: Data, Modelový výpočet, Odhad, Neověřeno.",
     priority: 0.85,
   },
   {
@@ -182,7 +182,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     path: routes.clanky,
     title: "Magazín — články o hypotékách a investicích",
     description:
-      "YMYL články s autorem, reviewerem, zdroji a datem faktické kontroly.",
+      "Články o hypotékách a investicích s autorem, odbornou kontrolou, zdroji a datem ověření faktů.",
     priority: 0.85,
   },
   {
@@ -222,12 +222,12 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     path: routes.oNas,
     title: "O nás — tým a role",
     description:
-      "Role, vzdělání, odpovědnost za obsah. Trust Center: kdo co dělá.",
+      "Role, vzdělání, odpovědnost za obsah. Centrum důvěry: kdo co dělá.",
     priority: 0.6,
   },
   {
     path: routes.duvera,
-    title: "Trust Center",
+    title: "Centrum důvěry",
     description:
       "Kdo poskytuje kterou službu, jak vyděláváme, partneři a metodika.",
     priority: 0.7,
@@ -236,7 +236,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     path: routes.metodika,
     title: "Metodika dat",
     description:
-      "Statusy LIVE / VERIFIED / MODEL, zdroje a váhy market matchingu.",
+      "Statusy AKTUÁLNÍ DATA / OVĚŘENO / MODELOVÝ VÝPOČET, zdroje a váhy market matchingu.",
     priority: 0.7,
   },
   {
@@ -247,7 +247,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
   },
   {
     path: routes.editorialPolicy,
-    title: "Editorial policy",
+    title: "Redakční zásady",
     description:
       "Pravidla YMYL obsahu: autor, review, zdroje, zákaz nepodložených slibů.",
     priority: 0.55,
@@ -277,7 +277,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     path: routes.oMajetio,
     title: "O Majetio",
     description:
-      "Property discovery oddělené od Hypotéka Jasně — Financial Passport handoff.",
+      "Property discovery oddělené od Hypotéka Jasně — handoff Finančního pasu.",
     priority: 0.55,
   },
   {
@@ -298,12 +298,12 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     path: routes.legal.gdpr,
     title: "Ochrana osobních údajů (GDPR)",
     description:
-      "Správce, souhlasy, partner transfer a cookies — draft k legal review.",
+      "Správce, souhlasy, předání partnerovi a cookies — analytika jen se souhlasem.",
     priority: 0.4,
   },
   {
     path: routes.legal.cookies,
-    title: "Cookie policy",
+    title: "Zásady cookies",
     description:
       "Analytika a marketing cookies pouze se souhlasem — sjednoceno s GDPR.",
     priority: 0.4,

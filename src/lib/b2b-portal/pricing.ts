@@ -17,10 +17,10 @@ export const B2B_BILLING_PLANS: Record<BillingPlanId, BillingPlanDef> = {
   single_analysis: {
     id: "single_analysis",
     name: "Jednotlivá analýza",
-    description: "Property Analysis 5 000 Kč — Majetio Property Intelligence report",
+    description: `Analýza nemovitosti ${PROPERTY_ANALYSIS_PRICING.amountCzk.toLocaleString("cs-CZ")} Kč — report Majetio`,
     status: BILLING_PLAN_STATUS.single_analysis,
     analysisCredits: 1,
-    unitAmountCzk: PROPERTY_ANALYSIS_PRICING.listAmountCzk,
+    unitAmountCzk: PROPERTY_ANALYSIS_PRICING.amountCzk,
     sku: "b2b-analysis-single-v1",
   },
   package_starter: {

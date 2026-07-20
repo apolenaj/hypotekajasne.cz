@@ -19,7 +19,7 @@ export default function DashboardPage() {
       <div className="border-b border-border bg-[#f7f8f7]">
         <div className="mx-auto max-w-5xl px-4 py-3">
           <Breadcrumbs
-            items={crumbs({ name: "Dashboard", path: routes.dashboard })}
+            items={crumbs({ name: "Můj přehled", path: routes.dashboard })}
           />
         </div>
       </div>

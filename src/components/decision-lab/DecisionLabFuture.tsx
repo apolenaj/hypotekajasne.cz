@@ -28,10 +28,10 @@ import {
 import { cn } from "@/lib/utils";
 
 const SCENARIOS: { id: FutureScenarioId; label: string }[] = [
-  { id: "bear", label: "Bear" },
-  { id: "base", label: "Base" },
-  { id: "bull", label: "Bull" },
-  { id: "custom", label: "Custom" },
+  { id: "bear", label: "Pesimistický" },
+  { id: "base", label: "Základní" },
+  { id: "bull", label: "Optimistický" },
+  { id: "custom", label: "Vlastní" },
 ];
 
 type Props = { countryId: CountryId };
@@ -110,10 +110,10 @@ export function DecisionLabFuture({ countryId }: Props) {
     <div className="space-y-6">
       <div>
         <p className="text-sm font-semibold text-deep-teal">
-          Decision Lab · Future simulator
+          Laboratoř rozhodnutí · Simulátor budoucnosti
         </p>
         <p className="mt-1 text-sm text-muted-foreground">
-          Bear / Base / Bull / Custom. Assumptions jsou vždy viditelné.
+          Pesimistický / Základní / Optimistický / Vlastní. Předpoklady jsou vždy viditelné.
           {result.reinvestmentEnabled
             ? " Nájem se reinvestuje zadanou sazbou."
             : " Nájem se nesúročuje — jen kumulativní součet."}
@@ -149,7 +149,7 @@ export function DecisionLabFuture({ countryId }: Props) {
           />
         </div>
         <div className="space-y-1">
-          <Label className="text-xs">Růst ceny % (base/custom)</Label>
+          <Label className="text-xs">Růst ceny % (základní/vlastní)</Label>
           <Input
             type="number"
             step={0.1}
@@ -190,7 +190,7 @@ export function DecisionLabFuture({ countryId }: Props) {
         </div>
         <div className="space-y-1">
           <Label className="text-xs">
-            Reinvestment return % (0 = bez úročení nájmu)
+            Výnos z reinvestice % (0 = bez úročení nájmu)
           </Label>
           <Input
             type="number"
@@ -212,7 +212,7 @@ export function DecisionLabFuture({ countryId }: Props) {
       </div>
 
       <div className="rounded-xl border border-border bg-[#f7f8f7] p-4 text-sm">
-        <p className="font-semibold text-text-dark">Assumptions (aplikované)</p>
+        <p className="font-semibold text-text-dark">Předpoklady (aplikované)</p>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
           {result.assumptionsList.map((a) => (
             <li key={a}>{a}</li>

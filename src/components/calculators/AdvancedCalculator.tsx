@@ -212,18 +212,18 @@ export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
         )}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div className="rounded-xl bg-deep-teal/5 p-4">
+      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
+        <div className="min-w-0 rounded-xl bg-deep-teal/5 p-4">
           <p className="text-xs text-muted-foreground">Úvěr / financování</p>
-          <p className="text-lg font-bold text-deep-teal tabular-nums">
+          <p className="break-words text-base font-bold tabular-nums text-deep-teal sm:text-lg">
             {isCzechMarket
               ? formatCurrency(calculations.loanAmount, currency)
               : formatCurrency(foreignResult.financedAmount, foreignResult.currency)}
           </p>
         </div>
-        <div className="rounded-xl bg-deep-teal/5 p-4">
+        <div className="min-w-0 rounded-xl bg-deep-teal/5 p-4">
           <p className="text-xs text-muted-foreground">Splátka</p>
-          <p className="text-lg font-bold text-deep-teal tabular-nums">
+          <p className="break-words text-base font-bold tabular-nums text-deep-teal sm:text-lg">
             {calculations.monthlyPayment == null
               ? missingDataLabel(null)
               : formatCurrency(
@@ -232,15 +232,15 @@ export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
                 )}
           </p>
         </div>
-        <div className="rounded-xl bg-muted-gold/10 p-4">
+        <div className="min-w-0 rounded-xl bg-muted-gold/10 p-4">
           <p className="text-xs text-muted-foreground">Hrubý výnos / rok</p>
-          <p className="text-lg font-bold text-text-dark tabular-nums">
+          <p className="break-words text-base font-bold tabular-nums text-text-dark sm:text-lg">
             {formatCurrency(calculations.annualRentalIncome, currency)}
           </p>
         </div>
-        <div className="rounded-xl bg-muted-gold/10 p-4">
+        <div className="min-w-0 rounded-xl bg-muted-gold/10 p-4">
           <p className="text-xs text-muted-foreground">ROI (model)</p>
-          <p className="text-lg font-bold text-text-dark">{calculations.roi} %</p>
+          <p className="break-words text-base font-bold text-text-dark sm:text-lg">{calculations.roi} %</p>
         </div>
       </div>
 

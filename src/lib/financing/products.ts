@@ -13,7 +13,7 @@ import type {
 export const DUBAI_DEVELOPER_SCHEDULE: DeveloperPlanPhase[] = [
   {
     id: "booking",
-    label: "Rezervace (booking)",
+    label: "Rezervace",
     percentOfPrice: 10,
     durationMonths: 1,
   },
@@ -25,7 +25,7 @@ export const DUBAI_DEVELOPER_SCHEDULE: DeveloperPlanPhase[] = [
   },
   {
     id: "handover",
-    label: "Předání (handover)",
+    label: "Předání nemovitosti",
     percentOfPrice: 20,
     durationMonths: 1,
   },
@@ -41,7 +41,7 @@ export const DUBAI_DEVELOPER_SCHEDULE: DeveloperPlanPhase[] = [
 export const BALI_DEVELOPER_SCHEDULE: DeveloperPlanPhase[] = [
   {
     id: "booking",
-    label: "Rezervace (booking)",
+    label: "Rezervace",
     percentOfPrice: 20,
     durationMonths: 1,
   },
@@ -53,7 +53,7 @@ export const BALI_DEVELOPER_SCHEDULE: DeveloperPlanPhase[] = [
   },
   {
     id: "handover",
-    label: "Předání (handover)",
+    label: "Předání nemovitosti",
     percentOfPrice: 30,
     durationMonths: 1,
   },
@@ -121,9 +121,9 @@ export const COUNTRY_FINANCING_PRODUCTS: Record<
   dubai: [
     {
       option: "DEVELOPER_PAYMENT_PLAN",
-      label: "Developer payment plan (off-plan)",
+      label: "Platební plán developera (ve výstavbě)",
       description:
-        "Splátkový plán developera (booking → výstavba → handover → post-handover). Nejde o bankovní hypotéku.",
+        "Splátkový plán developera (rezervace → výstavba → předání → po předání). Nejde o bankovní hypotéku — LTV se nepoužívá.",
       currency: "AED",
       maxLtvPercent: null,
       ratePercentPa: null,
@@ -134,9 +134,9 @@ export const COUNTRY_FINANCING_PRODUCTS: Record<
     },
     {
       option: "LOCAL_MORTGAGE",
-      label: "Non-resident hypotéka (SAE)",
+      label: "Hypotéka pro nerezidenty (SAE)",
       description:
-        "Lokální bankovní hypotéka pro nerezidenta — oddělená od developer plánu. Orientační LTV strop 50 %; sazbu individuálně ověřujeme.",
+        "Lokální bankovní hypotéka pro nerezidenta — oddělená od platebního plánu developera. Orientační LTV strop 50 %; sazbu individuálně ověřujeme.",
       currency: "AED",
       maxLtvPercent: 50,
       ratePercentPa: null,
@@ -176,7 +176,7 @@ export const COUNTRY_FINANCING_PRODUCTS: Record<
       option: "DEVELOPER_PAYMENT_PLAN",
       label: "Fázované platby u developera",
       description:
-        "Na Bali není standardní bankovní hypotéka pro cizince. Modeluje se schedule developera, ne anuita.",
+        "Na Bali není standardní bankovní hypotéka pro cizince. Modeluje se harmonogram plateb developera, ne anuita. LTV se nepoužívá.",
       currency: "USD",
       maxLtvPercent: null,
       ratePercentPa: null,

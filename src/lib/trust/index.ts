@@ -57,7 +57,7 @@ export const ECOSYSTEM_ACTORS: EcosystemActor[] = [
     name: "Majetio",
     shortRole: "Property discovery & analýza",
     whatTheyDo:
-      "Vyhledávání a analýza nemovitostí; Financial Passport handoff z HJ (bez zbytečného PII).",
+      "Vyhledávání a analýza nemovitostí; handoff Finančního pasu z HJ (bez zbytečného PII).",
     whatTheyDont:
       "Není hypoteční banka. Počet listingů neuvádíme bez ověřených dat.",
     dataYouGive:
@@ -68,7 +68,7 @@ export const ECOSYSTEM_ACTORS: EcosystemActor[] = [
     name: "Makléř / developer",
     shortRole: "Prodej a development",
     whatTheyDo:
-      "Nabídka konkrétních nemovitostí, prohlídky, smlouvy o koupi, payment plans.",
+      "Nabídka konkrétních nemovitostí, prohlídky, smlouvy o koupi, platební plány.",
     whatTheyDont:
       "Nejsou Hypotéka Jasně. Jejich marketing ≠ náš model ani schválení banky.",
     dataYouGive:
@@ -180,11 +180,11 @@ export const COMPENSATION_DISCLOSURE =
   "Můžeme získat odměnu od partnera, pokud přes nás dojde k realizaci.";
 
 export const TRUST_NAV = [
-  { href: "/duvera", label: "Trust Center" },
+  { href: "/duvera", label: "Centrum důvěry" },
   { href: "/o-nas", label: "O nás" },
   { href: "/metodika", label: "Metodika" },
   { href: "/zdroje", label: "Zdroje" },
-  { href: "/editorial-policy", label: "Editorial policy" },
+  { href: "/editorial-policy", label: "Redakční zásady" },
   { href: "/jak-vydelavame", label: "Jak vyděláváme" },
   { href: "/partneri", label: "Partneři" },
   { href: "/opravy-a-aktualizace", label: "Opravy a aktualizace" },
