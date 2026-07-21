@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -36,7 +36,7 @@ import {
   type IncomeTypeId,
   type ReadinessAnswers,
 } from "@/lib/mortgage-readiness";
-import { pickRate, useCurrentRates } from "@/lib/rates";
+import { useMortgageRateEngine } from "@/lib/rates";
 import { routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/track";
@@ -97,14 +97,16 @@ function OptionButton({
 }
 
 function FieldLabel({
+  htmlFor,
   children,
   hint,
 }: {
+  htmlFor?: string;
   children: React.ReactNode;
   hint?: string;
 }) {
   return (
-    <label className="block text-sm">
+    <label htmlFor={htmlFor} className="block text-sm">
       <span className="font-medium text-text-dark">{children}</span>
       {hint ? (
         <span className="mt-0.5 block text-xs text-muted-foreground">{hint}</span>
@@ -114,25 +116,63 @@ function FieldLabel({
 }
 
 function TextInput({
+  id,
   value,
   onChange,
   placeholder,
   inputMode = "numeric",
+  "aria-label": ariaLabel,
 }: {
+  id?: string;
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
   inputMode?: "numeric" | "text" | "email" | "tel";
+  "aria-label"?: string;
 }) {
   return (
     <input
+      id={id}
       type="text"
       inputMode={inputMode}
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
+      aria-label={ariaLabel}
       className="mt-1.5 w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-text-dark outline-none ring-deep-teal/30 focus:ring-2"
     />
+  );
+}
+
+function FormField({
+  label,
+  hint,
+  value,
+  onChange,
+  placeholder,
+  inputMode = "numeric",
+}: {
+  label: string;
+  hint?: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  inputMode?: "numeric" | "text" | "email" | "tel";
+}) {
+  const id = useId();
+  return (
+    <div>
+      <FieldLabel htmlFor={id} hint={hint}>
+        {label}
+      </FieldLabel>
+      <TextInput
+        id={id}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        inputMode={inputMode}
+      />
+    </div>
   );
 }
 
@@ -200,7 +240,7 @@ export function MortgageReadinessWizard() {
   );
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitMsg, setSubmitMsg] = useState<string | null>(null);
-  const { rates } = useCurrentRates();
+  const { resolved } = useMortgageRateEngine(true);
 
   const patch = <K extends keyof ReadinessAnswers>(
     key: K,
@@ -209,7 +249,7 @@ export function MortgageReadinessWizard() {
     setAnswers((prev) => ({ ...prev, [key]: value }));
   };
 
-  const modelRate = pickRate(rates, true);
+  const modelRate = resolved.ratePercent;
   const result = useMemo(
     () => calculateReadiness(answers, modelRate),
     [answers, modelRate]
@@ -444,16 +484,14 @@ export function MortgageReadinessWizard() {
               <h2 className="font-heading text-xl font-bold text-text-dark">
                 Základní profil
               </h2>
-              <div>
-                <FieldLabel>Věk</FieldLabel>
-                <TextInput
-                  value={answers.age?.toString() ?? ""}
-                  onChange={(v) =>
-                    patch("age", v === "" ? null : Math.round(parseNum(v)))
-                  }
-                  placeholder="např. 35"
-                />
-              </div>
+              <FormField
+                label="Věk"
+                value={answers.age?.toString() ?? ""}
+                onChange={(v) =>
+                  patch("age", v === "" ? null : Math.round(parseNum(v)))
+                }
+                placeholder="např. 35"
+              />
               <div>
                 <FieldLabel>Spolužadatel</FieldLabel>
                 <div className="mt-2 flex gap-2">
@@ -474,16 +512,13 @@ export function MortgageReadinessWizard() {
                   ))}
                 </div>
               </div>
-              <div>
-                <FieldLabel hint="Včetně dětí ve společné domácnosti">
-                  Počet vyživovaných osob
-                </FieldLabel>
-                <TextInput
-                  value={String(answers.dependents)}
-                  onChange={(v) => patch("dependents", Math.round(parseNum(v)))}
-                  placeholder="0"
-                />
-              </div>
+              <FormField
+                label="Počet vyživovaných osob"
+                hint="Včetně dětí ve společné domácnosti"
+                value={String(answers.dependents)}
+                onChange={(v) => patch("dependents", Math.round(parseNum(v)))}
+                placeholder="0"
+              />
             </div>
           )}
 
@@ -507,33 +542,28 @@ export function MortgageReadinessWizard() {
                   ))}
                 </div>
               </div>
-              <div>
-                <FieldLabel>Čistý měsíční příjem (Kč)</FieldLabel>
-                <TextInput
-                  value={answers.netIncome ? String(answers.netIncome) : ""}
-                  onChange={(v) => patch("netIncome", parseNum(v))}
-                  placeholder="např. 65000"
-                />
-              </div>
-              <div>
-                <FieldLabel hint="Self-reported — pro model stability">
-                  Měsíce kontinuity příjmu
-                </FieldLabel>
-                <TextInput
-                  value={
-                    answers.employmentMonths != null
-                      ? String(answers.employmentMonths)
-                      : ""
-                  }
-                  onChange={(v) =>
-                    patch(
-                      "employmentMonths",
-                      v === "" ? null : Math.round(parseNum(v))
-                    )
-                  }
-                  placeholder="např. 24"
-                />
-              </div>
+              <FormField
+                label="Čistý měsíční příjem (Kč)"
+                value={answers.netIncome ? String(answers.netIncome) : ""}
+                onChange={(v) => patch("netIncome", parseNum(v))}
+                placeholder="např. 65000"
+              />
+              <FormField
+                label="Měsíce kontinuity příjmu"
+                hint="Vámi uvedené — pro stabilitu modelu"
+                value={
+                  answers.employmentMonths != null
+                    ? String(answers.employmentMonths)
+                    : ""
+                }
+                onChange={(v) =>
+                  patch(
+                    "employmentMonths",
+                    v === "" ? null : Math.round(parseNum(v))
+                  )
+                }
+                placeholder="např. 24"
+              />
             </div>
           )}
 
@@ -542,32 +572,27 @@ export function MortgageReadinessWizard() {
               <h2 className="font-heading text-xl font-bold text-text-dark">
                 Závazky a historie
               </h2>
-              <div>
-                <FieldLabel>Měsíční splátky úvěrů (Kč)</FieldLabel>
-                <TextInput
-                  value={
-                    answers.otherLiabilities
-                      ? String(answers.otherLiabilities)
-                      : ""
-                  }
-                  onChange={(v) => patch("otherLiabilities", parseNum(v))}
-                  placeholder="0"
-                />
-              </div>
-              <div>
-                <FieldLabel hint="Orientační měsíční zátěž z limitů">
-                  Splátky / limity karet (Kč / měs.)
-                </FieldLabel>
-                <TextInput
-                  value={
-                    answers.creditLimitPayments
-                      ? String(answers.creditLimitPayments)
-                      : ""
-                  }
-                  onChange={(v) => patch("creditLimitPayments", parseNum(v))}
-                  placeholder="0"
-                />
-              </div>
+              <FormField
+                label="Měsíční splátky úvěrů (Kč)"
+                value={
+                  answers.otherLiabilities
+                    ? String(answers.otherLiabilities)
+                    : ""
+                }
+                onChange={(v) => patch("otherLiabilities", parseNum(v))}
+                placeholder="0"
+              />
+              <FormField
+                label="Splátky / limity karet (Kč / měs.)"
+                hint="Orientační měsíční zátěž z limitů"
+                value={
+                  answers.creditLimitPayments
+                    ? String(answers.creditLimitPayments)
+                    : ""
+                }
+                onChange={(v) => patch("creditLimitPayments", parseNum(v))}
+                placeholder="0"
+              />
               <div>
                 <FieldLabel>
                   Máte v posledních letech problémy se splácením?
@@ -622,90 +647,73 @@ export function MortgageReadinessWizard() {
 
               {answers.intent === "refinance" && (
                 <>
-                  <div>
-                    <FieldLabel>Zůstatek úvěru (Kč)</FieldLabel>
-                    <TextInput
+                  <FormField
+                    label="Zůstatek úvěru (Kč)"
+                    value={
+                      answers.currentBalance != null
+                        ? String(answers.currentBalance)
+                        : ""
+                    }
+                    onChange={(v) =>
+                      patch("currentBalance", v === "" ? null : parseNum(v))
+                    }
+                    placeholder="např. 2800000"
+                  />
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <FormField
+                      label="Současná sazba (% p.a.)"
                       value={
-                        answers.currentBalance != null
-                          ? String(answers.currentBalance)
+                        answers.currentRate != null
+                          ? String(answers.currentRate)
+                          : ""
+                      }
+                      onChange={(v) =>
+                        patch("currentRate", v === "" ? null : parseNum(v))
+                      }
+                      placeholder="např. 5.9"
+                    />
+                    <FormField
+                      label="Zbývající splatnost (roky)"
+                      value={
+                        answers.yearsLeft != null
+                          ? String(answers.yearsLeft)
                           : ""
                       }
                       onChange={(v) =>
                         patch(
-                          "currentBalance",
-                          v === "" ? null : parseNum(v)
+                          "yearsLeft",
+                          v === "" ? null : Math.round(parseNum(v))
                         )
                       }
-                      placeholder="např. 2800000"
+                      placeholder="např. 20"
                     />
-                  </div>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div>
-                      <FieldLabel>Současná sazba (% p.a.)</FieldLabel>
-                      <TextInput
-                        value={
-                          answers.currentRate != null
-                            ? String(answers.currentRate)
-                            : ""
-                        }
-                        onChange={(v) =>
-                          patch(
-                            "currentRate",
-                            v === "" ? null : parseNum(v)
-                          )
-                        }
-                        placeholder="např. 5.9"
-                      />
-                    </div>
-                    <div>
-                      <FieldLabel>Zbývající splatnost (roky)</FieldLabel>
-                      <TextInput
-                        value={
-                          answers.yearsLeft != null
-                            ? String(answers.yearsLeft)
-                            : ""
-                        }
-                        onChange={(v) =>
-                          patch(
-                            "yearsLeft",
-                            v === "" ? null : Math.round(parseNum(v))
-                          )
-                        }
-                        placeholder="např. 20"
-                      />
-                    </div>
                   </div>
                 </>
               )}
 
-              <div>
-                <FieldLabel>Vlastní hotovost / akontace (Kč)</FieldLabel>
-                <TextInput
-                  value={answers.ownFunds ? String(answers.ownFunds) : ""}
-                  onChange={(v) => patch("ownFunds", parseNum(v))}
-                  placeholder="např. 800000"
-                />
-              </div>
+              <FormField
+                label="Vlastní hotovost / akontace (Kč)"
+                value={answers.ownFunds ? String(answers.ownFunds) : ""}
+                onChange={(v) => patch("ownFunds", parseNum(v))}
+                placeholder="např. 800000"
+              />
 
               {(answers.intent === "owner_occupied" ||
                 answers.intent === "investment" ||
                 answers.intent === "foreign_purchase") && (
-                <div>
-                  <FieldLabel hint="Volitelné — pomáhá modelu LTV">
-                    Orientační cílová cena (Kč)
-                  </FieldLabel>
-                  <TextInput
-                    value={
-                      answers.targetPrice != null
-                        ? String(answers.targetPrice)
-                        : ""
-                    }
-                    onChange={(v) =>
-                      patch("targetPrice", v === "" ? null : parseNum(v))
-                    }
-                    placeholder="např. 5500000"
-                  />
-                </div>
+                <FormField
+                  label="Orientační cílová cena (Kč)"
+                  hint="Volitelné — pomáhá modelu LTV"
+                  value={
+                    answers.targetPrice != null
+                      ? String(answers.targetPrice)
+                      : ""
+                  }
+                  onChange={(v) =>
+                    patch("targetPrice", v === "" ? null : parseNum(v))
+                  }
+                  placeholder="např. 5500000"
+                />
               )}
 
               {(answers.intent === "foreign_purchase" ||
@@ -733,22 +741,19 @@ export function MortgageReadinessWizard() {
                     </div>
                   </div>
                   {answers.hasCzCollateral && (
-                    <div>
-                      <FieldLabel hint="Odhad equity = hodnota − zbývající úvěr">
-                        Orientační equity v ČR (Kč)
-                      </FieldLabel>
-                      <TextInput
-                        value={
-                          answers.czCollateralEquity
-                            ? String(answers.czCollateralEquity)
-                            : ""
-                        }
-                        onChange={(v) =>
-                          patch("czCollateralEquity", parseNum(v))
-                        }
-                        placeholder="např. 1500000"
-                      />
-                    </div>
+                    <FormField
+                      label="Orientační equity v ČR (Kč)"
+                      hint="Odhad vlastního kapitálu (equity) = hodnota − zbývající úvěr"
+                      value={
+                        answers.czCollateralEquity
+                          ? String(answers.czCollateralEquity)
+                          : ""
+                      }
+                      onChange={(v) =>
+                        patch("czCollateralEquity", parseNum(v))
+                      }
+                      placeholder="např. 1500000"
+                    />
                   )}
                 </>
               )}
@@ -923,22 +928,25 @@ export function MortgageReadinessWizard() {
                   Volitelné — pomůžeme s doložením, ne s příslibem schválení.
                 </p>
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                  <TextInput
+                  <FormField
+                    label="Jméno"
                     value={contactName}
                     onChange={setContactName}
-                    placeholder="Jméno"
+                    placeholder="Jan Novák"
                     inputMode="text"
                   />
-                  <TextInput
+                  <FormField
+                    label="E-mail"
                     value={contactEmail}
                     onChange={setContactEmail}
-                    placeholder="E-mail"
+                    placeholder="jan@email.cz"
                     inputMode="email"
                   />
-                  <TextInput
+                  <FormField
+                    label="Telefon"
                     value={contactPhone}
                     onChange={setContactPhone}
-                    placeholder="Telefon"
+                    placeholder="+420 …"
                     inputMode="tel"
                   />
                 </div>

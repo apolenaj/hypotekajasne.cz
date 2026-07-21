@@ -128,7 +128,7 @@ export function normalizeScrapedBank(
     );
   }
 
-  // Bez pojištění: jen reálná sazba (ne inventura). Orientační +0.3 = MODELLED.
+  // Bez pojištění: jen reálná sazba (ne inventura). Orientační +0.3 = MODEL.
   if (scraped.rateWithoutInsurance != null) {
     const withoutEstimated =
       scraped.withoutInsuranceEstimated === true &&
@@ -153,7 +153,7 @@ export function normalizeScrapedBank(
         requiredInsurance: false,
         sourceUrl: scraped.sourceUrl,
         sourceType: withoutEstimated ? "unknown" : sourceType,
-        status: withoutEstimated ? "MODELLED" : status,
+        status: withoutEstimated ? "MODEL" : status,
         confidence: withoutEstimated ? 0.45 : confidence,
       })
     );

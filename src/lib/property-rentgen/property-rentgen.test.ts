@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  ANALYSIS_PRODUCT_TIERS,
   PROPERTY_ANALYSIS_PRICING,
   buildFreePreview,
   formatAnalysisPrice,
   formatAnalysisPriceLabel,
+  formatTierPrice,
   type ManualPropertyInput,
 } from "@/lib/property-rentgen";
 
@@ -14,8 +16,20 @@ describe("PROPERTY_ANALYSIS_PRICING", () => {
     assert.match(formatAnalysisPrice(), /4[\s\u00a0\u202f]?990\s*Kč/);
     assert.ok(!formatAnalysisPrice().includes("/"));
     assert.ok(
-      formatAnalysisPriceLabel().includes("Kompletní analýza nemovitosti")
+      formatAnalysisPriceLabel().includes("Detailní analýza nemovitosti")
     );
+    assert.equal(
+      PROPERTY_ANALYSIS_PRICING.ctaLabel,
+      "Získat detailní analýzu"
+    );
+  });
+
+  it("exposes free / premium / inquiry tiers without inventing advanced SKU price", () => {
+    assert.equal(ANALYSIS_PRODUCT_TIERS.length, 3);
+    assert.equal(ANALYSIS_PRODUCT_TIERS[0]!.id, "free");
+    assert.equal(ANALYSIS_PRODUCT_TIERS[1]!.priceCzk, 4990);
+    assert.equal(ANALYSIS_PRODUCT_TIERS[2]!.commerciallyActive, false);
+    assert.match(formatTierPrice(ANALYSIS_PRODUCT_TIERS[2]!), /poptávku/i);
   });
 });
 

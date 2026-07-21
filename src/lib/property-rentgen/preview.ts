@@ -167,7 +167,7 @@ export function buildFreePreview(
   }
   if (price != null && equity > 0 && equity < price * 0.1) {
     redFlags.push({
-      text: "Equity pod 10 % ceny — financování může být obtížnější (ODHAD).",
+      text: "Vlastní kapitál pod 10 % ceny — financování může být obtížnější (ODHAD).",
       kind: "ODHAD",
     });
   }

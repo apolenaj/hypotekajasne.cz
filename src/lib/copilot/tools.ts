@@ -241,7 +241,7 @@ export function toolReachTarget(
           "- Zvážit spolužadatele (pokud je reálný).",
           `- Aktuální vlastní zdroje v profilu: pásmo **${context.ownFundsBand ?? "nevyplněno"}** (hodnota ${fmtCzk(ownFunds)} zůstává lokálně).`,
         ].join("\n")
-      : "- Přesto spusťte stress test sazby a konzultaci se specialistou před rezervací.",
+      : "- Přesto spusťte zátěžový test sazby a konzultaci se specialistou před rezervací.",
     "",
     "Žádná úprava v Copilotu **nezaručuje** schválení.",
   ].join("\n");
@@ -360,7 +360,7 @@ export function toolCompareProperties(
       usedInputs: [],
       dataKeys: [],
     cta: [
-      { label: "Profesionální compare", href: routes.investicniRentgenPorovnani },
+      { label: "Profesionální srovnání", href: routes.investicniRentgenPorovnani },
       { label: "Rentgen nemovitosti", href: routes.investicniRentgen },
     ],
     };
@@ -391,7 +391,7 @@ export function toolCompareProperties(
   const md = [
     "## Porovnání zadaných nemovitostí",
     "",
-    "| Nemovitost | Cena | Fit k modelu |",
+    "| Nemovitost | Cena | Shoda s modelem |",
     "|---|---|---|",
     ...rows,
     "",
@@ -429,7 +429,7 @@ export function toolCompareProperties(
     })),
     dataKeys: ["copilot.properties", "readiness.result"],
     cta: [
-      { label: "Profesionální compare", href: routes.investicniRentgenPorovnani },
+      { label: "Profesionální srovnání", href: routes.investicniRentgenPorovnani },
       { label: "Rentgen", href: routes.investicniRentgen },
       { label: "Připravenost", href: routes.navrhNaMiru },
     ],
@@ -458,7 +458,7 @@ export function toolRateStress(
   const delta = stressPay - basePay;
 
   const md = [
-    `## Stress test: sazba +${bumpPp} p.b. při refixaci`,
+    `## Zátěžový test: sazba +${bumpPp} p.b. při refixaci`,
     "",
     `Model na úvěru **${fmtCzk(loan)}**, splatnost **${termYears} let**:`,
     "",
@@ -569,16 +569,16 @@ export function toolMarketCompare(
       methodologyCitation(),
       {
         id: "dossier:cz",
-        label: "Country dossier ČR",
-        source: "src/lib/country-dossier",
+        label: "Průvodce investora — Česká republika",
+        source: "Průvodce investora",
         updatedAt: null,
         claimKind: "MODEL",
         href: routes.pruvodceInvestora + "/ceska-republika",
       },
       {
         id: "dossier:dubai",
-        label: "Country dossier Dubaj",
-        source: "src/lib/country-dossier",
+        label: "Průvodce investora — Dubaj",
+        source: "Průvodce investora",
         updatedAt: null,
         claimKind: "MODEL",
         href: routes.pruvodceInvestora + "/dubaj",
@@ -801,7 +801,7 @@ export function toolNextStep(
   }
 
   const { result } = runReadiness(answers, context.modelRatePercent);
-  const primary = result.nextSteps[0] ?? "Zkontrolujte profil a stress test sazby.";
+  const primary = result.nextSteps[0] ?? "Zkontrolujte profil a zátěžový test sazby.";
 
   const md = [
     "## Váš další krok",
@@ -843,10 +843,10 @@ export function toolContactSpecialist(): ToolBundle {
       "1. Dokončete / zkontrolujte [Hypoteční připravenost](" +
         routes.navrhNaMiru +
         ") — odeslání leadu je na konci s checkboxy.",
-      "2. Role partnera: [/partneri](" +
+      "2. Stav partnera a role: [/partneri](" +
         routes.partneri +
-        ").",
-      "3. My nejsme banka a neschvalujeme úvěr.",
+        ") — předání specialistovi jen se souhlasem a jen pokud je identita partnera zveřejněna.",
+      "3. My nejsme banka a neschvalujeme úvěr. Konzultace je nezávazná.",
     ].join("\n"),
     tools: [
       {
@@ -893,7 +893,7 @@ export function toolClarify(): ToolBundle {
       "- Cílová částka (např. 7 milionů)",
       "- Bezpečnost konkrétní ceny bytu",
       "- Porovnat nemovitosti",
-      "- Stress test sazby +2 %",
+      "- Zátěžový test sazby +2 %",
       "- Praha vs Dubaj (model matching)",
       "- Chybějící dokumenty / další krok",
       "",
@@ -917,7 +917,7 @@ export function toolOutOfScope(): ToolBundle {
       "",
       "Neposkytuji příslib schválení, daňové optimalizace „obejitím“ ani právní zastoupení.",
       "",
-      "Mohu: spočítat modelovou dostupnost, vysvětlit skóre, stress test, checklist a nasměrovat na specialistu.",
+      "Mohu: spočítat modelovou dostupnost, vysvětlit skóre, zátěžový test, checklist a nasměrovat na specialistu.",
     ].join("\n"),
     tools: [{ toolId: "guardrail.out_of_scope", ok: true, summary: "refused" }],
     citations: [methodologyCitation()],

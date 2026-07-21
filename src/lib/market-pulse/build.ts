@@ -22,7 +22,7 @@ import { DESTINATION_METRICS } from "@/lib/destination-metrics";
 
 function marketDataStatus(countryId: CountryId): DataStatus {
   const dest = DESTINATION_METRICS.find((d) => d.countryId === countryId);
-  return dest?.dataStatus ?? "MODELLED";
+  return dest?.dataStatus ?? "MODEL";
 }
 
 export function buildMarketPulseMarket(
@@ -68,7 +68,7 @@ export function buildMarketPulseDashboard(input: {
       "Neuvádíme „nejlepší čas koupit“ ani investiční doporučení.",
       "CZ hypoteční sazby LIVE; ceny/nájmy/yield z ročních modelových snapshotů.",
       "Supply, DOM a měsíční trendy zobrazíme až s ověřeným feedem.",
-      "Opportunity Radar = filtr nad modelovými daty, ne garance příležitosti.",
+      "Radar příležitostí = filtr nad modelovými daty, ne garance příležitosti.",
       "Regulační changelog = kurátorský editorial + VERIFIED ČNB záznamy.",
     ],
   };

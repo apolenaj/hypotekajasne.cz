@@ -13,54 +13,58 @@ interface InvestorGuidePageProps {
 }
 
 /**
- * Jedna generace country page:
- * Hero + Dossier (sekce 1–10, 12–13) → Decision Lab / kalkulačky (11).
- * Legacy Hub + Guide se nenačítají.
+ * Progressive disclosure country page:
+ * Snapshot → Fit → témata → Decision Lab → Deep research → CTA.
  */
 export function InvestorGuidePage({ countryId }: InvestorGuidePageProps) {
   return (
-    <div className="w-full min-w-0 bg-white">
-      <CountryDossierView countryId={countryId} />
+    <div className="w-full min-w-0 overflow-x-hidden bg-white">
+      <CountryDossierView
+        countryId={countryId}
+        calculatorSlot={
+          <section
+            id="decision-lab"
+            className="scroll-mt-28 overflow-hidden rounded-2xl border border-border bg-white"
+          >
+            <div className="border-b border-border px-4 py-5 sm:px-7 sm:py-6">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-deep-teal">
+                Scénáře
+              </p>
+              <h2 className="mt-1 font-heading text-xl font-bold text-text-dark sm:text-2xl">
+                Kalkulačky pro tento trh
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                Modelové nástroje v kontextu země — ne nabídka banky. Měny
+                produktů se nemíchají bez konverze.
+              </p>
+            </div>
+            <div className="space-y-10 px-4 py-6 sm:px-7 sm:py-8">
+              <div id="hypotecni-kalkulacka" className="scroll-mt-28 min-w-0">
+                <CalculatorSection
+                  selectedCountry={countryId}
+                  onSelectCountry={() => {}}
+                  embedded
+                  lockCountry
+                />
+              </div>
 
-      <section
-        id="decision-lab"
-        className="scroll-mt-28 border-t border-border bg-white py-12 sm:py-16"
-      >
-        <div className="mx-auto max-w-6xl space-y-12 px-4">
-          <header>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-deep-teal">
-              Decision Lab
-            </p>
-            <h2 className="mt-1 font-heading text-2xl font-bold text-text-dark sm:text-3xl">
-              Kalkulačky pro {countryId === "cz" ? "ČR" : "tento trh"}
-            </h2>
-            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              Modelové nástroje — ne nabídka banky. Měny produktů se nemíchají
-              bez konverze.
-            </p>
-          </header>
-
-          <div id="hypotecni-kalkulacka" className="scroll-mt-28">
-            <CalculatorSection
-              selectedCountry={countryId}
-              onSelectCountry={() => {}}
-              embedded
-              lockCountry
-            />
-          </div>
-
-          <div id="roi-kalkulacka" className="scroll-mt-28 space-y-12">
-            <SmartCalculator country={countryId} />
-            <BuyVsRentSection
-              countryId={countryId}
-              sectionId="roi-kalkulacka-break-even"
-              embedded
-            />
-            <HistoricalTrendsView countryId={countryId} embedded />
-            <FutureProjectionsView countryId={countryId} embedded />
-          </div>
-        </div>
-      </section>
+              <div
+                id="roi-kalkulacka"
+                className="scroll-mt-28 min-w-0 space-y-10"
+              >
+                <SmartCalculator country={countryId} />
+                <BuyVsRentSection
+                  countryId={countryId}
+                  sectionId="roi-kalkulacka-break-even"
+                  embedded
+                />
+                <HistoricalTrendsView countryId={countryId} embedded />
+                <FutureProjectionsView countryId={countryId} embedded />
+              </div>
+            </div>
+          </section>
+        }
+      />
     </div>
   );
 }

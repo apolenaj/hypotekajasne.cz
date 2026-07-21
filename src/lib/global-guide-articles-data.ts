@@ -260,16 +260,17 @@ export const globalGuideArticlesData: Record<string, GlobalGuideCountryData> = {
         category: "Bali",
         title: "Koupě luxusní vily na Bali",
         excerpt:
-          "Freehold vs. leasehold, právní struktura pro cizince a bezpečný převod.",
+          "Leasehold vs. korporátní struktura (PT PMA), právní rámec pro cizince a bezpečný převod.",
         image:
           "https://images.unsplash.com/photo-1537996194471-e657df975ab4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
         readTime: "7 min čtení",
         content: `
-          <p>Cizinci vlastní přes <strong>leasehold</strong> (25–30 let) nebo <strong>PT PMA</strong>.</p>
+          <p>Cizinci typicky nejdou do plného <strong>Hak Milik (freehold)</strong>. Běžné jsou:</p>
           <ul>
-            <li>Leasehold: jednodušší, časově omezené.</li>
-            <li>PT PMA: freehold přes společnost, vyšší náklady.</li>
+            <li><strong>Leasehold</strong> — časově omezené právo užívání (často 25–30 let), jednodušší vstup.</li>
+            <li><strong>PT PMA</strong> — korporátní struktura s právy blízkými užívání / HGB, ne „freehold jako v EU“; vyšší náklady a compliance.</li>
           </ul>
+          <p>Údaje o konkrétní struktuře vždy ověřte s indonéským právníkem — nevymýšlíme univerzální sazby ani jistotu titulu.</p>
         `,
       },
       {

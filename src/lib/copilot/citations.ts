@@ -9,10 +9,13 @@ export function claimFromDataStatus(
     case "LIVE":
     case "VERIFIED":
       return "DATA";
-    case "MODELLED":
+    case "MODEL":
     case "PARTNER_QUOTE":
       return "MODEL";
+    case "ESTIMATE":
+      return "ODHAD";
     case "STALE":
+    case "UNVERIFIED":
       return "NEOVERENO";
     default:
       return "ODHAD";
@@ -28,7 +31,7 @@ export function citationFromCatalog(
   return {
     id: `catalog:${entry.id}`,
     label: entry.label,
-    source: entry.canonicalModule,
+    source: "Katalog dat HypotékaJasně",
     updatedAt: null,
     claimKind: claimFromDataStatus(entry.defaultStatus),
     href: routes.zdroje,
@@ -51,7 +54,7 @@ export function readinessCitation(): CopilotCitation {
   return {
     id: "tool:readiness",
     label: "Hypoteční připravenost (algoritmický model)",
-    source: "src/lib/mortgage-readiness",
+    source: "Nástroj Hypoteční připravenost",
     updatedAt: null,
     claimKind: "MODEL",
     href: routes.navrhNaMiru,
@@ -61,8 +64,8 @@ export function readinessCitation(): CopilotCitation {
 export function decisionCitation(): CopilotCitation {
   return {
     id: "tool:mortgage-decision",
-    label: "Hypoteční decision tool (CZ)",
-    source: "src/lib/mortgage-decision",
+    label: "Hypoteční kalkulačka (ČR)",
+    source: "Nástroj rozhodování o hypotéce",
     updatedAt: null,
     claimKind: "MODEL",
     href: routes.kalkulacky.root,
@@ -72,8 +75,8 @@ export function decisionCitation(): CopilotCitation {
 export function marketMatchCitation(): CopilotCitation {
   return {
     id: "tool:market-matching",
-    label: "Market matching (Investiční pas)",
-    source: "src/lib/market-matching",
+    label: "Přiřazení trhů (Investiční pas)",
+    source: "Nástroj Investiční pas",
     updatedAt: null,
     claimKind: "MODEL",
     href: routes.investicniPas,
@@ -92,7 +95,7 @@ export function rateCitation(
     base ?? {
       id: "rate.cz.market.aggregate",
       label: "Agregovaná modelová sazba ČR",
-      source: "supabase:current_rates / bank_rates",
+      source: "Veřejné sazby sledovaných bank",
       updatedAt,
       claimKind,
       href: routes.zdroje,
@@ -101,8 +104,8 @@ export function rateCitation(
 }
 
 export const CLAIM_KIND_HINT: Record<ClaimKind, string> = {
-  DATA: "Ověřená / živá data platformy",
-  MODEL: "Algoritmický model s dokumentovanými předpoklady",
+  DATA: "Ověřená / aktuální data platformy",
+  MODEL: "Modelový výpočet s dokumentovanými předpoklady",
   ODHAD: "Orientační odhad — ověřte u specialisty",
   NEOVERENO: "Údaj není ověřen — nepoužíváme jako fakt",
 };

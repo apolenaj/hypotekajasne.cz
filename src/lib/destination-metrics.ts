@@ -26,7 +26,7 @@ export type DestinationMetric = {
   slug: string;
   ownership: OwnershipType;
   financing: FinancingLevel;
-  /** Orientační vstupní kapitál — MODELLED, ne live kotace */
+  /** Orientační vstupní kapitál — MODEL, ne live kotace */
   entryCapitalLabel: string;
   risk: RiskLevel;
   dataStatus: DataStatus;
@@ -35,7 +35,7 @@ export type DestinationMetric = {
 };
 
 /**
- * Editorial / MODELLED přehled — UI musí ukazovat datový status.
+ * Editorial / MODEL přehled — UI musí ukazovat datový status.
  * Vstupní kapitál je orientační pásmo, ne nabídka.
  */
 export const DESTINATION_METRICS: DestinationMetric[] = [
@@ -61,7 +61,7 @@ export const DESTINATION_METRICS: DestinationMetric[] = [
     financing: "Omezená (lokální / cash)",
     entryCapitalLabel: "od ~800 tis. AED",
     risk: "Vyšší",
-    dataStatus: "MODELLED",
+    dataStatus: "MODEL",
     summary:
       "Freehold v designovaných zónách; financování a daňový režim ověřujte lokálně.",
     image:
@@ -75,7 +75,7 @@ export const DESTINATION_METRICS: DestinationMetric[] = [
     financing: "Střední (EU / nerezident)",
     entryCapitalLabel: "od ~80 tis. €",
     risk: "Střední",
-    dataStatus: "MODELLED",
+    dataStatus: "MODEL",
     summary:
       "EU trh; dostupnost úvěru pro nerezidenty závisí na bance a LTV.",
     image:
@@ -89,7 +89,7 @@ export const DESTINATION_METRICS: DestinationMetric[] = [
     financing: "Střední (EU / nerezident)",
     entryCapitalLabel: "od ~100 tis. €",
     risk: "Střední",
-    dataStatus: "MODELLED",
+    dataStatus: "MODEL",
     summary:
       "Regionální rozdíly (sever vs. jih); proces koupě je delší než v ČR.",
     image:
@@ -103,7 +103,7 @@ export const DESTINATION_METRICS: DestinationMetric[] = [
     financing: "Střední (EU / nerezident)",
     entryCapitalLabel: "od ~70 tis. €",
     risk: "Střední",
-    dataStatus: "MODELLED",
+    dataStatus: "MODEL",
     summary:
       "Eurozóna a Schengen; sezónnost nájmů ovlivňuje cash-flow u přímoří.",
     image:
@@ -117,7 +117,7 @@ export const DESTINATION_METRICS: DestinationMetric[] = [
     financing: "Omezená (lokální / cash)",
     entryCapitalLabel: "od ~150 tis. USD",
     risk: "Vyšší",
-    dataStatus: "MODELLED",
+    dataStatus: "MODEL",
     summary:
       "Pro cizince typicky leasehold; výnosy i právní struktura vyžadují due diligence.",
     image:
@@ -145,7 +145,7 @@ export const DESTINATION_METRICS: DestinationMetric[] = [
     financing: "Střední (EU / nerezident)",
     entryCapitalLabel: "od ~60 tis. €",
     risk: "Nižší",
-    dataStatus: "MODELLED",
+    dataStatus: "MODEL",
     summary:
       "Euro a blízký právní rámec EU; sazby nejsou live — modelové defaulty.",
     image:

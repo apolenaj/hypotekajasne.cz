@@ -44,23 +44,23 @@ const PROCESS_STEPS = [
 ];
 
 interface OwnershipInfo {
-  type: "Freehold" | "Leasehold" | "Mix Freehold / Leasehold";
+  type: string;
   foreignerNote: string;
 }
 
 function getOwnershipInfo(country: string): OwnershipInfo {
   if (country.includes("Bali") || country.includes("Indonésie")) {
     return {
-      type: "Leasehold",
+      type: "Leasehold / korporátní struktura",
       foreignerNote:
-        "Cizinec typicky nekupuje freehold půdy — standard je dlouhodobý leasehold (často 25–30 let s možností prodloužení) přes lokální strukturu.",
+        "Cizinci typicky nenabývají Hak Milik (freehold). Běžný je leasehold nebo PT PMA — ověřte s indonéským právníkem.",
     };
   }
   if (country.includes("Dubaj") || country.includes("SAE")) {
     return {
-      type: "Freehold",
+      type: "Freehold (designované zóny)",
       foreignerNote:
-        "V designovaných freehold zónách může cizinec vlastnit 100 % nemovitosti. Mimo ně platí omezení.",
+        "V designovaných freehold zónách může cizinec vlastnit 100 % nemovitosti. Mimo ně platí omezení. Registrace: Dubai Land Department (DLD).",
     };
   }
   if (country.includes("Saúd")) {
@@ -70,9 +70,45 @@ function getOwnershipInfo(country: string): OwnershipInfo {
         "Vlastnictví pro cizince je regulované a často vázané na schválené zóny / strukturu. Je nutná lokální právní kontrola před nákupem.",
     };
   }
+  if (country.includes("Španěl")) {
+    return {
+      type: "Freehold",
+      foreignerNote:
+        "Freehold se zápisem do Registro de la Propiedad; transakce u notáře. Roční daň IBI je municipální.",
+    };
+  }
+  if (country.includes("Itál")) {
+    return {
+      type: "Freehold",
+      foreignerNote:
+        "Převod u notaio a zápis (Conservatoria). Roční daň IMU typicky u druhé nemovitosti — ověřte u obce.",
+    };
+  }
+  if (country.includes("Chorvat")) {
+    return {
+      type: "Vlastnictví se zápisem (ZK)",
+      foreignerNote:
+        "Prověřte zemljišne knjige / katastr a typ pozemku. Roční místní poplatky ověřujeme u obce.",
+    };
+  }
+  if (country.includes("Slovens")) {
+    return {
+      type: "Freehold (kataster)",
+      foreignerNote:
+        "Zápis do slovenského katastra. Roční daň z nehnuteľností je obecní — ověřte sazbu lokálně.",
+    };
+  }
+  if (country.includes("Česk") || country === "ČR") {
+    return {
+      type: "Volné vlastnictví (katastr)",
+      foreignerNote:
+        "Vlastnické právo vzniká zápisem do katastru nemovitostí. Daň z nemovitých věcí je roční.",
+    };
+  }
   return {
-    type: "Freehold",
-    foreignerNote: `V zemi ${country} je standardem osobní vlastnictví (freehold). Cizinec může typicky nabýt nemovitost, ale vždy ověřte lokální limity a daňové povinnosti.`,
+    type: "Údaj ověřujeme",
+    foreignerNote:
+      "Pro tuto zemi nemáme v datech ověřený vlastnický model — konzultujte lokálního právníka. Nevymýšlíme freehold jen proto, že pole musí být vyplněné.",
   };
 }
 
@@ -173,8 +209,8 @@ function OwnershipTab({ country }: { country: string }) {
         <ModelledDomainProvenance
           topic="legal"
           label="Právo"
-          source="Editorial country-info (ownership)"
-          notes="Není individuální právní rada. Status VERIFIED po editorial kontrole."
+          source="Přehled vlastnictví v zemi"
+          notes="Není individuální právní rada. Údaje ověřujeme redakčně."
         />
       </div>
     </div>

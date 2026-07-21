@@ -19,7 +19,13 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/", "/dekujeme"],
+        disallow: [
+          "/api/",
+          "/dekujeme",
+          "/moje-moznosti",
+          "/dashboard",
+          "/reporty/sdilet/",
+        ],
       },
     ],
     sitemap: SITEMAP_BUCKETS.map((id) => `${origin}/sitemap/${id}.xml`),

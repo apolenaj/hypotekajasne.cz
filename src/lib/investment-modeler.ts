@@ -194,17 +194,6 @@ function amortizeMonth(
   return Math.max(0, balance - principal);
 }
 
-function computeAnnuityPayment(
-  principal: number,
-  monthlyRate: number,
-  months: number
-): number {
-  if (principal <= 0) return 0;
-  if (monthlyRate === 0) return principal / months;
-  const factor = Math.pow(1 + monthlyRate, months);
-  return (principal * monthlyRate * factor) / (factor - 1);
-}
-
 function simulateStandardPayoffYear(
   principal: number,
   monthlyPayment: number,
@@ -225,7 +214,6 @@ function buildMonthlyProjection(
   const P = input.price;
   const M = input.mortgageAmount;
   const r = input.interestRate / 100 / 12;
-  const N = input.durationYears * 12;
   const purpose = input.purpose || "Dlouhodobý nájem";
   const purposeMod = getPurposeModifier(purpose);
   const metrics = getAdjustedMetrics(
@@ -242,10 +230,9 @@ function buildMonthlyProjection(
     scenario.priceGrowth * purposeMod.growthMultiplier;
   const sp500ReturnMonthly = SP500_ANNUAL_RETURN / 12;
 
-  const pmt =
-    input.paymentAutoFilled
-      ? computeAnnuityPayment(M, r, N)
-      : input.monthlyPayment;
+  const pmt = input.paymentAutoFilled
+    ? calculateAnnuityPayment(M, input.interestRate, input.durationYears)
+    : input.monthlyPayment;
 
   let currentMortgage = M;
   let snowballMortgage = M;

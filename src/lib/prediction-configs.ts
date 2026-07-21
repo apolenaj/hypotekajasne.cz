@@ -222,9 +222,13 @@ export function getPredictionConfig(
   countryId: CountryId
 ): CountryPredictionConfig {
   const name = countryNameById[countryId];
-  return (
-    predictionConfigs[name] ?? predictionConfigs["Česká republika"]
-  );
+  const config = name ? predictionConfigs[name] : undefined;
+  if (!config) {
+    throw new Error(
+      `Missing prediction config for countryId=${countryId} (name=${name ?? "unknown"}). Cross-country fallback is forbidden.`
+    );
+  }
+  return config;
 }
 
 export function getDefaultProjectionPrice(countryId: CountryId): number {

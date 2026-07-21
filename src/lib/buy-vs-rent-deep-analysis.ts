@@ -249,7 +249,7 @@ export const buyVsRentDeepAnalysis: Record<string, BuyVsRentDeepAnalysis> = {
       },
     ],
     thumbRule:
-      "SAE: expat na krátký kontrakt → nájem. Dlouhodobá spekulace na růst nových čtvrtí s akceptací rizika → koupě. Break-even datově nejistý — počítejte horizont 12+ let.",
+      "SAE: expat na krátký kontrakt → nájem. Dlouhodobá spekulace na růst nových čtvrtí s akceptací rizika → koupě. Bod zvratu je datově nejistý — počítejte horizont 12+ let.",
   },
   "Slovensko": {
     title: "Slovensko: Nižší vstupní cena, podobná mechanika jako v ČR",

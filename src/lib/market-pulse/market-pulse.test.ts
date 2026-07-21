@@ -64,7 +64,7 @@ describe("timeframes", () => {
       getValue: (p) => p.apt70m,
       unit: "czk",
       claimKind: "MODEL",
-      status: "MODELLED",
+      status: "MODEL",
     });
     assert.equal(trend.available, false);
   });
@@ -76,7 +76,7 @@ describe("timeframes", () => {
       getValue: (p) => p.apt70m,
       unit: "czk",
       claimKind: "MODEL",
-      status: "MODELLED",
+      status: "MODEL",
     });
     assert.equal(trend.available, true);
     assert.notEqual(trend.changePercent, null);

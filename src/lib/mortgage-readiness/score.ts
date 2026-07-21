@@ -1,4 +1,6 @@
 import { calculateAnnuityPayment } from "@/lib/calculators";
+import { maxLoanFromPayment } from "@/lib/finance-math/core";
+import { MODEL_FALLBACK_RATE_PERCENT } from "@/lib/rates/model-fallback";
 import {
   MODEL_DISCLAIMER,
   type ActionPlan,
@@ -6,6 +8,8 @@ import {
   type ReadinessAnswers,
   type ReadinessResult,
 } from "@/lib/mortgage-readiness/types";
+
+export { maxLoanFromPayment };
 
 function incomeStabilityScore(type: IncomeTypeId | null): number {
   switch (type) {
@@ -26,29 +30,18 @@ function incomeStabilityScore(type: IncomeTypeId | null): number {
   }
 }
 
-function maxLoanFromPayment(
-  maxPayment: number,
-  ratePercent: number,
-  termYears: number
-): number {
-  if (maxPayment <= 0) return 0;
-  if (ratePercent <= 0) return maxPayment * termYears * 12;
-  const r = ratePercent / 100 / 12;
-  const n = termYears * 12;
-  return maxPayment * ((1 - Math.pow(1 + r, -n)) / r);
-}
-
-export { maxLoanFromPayment };
-
 /**
  * Orientační skóre 0–100. Nikdy netvrdí schválení bankou.
  */
 export function calculateReadiness(
   answers: ReadinessAnswers,
-  /** Modelová sazba pro odhad rozsahu — null = konzervativní 5 % */
-  modelRatePercent: number | null = 5
+  /** Modelová sazba pro odhad rozsahu — null = SoT model fallback */
+  modelRatePercent: number | null = MODEL_FALLBACK_RATE_PERCENT
 ): ReadinessResult {
-  const rate = modelRatePercent != null && modelRatePercent > 0 ? modelRatePercent : 5;
+  const rate =
+    modelRatePercent != null && modelRatePercent > 0
+      ? modelRatePercent
+      : MODEL_FALLBACK_RATE_PERCENT;
   const age = answers.age ?? 40;
   const termYears = Math.min(30, Math.max(5, 65 - age));
   const income = Math.max(0, answers.netIncome);
@@ -262,7 +255,7 @@ function buildActionPlan(
     "Dolaďte vlastní zdroje / rezervu na transakční náklady.",
     "Nechte si nezávazně projít profil s licencovaným specialistou.",
     answers.intent === "foreign_purchase"
-      ? "Ověřte ownership a financování v cílové zemi (dossier Decision Lab)."
+      ? "Ověřte ownership a financování v cílové zemi (přehled země / laboratoř rozhodnutí)."
       : "Porovnejte 2–3 produktové rámce bank bez závazku.",
   ];
   const months6to12 = [

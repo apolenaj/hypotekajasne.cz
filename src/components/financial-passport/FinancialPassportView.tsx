@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   History,
@@ -22,6 +22,7 @@ import {
   type SimulationId,
 } from "@/lib/financial-passport";
 import { buildAttribution, buildMajetioDiscoveryUrl } from "@/lib/majetio";
+import { scoreToBucket, track } from "@/lib/analytics";
 import { useCurrentRates } from "@/lib/rates";
 import { routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
@@ -59,16 +60,24 @@ function DimensionBar({
   score: number;
   explanation: string;
 }) {
+  const clamped = Math.min(100, Math.max(0, score));
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between text-sm">
         <span className="font-medium text-text-dark">{label}</span>
         <span className="tabular-nums font-bold text-deep-teal">{score}/100</span>
       </div>
-      <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+      <div
+        className="h-2 overflow-hidden rounded-full bg-slate-100"
+        role="meter"
+        aria-label={label}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={clamped}
+      >
         <div
-          className="h-full rounded-full bg-deep-teal transition-all duration-500"
-          style={{ width: `${Math.min(100, Math.max(0, score))}%` }}
+          className="h-full rounded-full bg-deep-teal transition-all duration-500 motion-reduce:transition-none"
+          style={{ width: `${clamped}%` }}
         />
       </div>
       <p className="text-xs leading-relaxed text-muted-foreground">{explanation}</p>
@@ -384,6 +393,12 @@ function PassportContent({ doc }: { doc: FinancialPassportDocument }) {
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 rounded-full border-2 border-deep-teal px-5 py-3 text-sm font-bold text-deep-teal"
+          onClick={() =>
+            track("passport_shared_intent", {
+              tool_id: "financial_passport",
+              cta_id: "majetio_budget_listings",
+            })
+          }
         >
           Nemovitosti v rozpočtu (Majetio)
           <Wallet className="h-4 w-4" />
@@ -410,6 +425,16 @@ export function FinancialPassportView() {
     if (!profile) return null;
     return buildFinancialPassportDocument(profile, modelRate);
   }, [profile, modelRate]);
+
+  useEffect(() => {
+    track("passport_started", { tool_id: "financial_passport" });
+    if (doc) {
+      track("passport_completed", {
+        tool_id: "financial_passport",
+        score_bucket: scoreToBucket(doc.readiness.overall),
+      });
+    }
+  }, [doc]);
 
   if (!profile || !doc) {
     return (

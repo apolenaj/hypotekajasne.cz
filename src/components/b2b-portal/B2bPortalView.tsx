@@ -84,7 +84,7 @@ const PORTAL_TABS: { id: B2bPortalTab; label: string; Icon: LucideIcon }[] = [
   { id: "partner", label: "Hypoteční partner", Icon: Landmark },
   { id: "billing", label: "Fakturace", Icon: FileText },
   { id: "audit", label: "Auditní záznam", Icon: ClipboardList },
-  { id: "architecture", label: "Architektura", Icon: Shield },
+  { id: "architecture", label: "Jak to funguje", Icon: Shield },
 ];
 
 export function B2bPortalView() {

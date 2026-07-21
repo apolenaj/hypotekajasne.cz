@@ -134,7 +134,7 @@ export const buyVsRentData: Record<string, BuyVsRentCountryData> = {
       "Nulová návratnost vložených prostředků",
     ],
     analysis:
-      "Itálie je trh pro dlouhodobé investory. Break-even se pohybuje kolem 10–12 let kvůli vyšším transakčním nákladům a často nutné renovaci. Krátkodobý pobyt nebo testování lokality směřuje k nájmu.",
+      "Itálie je trh pro dlouhodobé investory. Bod zvratu se pohybuje kolem 10–12 let kvůli vyšším transakčním nákladům a často nutné renovaci. Krátkodobý pobyt nebo testování lokality směřuje k nájmu.",
     winner: "Koupě (při renovaci a horizontu 12+ let)",
     winnerTone: "buy",
     breakEvenYears: 11,
@@ -309,9 +309,13 @@ export function getBuyVsRentCurrency(countryId: CountryId): CurrencyCode {
 
 export function getBuyVsRentDeepAnalysis(countryId: CountryId) {
   const name = getBuyVsRentCountryName(countryId);
-  return (
-    buyVsRentDeepAnalysis[name] ?? buyVsRentDeepAnalysis["Česká republika"]
-  );
+  const data = buyVsRentDeepAnalysis[name];
+  if (!data) {
+    throw new Error(
+      `Missing buy-vs-rent deep analysis for countryId=${countryId} (name=${name}). Cross-country fallback is forbidden.`
+    );
+  }
+  return data;
 }
 
 export const verdictStyles: Record<

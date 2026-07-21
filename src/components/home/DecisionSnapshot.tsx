@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { DataStatusBadge } from "@/components/trust/DataStatusBadge";
 import { marketAggregateToRecords } from "@/lib/data/live-rates";
 import { withEffectiveStatus } from "@/lib/data/freshness";
 import {
@@ -10,7 +9,7 @@ import {
 } from "@/lib/destination-metrics";
 import { estimateAffordability } from "@/lib/affordability";
 import { formatCurrency } from "@/lib/calculators";
-import { useCurrentRates } from "@/lib/rates";
+import { useMortgageRateEngine } from "@/lib/rates";
 import { routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
@@ -34,24 +33,27 @@ function formatUpdated(iso: string | null | undefined): string {
   });
 }
 
+function uiKindLabel(kind: "LIVE" | "OVĚŘENO" | "MODEL"): string {
+  if (kind === "LIVE") return "Aktuální data";
+  if (kind === "OVĚŘENO") return "Ověřeno";
+  return "Modelový výpočet";
+}
+
 /**
  * Pravý sloupec hero — živá data + mini ukázka rozpočtu (ne prázdná plocha).
+ * Při výpadku LIVE sazeb vždy spočítá orientační rozpočet z rate engine.
  */
 export function DecisionSnapshot({ className }: { className?: string }) {
-  const { rates, loading } = useCurrentRates();
+  const { rates, loading, resolved } = useMortgageRateEngine(true);
   const live = withEffectiveStatus(
     marketAggregateToRecords(rates).withInsurance
   );
-  const rate =
-    typeof live.value === "number" && Number.isFinite(live.value)
-      ? live.value
-      : null;
 
   const demo = estimateAffordability({
     monthlyIncome: 60_000,
     monthlyLiabilities: 0,
     cash: 800_000,
-    ratePercent: rate,
+    ratePercent: resolved.ratePercent,
     termYears: 30,
   });
 
@@ -72,19 +74,23 @@ export function DecisionSnapshot({ className }: { className?: string }) {
             Orientační čísla — ne nabídka banky.
           </p>
         </div>
-        {!loading ? <DataStatusBadge status={live.status} /> : null}
+        {!loading ? (
+          <span className="rounded-md bg-white/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+            {uiKindLabel(resolved.uiKind)}
+          </span>
+        ) : null}
       </div>
 
       <dl className="mt-4 grid grid-cols-2 gap-3">
         <div className="rounded-xl bg-black/20 px-3 py-3">
           <dt className="text-[11px] text-white/55">Sazba ČR s pojištěním</dt>
           <dd className="mt-1 font-heading text-xl font-bold tabular-nums text-white">
-            {loading ? "…" : rate != null ? formatRateCs(rate) : "Na vyžádání"}
-            {rate != null ? (
-              <span className="ml-1 text-xs font-medium text-white/55">
-                p. a.
-              </span>
-            ) : null}
+            {loading && resolved.isModelFallback
+              ? "…"
+              : formatRateCs(resolved.ratePercent)}
+            <span className="ml-1 text-xs font-medium text-white/55">
+              p. a.
+            </span>
           </dd>
         </div>
         <div className="rounded-xl bg-black/20 px-3 py-3">
@@ -102,10 +108,20 @@ export function DecisionSnapshot({ className }: { className?: string }) {
         <div className="rounded-xl bg-black/20 px-3 py-3">
           <dt className="text-[11px] text-white/55">Poslední aktualizace</dt>
           <dd className="mt-1 text-sm font-semibold tabular-nums text-white">
-            {loading ? "…" : formatUpdated(rates.updatedAt)}
+            {loading
+              ? "…"
+              : formatUpdated(
+                  resolved.lastVerifiedAt ?? rates.updatedAt ?? live.lastFetchedAt
+                )}
           </dd>
         </div>
       </dl>
+
+      {resolved.isModelFallback || resolved.uiKind === "OVĚŘENO" ? (
+        <p className="mt-3 text-[11px] leading-relaxed text-white/65">
+          {resolved.explanation}
+        </p>
+      ) : null}
 
       <div className="mt-4 rounded-xl border border-muted-gold/30 bg-gradient-to-br from-muted-gold/15 to-transparent px-3 py-3 sm:px-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-gold">
@@ -117,7 +133,9 @@ export function DecisionSnapshot({ className }: { className?: string }) {
         </p>
         <div className="mt-3 flex items-end justify-between gap-3">
           <div>
-            <p className="text-[11px] text-white/55">Orientační bezpečný rozpočet</p>
+            <p className="text-[11px] text-white/55">
+              Orientační bezpečný rozpočet
+            </p>
             <p className="font-heading text-2xl font-bold tabular-nums text-white">
               {demo.maxPropertyPrice > 0
                 ? formatCurrency(demo.maxPropertyPrice, "CZK")
@@ -125,13 +143,12 @@ export function DecisionSnapshot({ className }: { className?: string }) {
             </p>
           </div>
           <Link
-            href="#kolik-si-mohu-dovolit"
+            href={routes.mojeMoznosti}
             className="shrink-0 text-sm font-semibold text-muted-gold underline-offset-4 hover:underline"
           >
             Spočítat své →
           </Link>
         </div>
-        {/* Jednoduchý vizuální pás — poměr vlastní zdroje / úvěr (ilustrace) */}
         <div
           className="mt-3 h-2 overflow-hidden rounded-full bg-white/10"
           aria-hidden
@@ -145,6 +162,12 @@ export function DecisionSnapshot({ className }: { className?: string }) {
           Ilustrace podílu vlastních zdrojů — přesný výpočet ve widgetu níže.
         </p>
       </div>
+
+      <p className="mt-3 text-center text-[10px] text-white/40">
+        <Link href={routes.metodika} className="underline-offset-2 hover:underline">
+          Metodika dat
+        </Link>
+      </p>
     </aside>
   );
 }

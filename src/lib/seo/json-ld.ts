@@ -13,6 +13,7 @@ export function organizationJsonLd(): JsonLd {
   const org: JsonLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
+    "@id": absoluteUrl("/#organization"),
     name: SITE_NAME_SHORT,
     alternateName: SITE_NAME,
     url: absoluteUrl("/"),

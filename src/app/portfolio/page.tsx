@@ -8,7 +8,7 @@ import { routes } from "@/lib/routes";
 export const metadata: Metadata = buildPageMetadata({
   title: "Moje portfolio — správa více nemovitostí",
   description:
-    "Souhrn portfolia, koncentrace rizik, stress testy a srozumitelné scénáře. Export pro účetního. Bez pokynů k prodeji.",
+    "Souhrn portfolia, koncentrace rizik, zátěžové testy a srozumitelné scénáře. Export pro účetního. Bez pokynů k prodeji.",
   path: routes.portfolio,
 });
 

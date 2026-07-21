@@ -55,10 +55,12 @@ const typesSrc = fs.readFileSync(typesPath, "utf8");
 const statusBlock =
   typesSrc.includes("LIVE") &&
   typesSrc.includes("VERIFIED") &&
-  typesSrc.includes("MODELLED") &&
+  typesSrc.includes("MODEL") &&
+  typesSrc.includes("ESTIMATE") &&
+  typesSrc.includes("UNVERIFIED") &&
   typesSrc.includes("PARTNER_QUOTE") &&
   typesSrc.includes("STALE");
-if (!statusBlock) fail("DataStatus neobsahuje všechny statusy");
+if (!statusBlock) fail("DataStatus neobsahuje všechny statusy (LIVE/VERIFIED/MODEL/ESTIMATE/UNVERIFIED/…)");
 else ok("DataStatus kompletní");
 
 const requiredFields = [
@@ -74,11 +76,34 @@ const requiredFields = [
   "status",
   "confidence",
   "notes",
+  "provenance",
+  "internalStorageRef",
 ];
 for (const field of requiredFields) {
   if (!typesSrc.includes(field)) fail(`DataRecord chybí pole ${field}`);
 }
 ok("DataRecord má povinná pole");
+
+const sourcesDir = path.join(root, "src", "lib", "sources");
+for (const f of ["types.ts", "authorities.ts", "validation.ts", "claims.ts"]) {
+  const p = path.join(sourcesDir, f);
+  if (!fs.existsSync(p)) fail(`chybí src/lib/sources/${f}`);
+  else ok(`soubor src/lib/sources/${f}`);
+}
+
+const regulatorySrc = fs.readFileSync(
+  path.join(root, "src", "lib", "data", "static-regulatory.ts"),
+  "utf8"
+);
+if (!regulatorySrc.includes("provenance:")) {
+  fail("static-regulatory.ts musí mít ExternalProvenance u VERIFIED záznamů");
+} else ok("static-regulatory provenance");
+if (
+  regulatorySrc.includes('status: "VERIFIED"') &&
+  !regulatorySrc.includes("makroobezretnostni-politika")
+) {
+  fail("VERIFIED ČNB záznamy musí odkazovat na oficiální stránku ČNB, ne jen interní soubor");
+} else ok("ČNB VERIFIED má externí URL");
 
 const ratePolicy = fs.readFileSync(ratePolicyPath, "utf8");
 if (

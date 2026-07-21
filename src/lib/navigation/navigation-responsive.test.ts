@@ -93,8 +93,9 @@ describe("navbar overflow guards (static source)", () => {
     );
   });
 
-  it("mobile drawer uses fixed overlay with 44px touch targets", () => {
+  it("mobile drawer uses focus trap with 44px touch targets", () => {
     assert.ok(navbar.includes('role="dialog"'));
+    assert.ok(navbar.includes("useFocusTrap"));
     assert.ok(navbar.includes("min-h-11"));
     assert.ok(navbar.includes("h-11 w-11"));
   });

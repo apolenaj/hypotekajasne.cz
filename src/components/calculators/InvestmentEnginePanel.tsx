@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { InfoTooltip } from "@/components/calculators/InfoTooltip";
+import { CalculationKindBadge } from "@/components/calculators/CalculationKindBadge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -513,6 +514,14 @@ export function InvestmentEnginePanel({
       </div>
 
       {/* Primární výsledky */}
+      <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+        <CalculationKindBadge kind="exact" />
+        <CalculationKindBadge kind="model" />
+      </div>
+      <p className="mb-3 text-xs text-muted-foreground">
+        Výnosy, DSCR a CF jsou přesná matematika ze vstupů. Vacancy, růst nájmu,
+        růst ceny a FX jsou modelové předpoklady — ne živý kurz.
+      </p>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <MetricCard
           label="Měsíční peněžní tok"

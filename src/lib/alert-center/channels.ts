@@ -15,7 +15,7 @@ export const ALERT_CHANNELS: ChannelDescriptor[] = [
     status: "LIVE",
     consentRequired: false,
     consentCategory: "none",
-    description: "Alert Center + dashboard widget — výchozí kanál.",
+    description: "Upozornění přímo na webu — výchozí a vždy dostupné.",
   },
   {
     channel: "email",
@@ -23,14 +23,15 @@ export const ALERT_CHANNELS: ChannelDescriptor[] = [
     consentRequired: true,
     consentCategory: "product_email",
     description:
-      "Digest e-mail — vyžaduje výslovný product consent (oddělený od lead formuláře).",
+      "Souhrnný e-mail — vyžaduje výslovný souhlas (oddělený od formuláře poptávky).",
   },
   {
     channel: "push",
     status: "COMING_SOON",
     consentRequired: true,
     consentCategory: "push_os",
-    description: "Web push — vyžaduje OS permission + consent záznam.",
+    description:
+      "Push v prohlížeči — vyžaduje povolení v systému a váš souhlas.",
   },
 ];
 
@@ -85,13 +86,14 @@ export function resolveEnabledChannels(input: {
 }
 
 export const ALERT_CENTER_CONSENT_NOTE =
-  "E-mail a push notifikace nejsou aktivní bez výslovného souhlasu. In-app alerty nevyžadují marketing consent — neodesílají data třetím stranám.";
+  "E-mail a push nejsou aktivní bez výslovného souhlasu. Upozornění na webu marketingový souhlas nevyžadují a neodesílají data třetím stranám.";
 
+/** Interní pořadí zpracování — není určeno pro veřejné UI. */
 export const NOTIFY_PIPELINE = [
-  "1. collectAllAlertCandidates (deterministické zdroje)",
-  "2. dedupeAlerts (fingerprint)",
-  "3. filterAlreadyEmitted (24h okno)",
-  "4. split immediate vs digest dle preferencí",
+  "1. collect candidates",
+  "2. dedupe",
+  "3. filter emitted",
+  "4. split immediate vs digest",
   "5. in-app persist",
-  "6. IF email/push consented → enqueue NotifyQueueJob (worker COMING_SOON)",
+  "6. email/push queue when consented",
 ] as const;

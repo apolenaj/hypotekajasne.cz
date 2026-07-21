@@ -169,9 +169,11 @@ Testy: `src/lib/money.test.ts` (`npm run test:money`).
 - [x] AmortizationChart osa `Nk` → `formatMoneyCompact`  
 - [x] Central `src/lib/money.ts` + testy  
 - [x] Affordability unit testy  
+- [x] **17N:** `src/lib/finance-math/*` — kanonická anuita/PV/LTV/DSTI + `FORMULA_REGISTRY` + golden/boundary suite (`npm run test:finance-math`)  
+- [x] **17N:** UI `CalculationKindBadge` (přesný / model / externí) na CZ decision tool + investment panel  
 
 ### P1
-- [ ] Dedikované unit testy `investment-modeler.ts`  
+- [ ] Dedikované unit testy `investment-modeler.ts` (anuita sjednocena na finance-math; projekční scénáře stále P1)  
 - [ ] CzMortgageDecisionTool: collapsible „Pokročilé výsledky“ pro metriky 6–9  
 - [ ] Sjednotit vizuální „shell“ všech kalkulaček (společný `CalculatorShell`)  
 - [ ] Validace: explicitní české hlášky u všech HTML5 `required` / custom validators  
@@ -186,9 +188,11 @@ Testy: `src/lib/money.test.ts` (`npm run test:money`).
 ## Jak ověřit
 
 ```bash
+npm run test:finance-math
 npm run test:money
 npm run test:financing
 npm run test:investment
+npm run test:decision
 npm run test:decision-lab
 npm run test:portfolio-os
 npm run typecheck

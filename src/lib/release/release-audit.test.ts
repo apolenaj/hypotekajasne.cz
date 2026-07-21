@@ -72,7 +72,8 @@ describe("release audit scanners", () => {
   });
 
   it("analytics taxonomy is non-empty and stable count", () => {
-    assert.equal(ANALYTICS_EVENTS.length, 17);
+    assert.equal(ANALYTICS_EVENTS.length, 46);
+    assert.equal(ANALYTICS_EVENTS.length, new Set(ANALYTICS_EVENTS).size);
   });
 
   it("AboutUs uses honest photo placeholder copy", () => {
@@ -82,6 +83,8 @@ describe("release audit scanners", () => {
     );
     assert.ok(about.includes("Fotografie zatím není dodána"));
     assert.ok(!about.includes("Fotografie brzy"));
+    assert.ok(about.includes("LinkedIn profil zatím není zveřejněn"));
+    assert.ok(!about.includes("odkaz doplníme"));
   });
 
   it("forbids developer jargon in public CS UI surfaces", () => {

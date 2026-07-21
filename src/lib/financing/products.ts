@@ -77,7 +77,7 @@ const czechEquity = (
   ratePercentPa: null,
   rateAvailability: "LIVE",
   calculable: true,
-  source: "supabase:bank_rates.american_*",
+  source: "Veřejné sazby sledovaných bank (americká hypotéka)",
 });
 
 const cash = (
@@ -107,13 +107,13 @@ export const COUNTRY_FINANCING_PRODUCTS: Record<
     {
       option: "LOCAL_MORTGAGE",
       label: "Česká bankovní hypotéka",
-      description: "Klasická hypotéka u CZ bank — živé sazby ze Supabase.",
+      description: "Klasická hypotéka u CZ bank — sazby z veřejných bankovních zdrojů.",
       currency: "CZK",
       maxLtvPercent: 80,
       ratePercentPa: null,
       rateAvailability: "LIVE",
       calculable: true,
-      source: "supabase:current_rates / bank_rates",
+      source: "Veřejné sazby sledovaných bank",
     },
     czechEquity("CZK"),
     cash("CZK"),

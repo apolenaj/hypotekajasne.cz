@@ -39,7 +39,7 @@ export function DataSourcePopover({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
-  const [pos, setPos] = useState({ top: 0, left: 0 });
+  const [pos, setPos] = useState({ top: 0, left: 0, width: 320 });
 
   const freshness = resolveEffectiveStatus(record);
   const status = freshness.effectiveStatus;
@@ -47,12 +47,16 @@ export function DataSourcePopover({
   useEffect(() => {
     if (!open || !triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
-    const width = 320;
+    const width = Math.min(320, window.innerWidth - 24);
     const left = Math.min(
       Math.max(12, rect.left + rect.width / 2 - width / 2),
       window.innerWidth - width - 12
     );
-    setPos({ top: Math.min(rect.bottom + 8, window.innerHeight - 24), left });
+    setPos({
+      top: Math.min(rect.bottom + 8, window.innerHeight - 24),
+      left,
+      width,
+    });
   }, [open]);
 
   useEffect(() => {
@@ -102,8 +106,8 @@ export function DataSourcePopover({
             id={titleId}
             role="dialog"
             aria-label="Původ dat"
-            style={{ top: pos.top, left: pos.left, width: 320 }}
-            className="fixed z-[60] max-h-[min(70vh,420px)] overflow-y-auto rounded-xl border border-border bg-white p-4 shadow-xl shadow-slate-900/10"
+            style={{ top: pos.top, left: pos.left, width: pos.width }}
+            className="fixed z-[60] max-h-[min(70vh,420px)] max-w-[calc(100vw-1.5rem)] overflow-y-auto rounded-xl border border-border bg-white p-4 shadow-xl shadow-slate-900/10"
           >
             <div className="flex items-start justify-between gap-2">
               <p className="text-sm font-semibold text-text-dark">
@@ -116,25 +120,90 @@ export function DataSourcePopover({
             </p>
 
             <dl className="mt-3 space-y-2.5 text-xs">
-              <div>
-                <dt className="text-muted-foreground">Zdroj</dt>
-                <dd className="font-medium text-text-dark">
-                  {record.source}
-                  {record.sourceUrl ? (
-                    <>
-                      {" · "}
-                      <a
-                        href={record.sourceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-deep-teal underline-offset-2 hover:underline"
-                      >
-                        Otevřít
-                      </a>
-                    </>
+              {record.provenance ? (
+                <>
+                  <div>
+                    <dt className="text-muted-foreground">Autorita</dt>
+                    <dd className="font-medium text-text-dark">
+                      {record.provenance.organization}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-muted-foreground">Dokument</dt>
+                    <dd className="font-medium text-text-dark">
+                      {record.provenance.title}
+                      {record.provenance.url ? (
+                        <>
+                          {" · "}
+                          <a
+                            href={record.provenance.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-deep-teal underline-offset-2 hover:underline"
+                          >
+                            Otevřít
+                          </a>
+                        </>
+                      ) : null}
+                    </dd>
+                  </div>
+                  {record.provenance.jurisdiction ? (
+                    <div>
+                      <dt className="text-muted-foreground">Jurisdikce</dt>
+                      <dd className="font-medium uppercase text-text-dark">
+                        {record.provenance.jurisdiction}
+                      </dd>
+                    </div>
                   ) : null}
-                </dd>
-              </div>
+                  {record.provenance.publishedOrEffectiveAt ? (
+                    <div>
+                      <dt className="text-muted-foreground">
+                        Účinnost / publikace
+                      </dt>
+                      <dd className="tabular-nums font-medium text-text-dark">
+                        {formatCzechDate(record.provenance.publishedOrEffectiveAt)}
+                      </dd>
+                    </div>
+                  ) : null}
+                  <div>
+                    <dt className="text-muted-foreground">Poslední kontrola</dt>
+                    <dd className="tabular-nums font-medium text-text-dark">
+                      {formatCzechDate(record.provenance.lastCheckedAt)}
+                    </dd>
+                  </div>
+                  {record.provenance.reviewedBy ||
+                  record.provenance.reviewMethod ? (
+                    <div>
+                      <dt className="text-muted-foreground">Způsob ověření</dt>
+                      <dd className="leading-relaxed text-text-dark">
+                        {[record.provenance.reviewedBy, record.provenance.reviewMethod]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </dd>
+                    </div>
+                  ) : null}
+                </>
+              ) : (
+                <div>
+                  <dt className="text-muted-foreground">Zdroj</dt>
+                  <dd className="font-medium text-text-dark">
+                    {record.source}
+                    {record.sourceUrl ? (
+                      <>
+                        {" · "}
+                        <a
+                          href={record.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-deep-teal underline-offset-2 hover:underline"
+                        >
+                          Otevřít
+                        </a>
+                      </>
+                    ) : null}
+                  </dd>
+                </div>
+              )}
               <div>
                 <dt className="text-muted-foreground">Poslední načtení</dt>
                 <dd className="tabular-nums font-medium text-text-dark">
@@ -160,7 +229,7 @@ export function DataSourcePopover({
                   <dt className="text-muted-foreground">Omezení</dt>
                   <dd className="leading-relaxed text-text-dark">
                     {freshness.isStaleByAge
-                      ? "Překročen freshness threshold — status automaticky STALE. "
+                      ? "Údaj potřebuje aktualizaci — překročili jsme doporučený interval kontroly. "
                       : null}
                     {record.notes}
                   </dd>

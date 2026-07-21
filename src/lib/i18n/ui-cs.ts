@@ -8,15 +8,17 @@
 export const DATA_STATUS_LABELS_CS = {
   LIVE: "Aktuální data",
   VERIFIED: "Ověřeno",
-  MODELLED: "Modelový výpočet",
+  MODEL: "Model",
+  ESTIMATE: "Odhad",
+  UNVERIFIED: "Neověřeno",
   PARTNER_QUOTE: "Nabídka partnera",
-  STALE: "Čeká na aktualizaci",
+  STALE: "Údaj potřebuje aktualizaci",
 } as const;
 
 /** Statusy funkcí (FeatureStatus) */
 export const FEATURE_STATUS_LABELS_CS = {
   LIVE: "Dostupné",
-  BETA: "Beta",
+  BETA: "Veřejná zkušební verze",
   COMING_SOON: "Připravujeme",
 } as const;
 
@@ -77,7 +79,7 @@ export const ACADEMY_UI_CS = {
   whatNext: "Co dál?",
   reusePipeline: "Další formáty obsahu",
   reusePipelineLead:
-    "Jeden kanonický obsah → článek · video · krátké video · audio · e-book · newsletter.",
+    "Stejné téma můžete najít i jako článek, video, audio nebo e-mailové shrnutí.",
 } as const;
 
 /** Magazín — UI chrome */
@@ -188,4 +190,87 @@ export const COMMON_UI_CS = {
   loading: "Načítám…",
   empty: "Zatím tu nic není",
   error: "Něco se pokazilo",
+} as const;
+
+/**
+ * Jednotný terminologický slovník (PROMPT 17B).
+ * Primárně klientská čeština; odborná zkratka jen jako sekundární vysvětlení.
+ * Vykání: vždy „vy / váš“ (malé písmeno mimo začátek věty).
+ */
+export const TERM_CS = {
+  overallMatch: "Celková shoda",
+  marketMatching: "Přiřazení trhů",
+  marketMatch: "Shoda trhů",
+  requiredCapital: "Požadovaný kapitál",
+  financingFit: "Shoda financování",
+  affordability: "Dostupnost",
+  affordabilityFit: "Shoda dostupnosti",
+  holdingCosts: "Průběžné náklady",
+  equity: "Vlastní kapitál",
+  equityFirst: "Vlastní kapitál (equity)",
+  stressTest: "Zátěžový test",
+  stressTests: "Zátěžové testy",
+  breakEven: "Bod zvratu",
+  opportunityRadar: "Radar příležitostí",
+  regulatoryChangelog: "Regulační přehled změn",
+  decisionLab: "Laboratoř rozhodnutí",
+  premiumDataDossier: "Prémiový datový přehled země",
+  propertyAnalysis: "Analýza nemovitosti",
+  snapshot: "Přehledový snímek",
+  developerSchedule: "Platební plán developera",
+  offPlan: "Ve výstavbě (off-plan)",
+  dueDiligence: "Právní a technická prověrka",
+  cashFlow: "Peněžní tok",
+  yieldMaximizer: "Maximalizace výnosu",
+  lifestyleYield: "Bydlení + výnos",
+  valueAddFlipping: "Zhodnocení / krátkodobý převrat",
+  bestCashFlow: "Nejlepší peněžní tok",
+  bestAppreciation: "Nejvyšší potenciál růstu hodnoty",
+  lowestRisk: "Nejnižší riziko",
+  lowestRequiredCapital: "Nejnižší požadovaný kapitál",
+  bestUserFit: "Nejlepší shoda s profilem",
+  scenarioBear: "Pesimistický",
+  scenarioBase: "Základní",
+  scenarioBull: "Optimistický",
+  timeline: "Časová osa",
+  vault: "Dokumentový trezor",
+  digest: "Souhrn",
+  inApp: "V aplikaci",
+  readinessScore: "Skóre připravenosti",
+  score: "Skóre",
+  selfReported: "Vámi uvedené",
+  tradeOffs: "Kompromisy",
+  winnerByCategory: "Vítěz podle kategorie",
+  stayVsRefinance: "Zůstat vs. refinancovat",
+  safeBuyingPower: "Bezpečná kupní síla",
+} as const;
+
+/** Odborné zkratky — při prvním výskytu v delším textu použij gloss. */
+export const ABBREV_GLOSS_CS = {
+  LTV: "Poměr úvěru k hodnotě nemovitosti (LTV)",
+  DTI: "Poměr dluhu k příjmu (DTI)",
+  DSTI: "Podíl splátek na příjmu (DSTI)",
+  RPSN: "Roční procentní sazba nákladů (RPSN)",
+  ROI: "Návratnost investice (ROI)",
+  IRR: "Vnitřní výnosové procento (IRR)",
+  DSCR: "Krytí dluhové služby (DSCR)",
+  NOI: "Provozní výsledek nemovitosti (NOI)",
+} as const;
+
+/** Statusy nabídek v transakční místnosti */
+export const DEAL_OFFER_STATUS_LABELS_CS = {
+  draft: "Koncept",
+  submitted: "Odesláno",
+  counter: "Protinabídka",
+  accepted: "Přijato",
+  rejected: "Odmítnuto",
+} as const;
+
+/** Statusy kroků časové osy */
+export const TIMELINE_STATUS_LABELS_CS = {
+  pending: "Čeká",
+  in_progress: "Probíhá",
+  waiting: "Čekáme",
+  completed: "Hotovo",
+  blocked: "Blokováno",
 } as const;

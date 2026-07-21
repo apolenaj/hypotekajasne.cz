@@ -31,8 +31,8 @@ export function DestinationDataGrid() {
               Investiční destinace — data, ne slogany
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground sm:text-base">
-              Vlastnictví, financovatelnost, orientační kapitál a riziko. Každá
-              karta ukazuje datový status.
+              Vlastnictví, financovatelnost, vstupní kapitál a riziko. Bez
+              marketingových superlativů — každá karta ukazuje datový status.
             </p>
           </div>
           <Link

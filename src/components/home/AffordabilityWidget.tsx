@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { RateProvenanceBanner } from "@/components/calculators/RateProvenanceBanner";
 import { estimateAffordability } from "@/lib/affordability";
 import { formatCurrency } from "@/lib/calculators";
 import { missingDataLabel } from "@/lib/data/display";
-import { useCurrentRates } from "@/lib/rates";
+import { useMortgageRateEngine } from "@/lib/rates";
 import { routes } from "@/lib/routes";
 
 function parseAmount(raw: string): number {
@@ -14,7 +15,7 @@ function parseAmount(raw: string): number {
 }
 
 export function AffordabilityWidget() {
-  const { rates, loading } = useCurrentRates();
+  const { resolved, loading } = useMortgageRateEngine(true);
   const [income, setIncome] = useState("60 000");
   const [cash, setCash] = useState("800 000");
   const [liabilities, setLiabilities] = useState("0");
@@ -24,45 +25,45 @@ export function AffordabilityWidget() {
       monthlyIncome: parseAmount(income),
       monthlyLiabilities: parseAmount(liabilities),
       cash: parseAmount(cash),
-      ratePercent: rates.rateWithInsurance,
+      ratePercent: resolved.ratePercent,
       termYears: 30,
     });
-  }, [income, cash, liabilities, rates.rateWithInsurance]);
+  }, [income, cash, liabilities, resolved.ratePercent]);
 
-  const rateDisplay =
-    rates.rateWithInsurance != null
-      ? `${rates.rateWithInsurance.toFixed(2)} %`
-      : loading
-        ? "…"
-        : missingDataLabel("STALE");
+  const rateDisplay = loading
+    ? "…"
+    : `${resolved.ratePercent.toFixed(2)} %`;
 
   return (
     <section
-      id="kolik-si-mohu-dovolit"
+      id="zjistit-moje-moznosti"
       aria-labelledby="affordability-heading"
       className="scroll-mt-24 border-b border-border bg-white"
     >
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-12 lg:gap-10 lg:px-8 lg:py-12">
         <div className="lg:col-span-5">
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-deep-teal">
-            Mini-widget
+            První krok
           </p>
           <h2
             id="affordability-heading"
             className="mt-2 font-heading text-2xl font-bold tracking-tight text-text-dark sm:text-3xl"
           >
-            Kolik si mohu dovolit?
+            Zjistit moje možnosti
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
             Orientační strop podle příjmu (DSTI ~45 %), vlastních zdrojů (LTV) a
-            aktuální sazby s pojištěním. Nejde o závaznou nabídku banky.
+            sazby s pojištěním. Nejde o závaznou nabídku banky.
           </p>
-          <p className="mt-4 text-xs text-muted-foreground">
+          <div className="mt-4">
+            <RateProvenanceBanner resolved={resolved} />
+          </div>
+          <p className="mt-3 text-xs text-muted-foreground">
             Použitá sazba ČR:{" "}
             <span className="font-semibold tabular-nums text-text-dark">
               {rateDisplay}
             </span>
-            {rates.rateWithInsurance != null && " p.a. (živá data)"}
+            {" p.a."}
           </p>
         </div>
 
@@ -120,9 +121,9 @@ export function AffordabilityWidget() {
                   Max. úvěr
                 </p>
                 <p className="mt-1 break-words font-heading text-xl font-bold tabular-nums text-text-dark sm:text-2xl lg:text-3xl">
-                  {result.hasRate || result.maxLoan > 0
+                  {result.maxLoan > 0
                     ? formatCurrency(result.maxLoan, "CZK")
-                    : missingDataLabel("STALE")}
+                    : missingDataLabel(null)}
                 </p>
               </div>
               <div className="min-w-0 rounded-lg border border-border bg-white p-4">
@@ -146,10 +147,10 @@ export function AffordabilityWidget() {
             </p>
 
             <Link
-              href={routes.navrhNaMiru}
+              href={routes.mojeMoznosti}
               className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-lg bg-deep-teal px-5 text-sm font-semibold text-white transition-colors hover:bg-deep-teal-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal focus-visible:ring-offset-2 sm:w-auto"
             >
-              Hypoteční připravenost →
+              Zjistit moje možnosti →
             </Link>
           </form>
         </div>

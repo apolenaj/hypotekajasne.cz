@@ -160,7 +160,7 @@ const METRIC_ROWS: {
     format: (v) => String(v),
   },
   {
-    label: "Fit dostupnosti",
+    label: "Shoda dostupnosti",
     get: (m) => ({
       value: m.affordability?.verdict ?? "—",
       kind: m.affordability?.claimKind ?? "NEOVERENO",
@@ -459,7 +459,7 @@ export function PropertyCompareView() {
                     Nájem/měs.
                     <input
                       className="mt-0.5 h-8 w-full rounded border px-2"
-                      placeholder="MODEL"
+                      placeholder="odhad Kč"
                       value={p.rentMonthlyCzk ?? ""}
                       onChange={(e) => {
                         const v = e.target.value.replace(/\s/g, "");
@@ -503,7 +503,7 @@ export function PropertyCompareView() {
                       Vlastní kapitál
                       <input
                         className="mt-0.5 h-8 w-full rounded border px-2"
-                        placeholder="20 % MODEL"
+                        placeholder="např. 20 %"
                         value={p.equityCzk ?? ""}
                         onChange={(e) => {
                           const v = e.target.value.replace(/\s/g, "");

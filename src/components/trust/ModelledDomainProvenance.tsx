@@ -23,10 +23,14 @@ export function ModelledDomainProvenance({
     country: "multi",
     source,
     sourceType: "model",
-    status: topic === "legal" ? "VERIFIED" : "MODELLED",
-    confidence: topic === "legal" ? 0.75 : 0.4,
+    status: topic === "legal" ? "ESTIMATE" : "MODEL",
+    confidence: topic === "legal" ? 0.55 : 0.4,
     lastVerifiedAt: "2026-04-01",
-    notes: notes ?? "Orientační model — není LIVE kotace.",
+    notes:
+      notes ??
+      (topic === "legal"
+        ? "Editorial odhad — bez plné externí provenance není Ověřeno."
+        : "Orientační model — není aktuální tržní kotace."),
   });
 
   return (

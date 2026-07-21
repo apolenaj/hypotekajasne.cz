@@ -128,6 +128,18 @@ export function getHistoricalChartData(
   return chartDataByCountry[countryId];
 }
 
+/** Zahraniční řady jsou škálované z CZ — UI musí označit jako modelový proxy. */
+export function isHistoricalProxyFromCz(countryId: CountryId): boolean {
+  return countryId !== "cz";
+}
+
+export function historicalProvenanceNote(countryId: CountryId): string {
+  if (!isHistoricalProxyFromCz(countryId)) {
+    return "Historická řada ČR — ilustrativní modelové body, ne oficiální ČSÚ časová řada.";
+  }
+  return "Historický přehled je modelově škálovaný z české řady (ceny/nájmy/sazby) — nejde o lokální oficiální historii dané země. Údaje ověřujeme.";
+}
+
 export function getDefaultTimeMachineCash(countryId: CountryId): number {
   const snapshots = getHistoricalSnapshots(countryId);
   const year2006 = snapshots.find((d) => d.year === 2006);

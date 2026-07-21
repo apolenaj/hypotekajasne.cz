@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect } from "react";
-import { track } from "@/lib/analytics/track";
+import { trackPair } from "@/lib/analytics/track";
 
-/** Fires country_viewed once on mount — privacy-safe country_id only. */
+/** Fires market_viewed (+ legacy country_viewed) once on mount. */
 export function CountryViewTracker({ countryId }: { countryId: string }) {
   useEffect(() => {
-    track("country_viewed", {
+    trackPair("country_viewed", "market_viewed", {
       country_id: countryId,
       tool_id: "country_hub",
       path:

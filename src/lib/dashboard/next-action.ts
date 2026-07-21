@@ -45,7 +45,7 @@ export function resolveNextBestAction(input: {
   if (!primary) {
     return {
       id: "fallback",
-      title: "Prohlédněte dashboard",
+      title: "Prohlédněte přehled",
       detail: "Žádné aktivní doporučení.",
       href: "/",
       urgency: "low",

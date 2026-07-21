@@ -121,7 +121,7 @@ function InvestorLeadForm({ countryName }: { countryName: string }) {
 
   if (submitted) {
     return (
-      <div className="sticky top-32 bg-emerald-50 border border-emerald-200 rounded-3xl p-8 shadow-xl text-center">
+      <div className="rounded-3xl border border-emerald-200 bg-emerald-50 p-6 text-center shadow-xl sm:p-8 lg:sticky lg:top-24">
         <p className="text-emerald-900 font-bold text-lg mb-2">
           Děkujeme za váš zájem!
         </p>
@@ -134,7 +134,7 @@ function InvestorLeadForm({ countryName }: { countryName: string }) {
   }
 
   return (
-    <div className="sticky top-32 bg-gray-50 border border-gray-200 rounded-3xl p-8 shadow-xl">
+    <div className="rounded-3xl border border-gray-200 bg-gray-50 p-6 shadow-xl sm:p-8 lg:sticky lg:top-24">
       <h3 className="font-heading text-2xl font-bold text-gray-900 mb-2">
         Chci investovat v této zemi
       </h3>
@@ -371,7 +371,7 @@ export function CountryInvestmentHub({ countryId }: CountryInvestmentHubProps) {
         </div>
       </div>
 
-      <div className="sticky top-16 z-40 bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm">
+      <div className="sticky top-14 z-40 bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm sm:top-16">
         <div className="max-w-7xl mx-auto px-4">
           <ul className="-mx-4 flex gap-6 overflow-x-auto px-4 text-sm font-bold text-gray-600 py-4 [scrollbar-width:thin] sm:mx-0 sm:px-0">
             {SUB_NAV_LINKS.map((link) => (

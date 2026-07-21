@@ -8,7 +8,7 @@ import { routes } from "@/lib/routes";
 export const metadata: Metadata = buildPageMetadata({
   title: "Tržní puls — vývoj trhů bez clickbaitu",
   description:
-    "Trendy sazeb, cen, nájmů a yieldu pro podporované trhy. Opportunity Radar upozorňuje na shodu s kritérii — ne garantuje investici. Regulační changelog.",
+    "Trendy sazeb, cen, nájmů a yieldu pro podporované trhy. Radar příležitostí upozorňuje na shodu s kritérii — ne garantuje investici. Regulační přehled změn.",
   path: routes.marketPulse,
 });
 

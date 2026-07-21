@@ -23,14 +23,14 @@ export const PROCESSING_ROLES: ProcessingRole[] = [
     label: "Hosting / infrastruktura (např. Vercel, Supabase)",
     gdprRole: "processor",
     description:
-      "Zpracovatelé podle smlouvy o zpracování — provoz aplikace a databáze. Konkrétní seznam doplní provozovatel do konfigurace po uzavření smluv.",
+      "Zpracovatelé podle smlouvy o zpracování — provoz aplikace a databáze. Konkrétní seznam subjektů zveřejní provozovatel po uzavření smluv.",
   },
   {
     id: "licensed_specialist",
     label: "Licencovaný hypoteční specialista / partner",
     gdprRole: "independent_controller",
     description:
-      "Po výslovném souhlasu s předáním se stává samostatným správcem údajů pro zprostředkování. Licence a IČO: /partneri (po ověření).",
+      "Po výslovném souhlasu s předáním se stává samostatným správcem údajů pro zprostředkování. Ověřená identifikace (právní jméno, IČO, registr) se zveřejňuje na /partneri — jen pokud je skutečně dostupná.",
   },
   {
     id: "bank",

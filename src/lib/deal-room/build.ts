@@ -12,11 +12,11 @@ export function buildDealRoomDashboard(
     workspace,
     now: summary,
     methodology: [
-      "Deal Room nahrazuje chaos z WhatsAppu, e-mailů a PDF příloh jedním workspace.",
-      "Dokumenty se mezi rolemi nesdílí automaticky — jen explicitní permission model.",
-      "Timeline kroky mají ownera, termín a požadované dokumenty (MODEL checklist).",
+      "Transakční místnost sjednocuje komunikaci, úkoly a dokumenty na jednom místě.",
+      "Dokumenty se mezi rolemi nesdílí automaticky — jen po výslovném udělení oprávnění.",
+      "Kroky časové osy mají vlastníka, termín a požadované dokumenty (orientační checklist).",
       "Hypotéka Jasně, Majetio, specialista, makléř a právník jsou propojitelné kontakty.",
-      "Citlivé dokumenty zůstávají ve Vault — Deal Room drží jen refs a permissions.",
+      "Citlivé dokumenty zůstávají v dokumentovém trezoru — transakční místnost drží jen odkazy a oprávnění.",
     ],
   };
 }

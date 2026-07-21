@@ -37,7 +37,8 @@ export function CountryDataProvenanceSection({
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
               Přehled pro {label}: odkud čísla bereme, jaký mají status a kdy
-              byla naposledy kontrolována. MODEL nikdy nevydáváme za LIVE.
+              byla naposledy kontrolována. Modelový výpočet nikdy nevydáváme za
+              aktuální bankovní nabídku.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -46,7 +47,7 @@ export function CountryDataProvenanceSection({
               href={routes.metodika}
               className="text-sm font-semibold text-deep-teal underline-offset-2 hover:underline"
             >
-              /metodika →
+              Metodika →
             </Link>
           </div>
         </div>
@@ -79,7 +80,7 @@ export function CountryDataProvenanceSection({
                   {item.lastVerifiedAt
                     ? formatCzechDate(item.lastVerifiedAt)
                     : item.status === "LIVE"
-                      ? "dle scrape"
+                      ? "Pravidelně"
                       : "—"}
                 </p>
               </div>

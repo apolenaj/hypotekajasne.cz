@@ -72,7 +72,7 @@ export const czDossier: CountryDossier = assemble(
             source: "Běžná úvěrová praxe CZ bank",
             sourceUrl: null,
             asOf: LEGAL_REVIEW_AS_OF,
-            status: "MODELLED",
+            status: "MODEL",
             notes: "Podmínky se liší banka od banky.",
           },
         },
@@ -205,10 +205,10 @@ export const czDossier: CountryDossier = assemble(
     sourcesSection(
       {
         text: `Poslední právní review dossieru ČR: ${LEGAL_REVIEW_AS_OF}`,
-        source: "Editorial HypotékaJasně.cz (po kontrole)",
+        source: "HypotékaJasně.cz (redakční review)",
         sourceUrl: null,
         asOf: LEGAL_REVIEW_AS_OF,
-        status: "VERIFIED",
+        status: "ESTIMATE",
       },
       [CNB_OWNER_OCCUPIED_CLAIM, CNB_INVESTMENT_CLAIM, TITLE_TRANSFER_CZ_CLAIM]
     ),

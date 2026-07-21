@@ -44,6 +44,10 @@ import {
   type DealRoomWorkspace,
 } from "@/lib/deal-room";
 import { routes } from "@/lib/routes";
+import {
+  DEAL_OFFER_STATUS_LABELS_CS,
+  TIMELINE_STATUS_LABELS_CS,
+} from "@/lib/i18n/ui-cs";
 
 function subscribeNoop() {
   return () => {};
@@ -396,7 +400,9 @@ export function DealRoomView({ workspaceId }: Props) {
                   <span className="font-medium">
                     {o.amount != null ? fmtCzk(o.amount) : "Koncept"}
                   </span>
-                  <span className="text-xs uppercase">{o.status}</span>
+                  <span className="text-xs uppercase">
+                    {DEAL_OFFER_STATUS_LABELS_CS[o.status]}
+                  </span>
                 </li>
               ))}
               {ws.offers.length === 0 && (
@@ -429,7 +435,7 @@ export function DealRoomView({ workspaceId }: Props) {
                     <span
                       className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${STATUS_STYLES[step.status] ?? ""}`}
                     >
-                      {step.status}
+                      {TIMELINE_STATUS_LABELS_CS[step.status]}
                     </span>
                   </div>
                   {step.requiredDocuments.length > 0 && (

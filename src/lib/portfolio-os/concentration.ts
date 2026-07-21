@@ -43,7 +43,7 @@ export function analyzeConcentration(input: {
           severity: share >= 60 ? "high" : "notable",
           headline: `${share} % portfolia je v jednom městě (${city}).`,
           explanation:
-            "Koncentrace hodnoty v jedné lokalitě zvyšuje citlivost na místní trh a likviditu. MODEL — podle posledních value observations.",
+            "Koncentrace hodnoty v jedné lokalitě zvyšuje citlivost na místní trh a likviditu. Orientační model podle posledních pozorování hodnoty.",
           metricPct: share,
           claimKind: "MODEL",
         });

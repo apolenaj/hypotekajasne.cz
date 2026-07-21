@@ -215,7 +215,13 @@ const countryNameById = Object.fromEntries(
 
 export function getCountryHubData(countryId: CountryId): CountryHubData {
   const name = countryNameById[countryId];
-  return countryHubData[name] ?? countryHubData["Španělsko"];
+  const data = name ? countryHubData[name] : undefined;
+  if (!data) {
+    throw new Error(
+      `Missing hub data for countryId=${countryId} (name=${name ?? "unknown"}). Cross-country fallback is forbidden.`
+    );
+  }
+  return data;
 }
 
 export function getCountryHubName(countryId: CountryId): string {

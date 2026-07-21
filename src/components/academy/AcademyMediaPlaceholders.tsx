@@ -16,7 +16,7 @@ export function AcademyMediaPlaceholders({
       <div className="rounded-xl border border-dashed border-border bg-[#f7f8f7] p-4">
         <div className="flex items-center justify-between gap-2">
           <p className="text-xs font-bold uppercase tracking-wide text-deep-teal">
-            7. Video 30–60 s
+            Video (30–60 s)
           </p>
           <span className="rounded border border-stone-300 bg-stone-200 px-1.5 py-0.5 text-[10px] font-bold">
             {mediaStatusLabel(media.video.status)}
@@ -27,13 +27,10 @@ export function AcademyMediaPlaceholders({
             <div>
               <p className="font-semibold text-text-dark">{lessonTitle}</p>
               <p className="mt-1">
-                Video zatím není k dispozici — nepřidáváme falešný soubor.
+                Krátké video k této lekci připravujeme.
                 <br />
-                Cíl: {media.video.targetDurationSec?.min ?? 30}–
+                Plánovaná délka: {media.video.targetDurationSec?.min ?? 30}–
                 {media.video.targetDurationSec?.max ?? 60} s
-              </p>
-              <p className="mt-2 text-[10px]">
-                Postup: scénář → natáčení → titulky → přepis → zveřejnění
               </p>
             </div>
           </div>
@@ -59,7 +56,7 @@ export function AcademyMediaPlaceholders({
       <div className="rounded-xl border border-dashed border-border bg-[#f7f8f7] p-4">
         <div className="flex items-center justify-between gap-2">
           <p className="text-xs font-bold uppercase tracking-wide text-deep-teal">
-            8. Audio verze
+            Audio verze
           </p>
           <span className="rounded border border-stone-300 bg-stone-200 px-1.5 py-0.5 text-[10px] font-bold">
             {mediaStatusLabel(media.audio.status)}
@@ -67,7 +64,7 @@ export function AcademyMediaPlaceholders({
         </div>
         {audioPlanned ? (
           <div className="mt-3 rounded-lg bg-white px-4 py-8 text-center text-xs text-muted-foreground">
-            Audio zatím není k dispozici — nahrávka až po produkci.
+            Audio verzi lekce připravujeme.
             <br />
             Přepis: {mediaStatusLabel(media.transcript?.status ?? "PLANNED")}
           </div>

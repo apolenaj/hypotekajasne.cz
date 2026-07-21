@@ -1,10 +1,5 @@
-import type {
-  DataCountryCode,
-  DataRecord,
-  DataSourceType,
-  DataStatus,
-  DataUnit,
-} from "@/lib/data/types";
+import type { ExternalProvenance } from "@/lib/data/types";
+import type { DataRecord, DataSourceType, DataStatus, DataUnit, DataCountryCode } from "@/lib/data/types";
 
 type MakeRecordInput<T> = {
   id: string;
@@ -20,6 +15,8 @@ type MakeRecordInput<T> = {
   validFrom?: string | null;
   lastFetchedAt?: string | null;
   lastVerifiedAt?: string | null;
+  provenance?: ExternalProvenance | null;
+  internalStorageRef?: string | null;
 };
 
 export function makeDataRecord<T>(
@@ -39,6 +36,8 @@ export function makeDataRecord<T>(
     status: input.status,
     confidence: input.confidence,
     notes: input.notes ?? null,
+    provenance: input.provenance ?? null,
+    internalStorageRef: input.internalStorageRef ?? null,
   };
 }
 

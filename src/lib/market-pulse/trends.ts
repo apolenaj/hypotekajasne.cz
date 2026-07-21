@@ -155,7 +155,7 @@ export function buildMortgageRateTrends(
       getValue: (p) => p.rate,
       unit: "percent_pa",
       claimKind: countryId === "cz" && liveRate != null ? "DATA" : "MODEL",
-      status: countryId === "cz" && liveRate != null ? "LIVE" : "MODELLED",
+      status: countryId === "cz" && liveRate != null ? "LIVE" : "MODEL",
       liveEndValue: countryId === "cz" ? liveRate : null,
       liveStatus: "LIVE",
       liveClaimKind: "DATA",
@@ -176,7 +176,7 @@ export function buildYieldTrends(countryId: CountryId): PulseTrend[] {
       getValue: (p) => computeGrossYield(p.apt70m, p.rent),
       unit: "percent_gross",
       claimKind: "MODEL",
-      status: "MODELLED",
+      status: "MODEL",
     })
   );
 }

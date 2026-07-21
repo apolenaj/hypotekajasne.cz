@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { BookOpen, X } from "lucide-react";
 import Link from "next/link";
 import { DataStatusBadge } from "@/components/trust/DataStatusBadge";
+import { useFocusTrap } from "@/lib/a11y/focus-trap";
 import { METHODOLOGY_BLURBS, type MethodologyTopic } from "@/lib/data/provenance";
 import { statusBadgeLabel, statusDescription } from "@/lib/data/display";
 import type { DataStatus } from "@/lib/data/types";
@@ -14,7 +15,7 @@ import { cn } from "@/lib/utils";
 const STATUS_ORDER: DataStatus[] = [
   "LIVE",
   "VERIFIED",
-  "MODELLED",
+  "MODEL",
   "PARTNER_QUOTE",
   "STALE",
 ];
@@ -31,19 +32,13 @@ export function MethodologyDrawer({
   className,
 }: MethodologyDrawerProps) {
   const [open, setOpen] = useState(false);
+  const panelRef = useRef<HTMLElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
 
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = "";
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
+  useFocusTrap(open, panelRef, {
+    onEscape: () => setOpen(false),
+    initialFocusRef: closeRef,
+  });
 
   return (
     <>
@@ -51,7 +46,7 @@ export function MethodologyDrawer({
         type="button"
         onClick={() => setOpen(true)}
         className={cn(
-          "inline-flex items-center gap-1.5 rounded-lg border border-border bg-white px-3 py-1.5 text-xs font-semibold text-deep-teal transition-colors hover:border-deep-teal/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal",
+          "inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-border bg-white px-3 py-2 text-xs font-semibold text-deep-teal transition-colors hover:border-deep-teal/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal",
           className
         )}
       >
@@ -68,12 +63,14 @@ export function MethodologyDrawer({
               aria-label="Zavřít metodiku"
               className="absolute inset-0 bg-slate-950/40"
               onClick={() => setOpen(false)}
+              tabIndex={-1}
             />
             <aside
+              ref={panelRef}
               role="dialog"
               aria-modal="true"
               aria-label="Metodika dat"
-              className="absolute inset-y-0 right-0 flex w-full max-w-md flex-col bg-white shadow-2xl animate-in slide-in-from-right duration-200"
+              className="absolute inset-y-0 right-0 flex w-full max-w-md flex-col bg-white shadow-2xl animate-in slide-in-from-right duration-200 motion-reduce:animate-none"
             >
               <header className="flex items-start justify-between gap-3 border-b border-border px-5 py-4">
                 <div>
@@ -85,12 +82,13 @@ export function MethodologyDrawer({
                   </p>
                 </div>
                 <button
+                  ref={closeRef}
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted-foreground hover:text-text-dark"
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-border text-muted-foreground hover:text-text-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal"
                   aria-label="Zavřít"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-4 w-4" aria-hidden />
                 </button>
               </header>
 
@@ -126,9 +124,10 @@ export function MethodologyDrawer({
                     Model ≠ nabídka banky
                   </h3>
                   <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                    Čísla se statusem MODEL jsou orientační. Individuální sazbu,
-                    RPSN a schválení určuje banka. LIVE sazby jsou veřejné
-                    lístky / scrapované hodnoty — stále ne závazná smlouva.
+                    Čísla označená jako modelový výpočet jsou orientační.
+                    Individuální sazbu, RPSN a schválení určuje banka. Aktuální
+                    sazby bereme z veřejných bankovních zdrojů — stále nejde o
+                    závaznou smlouvu.
                   </p>
                 </section>
               </div>
@@ -136,10 +135,10 @@ export function MethodologyDrawer({
               <footer className="border-t border-border px-5 py-4">
                 <Link
                   href={routes.metodika}
-                  className="inline-flex text-sm font-semibold text-deep-teal underline-offset-2 hover:underline"
+                  className="inline-flex min-h-11 items-center text-sm font-semibold text-deep-teal underline-offset-2 hover:underline"
                   onClick={() => setOpen(false)}
                 >
-                  Otevřít veřejnou stránku /metodika →
+                  Otevřít stránku Metodika →
                 </Link>
               </footer>
             </aside>

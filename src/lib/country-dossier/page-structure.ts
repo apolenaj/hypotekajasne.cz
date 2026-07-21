@@ -1,70 +1,60 @@
 /**
- * Prezentace country page — jedna generace (Premium Dossier).
- * Mapuje interní dossier sekce na uživatelskou strukturu 1–13.
+ * Prezentace country page — progressive disclosure.
+ * Snapshot + fit CTA vždy viditelné; hloubka v accordion / deep research.
+ * Decision Lab se vkládá slotem (správné pořadí v DOM i TOC).
  */
 
 import type { DossierSectionId } from "@/lib/country-dossier/types";
 
 export type CountryPageNavId =
-  | "overview"
-  | "key_figures"
-  | "suitability"
-  | "ownership"
-  | "purchase"
+  | "snapshot"
+  | "fit"
   | "financing"
-  | "costs"
+  | "purchase_costs"
+  | "tax"
+  | "ownership"
   | "yield"
   | "risks"
-  | "decision_lab"
+  | "purchase"
   | "sources"
+  | "decision_lab"
+  | "deep_research"
   | "cta";
 
 export type CountryPageNavItem = {
   id: CountryPageNavId;
-  /** Kotva na stránce (#…) */
   href: string;
   label: string;
-  /** Interní dossier IDs, které se v této skupině vykreslí */
   dossierSectionIds: DossierSectionId[];
-  /** Syntetická sekce (klíčová čísla / výnos) — není v datech dossieru */
-  synthetic?: "key_figures" | "yield";
+  synthetic?:
+    | "snapshot"
+    | "fit"
+    | "yield"
+    | "decision_lab"
+    | "deep_research";
+  /** Vždy viditelné (ne accordion) */
+  alwaysVisible?: boolean;
 };
 
 /**
- * Pořadí navigace country page (bez hero — to je vždy nahoře).
- * Decision Lab / kalkulačky žijí mimo dossier (InvestorGuidePage).
+ * Pořadí: Snapshot → Fit → témata → kalkulačky → deep research → CTA.
  */
 export const COUNTRY_PAGE_NAV: CountryPageNavItem[] = [
   {
-    id: "overview",
-    href: "#prehled",
-    label: "Rychlý přehled",
-    dossierSectionIds: ["executive_summary"],
-  },
-  {
-    id: "key_figures",
-    href: "#klicova-cisla",
-    label: "Klíčová čísla",
+    id: "snapshot",
+    href: "#snapshot",
+    label: "Přehled trhu",
     dossierSectionIds: [],
-    synthetic: "key_figures",
+    synthetic: "snapshot",
+    alwaysVisible: true,
   },
   {
-    id: "suitability",
-    href: "#pro-koho",
-    label: "Pro koho je trh vhodný",
-    dossierSectionIds: ["suitability"],
-  },
-  {
-    id: "ownership",
-    href: "#vlastnictvi",
-    label: "Vlastnictví",
-    dossierSectionIds: ["ownership"],
-  },
-  {
-    id: "purchase",
-    href: "#proces-koupe",
-    label: "Proces koupě",
-    dossierSectionIds: ["purchase_timeline"],
+    id: "fit",
+    href: "#sedi-mi-trh",
+    label: "Sedí mi trh?",
+    dossierSectionIds: [],
+    synthetic: "fit",
+    alwaysVisible: true,
   },
   {
     id: "financing",
@@ -73,15 +63,27 @@ export const COUNTRY_PAGE_NAV: CountryPageNavItem[] = [
     dossierSectionIds: ["financing"],
   },
   {
-    id: "costs",
-    href: "#naklady-a-dane",
-    label: "Náklady a daně",
-    dossierSectionIds: ["transaction_costs", "holding_costs", "rental_tax"],
+    id: "purchase_costs",
+    href: "#koupe-a-naklady",
+    label: "Koupě a náklady",
+    dossierSectionIds: ["transaction_costs", "holding_costs"],
+  },
+  {
+    id: "tax",
+    href: "#dane",
+    label: "Daně",
+    dossierSectionIds: ["rental_tax"],
+  },
+  {
+    id: "ownership",
+    href: "#vlastnictvi",
+    label: "Vlastnictví a právo",
+    dossierSectionIds: ["ownership"],
   },
   {
     id: "yield",
     href: "#vynos",
-    label: "Výnos a investiční model",
+    label: "Výnos a cash flow",
     dossierSectionIds: [],
     synthetic: "yield",
   },
@@ -99,26 +101,40 @@ export const COUNTRY_PAGE_NAV: CountryPageNavItem[] = [
     ],
   },
   {
-    id: "decision_lab",
-    href: "#decision-lab",
-    label: "Decision Lab / kalkulačky",
-    dossierSectionIds: [],
+    id: "purchase",
+    href: "#proces-nakupu",
+    label: "Proces nákupu",
+    dossierSectionIds: ["purchase_timeline"],
   },
   {
     id: "sources",
-    href: "#zdroje",
-    label: "Zdroje a metodika",
+    href: "#data-a-zdroje",
+    label: "Data a zdroje",
     dossierSectionIds: ["sources"],
   },
   {
+    id: "decision_lab",
+    href: "#decision-lab",
+    label: "Scénáře a kalkulačky",
+    dossierSectionIds: [],
+    synthetic: "decision_lab",
+  },
+  {
+    id: "deep_research",
+    href: "#kompletni-profil",
+    label: "Kompletní profil",
+    dossierSectionIds: ["executive_summary", "suitability"],
+    synthetic: "deep_research",
+  },
+  {
     id: "cta",
-    href: "#majetio",
-    label: "Majetio",
+    href: "#dalsi-krok",
+    label: "Další krok",
     dossierSectionIds: ["cta"],
   },
 ];
 
-/** České názvy interních podsekcí (bez EN „Executive summary“ apod.) */
+/** České názvy interních podsekcí */
 export const DOSSIER_SUBSECTION_LABELS_CS: Partial<
   Record<DossierSectionId, string>
 > = {
@@ -137,5 +153,5 @@ export const DOSSIER_SUBSECTION_LABELS_CS: Partial<
   purchase_timeline: "Proces koupě",
   red_flags: "Rizikové faktory",
   sources: "Zdroje a metodika",
-  cta: "Další krok — Majetio",
+  cta: "Další krok",
 };

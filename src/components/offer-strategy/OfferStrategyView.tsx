@@ -269,20 +269,24 @@ export function OfferStrategyView() {
 
         {/* Scenario slider */}
         <section className="rounded-2xl border border-border bg-white p-6 shadow-sm">
-          <h2 className="mb-4 flex items-center gap-2 font-heading text-xl font-bold text-deep-teal">
-            <SlidersHorizontal className="h-5 w-5" />
-            Pokud koupíte za…
-          </h2>
-          <input
-            type="range"
-            min={model.sliderRange.minCzk}
-            max={model.sliderRange.maxCzk}
-            step={model.sliderRange.stepCzk}
-            value={sliderPrice ?? output.targetPriceCzk}
-            onChange={(e) => setSliderPrice(Number(e.target.value))}
-            className="w-full accent-deep-teal"
-          />
-          <p className="mt-2 text-center font-heading text-2xl font-black text-deep-teal">
+          <label className="mb-4 block font-heading text-xl font-bold text-deep-teal">
+            <span className="mb-4 flex items-center gap-2">
+              <SlidersHorizontal className="h-5 w-5" aria-hidden />
+              Pokud koupíte za…
+            </span>
+            <input
+              type="range"
+              min={model.sliderRange.minCzk}
+              max={model.sliderRange.maxCzk}
+              step={model.sliderRange.stepCzk}
+              value={sliderPrice ?? output.targetPriceCzk}
+              onChange={(e) => setSliderPrice(Number(e.target.value))}
+              aria-label="Cílová kupní cena"
+              aria-valuetext={formatOfferCzk(sliderPrice ?? output.targetPriceCzk)}
+              className="w-full accent-deep-teal touch-manipulation"
+            />
+          </label>
+          <p className="mt-2 text-center font-heading text-2xl font-black text-deep-teal break-words">
             {formatOfferCzk(sliderPrice ?? output.targetPriceCzk)}
           </p>
           <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-3">

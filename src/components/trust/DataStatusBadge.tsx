@@ -7,7 +7,9 @@ import { cn } from "@/lib/utils";
 const TONE: Record<DataStatus, string> = {
   LIVE: "bg-deep-teal/10 text-deep-teal ring-deep-teal/20",
   VERIFIED: "bg-emerald-50 text-emerald-800 ring-emerald-200",
-  MODELLED: "bg-amber-50 text-amber-900 ring-amber-200",
+  MODEL: "bg-amber-50 text-amber-900 ring-amber-200",
+  ESTIMATE: "bg-orange-50 text-orange-900 ring-orange-200",
+  UNVERIFIED: "bg-rose-50 text-rose-800 ring-rose-200",
   PARTNER_QUOTE: "bg-muted-gold/25 text-text-dark ring-muted-gold/40",
   STALE: "bg-slate-100 text-slate-600 ring-slate-200",
 };

@@ -2,16 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { AcademyPathsHub } from "@/components/academy/AcademyPathsHub";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
-import { buildPageMetadata } from "@/lib/seo/metadata";
+import { getStaticPageSeo } from "@/lib/seo/pages";
 import { crumbs } from "@/lib/seo/breadcrumbs";
 import { routes } from "@/lib/routes";
 
-export const metadata: Metadata = buildPageMetadata({
-  title: "Vzdělávací cesty | Hypoteční akademie",
-  description:
-    "První bydlení, OSVČ, refinancování, investice, zahraničí — průběh 0–100 %, odznaky bez sérií, vzdělávání → nástroj.",
-  path: `${routes.akademie}/cesty`,
-});
+export const metadata: Metadata = getStaticPageSeo(`${routes.akademie}/cesty`);
 
 export default function AcademyPathsPage() {
   return (

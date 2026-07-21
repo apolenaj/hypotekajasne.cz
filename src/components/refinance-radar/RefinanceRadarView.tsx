@@ -211,7 +211,7 @@ export function RefinanceRadarView() {
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-emerald-50/90">
             Sledujte svou fixaci, porovnejte scénáře a rozhodujte se s jasnou
-            hlavou — ne pod tlakem „jen dnes". MODEL — ne individuální nabídka.
+            hlavou — ne pod tlakem „jen dnes“. Orientační model — ne individuální nabídka banky.
           </p>
           <div className="mt-4 flex flex-wrap gap-2 text-sm">
             <button
@@ -340,7 +340,7 @@ export function RefinanceRadarView() {
               value: comparison.potentialMonthlySavingCzk != null
                 ? fmtCzk(comparison.potentialMonthlySavingCzk)
                 : "—",
-              sub: "MODEL — před poplatky",
+              sub: "Orientační model — před poplatky",
               urgent: comparison.potentialMonthlySavingCzk != null && comparison.potentialMonthlySavingCzk > 1000,
             },
           ].map(({ icon, label, value, sub, urgent }) => (
@@ -364,7 +364,7 @@ export function RefinanceRadarView() {
             Scénáře splátky
           </h2>
           <p className="mb-4 text-xs text-muted-foreground">
-            MODEL — anuita na zadaném zůstatku, ne vaše individuální bankovní nabídka.
+            Orientační model — anuita na zadaném zůstatku, ne vaše individuální bankovní nabídka.
           </p>
           <div className="divide-y divide-border">
             {paymentScenarios.map((sc) => (
@@ -479,7 +479,7 @@ export function RefinanceRadarView() {
                 value: comparison.breakEvenMonths != null
                   ? `${comparison.breakEvenMonths} měs.`
                   : "Neurčitelný",
-                sub: "MODEL — po uhrazení poplatků",
+                sub: "Orientační model — po uhrazení poplatků",
                 color: "bg-deep-teal/5 border-deep-teal/20",
               },
               {

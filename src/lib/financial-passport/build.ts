@@ -140,7 +140,7 @@ function buildRisk(
 
   const flags: string[] = [];
   if (profile.noRecentDefaults === false) {
-    flags.push("Self-reported problémy se splácením — ověřte se specialistou.");
+    flags.push("Vámi uvedené problémy se splácením — ověřte se specialistou.");
   }
   if (debtBurden != null && debtBurden > 0.35) {
     flags.push("Vysoká modelová dluhová zátěž vůči příjmu.");

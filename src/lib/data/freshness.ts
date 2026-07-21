@@ -1,5 +1,5 @@
 /**
- * Freshness & effective status — nikdy nepromovat MODELLED → LIVE.
+ * Freshness & effective status — nikdy nepromovat MODEL → LIVE.
  */
 
 import type { DataRecord, DataStatus } from "@/lib/data/types";
@@ -9,12 +9,14 @@ export const FRESHNESS_THRESHOLD_MS: Record<DataStatus, number> = {
   LIVE: 48 * 60 * 60 * 1000, // 48 h
   PARTNER_QUOTE: 7 * 24 * 60 * 60 * 1000, // 7 dní
   VERIFIED: 180 * 24 * 60 * 60 * 1000, // ~6 měsíců
-  MODELLED: Number.POSITIVE_INFINITY, // model nestárne do LIVE; zůstává MODEL
+  MODEL: Number.POSITIVE_INFINITY, // model nestárne do LIVE
+  ESTIMATE: Number.POSITIVE_INFINITY,
+  UNVERIFIED: Number.POSITIVE_INFINITY,
   STALE: 0,
 };
 
 export type FreshnessResult = {
-  /** Status po aplikaci thresholdu (nikdy LIVE z MODELLED). */
+  /** Status po aplikaci thresholdu (nikdy LIVE z MODEL). */
   effectiveStatus: DataStatus;
   isStaleByAge: boolean;
   ageMs: number | null;
@@ -38,7 +40,7 @@ export function getFreshnessReferenceAt(
 }
 
 /**
- * Vypočítá efektivní status. MODELLED a STALE se nikdy nepromují na LIVE.
+ * Vypočítá efektivní status. MODEL a STALE se nikdy nepromují na LIVE.
  * LIVE / PARTNER_QUOTE / VERIFIED po překročení thresholdu → STALE.
  */
 export function resolveEffectiveStatus(
@@ -69,10 +71,14 @@ export function resolveEffectiveStatus(
     };
   }
 
-  // MODELLED nikdy nevydávat za LIVE
-  if (declared === "MODELLED") {
+  // MODEL / ESTIMATE / UNVERIFIED nikdy nevydávat za LIVE
+  if (
+    declared === "MODEL" ||
+    declared === "ESTIMATE" ||
+    declared === "UNVERIFIED"
+  ) {
     return {
-      effectiveStatus: "MODELLED",
+      effectiveStatus: declared,
       isStaleByAge: false,
       ageMs,
       thresholdMs,

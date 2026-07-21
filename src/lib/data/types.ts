@@ -1,12 +1,20 @@
 /**
  * Jednotný Source of Truth — schema dynamických údajů.
  * Nikdy nevymýšlej chybějící value: null + status STALE / chybějící → UI „Na vyžádání“ / „Data ověřujeme“.
+ *
+ * Statusy důvěryhodnosti (veřejné):
+ * LIVE | VERIFIED | MODEL | ESTIMATE | UNVERIFIED
+ * Operační: PARTNER_QUOTE | STALE
+ *
+ * Interní soubor / tabulka NENÍ důkaz správnosti — viz ExternalProvenance.
  */
 
 export type DataStatus =
   | "LIVE"
   | "VERIFIED"
-  | "MODELLED"
+  | "MODEL"
+  | "ESTIMATE"
+  | "UNVERIFIED"
   | "PARTNER_QUOTE"
   | "STALE";
 
@@ -53,6 +61,22 @@ export type DataCountryCode =
   | null;
 
 /**
+ * Externí provenance pro VERIFIED (a doporučeně i LIVE).
+ * Nikdy sem nedávej cestu k internímu souboru ani název Supabase tabulky.
+ */
+export type ExternalProvenance = {
+  title: string;
+  organization: string;
+  url: string | null;
+  reference: string | null;
+  jurisdiction: string;
+  publishedOrEffectiveAt: string | null;
+  lastCheckedAt: string;
+  reviewedBy: string | null;
+  reviewMethod: string | null;
+};
+
+/**
  * Každý dynamický údaj v aplikaci — jednotný kontrakt.
  * value = null znamená „nemáme ověřená data“ (nezobrazovat 0 ani vymyšlené číslo).
  */
@@ -62,6 +86,7 @@ export type DataRecord<T = number | string | boolean | null> = {
   value: T;
   unit: DataUnit;
   country: DataCountryCode;
+  /** Veřejný popis zdroje (organizace / dokument) — ne interní cesta. */
   source: string;
   sourceUrl: string | null;
   sourceType: DataSourceType;
@@ -69,9 +94,19 @@ export type DataRecord<T = number | string | boolean | null> = {
   lastFetchedAt: string | null;
   lastVerifiedAt: string | null;
   status: DataStatus;
-  /** 0–1; u MODELLED typicky ≤ 0.6 */
+  /** 0–1; u MODEL/ESTIMATE typicky ≤ 0.6 */
   confidence: number;
   notes: string | null;
+  /**
+   * Externí provenance — povinné pro status VERIFIED.
+   * Musí odkazovat na autoritu (URL nebo reference), ne na interní storage.
+   */
+  provenance: ExternalProvenance | null;
+  /**
+   * Interní audit (soubor / tabulka) — pouze pro vývojáře.
+   * Nikdy nezobrazovat jako veřejný „zdroj“.
+   */
+  internalStorageRef: string | null;
 };
 
 export type DataDomain =

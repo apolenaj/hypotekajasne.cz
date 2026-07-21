@@ -6,7 +6,7 @@ export type FeatureStatus = "LIVE" | "BETA" | "COMING_SOON";
 
 export const FEATURE_STATUS_LABELS: Record<FeatureStatus, string> = {
   LIVE: "Dostupné",
-  BETA: "Beta (ověřujeme)",
+  BETA: "Veřejná zkušební verze",
   COMING_SOON: "Připravujeme",
 };
 

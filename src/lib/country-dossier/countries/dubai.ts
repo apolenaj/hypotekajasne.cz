@@ -12,7 +12,7 @@ import type { CountryDossier } from "@/lib/country-dossier/types";
 
 const FREEHOLD_ZONES = reviewClaim(
   "Freehold pro cizince je dostupný ve vymezených designovaných zónách (např. vybrané oblasti Dubaje); mimo ně platí jiný režim.",
-  "UAE / Dubai Land Department — designated freehold areas",
+  "SAE / Dubai Land Department (DLD) — designované freehold zóny",
   "https://dubailand.gov.ae/"
 );
 
@@ -21,12 +21,12 @@ export const dubaiDossier: CountryDossier = assemble(
   "SAE (Dubaj)",
   "Volné vlastnictví v designovaných zónách, platební plány developera a oddělená hypotéka pro nerezidenty.",
   [
-    narrative("executive_summary", "Likvidní trh ve výstavbě i secondary s důrazem na due diligence developera a zóny vlastnictví.", [
+    narrative("executive_summary", "Likvidní trh na sekundárním trhu i u projektů ve výstavbě (off-plan) s důrazem na due diligence developera a zóny vlastnictví.", [
       { text: FREEHOLD_ZONES.text, claim: FREEHOLD_ZONES },
       { text: "Platební plán developera ≠ bankovní hypotéka — jde o rozvrh plateb." },
-      { text: "Daň z příjmu fyzických osob z nájmu často nízká/nulová v lokálním režimu — ověřte aktuální federal/emirate pravidla a domovskou rezidenci." },
+      { text: "Daň z příjmu fyzických osob z nájmu často nízká/nulová v lokálním režimu — ověřte aktuální federální/emirátová pravidla a domovskou rezidenci." },
     ]),
-    narrative("suitability", "Vhodné pro investory s kapitálem na vyšší vstup a tolerancí k FX (AED) a developer riziku.", [
+    narrative("suitability", "Vhodné pro investory s kapitálem na vyšší vstup a tolerancí k FX (AED) a riziku developera.", [
       { text: "Méně vhodné bez rezervy na provozní poplatky (service charges) a bez právní kontroly kupní smlouvy." },
     ]),
     {
@@ -56,7 +56,7 @@ export const dubaiDossier: CountryDossier = assemble(
           linkedOptions: ["LOCAL_MORTGAGE"],
           claim: modelledClaim(
             "Nerezidentní LTV bývá přísnější než u rezidentů; 80 % LTV zde nepoužíváme.",
-            "UAE non-resident mortgage practice"
+            "Praxe hypoték pro nerezidenty v SAE"
           ),
         },
         {
@@ -77,7 +77,7 @@ export const dubaiDossier: CountryDossier = assemble(
         {
           label: "Poplatek za převod (DLD)",
           range: "orientačně kolem 4 % + admin",
-          claim: modelledClaim("Sazby se mohou měnit — ověřte u DLD / právníka.", "Dubai Land Department"),
+          claim: modelledClaim("Sazby se mohou měnit — ověřte u DLD / právníka.", "Dubai Land Department (DLD)"),
         },
       ],
     },
@@ -90,44 +90,53 @@ export const dubaiDossier: CountryDossier = assemble(
         {
           label: "Provozní poplatky",
           range: "AED / sq.ft — projektově",
-          claim: modelledClaim("Liší se věží a správcem.", "RERA / community"),
+          claim: modelledClaim("Liší se věží a správcem.", "RERA / pravidla komunity"),
         },
       ],
     },
     narrative("rental_tax", "Lokální daň z příjmu FO z nájmu bývá omezená; rozhoduje i daňová rezidence v ČR.", [
       {
-        text: "Neuvádíme „absolutní 0 % daň“ jako univerzální tvrzení — ověřte federal/emirate pravidla a české zdanění zahraničních příjmů.",
-        claim: modelledClaim("Tax outcome depends on residency and structure.", "UAE + CZ tax interaction"),
+        text: "Neuvádíme „absolutní 0 % daň“ jako univerzální tvrzení — ověřte federální/emirátová pravidla a české zdanění zahraničních příjmů.",
+        claim: modelledClaim(
+          "Daňový výsledek závisí na rezidenci a struktuře vlastnictví.",
+          "Interakce daňových režimů SAE a ČR"
+        ),
       },
     ]),
-    narrative("exit", "Secondary trh je likvidnější u etablovaných lokalit; off-plan exit závisí na developerovi a fázi.", [
+    narrative("exit", "Sekundární trh je likvidnější u etablovaných lokalit; prodej off-plan projektu závisí na developerovi a fázi.", [
       { text: "Čas na prodej není garantovaný." },
     ]),
-    narrative("inheritance", "Sharia-influenced default rules mohou platit bez testamentární struktury — plánujte dopředu.", [
+    narrative("inheritance", "Výchozí pravidla ovlivněná šaríou mohou platit bez testamentární struktury — plánujte dopředu.", [
       {
-        text: "Will / DIFC-ADGM struktury řešte s UAE právníkem.",
-        claim: modelledClaim("Bez plánování může dědictví probíhat jinak, než očekává EU rezident.", "UAE succession practice"),
+        text: "Závěť / struktury v DIFC-ADGM řešte s právníkem v SAE.",
+        claim: modelledClaim(
+          "Bez plánování může dědictví probíhat jinak, než očekává rezident EU.",
+          "Praxe dědictví v SAE"
+        ),
       },
     ]),
     narrative("fx_risk", "AED (navázané na USD) vs. CZK — kurzové riziko výnosu i jistiny.", [
-      { text: "CZK úvěr + AED aktivum = měnový mismatch." },
+      { text: "CZK úvěr + AED aktivum = měnový nesoulad." },
     ]),
-    narrative("developer_risk", "Off-plan: delay, změna layoutu, escrow kvalita.", [
+    narrative("developer_risk", "Off-plan: zpoždění, změna dispozice, kvalita escrow.", [
       { text: "Preferujte RERA registraci a ověřený escrow — značka nestačí." },
     ]),
-    narrative("short_term_rentals", "Holiday homes licence / DTCM pravidla.", [
+    narrative("short_term_rentals", "Licence pro rekreační domy / pravidla DTCM (Department of Tourism and Commerce Marketing).", [
       {
-        text: "Krátkodobý pronájem obvykle vyžaduje povolení — ne počítejte s neomezeným Airbnb režimem.",
-        claim: modelledClaim("Licensing required for holiday homes in Dubai.", "DTCM / Dubai tourism rules"),
+        text: "Krátkodobý pronájem obvykle vyžaduje povolení — ne počítejte s neomezeným režimem Airbnb.",
+        claim: modelledClaim(
+          "Pro rekreační domy v Dubaji je vyžadována licence.",
+          "DTCM / pravidla cestovního ruchu v Dubaji"
+        ),
       },
     ]),
     {
       id: "purchase_timeline",
       kind: "timeline",
       title: sectionTitle("purchase_timeline"),
-      summary: "Od rezervace po title deed.",
+      summary: "Od rezervace po list vlastnictví (title deed).",
       steps: [
-        { order: 1, title: "Výběr + due diligence", detail: "Zóna, developer, Oqood/title.", durationHint: "1–3 týdny" },
+        { order: 1, title: "Výběr + due diligence", detail: "Zóna, developer, Oqood / list vlastnictví.", durationHint: "1–3 týdny" },
         { order: 2, title: "Kupní smlouva / rezervace", detail: "Rezervační platba dle plánu.", durationHint: "1 týden" },
         { order: 3, title: "Financování / harmonogram", detail: "Bankovní NOC nebo platební plán developera.", durationHint: "2–6 týdnů" },
         { order: 4, title: "Převod / předání", detail: "DLD, list vlastnictví.", durationHint: "dle projektu" },
@@ -147,10 +156,10 @@ export const dubaiDossier: CountryDossier = assemble(
     sourcesSection(
       {
         text: `Poslední právní review dossieru Dubaj: ${LEGAL_REVIEW_AS_OF}`,
-        source: "Editorial HypotékaJasně.cz (po kontrole)",
+        source: "HypotékaJasně.cz (redakční review)",
         sourceUrl: null,
         asOf: LEGAL_REVIEW_AS_OF,
-        status: "VERIFIED",
+        status: "ESTIMATE",
       },
       [FREEHOLD_ZONES]
     ),

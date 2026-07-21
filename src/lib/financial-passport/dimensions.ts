@@ -184,7 +184,7 @@ export function computeDimensionScores(
   const resilienceExpl =
     resilience >= 70
       ? "Model naznačuje slušný polštář vůči výkyvům sazby / výpadku."
-      : "Odolnost je slabší — stress test sazby a rezervy stojí za pozornost.";
+      : "Odolnost je slabší — zátěžový test sazby a rezervy stojí za pozornost.";
 
   // --- documentation_readiness ---
   let docs = 40;

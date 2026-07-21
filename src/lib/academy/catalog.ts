@@ -265,7 +265,7 @@ export const ACADEMY_LESSONS: AcademyLesson[] = [
     sources: [{ label: "Metodika", url: routes.metodika }],
     relatedTools: [
       { label: "Hypoteční připravenost", href: routes.navrhNaMiru },
-      { label: "Kolik si mohu dovolit (homepage widget)", href: "/#kolik-si-mohu-dovolit" },
+      { label: "Zjistit moje možnosti", href: "/moje-moznosti" },
     ],
     cta: {
       label: "Spočítat připravenost",
@@ -402,7 +402,7 @@ export const ACADEMY_LESSONS: AcademyLesson[] = [
         a: "Ne. Závisí na smlouvě, výročí a limitech. Ověřte podmínky banky.",
       },
     ],
-    sources: [{ label: "Modelář / Decision Lab", url: routes.kalkulacky.root }],
+    sources: [{ label: "Modelář / Laboratoř rozhodnutí", url: routes.kalkulacky.root }],
     relatedTools: [
       { label: "Investiční modelář", href: routes.investicniRentgenModelar },
     ],
@@ -449,13 +449,13 @@ export const ACADEMY_LESSONS: AcademyLesson[] = [
       },
     ],
     sources: [
-      { label: "Decision Lab — historické / budoucí scénáře", url: routes.kalkulacky.historickyVyvoj },
+      { label: "Laboratoř rozhodnutí — historické / budoucí scénáře", url: routes.kalkulacky.historickyVyvoj },
     ],
     relatedTools: [
       { label: "Historický vývoj", href: routes.kalkulacky.historickyVyvoj },
     ],
     cta: {
-      label: "Otevřít Decision Lab",
+      label: "Otevřít laboratoř rozhodnutí",
       href: routes.kalkulacky.historickyVyvoj,
     },
   }),
@@ -497,7 +497,7 @@ export const ACADEMY_LESSONS: AcademyLesson[] = [
       },
     ],
     sources: [
-      { label: "Country dossier Bali / zahraničí", url: routes.pruvodceInvestora },
+      { label: "Přehled země: Bali / zahraničí", url: routes.pruvodceInvestora },
     ],
     relatedTools: [
       { label: "Průvodce investora", href: routes.pruvodceInvestora },

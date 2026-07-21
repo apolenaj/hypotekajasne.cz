@@ -11,19 +11,29 @@ export const PUBLIC_STATUS_MEANINGS: Record<
   { label: string; description: string }
 > = {
   LIVE: {
-    label: "Aktuální data",
+    label: "Aktuální data (LIVE)",
     description:
-      "Údaj ze zdroje, který pravidelně kontrolujeme (např. sazby z webů bank). Stále nejde o závaznou nabídku — banka schvaluje individuálně.",
+      "Údaj právě načtený z definovaného živého zdroje (např. sazby z webů bank). Stále nejde o závaznou nabídku — banka schvaluje individuálně.",
   },
   VERIFIED: {
-    label: "Ověřeno",
+    label: "Ověřeno (VERIFIED)",
     description:
-      "Manuálně ověřený editorial nebo oficiální rámec (např. limity ČNB). Platí do další kontroly.",
+      "Ověřeno proti primárnímu nebo autoritativnímu externímu zdroji (regulátor, centrální banka, katastr, daňová správa). Interní soubor nebo databázová tabulka sama o sobě není důkazem.",
   },
-  MODELLED: {
-    label: "Modelový výpočet",
+  MODEL: {
+    label: "Model (MODEL)",
     description:
-      "Orientační výpočet platformy. Není živá kotace banky ani nabídka konkrétní nemovitosti.",
+      "Výsledek modelu nebo kalkulace založené na explicitních předpokladech. Není živá kotace banky ani nabídka konkrétní nemovitosti.",
+  },
+  ESTIMATE: {
+    label: "Odhad (ESTIMATE)",
+    description:
+      "Odborný nebo datový odhad s nižší jistotou. Užitečný pro orientaci, ne jako oficiální údaj.",
+  },
+  UNVERIFIED: {
+    label: "Neověřeno (UNVERIFIED)",
+    description:
+      "Informace, kterou nemáme dostatečně podloženou externí autoritou. Zobrazujeme ji jen s jasným varováním — nebo vůbec.",
   },
   PARTNER_QUOTE: {
     label: "Nabídka partnera",
@@ -47,7 +57,7 @@ export const PUBLIC_METHODOLOGY_BLURBS = {
   rpsn:
     "RPSN zobrazíme, jen když je ve zdroji uvedené. Jinak „Na vyžádání“ — RPSN si nevymýšlíme.",
   ltv:
-    "Limity LTV a DTI vycházejí z makroobezřetnostních doporučení ČNB (ověřeno). Orientační prahy DSTI v nástrojích jsou model bankovní praxe, ne plošný limit ČNB.",
+    "Limity LTV a DTI vycházejí z makroobezřetnostních doporučení ČNB (ověřeno proti oficiální stránce ČNB). Orientační prahy DSTI v nástrojích jsou model bankovní praxe, ne plošný limit ČNB.",
   yields:
     "Hrubé výnosy na webu a v kalkulačkách jsou modelové výchozí hodnoty pro srovnání. Nejsou živou kotací z nabídky. Čistý výnos závisí na daních, správě a obsazenosti.",
   prices:
@@ -57,13 +67,15 @@ export const PUBLIC_METHODOLOGY_BLURBS = {
   predictions:
     "Scénáře růstu (konzervativní / střední / dynamický) jsou modelové projekce, ne předpověď budoucnosti ani investiční doporučení.",
   legal:
-    "Právní a daňové přehledy zemí jsou editorial po kontrole. Nejsou individuální právní radou — před koupí ověřte lokálního právníka.",
+    "Právní a daňové přehledy zemí označíme jako Ověřeno jen tehdy, když máme odkaz na autoritu. Jinak Odhad nebo Neověřeno. Nejsou individuální právní radou.",
   scoring:
     "Osobní investiční průvodce počítá organické skóre 0–100 jako vážený součet shody napříč dimenzemi (kapitál, financování, výnos, riziko, vlastnictví, likvidita, měna, regulace, horizont, účel). Placené partnerství organické skóre nemění — sponzoring musí být označen mimo žebříček.",
   general:
-    "Každé důležité číslo má status (aktuální data / ověřeno / modelový výpočet / nabídka partnera / čeká na aktualizaci), zdroj a datum. Modelový výpočet nikdy nevydáváme za aktuální data.",
+    "Každé důležité číslo má status (LIVE / Ověřeno / Model / Odhad / Neověřeno), veřejný zdroj a datum. Interní soubor není důkazem. Model nikdy nevydáváme za aktuální data.",
   updateFrequency:
-    "Sazby českých bank kontrolujeme automaticky; pokud dlouho nepřijdou nová data, označíme je jako „Čeká na aktualizaci“. Nabídky partnerů a limity ČNB kontrolujeme manuálně. Modelové hodnoty zůstávají modelem — stárnutím se nestanou „aktuálními daty“.",
+    "Sazby českých bank kontrolujeme automaticky; pokud dlouho nepřijdou nová data, označíme je jako „Čeká na aktualizaci“. Limity ČNB kontrolujeme manuálně proti oficiální stránce. Modelové hodnoty zůstávají modelem — stárnutím se nestanou „aktuálními daty“.",
+  qualityGuide:
+    "Jak poznat kvalitu údaje: LIVE = právě ze živého zdroje; Ověřeno = proti autoritě (ČNB, ministerstvo, katastr…); Model = kalkulace z předpokladů; Odhad = nižší jistota; Neověřeno = chybí podklad. Partner a „čeká na aktualizaci“ jsou provozní stavy.",
 } as const;
 
 /** Lidský popis zdroje podle domény — veřejné stránky. */
@@ -74,9 +86,9 @@ export const PUBLIC_DOMAIN_SOURCE: Record<DataDomain, string> = {
   dti_dsti: "ČNB a model bankovní praxe",
   yields: "Modelové výchozí hodnoty pro srovnání",
   prices: "Orientační referenční ceny (model)",
-  historical: "Editorial historické řady / ilustrativní model",
-  tax: "Editorial daňový přehled",
-  legal: "Editorial právní přehled zemí",
+  historical: "Historické řady / ilustrativní model",
+  tax: "Daňová správa / MF — pokud je odkaz; jinak odhad",
+  legal: "Autoritativní právní / katastrální zdroj, pokud je k dispozici",
   investment: "Modelové investiční metriky",
   banks: "Veřejné informace o bankách",
   calculator_defaults: "Výchozí hodnoty kalkulaček (model)",
@@ -87,11 +99,15 @@ export function publicFreshnessHint(status: DataStatus): string {
     case "LIVE":
       return "Kontrola: pravidelně (řádově dny). Po delší neaktualizaci → „Čeká na aktualizaci“.";
     case "VERIFIED":
-      return "Kontrola: manuální revize (řádově měsíce).";
+      return "Kontrola: manuální revize proti externí autoritě (řádově měsíce).";
     case "PARTNER_QUOTE":
       return "Kontrola: manuálně (řádově dny až týdny).";
-    case "MODELLED":
-      return "Zůstává modelovým výpočtem — nepřepíná se na aktuální data stárnutím.";
+    case "MODEL":
+      return "Zůstává modelem — nepřepíná se na aktuální data stárnutím.";
+    case "ESTIMATE":
+      return "Odhad zůstává odhadem — bez externí autority se nestane Ověřeno.";
+    case "UNVERIFIED":
+      return "Doplňujeme podklad; mezitím neinventujeme jistotu.";
     case "STALE":
       return "Doplňujeme ze zdroje; mezitím neinventujeme čísla.";
     default:

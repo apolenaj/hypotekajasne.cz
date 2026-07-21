@@ -1,4 +1,13 @@
+import {
+  calculateAnnuityPayment,
+  calculateLinearFirstPayment,
+} from "@/lib/finance-math/core";
 import { formatMoney, type MoneyCurrency } from "@/lib/money";
+
+export {
+  calculateAnnuityPayment,
+  calculateLinearFirstPayment,
+} from "@/lib/finance-math/core";
 
 export type CountryId =
   | "cz"
@@ -333,20 +342,6 @@ export function calculateMortgage(input: CalculatorInput): CalculatorResult {
   };
 }
 
-export function calculateAnnuityPayment(
-  principal: number,
-  annualRatePercent: number,
-  years: number
-): number {
-  if (principal <= 0) return 0;
-  const annualRate = annualRatePercent / 100;
-  const monthlyRate = annualRate / 12;
-  const months = years * 12;
-  if (monthlyRate === 0) return principal / months;
-  const factor = Math.pow(1 + monthlyRate, months);
-  return (principal * monthlyRate * factor) / (factor - 1);
-}
-
 export interface AmortizationDataPoint {
   rok: string;
   zůstatek: number;
@@ -364,7 +359,6 @@ export function generateAmortizationData(
   }
 
   const monthlyRate = rate / 100 / 12;
-  const totalMonths = years * 12;
   const annuity = calculateAnnuityPayment(principal, rate, years);
   const data: AmortizationDataPoint[] = [];
 
@@ -387,18 +381,6 @@ export function generateAmortizationData(
   }
 
   return data;
-}
-
-export function calculateLinearFirstPayment(
-  principal: number,
-  annualRatePercent: number,
-  years: number
-): number {
-  if (principal <= 0) return 0;
-  const annualRate = annualRatePercent / 100;
-  const monthlyPrincipal = principal / (years * 12);
-  const monthlyInterest = (principal * annualRate) / 12;
-  return monthlyPrincipal + monthlyInterest;
 }
 
 function generateChartData(

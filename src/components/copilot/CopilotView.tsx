@@ -19,7 +19,7 @@ import {
   type CopilotPropertyDraft,
   type CopilotQuickActionId,
 } from "@/lib/copilot";
-import { track } from "@/lib/analytics";
+import { categorizeCopilotPrompt, track } from "@/lib/analytics";
 import { useCurrentRates } from "@/lib/rates";
 import { routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
@@ -112,7 +112,7 @@ const WELCOME: CopilotMessage = {
     "",
     "Nejsem obecné ChatGPT. Odpovídám jen z **ověřených nástrojů a dat** HypotékaJasně — s citací Data / Modelový výpočet / Odhad.",
     "",
-    "Zkuste rychlou akci níže, nebo se zeptejte např. na dostupnost, skóre, stress test sazby nebo Praha vs Dubaj.",
+    "Zkuste rychlou akci níže, nebo se zeptejte např. na dostupnost, skóre, zátěžový test sazby nebo Praha vs Dubaj.",
     "",
     "—",
     COPILOT_SYSTEM_DISCLAIMER,
@@ -138,7 +138,7 @@ export function CopilotView() {
   const [draftPrice, setDraftPrice] = useState("");
 
   useEffect(() => {
-    track("calculator_started", { tool_id: "ai_copilot" });
+    track("copilot_opened", { tool_id: "ai_copilot" });
   }, []);
 
   const run = useCallback(
@@ -173,8 +173,9 @@ export function CopilotView() {
       appendAuditLog(result.audit);
       setAudit(loadAuditLog());
       setMessages((m) => [...m, result.message]);
-      track("calculator_completed", {
+      track("copilot_question_submitted", {
         tool_id: "ai_copilot",
+        question_category: categorizeCopilotPrompt(text),
         intent_id: result.message.intent,
       });
       setBusy(false);
@@ -229,7 +230,7 @@ export function CopilotView() {
           </h1>
           <p className="mt-3 max-w-2xl text-base text-emerald-50/90 md:text-lg">
             Inteligentní vrstva nad kalkulačkami a daty platformy — s citacemi,
-            audit logem a bez příslibu schválení úvěru.
+            historií odpovědí a bez příslibu schválení úvěru.
           </p>
         </div>
       </section>
@@ -324,7 +325,7 @@ export function CopilotView() {
                 type="button"
                 disabled={busy}
                 onClick={() => run(a.prompt, a.id)}
-                className="rounded-full border border-border bg-[#f7f8f7] px-3 py-1.5 text-xs font-semibold text-text-dark hover:border-deep-teal/40 disabled:opacity-50"
+                className="inline-flex min-h-11 items-center rounded-full border border-border bg-[#f7f8f7] px-3 py-2 text-xs font-semibold text-text-dark hover:border-deep-teal/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal disabled:opacity-50"
               >
                 {a.label}
               </button>
@@ -420,7 +421,19 @@ export function CopilotView() {
                       {u.display}
                     </span>
                     <span className="mt-1 inline-block rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide">
-                      {u.claimKind}
+                      {CLAIM_KIND_HINT[u.claimKind] ? (
+                        <>
+                          {u.claimKind === "DATA"
+                            ? "Data"
+                            : u.claimKind === "MODEL"
+                              ? "Model"
+                              : u.claimKind === "ODHAD"
+                                ? "Odhad"
+                                : "Neověřeno"}
+                        </>
+                      ) : (
+                        u.claimKind
+                      )}
                     </span>
                   </li>
                 ))}
@@ -440,12 +453,25 @@ export function CopilotView() {
                       {c.updatedAt ? ` · ${c.updatedAt}` : ""}
                     </span>
                     <span className="text-[10px] font-bold uppercase text-deep-teal">
-                      {c.claimKind} — {CLAIM_KIND_HINT[c.claimKind]}
+                      {c.claimKind === "DATA"
+                        ? "Data"
+                        : c.claimKind === "MODEL"
+                          ? "Model"
+                          : c.claimKind === "ODHAD"
+                            ? "Odhad"
+                            : "Neověřeno"}{" "}
+                      — {CLAIM_KIND_HINT[c.claimKind]}
                     </span>
                     {c.href ? (
                       <Link
                         href={c.href}
                         className="mt-0.5 block text-xs text-deep-teal underline"
+                        onClick={() =>
+                          track("source_opened", {
+                            tool_id: "ai_copilot",
+                            source_id: c.id,
+                          })
+                        }
                       >
                         Zdroj
                       </Link>
@@ -460,7 +486,7 @@ export function CopilotView() {
             <div className="flex items-center justify-between gap-2">
               <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
                 <ClipboardList className="h-3.5 w-3.5" />
-                Audit log
+                Historie odpovědí
               </p>
               <button
                 type="button"
@@ -487,18 +513,13 @@ export function CopilotView() {
                     <div className="text-muted-foreground">
                       {new Date(a.at).toLocaleString("cs-CZ")}
                     </div>
-                    <div className="mt-1">
-                      Tools: {a.tools.map((t) => t.toolId).join(", ") || "—"}
+                    <div className="mt-1 text-muted-foreground">
+                      Nástroje: {a.tools.length || "—"} · Zdroje:{" "}
+                      {a.citationIds.length || "—"}
+                      {a.guardrailFlags.length
+                        ? ` · Ochrana: ${a.guardrailFlags.length}`
+                        : ""}
                     </div>
-                    <div>
-                      Citations: {a.citationIds.join(", ") || "—"}
-                    </div>
-                    <div>Data: {a.dataKeysUsed.join(", ") || "—"}</div>
-                    {a.guardrailFlags.length ? (
-                      <div className="text-amber-800">
-                        Guardrails: {a.guardrailFlags.join(", ")}
-                      </div>
-                    ) : null}
                   </li>
                 ))
               )}

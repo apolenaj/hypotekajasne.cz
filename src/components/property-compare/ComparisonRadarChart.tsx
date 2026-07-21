@@ -17,7 +17,7 @@ const DIM_LABELS: Record<keyof ComparePropertyMetrics["radar"], string> = {
   liquidity: "Likvidita",
   location: "Lokalita",
   lowRisk: "Nízké riziko",
-  affordability: "Fit profilu",
+  affordability: "Shoda s profilem",
 };
 
 const COLORS = ["#0d4f4f", "#b8956a", "#2d6a6a", "#8b6914", "#4a7c7c"];

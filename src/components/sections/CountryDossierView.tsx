@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -18,12 +18,15 @@ import {
   type DossierSection,
   type LegalClaim,
 } from "@/lib/country-dossier";
+import { buildExecutiveSnapshot } from "@/lib/country-dossier/market-snapshot";
 import {
   COUNTRY_PAGE_NAV,
   DOSSIER_SUBSECTION_LABELS_CS,
   type CountryPageNavId,
 } from "@/lib/country-dossier/page-structure";
+import { getCountryThematicCluster } from "@/lib/country-dossier/thematic-cluster";
 import { formatCzechDate } from "@/lib/data/freshness";
+import { getCountryProvenance } from "@/lib/data/provenance";
 import {
   FINANCING_OPTION_LABELS,
   getFinancingProducts,
@@ -135,22 +138,26 @@ function SectionBody({ section }: { section: DossierSection }) {
       );
     case "costs":
       return (
-        <dl className="divide-y divide-border rounded-xl border border-border">
-          {section.lines.map((line) => (
-            <div
-              key={line.label}
-              className="px-4 py-3 sm:flex sm:justify-between sm:gap-4"
-            >
-              <dt className="text-sm font-medium text-text-dark">{line.label}</dt>
-              <dd className="mt-1 text-sm text-muted-foreground sm:mt-0 sm:text-right">
-                <span className="font-semibold tabular-nums text-text-dark">
-                  {line.range}
-                </span>
-                {line.claim && <ClaimMeta claim={line.claim} />}
-              </dd>
-            </div>
-          ))}
-        </dl>
+        <div className="min-w-0 overflow-x-auto">
+          <dl className="min-w-[16rem] divide-y divide-border rounded-xl border border-border">
+            {section.lines.map((line) => (
+              <div
+                key={line.label}
+                className="px-4 py-3 sm:flex sm:justify-between sm:gap-4"
+              >
+                <dt className="text-sm font-medium text-text-dark">
+                  {line.label}
+                </dt>
+                <dd className="mt-1 min-w-0 text-sm text-muted-foreground sm:mt-0 sm:max-w-[55%] sm:text-right">
+                  <span className="break-words font-semibold tabular-nums text-text-dark">
+                    {line.range}
+                  </span>
+                  {line.claim && <ClaimMeta claim={line.claim} />}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </div>
       );
     case "timeline":
       return (
@@ -163,7 +170,7 @@ function SectionBody({ section }: { section: DossierSection }) {
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-deep-teal text-sm font-bold text-white">
                 {step.order}
               </span>
-              <div>
+              <div className="min-w-0">
                 <p className="font-semibold text-text-dark">{step.title}</p>
                 <p className="mt-1 text-sm text-muted-foreground">{step.detail}</p>
                 {step.durationHint && (
@@ -192,7 +199,7 @@ function SectionBody({ section }: { section: DossierSection }) {
               )}
             >
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-              <div>
+              <div className="min-w-0">
                 <p>{flag.text}</p>
                 {flag.claim && <ClaimMeta claim={flag.claim} />}
               </div>
@@ -221,23 +228,33 @@ function SectionBody({ section }: { section: DossierSection }) {
               </li>
             ))}
           </ul>
+          <p className="mt-4 text-xs text-muted-foreground">
+            Autoritativní registry:{" "}
+            <Link
+              href={routes.zdroje}
+              className="font-semibold text-deep-teal underline-offset-2 hover:underline"
+            >
+              Zdroje dat
+            </Link>
+            .
+          </p>
         </>
       );
     case "cta":
       return (
         <>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Link
-              href={section.majetioHref}
+            <a
+              href="#decision-lab"
               className="inline-flex h-12 items-center justify-center rounded-lg bg-deep-teal px-5 text-sm font-semibold text-white transition-colors hover:bg-deep-teal-light"
             >
-              {section.majetioLabel}
-            </Link>
+              Spočítat scénář pro tento trh
+            </a>
             <Link
-              href={section.financingHref}
+              href={section.majetioHref}
               className="inline-flex h-12 items-center justify-center rounded-lg border border-deep-teal/30 bg-white px-5 text-sm font-semibold text-deep-teal transition-colors hover:bg-deep-teal/5"
             >
-              {section.financingLabel}
+              {section.majetioLabel}
             </Link>
           </div>
           <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
@@ -334,23 +351,15 @@ function YieldBlock({ countryId }: { countryId: CountryId }) {
         </strong>
         . Jde o modelový předpoklad v měně{" "}
         {config.currency === "CZK" ? "Kč" : config.currency} — ne o garanci.
-        Detailní scénáře (neobsazenost, správa, růst hodnoty) najdete v
+        Detailní scénáře (neobsazenost, správa, růst hodnoty) spočítejte v
         kalkulačkách níže.
       </p>
-      <div className="flex flex-wrap gap-3">
-        <a
-          href="#decision-lab"
-          className="inline-flex h-11 items-center justify-center rounded-lg bg-deep-teal px-4 text-sm font-semibold text-white hover:bg-deep-teal-light"
-        >
-          Otevřít Decision Lab
-        </a>
-        <Link
-          href={routes.investicniRentgenModelar}
-          className="inline-flex h-11 items-center justify-center rounded-lg border border-deep-teal/30 bg-white px-4 text-sm font-semibold text-deep-teal hover:bg-deep-teal/5"
-        >
-          Investiční modelář
-        </Link>
-      </div>
+      <a
+        href="#decision-lab"
+        className="inline-flex h-11 items-center justify-center rounded-lg bg-deep-teal px-4 text-sm font-semibold text-white hover:bg-deep-teal-light"
+      >
+        Otevřít scénáře a kalkulačky
+      </a>
       <p className="text-xs text-muted-foreground">
         Chybějící ověřená sazba nebo výnos = „Data ověřujeme“, nikoli vymyšlené
         číslo.
@@ -359,6 +368,207 @@ function YieldBlock({ countryId }: { countryId: CountryId }) {
   );
 }
 
+function ExecutiveSnapshotBlock({ countryId }: { countryId: CountryId }) {
+  const snap = useMemo(() => buildExecutiveSnapshot(countryId), [countryId]);
+
+  return (
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-center gap-2">
+        <DataStatusBadge status={snap.dataStatus} />
+        <p className="text-xs text-muted-foreground">
+          Orientační snapshot — rozhodovací přehled, ne nabídka banky.
+        </p>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-3">
+        {snap.forWhom && (
+          <div className="rounded-xl border border-border bg-[#f7f8f7] p-4 sm:col-span-1">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Komu dává smysl
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-text-dark">
+              {snap.forWhom}
+            </p>
+          </div>
+        )}
+        {snap.mainAdvantage && (
+          <div className="rounded-xl border border-border bg-[#f7f8f7] p-4 sm:col-span-1">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Hlavní výhoda
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-text-dark">
+              {snap.mainAdvantage}
+            </p>
+          </div>
+        )}
+        {snap.mainRisk && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50/80 p-4 sm:col-span-1">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-amber-900/70">
+              Hlavní riziko
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-amber-950">
+              {snap.mainRisk}
+            </p>
+          </div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+        {snap.fields.map((f) => (
+          <div
+            key={f.id}
+            className="min-w-0 rounded-xl border border-border bg-white p-3"
+          >
+            <div className="flex flex-wrap items-center gap-1">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                {f.label}
+              </p>
+              {f.status ? <DataStatusBadge status={f.status} /> : null}
+            </div>
+            <p className="mt-1 break-words text-sm font-semibold text-text-dark">
+              {f.value}
+            </p>
+            {f.note ? (
+              <p className="mt-1 text-[10px] leading-snug text-muted-foreground">
+                {f.note}
+              </p>
+            ) : null}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PersonalizedFitCta({ countryId }: { countryId: CountryId }) {
+  const name = getCountryDossier(countryId).name;
+  return (
+    <div className="rounded-2xl border border-deep-teal/25 bg-gradient-to-br from-deep-teal/5 to-white p-5 sm:p-6">
+      <h2 className="font-heading text-lg font-bold text-text-dark sm:text-xl">
+        Sedí tento trh vašim financím?
+      </h2>
+      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+        Krátká diagnostika porovná váš kapitál, příjem a cíle s rámcem trhu{" "}
+        {name}. Výsledek je modelový — ne schválení banky.
+      </p>
+      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+        <Link
+          href={routes.mojeMoznosti}
+          className="inline-flex h-11 items-center justify-center rounded-lg bg-deep-teal px-4 text-sm font-semibold text-white hover:bg-deep-teal-light"
+        >
+          Zjistit, zda tento trh sedí mým financím
+        </Link>
+        <Link
+          href={routes.investicniPas}
+          className="inline-flex h-11 items-center justify-center rounded-lg border border-deep-teal/30 bg-white px-4 text-sm font-semibold text-deep-teal hover:bg-deep-teal/5"
+        >
+          Investiční pas (shoda trhů)
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function DeepResearchBlock({
+  countryId,
+  sections,
+}: {
+  countryId: CountryId;
+  sections: DossierSection[];
+}) {
+  const provenance = getCountryProvenance(countryId);
+
+  return (
+    <details
+      id="kompletni-profil"
+      className="scroll-mt-28 group overflow-hidden rounded-2xl border border-border bg-white"
+    >
+      <summary className="cursor-pointer list-none px-5 py-4 sm:px-7 sm:py-5 [&::-webkit-details-marker]:hidden">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-deep-teal">
+              Hloubkový profil
+            </p>
+            <h2 className="mt-1 font-heading text-lg font-bold text-text-dark sm:text-xl">
+              Zobrazit kompletní datový profil trhu
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Plný editorial přehled, klíčová čísla a provenance — obsah zůstává
+              ve stránce pro SEO.
+            </p>
+          </div>
+          <ChevronDown className="h-5 w-5 shrink-0 text-deep-teal transition-transform group-open:rotate-180" />
+        </div>
+      </summary>
+      <div className="space-y-8 border-t border-border px-5 py-5 sm:px-7 sm:py-7">
+        {sections.map((section) => (
+          <div key={section.id}>
+            <h3 className="mb-2 text-sm font-semibold text-deep-teal">
+              {DOSSIER_SUBSECTION_LABELS_CS[section.id] ?? section.title}
+            </h3>
+            {section.summary && (
+              <p className="mb-3 text-sm leading-relaxed text-muted-foreground">
+                {section.summary}
+              </p>
+            )}
+            <SectionBody section={section} />
+          </div>
+        ))}
+
+        <div>
+          <h3 className="mb-3 text-sm font-semibold text-deep-teal">
+            Klíčová čísla (model)
+          </h3>
+          <KeyFiguresBlock countryId={countryId} />
+        </div>
+
+        <div>
+          <h3 className="mb-3 text-sm font-semibold text-deep-teal">
+            Provenance domén
+          </h3>
+          <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border">
+            {provenance.map((item) => (
+              <li
+                key={item.label}
+                className="grid gap-2 px-4 py-3 sm:grid-cols-[1fr_auto] sm:items-start"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-text-dark">
+                    {item.label}
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {item.source}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {item.notes}
+                  </p>
+                </div>
+                <div className="flex flex-col items-start gap-1 sm:items-end">
+                  <DataStatusBadge status={item.status} />
+                  <span className="text-[10px] tabular-nums text-muted-foreground">
+                    {item.lastVerifiedAt
+                      ? formatCzechDate(item.lastVerifiedAt)
+                      : "—"}
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 text-xs text-muted-foreground">
+            <Link
+              href={routes.metodika}
+              className="font-semibold text-deep-teal underline-offset-2 hover:underline"
+            >
+              Metodika dat →
+            </Link>
+          </p>
+        </div>
+      </div>
+    </details>
+  );
+}
+
+/** Accordion: na mobilu skládá; obsah zůstává v DOM (hidden), na lg vždy otevřeno. */
 function AccordionGroup({
   id,
   title,
@@ -368,7 +578,7 @@ function AccordionGroup({
   id: string;
   title: string;
   defaultOpen: boolean;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   const sectionId = id.replace(/^#/, "");
@@ -376,15 +586,15 @@ function AccordionGroup({
   return (
     <section
       id={sectionId}
-      className="scroll-mt-28 overflow-hidden rounded-2xl border border-border bg-white"
+      className="scroll-mt-28 min-w-0 overflow-hidden rounded-2xl border border-border bg-white"
     >
       <button
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left sm:px-7 sm:py-5 lg:pointer-events-none"
+        className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left sm:px-7 sm:py-5 lg:pointer-events-none"
       >
-        <h2 className="font-heading text-lg font-bold text-text-dark sm:text-xl">
+        <h2 className="min-w-0 font-heading text-base font-bold text-text-dark sm:text-xl">
           {title}
         </h2>
         <ChevronDown
@@ -396,7 +606,7 @@ function AccordionGroup({
       </button>
       <div
         className={cn(
-          "border-t border-border px-5 pb-5 sm:px-7 sm:pb-7",
+          "border-t border-border px-4 pb-5 sm:px-7 sm:pb-7",
           open ? "block" : "hidden",
           "lg:block"
         )}
@@ -407,7 +617,16 @@ function AccordionGroup({
   );
 }
 
-export function CountryDossierView({ countryId }: { countryId: CountryId }) {
+type CountryDossierViewProps = {
+  countryId: CountryId;
+  /** Scénáře / kalkulačky — vložené do správného místa v DOM (SEO + TOC). */
+  calculatorSlot?: ReactNode;
+};
+
+export function CountryDossierView({
+  countryId,
+  calculatorSlot,
+}: CountryDossierViewProps) {
   const dossier = getCountryDossier(countryId);
   const byId = useMemo(() => {
     const map = new Map<string, DossierSection>();
@@ -415,13 +634,18 @@ export function CountryDossierView({ countryId }: { countryId: CountryId }) {
     return map;
   }, [dossier.sections]);
 
-  const [active, setActive] = useState<CountryPageNavId>("overview");
+  const [active, setActive] = useState<CountryPageNavId>("snapshot");
+
+  const deepSections = useMemo(() => {
+    return (["executive_summary", "suitability"] as const)
+      .map((id) => byId.get(id))
+      .filter(Boolean) as DossierSection[];
+  }, [byId]);
 
   return (
-    <div id="country-dossier" className="scroll-mt-28 bg-[#f4f5f4]">
-      {/* 1. Hero */}
+    <div id="country-dossier" className="scroll-mt-28 min-w-0 bg-[#f4f5f4]">
       <header className="border-b border-border bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-10 sm:py-14">
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:py-12">
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-deep-teal">
             Průvodce investora
           </p>
@@ -432,18 +656,17 @@ export function CountryDossierView({ countryId }: { countryId: CountryId }) {
             {dossier.tagline}
           </p>
           <p className="mt-3 max-w-2xl text-xs text-muted-foreground">
-            Jedna generace obsahu — Premium Data Dossier. Právní tvrzení mají
-            zdroj, datum a status. Chybějící údaje = „Data ověřujeme“.
+            Nejdřív přehled do 30 sekund. Detaily, právo a kalkulačky níže —
+            bez marketingových slibů výnosu.
           </p>
         </div>
       </header>
 
-      {/* Mobile sticky dropdown */}
-      <div className="sticky top-16 z-30 border-b border-border bg-[#f4f5f4]/95 px-4 py-3 backdrop-blur lg:hidden">
+      <div className="sticky top-14 z-30 border-b border-border bg-[#f4f5f4]/95 px-4 py-3 backdrop-blur sm:top-16 lg:hidden">
         <label htmlFor="country-section-nav" className="sr-only">
           Přeskočit na sekci
         </label>
-        <div className="relative">
+        <div className="relative min-w-0">
           <select
             id="country-section-nav"
             value={active}
@@ -457,7 +680,7 @@ export function CountryDossierView({ countryId }: { countryId: CountryId }) {
                   ?.scrollIntoView({ behavior: "smooth", block: "start" });
               }
             }}
-            className="h-11 w-full appearance-none rounded-lg border border-border bg-white px-3 pr-10 text-sm font-medium text-text-dark"
+            className="h-11 w-full max-w-full appearance-none rounded-lg border border-border bg-white px-3 pr-10 text-sm font-medium text-text-dark"
           >
             {COUNTRY_PAGE_NAV.map((n) => (
               <option key={n.id} value={n.id}>
@@ -469,11 +692,10 @@ export function CountryDossierView({ countryId }: { countryId: CountryId }) {
         </div>
       </div>
 
-      <div className="mx-auto flex max-w-6xl gap-10 px-4 py-8 sm:py-12">
-        {/* Desktop sticky side nav */}
+      <div className="mx-auto flex max-w-6xl gap-8 px-4 py-8 sm:gap-10 sm:py-12">
         <nav
           aria-label="Obsah stránky země"
-          className="sticky top-24 hidden max-h-[calc(100vh-7rem)] w-56 shrink-0 overflow-y-auto self-start lg:block"
+          className="sticky top-24 hidden max-h-[calc(100vh-7rem)] w-52 shrink-0 overflow-y-auto self-start lg:block xl:w-56"
         >
           <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-deep-teal">
             Na této stránce
@@ -499,69 +721,132 @@ export function CountryDossierView({ countryId }: { countryId: CountryId }) {
         </nav>
 
         <div className="min-w-0 flex-1 space-y-4">
-          {COUNTRY_PAGE_NAV.filter((n) => n.id !== "decision_lab").map(
-            (nav, index) => {
-              const defaultOpen = index < 2;
-              if (nav.synthetic === "key_figures") {
-                return (
-                  <AccordionGroup
-                    key={nav.id}
-                    id={nav.href}
-                    title={nav.label}
-                    defaultOpen={defaultOpen}
-                  >
-                    <KeyFiguresBlock countryId={countryId} />
-                  </AccordionGroup>
-                );
-              }
-              if (nav.synthetic === "yield") {
-                return (
-                  <AccordionGroup
-                    key={nav.id}
-                    id={nav.href}
-                    title={nav.label}
-                    defaultOpen={false}
-                  >
-                    <YieldBlock countryId={countryId} />
-                  </AccordionGroup>
-                );
-              }
+          {COUNTRY_PAGE_NAV.map((nav, index) => {
+            if (nav.synthetic === "snapshot") {
+              return (
+                <section
+                  key={nav.id}
+                  id="snapshot"
+                  className="scroll-mt-28 rounded-2xl border border-border bg-white px-4 py-5 sm:px-7 sm:py-7"
+                >
+                  <h2 className="font-heading text-lg font-bold text-text-dark sm:text-xl">
+                    Orientační přehled trhu
+                  </h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Co potřebujete vědět do 30 sekund, než půjdete do detailu.
+                  </p>
+                  <div className="mt-5">
+                    <ExecutiveSnapshotBlock countryId={countryId} />
+                  </div>
+                </section>
+              );
+            }
 
-              const sections = nav.dossierSectionIds
-                .map((id) => byId.get(id))
-                .filter(Boolean) as DossierSection[];
+            if (nav.synthetic === "fit") {
+              return (
+                <section key={nav.id} id="sedi-mi-trh" className="scroll-mt-28">
+                  <PersonalizedFitCta countryId={countryId} />
+                </section>
+              );
+            }
 
-              if (sections.length === 0) return null;
+            if (nav.synthetic === "decision_lab") {
+              return (
+                <div key={nav.id} className="min-w-0">
+                  {calculatorSlot}
+                </div>
+              );
+            }
 
+            if (nav.synthetic === "deep_research") {
+              return (
+                <DeepResearchBlock
+                  key={nav.id}
+                  countryId={countryId}
+                  sections={deepSections}
+                />
+              );
+            }
+
+            if (nav.synthetic === "yield") {
               return (
                 <AccordionGroup
                   key={nav.id}
                   id={nav.href}
                   title={nav.label}
-                  defaultOpen={defaultOpen}
+                  defaultOpen={false}
                 >
-                  <div className="space-y-6">
-                    {sections.map((section) => (
-                      <div key={section.id}>
-                        {sections.length > 1 && (
-                          <h3 className="mb-2 text-sm font-semibold text-deep-teal">
-                            {DOSSIER_SUBSECTION_LABELS_CS[section.id] ??
-                              section.title}
-                          </h3>
-                        )}
-                        {section.summary && (
-                          <p className="mb-3 text-sm leading-relaxed text-muted-foreground">
-                            {section.summary}
-                          </p>
-                        )}
-                        <SectionBody section={section} />
-                      </div>
-                    ))}
-                  </div>
+                  <YieldBlock countryId={countryId} />
                 </AccordionGroup>
               );
             }
-          )}
+
+            const sections = nav.dossierSectionIds
+              .map((id) => byId.get(id))
+              .filter(Boolean) as DossierSection[];
+
+            if (sections.length === 0) return null;
+
+            // Na mobilu: první téma (financování) otevřené; zbytek skládaný.
+            const topicIndex = index - 2;
+            const defaultOpen = topicIndex === 0;
+
+            return (
+              <AccordionGroup
+                key={nav.id}
+                id={nav.href}
+                title={nav.label}
+                defaultOpen={defaultOpen}
+              >
+                <div className="space-y-6">
+                  {sections.map((section) => (
+                    <div key={section.id}>
+                      {sections.length > 1 && (
+                        <h3 className="mb-2 text-sm font-semibold text-deep-teal">
+                          {DOSSIER_SUBSECTION_LABELS_CS[section.id] ??
+                            section.title}
+                        </h3>
+                      )}
+                      {section.summary && (
+                        <p className="mb-3 text-sm leading-relaxed text-muted-foreground">
+                          {section.summary}
+                        </p>
+                      )}
+                      <SectionBody section={section} />
+                    </div>
+                  ))}
+                </div>
+              </AccordionGroup>
+            );
+          })}
+
+          <section
+            id="tematicky-cluster"
+            className="scroll-mt-28 rounded-2xl border border-border bg-white px-4 py-5 sm:px-7 sm:py-7"
+            aria-labelledby="cluster-heading"
+          >
+            <h2
+              id="cluster-heading"
+              className="font-heading text-lg font-bold text-text-dark sm:text-xl"
+            >
+              Tematické propojení
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Trh → financování → daně → vlastnictví → kalkulačky → akademie.
+            </p>
+            <ul className="mt-4 flex flex-wrap gap-2">
+              {getCountryThematicCluster(countryId).map((link) => (
+                <li key={`${link.topic}-${link.href}`}>
+                  <Link
+                    href={link.href}
+                    className="inline-flex rounded-full border border-border px-3 py-1.5 text-sm font-semibold text-deep-teal hover:bg-deep-teal/5"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
         </div>
       </div>
     </div>

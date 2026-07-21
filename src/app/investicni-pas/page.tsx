@@ -1,11 +1,7 @@
-import type { Metadata } from "next";
+import { getStaticPageSeo } from "@/lib/seo/pages";
 import { InvestmentPassportView } from "@/components/sections/InvestmentPassportView";
 
-export const metadata: Metadata = {
-  title: "Osobní investiční průvodce | HypotékaJasně.cz",
-  description:
-    "Transparentní market matching: Overall Match, vážené dimenze, Top 3 trhy a side-by-side srovnání.",
-};
+export const metadata = getStaticPageSeo("/investicni-pas");
 
 export default function InvesticniPasPage() {
   return <InvestmentPassportView />;

@@ -103,7 +103,7 @@ export function PortfolioOsView() {
             Moje portfolio
           </h1>
           <p className="mt-2 max-w-3xl text-sm text-emerald-50/90">
-            Souhrn více nemovitostí, koncentrace rizik, stress testy a srozumitelné
+            Souhrn více nemovitostí, koncentrace rizik, zátěžové testy a srozumitelné
             scénáře — bez pokynů k prodeji.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
@@ -235,14 +235,14 @@ export function PortfolioOsView() {
         <section>
           <h2 className="mb-3 flex items-center gap-2 font-heading text-lg font-bold">
             <Shield className="h-5 w-5 text-deep-teal" />
-            Scénářové stress testy
+            Scénářové zátěžové testy
           </h2>
           <div className="overflow-x-auto rounded-xl border border-border bg-white">
             <table className="w-full min-w-[640px] text-sm">
               <thead>
                 <tr className="border-b bg-[#f7f8f7]">
                   <th className="px-3 py-2 text-left">Scénář</th>
-                  <th className="px-3 py-2">Vlastní kapitál (základ → stress)</th>
+                  <th className="px-3 py-2">Vlastní kapitál (základ → zátěž)</th>
                   <th className="px-3 py-2">LTV</th>
                   <th className="px-3 py-2">Tok/měs.</th>
                   <th className="px-3 py-2 text-left">Rozdíl</th>

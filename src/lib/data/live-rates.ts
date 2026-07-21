@@ -15,7 +15,7 @@ function rateStatus(opts: {
   estimated?: boolean;
   bankId?: string;
 }): DataStatus {
-  if (opts.estimated) return "MODELLED";
+  if (opts.estimated) return "MODEL";
   if (opts.bankId === "komercni-banka") return "PARTNER_QUOTE";
   return "LIVE";
 }
@@ -57,7 +57,7 @@ export function marketAggregateToRecords(
         rates.rateWithoutInsurance == null
           ? "STALE"
           : rates.withoutInsuranceOrientational
-            ? "MODELLED"
+            ? "MODEL"
             : "LIVE",
       confidence: rates.withoutInsuranceOrientational ? 0.45 : 0.85,
       lastFetchedAt: fetched,
@@ -179,7 +179,7 @@ export function bankRateRowToRecords(row: BankRateRow): {
             source: `Model +${ORIENTATIONAL_WITHOUT_SURCHARGE} p.b.`,
             sourceUrl: row.americanSourceUrl,
             sourceType: "model",
-            status: "MODELLED",
+            status: "MODEL",
             confidence: 0.4,
             lastFetchedAt: row.updatedAt,
             notes: "Americká bez pojištění typicky orientační.",

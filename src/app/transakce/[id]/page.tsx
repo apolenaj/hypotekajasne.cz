@@ -13,6 +13,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: "Transakční místnost — transakce",
     description: "Workspace pro konkrétní transakci s nemovitostí.",
     path: `${routes.dealRoom}/${id}`,
+    noIndex: true,
   });
 }
 

@@ -22,6 +22,7 @@ import {
 import {
   getDefaultTimeMachineCash,
   getPurchasableYears,
+  historicalProvenanceNote,
 } from "@/lib/historical-data";
 import {
   HISTORICAL_ASSET_LABELS,
@@ -117,6 +118,9 @@ export function DecisionLabHistorical({ countryId }: Props) {
         </p>
         <p className="mt-1 text-sm text-muted-foreground">
           Volitelná aktiva, jasné oddělení nominálních a reálných (CPI) výsledků.
+        </p>
+        <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950">
+          {historicalProvenanceNote(countryId)}
         </p>
       </div>
 

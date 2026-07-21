@@ -138,7 +138,7 @@ export function SmartWatchlistView() {
       <header className="border-b border-border bg-deep-teal text-white">
         <div className="mx-auto max-w-4xl px-4 py-10">
           <p className="text-xs font-bold uppercase tracking-widest text-muted-gold">
-            Součást Mého dashboardu
+            Součást Mého přehledu
             {MAJETIO_WATCH_SYNC_STATUS === "COMING_SOON"
               ? " · synchronizace Majetio již brzy"
               : ""}
@@ -354,7 +354,7 @@ export function SmartWatchlistView() {
                   refresh();
                 }}
               />
-              Jen digest (bez okamžitých in-app alertů)
+              Jen denní souhrn (bez okamžitých upozornění v aplikaci)
             </label>
             {alerts.length === 0 ? (
               <p className="text-sm text-muted-foreground">

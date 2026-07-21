@@ -20,7 +20,7 @@ import {
   LOCAL_FINANCING_UNVERIFIED_MESSAGE,
 } from "@/lib/financing";
 import { formatRateOrOnRequest } from "@/lib/format-rate";
-import { pickRate, useCurrentRates } from "@/lib/rates";
+import { useMortgageRateEngine } from "@/lib/rates";
 
 interface AdvancedCalculatorProps {
   country: CountryId;
@@ -29,29 +29,25 @@ interface AdvancedCalculatorProps {
 export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
   const config = countryConfigs[country];
   const isCzechMarket = country === "cz";
-  const { rates, loading: ratesLoading } = useCurrentRates();
+  const [hasInsurance, setHasInsurance] = useState(true);
+  const { rates, resolved } = useMortgageRateEngine(hasInsurance);
 
   const [price, setPrice] = useState(config.defaultPrice);
   const [capital, setCapital] = useState(config.defaultSavings);
   const [years, setYears] = useState(config.defaultTerm);
-  const [hasInsurance, setHasInsurance] = useState(true);
 
-  const czechRate = pickRate(rates, hasInsurance);
+  const czechRate = resolved.ratePercent;
   const loanAmount = Math.max(0, price - capital);
+  const rateWith = rates.rateWithInsurance ?? resolved.ratePercent;
+  const rateWithout = rates.rateWithoutInsurance ?? resolved.ratePercent;
 
   const paymentWithInsurance = useMemo(() => {
-    if (rates.rateWithInsurance == null) return null;
-    return Math.round(
-      calculateAnnuityPayment(loanAmount, rates.rateWithInsurance, years)
-    );
-  }, [loanAmount, rates.rateWithInsurance, years]);
+    return Math.round(calculateAnnuityPayment(loanAmount, rateWith, years));
+  }, [loanAmount, rateWith, years]);
 
   const paymentWithoutInsurance = useMemo(() => {
-    if (rates.rateWithoutInsurance == null) return null;
-    return Math.round(
-      calculateAnnuityPayment(loanAmount, rates.rateWithoutInsurance, years)
-    );
-  }, [loanAmount, rates.rateWithoutInsurance, years]);
+    return Math.round(calculateAnnuityPayment(loanAmount, rateWithout, years));
+  }, [loanAmount, rateWithout, years]);
 
   const foreignResult = useMemo(
     () =>
@@ -66,7 +62,7 @@ export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
     [country, price, capital, years]
   );
 
-  const calcRate = isCzechMarket ? (czechRate ?? 0) : 0;
+  const calcRate = isCzechMarket ? czechRate : 0;
 
   const calculations = useMemo(() => {
     const monthlyPayment = isCzechMarket
@@ -151,22 +147,22 @@ export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
             <InsuranceRateCards
               hasInsurance={hasInsurance}
               onSelect={setHasInsurance}
-              rateWithInsurance={rates.rateWithInsurance}
-              rateWithoutInsurance={rates.rateWithoutInsurance}
+              rateWithInsurance={rateWith}
+              rateWithoutInsurance={rateWithout}
               rpsnWithInsurance={rates.rpsnWithInsurance}
               rpsnWithoutInsurance={rates.rpsnWithoutInsurance}
-              withoutRateOrientational={rates.withoutInsuranceOrientational}
-              paymentWithInsurance={
-                paymentWithInsurance == null
-                  ? "Individuálně"
-                  : formatCurrency(paymentWithInsurance, currency)
+              withoutRateOrientational={
+                rates.withoutInsuranceOrientational || resolved.isModelFallback
               }
-              paymentWithoutInsurance={
-                paymentWithoutInsurance == null
-                  ? "Individuálně"
-                  : formatCurrency(paymentWithoutInsurance, currency)
-              }
-              loading={ratesLoading}
+              paymentWithInsurance={formatCurrency(
+                paymentWithInsurance,
+                currency
+              )}
+              paymentWithoutInsurance={formatCurrency(
+                paymentWithoutInsurance,
+                currency
+              )}
+              loading={false}
             />
           </div>
         ) : (

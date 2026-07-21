@@ -32,7 +32,7 @@ export function evaluateAffordability(
       verdict: "insufficient_data",
       claimKind: "NEOVERENO",
       summary:
-        "Bez Financial Passportu nelze orientačně porovnat. Spusťte Hypoteční připravenost.",
+        "Bez Finančního pasu nelze orientačně porovnat. Spusťte Hypoteční připravenost.",
       cta: {
         label: "Spustit Hypoteční připravenost",
         href: buildHypotekaReadinessHandoffUrl({
@@ -58,7 +58,7 @@ export function evaluateAffordability(
   } else {
     verdict = "above_budget";
     summary =
-      "Cena je nad orientačním rozpočtem z Financial Passportu. Zvažte jinou nemovitost nebo aktualizaci připravenosti.";
+      "Cena je nad orientačním rozpočtem z Finančního pasu. Zvažte jinou nemovitost nebo aktualizaci připravenosti.";
   }
 
   return {

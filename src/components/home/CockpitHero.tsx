@@ -1,12 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { DecisionSnapshot } from "@/components/home/DecisionSnapshot";
+import { TrackedCtaLink } from "@/components/analytics/TrackedCtaLink";
 import { routes } from "@/lib/routes";
 
 /**
- * Kompaktní prémiový hero — max ~650–720px, dva sloupce, bez prázdné pravé plochy.
+ * Prémiový hero — value proposition + CTA hierarchie.
+ * Primární CTA: Zjistit moje možnosti → /moje-moznosti
  */
 export function CockpitHero() {
   return (
@@ -34,8 +35,8 @@ export function CockpitHero() {
         }}
       />
 
-      <div className="relative z-10 mx-auto grid max-h-[720px] max-w-7xl gap-8 px-4 py-10 sm:px-6 sm:py-12 lg:grid-cols-12 lg:items-center lg:gap-10 lg:px-8 lg:py-14 xl:max-h-[680px]">
-        <div className="lg:col-span-6 xl:col-span-7">
+      <div className="relative z-10 mx-auto grid max-w-7xl gap-8 overflow-hidden px-4 py-10 sm:px-6 sm:py-12 lg:grid-cols-12 lg:items-center lg:gap-10 lg:px-8 lg:py-14 lg:max-h-[720px]">
+        <div className="min-w-0 lg:col-span-6 xl:col-span-7">
           <p className="home-reveal font-heading text-2xl font-semibold tracking-tight text-muted-gold sm:text-3xl lg:text-[2rem]">
             HypotékaJasně
           </p>
@@ -51,28 +52,31 @@ export function CockpitHero() {
           </h1>
 
           <p className="home-reveal home-reveal-delay-2 mt-4 max-w-lg text-sm leading-relaxed text-white/75 sm:text-base">
-            Hypotéky, investice a nemovitosti na jednom místě. Aktuální data,
-            srozumitelné výpočty a jasný další krok.
+            Orientační rozpočet, srovnání trhů a analýza nemovitosti — s jasným
+            datovým statusem. Nejsme banka; další krok si volíte vy.
           </p>
 
-          <div className="home-reveal home-reveal-delay-3 mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Link
-              href="#kolik-si-mohu-dovolit"
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-muted-gold px-5 text-sm font-semibold text-text-dark transition-colors hover:bg-muted-gold-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-deep-teal"
+          <div className="home-reveal home-reveal-delay-3 mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <TrackedCtaLink
+              href={routes.mojeMoznosti}
+              ctaId="hero_moje_moznosti"
+              toolId="moje_moznosti"
+              className="inline-flex h-11 min-h-11 items-center justify-center gap-2 rounded-lg bg-muted-gold px-5 text-sm font-semibold text-text-dark transition-colors hover:bg-muted-gold-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-deep-teal"
             >
-              Spočítat, co si mohu dovolit
-              <ArrowRight className="h-4 w-4" aria-hidden />
-            </Link>
-            <Link
+              Zjistit moje možnosti
+              <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+            </TrackedCtaLink>
+            <TrackedCtaLink
               href={routes.pruvodceInvestora}
-              className="inline-flex h-11 items-center justify-center rounded-lg border border-white/25 bg-transparent px-5 text-sm font-medium text-white transition-colors hover:border-white/50 hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-deep-teal"
+              ctaId="hero_porovnat_trhy"
+              className="inline-flex h-11 min-h-11 items-center justify-center rounded-lg border border-white/25 bg-transparent px-5 text-sm font-medium text-white transition-colors hover:border-white/50 hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-deep-teal"
             >
-              Prozkoumat investiční trhy
-            </Link>
+              Porovnat trhy
+            </TrackedCtaLink>
           </div>
         </div>
 
-        <div className="lg:col-span-6 xl:col-span-5">
+        <div className="min-w-0 lg:col-span-6 xl:col-span-5">
           <DecisionSnapshot />
         </div>
       </div>

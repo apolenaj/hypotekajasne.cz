@@ -217,9 +217,15 @@
   .home-reveal-delay-1,
   .home-reveal-delay-2,
   .home-reveal-delay-3,
-  .glass-card-hover {
+  .glass-card-hover,
+  .academy-char--idle,
+  .academy-char--talking {
     animation: none !important;
     transition: none !important;
+    transform: none !important;
+  }
+
+  .academy-char--pointing {
     transform: none !important;
   }
 }

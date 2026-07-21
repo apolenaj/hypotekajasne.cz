@@ -1,7 +1,7 @@
 /**
  * Tržní defaulty kalkulačky jako DataRecord.
  * Numerické hodnoty zůstávají v countryConfigs (calculators.ts) — tento modul
- * je obaluje metadaty Source of Truth (status MODELLED).
+ * je obaluje metadaty Source of Truth (status MODEL).
  */
 
 import { countryConfigs, type CountryId } from "@/lib/calculators";
@@ -42,7 +42,7 @@ export function getDefaultRateRecord(
       : "Lokální sazba není v datech",
     sourceUrl: null,
     sourceType: "model",
-    status: hasRate ? "MODELLED" : "STALE",
+    status: hasRate ? "MODEL" : "STALE",
     confidence: hasRate ? 0.4 : 0,
     notes: hasRate
       ? "Není live sazba banky."
@@ -62,7 +62,7 @@ export function getDefaultPriceRecord(
     source: "UI default kalkulačky",
     sourceUrl: null,
     sourceType: "model",
-    status: "MODELLED",
+    status: "MODEL",
     confidence: 0.35,
     notes: "Orientační výchozí cena pro UX, ne tržní kotace.",
   });
@@ -80,7 +80,7 @@ export function getDefaultYieldRecord(
     source: "UI default hrubého výnosu",
     sourceUrl: null,
     sourceType: "model",
-    status: "MODELLED",
+    status: "MODEL",
     confidence: 0.35,
     notes: "Uloženo jako % (defaultRentalYield * 100).",
   });

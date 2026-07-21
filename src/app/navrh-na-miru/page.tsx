@@ -1,11 +1,7 @@
-import type { Metadata } from "next";
+import { getStaticPageSeo } from "@/lib/seo/pages";
 import { MortgageReadinessWizard } from "@/components/mortgage-readiness/MortgageReadinessWizard";
 
-export const metadata: Metadata = {
-  title: "Hypoteční připravenost | HypotékaJasně.cz",
-  description:
-    "Orientační skóre hypoteční připravenosti, personalizovaný action plan a bezpečný odkaz na nemovitosti v rozpočtu na Majetio.",
-};
+export const metadata = getStaticPageSeo("/navrh-na-miru");
 
 export default function NavrhNaMiruPage() {
   return <MortgageReadinessWizard />;

@@ -1,26 +1,27 @@
 import type { DemoReport } from "@/lib/property-rentgen/types";
 
 /**
- * Anonymní demo report pro SSR / SEO.
- * Jasně označen jako ukázka — hodnoty jsou ilustrativní MODEL/ODHAD.
+ * Anonymní DEMO struktura reportu pro SSR / SEO.
+ * Jasně označená jako DEMO — ne analýza reálné nabídky, žádná fake „schválená“ čísla.
  */
 export const ANONYMOUS_DEMO_REPORT: DemoReport = {
   id: "demo-praha-byt-anonymni-v1",
-  title: "Ukázkový report (anonymní demo)",
-  subtitle: "Byt · Praha · ilustrativní vstup — ne konkrétní inzerát",
+  title: "DEMO — ukázková struktura reportu",
+  subtitle:
+    "Byt · anonymizovaná lokalita · ilustrativní vstupy — ne konkrétní inzerát",
   disclaimer:
-    "Toto je anonymní demo pro ilustraci výstupu Investičního rentgenu. Nejde o analýzu reálné nabídky. Každý údaj má typ Data / Modelový výpočet / Odhad / Neověřeno.",
+    "DEMO data. Toto není analýza reálné nemovitosti ani investiční doporučení. Každý údaj má typ Data / Model / Odhad / Neověřeno. Prémiový report má stejnou strukturu s vašimi vstupy a hlubšími scénáři.",
   metrics: [
     {
       id: "price",
-      label: "Kupní cena",
+      label: "Kupní cena (DEMO vstup)",
       display: "8 400 000 Kč",
       kind: "DATA",
       note: "Ilustrativní vstup dema (jako by zadal uživatel).",
     },
     {
       id: "area",
-      label: "Užitná plocha",
+      label: "Užitná plocha (DEMO vstup)",
       display: "68 m²",
       kind: "DATA",
       note: "Ilustrativní vstup dema.",
@@ -37,11 +38,11 @@ export const ANONYMOUS_DEMO_REPORT: DemoReport = {
       label: "Modelová reference lokality / m²",
       display: "125 000 Kč",
       kind: "MODEL",
-      note: "Referenční model Praha — ne live nabídka.",
+      note: "Referenční model — ne live nabídka.",
     },
     {
       id: "rent",
-      label: "Měsíční nájem (vstup)",
+      label: "Měsíční nájem (DEMO vstup)",
       display: "28 000 Kč",
       kind: "DATA",
       note: "Ilustrativní vstup dema.",
@@ -62,10 +63,17 @@ export const ANONYMOUS_DEMO_REPORT: DemoReport = {
     },
     {
       id: "net_yield",
-      label: "Čistý výnos",
-      display: "Na vyžádání v Prémiové analýze",
+      label: "Čistý výnos (prémiová sekce)",
+      display: "V detailní analýze",
       kind: "NEOVERENO",
-      note: "Bez ověřených nákladů nevymýšlíme čistý výnos v bezplatném demu.",
+      note: "DEMO free vrstva nevymýšlí čistý výnos bez ověřených nákladů.",
+    },
+    {
+      id: "cash_flow",
+      label: "Cash flow scénáře (prémiová sekce)",
+      display: "V detailní analýze",
+      kind: "MODEL",
+      note: "DEMO ukazuje strukturu — ne vyplněné prémiové scénáře.",
     },
     {
       id: "legal",
@@ -82,41 +90,43 @@ export const ANONYMOUS_DEMO_REPORT: DemoReport = {
       note: "Vyžaduje prohlídku / posudek — není v automatickém preview.",
     },
     {
-      id: "liquidity",
-      label: "Likvidita lokality",
-      display: "Orientačně vyšší (centrum města)",
-      kind: "ODHAD",
-      note: "Hrubý editorial odhad pro demo — ne statistika prodeje.",
-    },
-    {
       id: "sensitivity",
-      label: "Citlivost na sazbu",
-      display: "Prémiové scénáře",
+      label: "Citlivost na sazbu / neobsazenost",
+      display: "V detailní analýze",
       kind: "MODEL",
-      note: "Kompletní citlivostní analýza je v placeném reportu.",
+      note: "Kompletní citlivost je v placeném reportu — ne garantovaný výnos.",
     },
   ],
   redFlags: [
     {
-      text: "Demo: žádný silný rizikový signál z čísel — absence varování ≠ absence rizika.",
+      text: "DEMO: žádný silný rizikový signál z čísel — absence varování ≠ absence rizika.",
       kind: "ODHAD",
     },
     {
-      text: "Právní a technický stav: Neověřeno (záměrně).",
+      text: "Právní a technický stav: Neověřeno (záměrně v DEMO).",
       kind: "NEOVERENO",
     },
   ],
   financingFit: {
     value:
-      "Při vlastním kapitálu 2 mil. Kč a ceně 8,4 mil. Kč je orientační LTV ~76 %. Odhad — finální posouzení provádí banka/licencovaný partner.",
+      "DEMO: Při vlastním kapitálu 2 mil. Kč a ceně 8,4 mil. Kč je orientační LTV ~76 %. Odhad — finální posouzení provádí banka / licencovaný partner.",
     kind: "ODHAD",
   },
 };
 
+/** FAQ — cena vždy přes {{PRICE}} / withAnalysisPrice(), nikoli hardcode 5 000. */
 export const RENTGEN_FAQ: { q: string; a: string }[] = [
   {
     q: "Co je Investiční rentgen?",
-    a: "Nástroj HypotékaJasně pro rychlý náhled na nemovitost a cestu ke kompletní analýze s Majetio. Bezplatná vrstva ukáže orientační výnos, cenu/m², základní vhodnost financování a rizikové faktory — vždy s označením Data, Modelový výpočet, Odhad nebo Neověřeno.",
+    a: "Nástroj HypotékaJasně: bezplatný snapshot nemovitosti a cesta k detailní analýze. Free vrstva ukáže orientační výnos, cenu/m², fit financování a red flags — vždy s označením Data / Model / Odhad / Neověřeno.",
+  },
+  {
+    q: "Co dostanu zdarma a za co platím?",
+    a: "Zdarma: základní snapshot, klíčové metriky, red flags a financing fit. Za {{PRICE}} detailní cash flow, scénáře, výnos, náklady, rizika, lokální kontext, závěry a elektronický report. Pokročilá due diligence je jen na individuální poptávku — není samoobslužný e-shop produkt.",
+  },
+  {
+    q: "Co detailní analýza NENÍ?",
+    a: "Není garantovaný výnos, není právní due diligence bez právníka, není technická inspekce bez partnera a není schválení banky.",
   },
   {
     q: "Proč některé údaje říkají Neověřeno?",
@@ -124,18 +134,18 @@ export const RENTGEN_FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Umíte načíst inzerát z URL?",
-    a: "URL můžete vložit jako referenci. Automatické parsování obsahu inzerátu jako ověřená Data zatím neprovádíme — údaje doplňte ručně, nebo objednejte Prémiovou analýzu.",
+    a: "URL můžete vložit jako referenci. Automatické parsování obsahu inzerátu jako ověřená Data zatím neprovádíme — údaje doplňte ručně, nebo požádejte o detailní analýzu.",
   },
   {
-    q: "Co obsahuje Prémiová analýza?",
-    a: "Kompletní analýza nemovitosti za 4 990 Kč: rozšířené metriky, modelové scénáře, checklist due diligence a příprava podkladů. Neobsahuje závazné právní posouzení, technický průzkum na místě ani schválení úvěru.",
+    q: "Co obsahuje detailní analýza za {{PRICE}}?",
+    a: "Modelové cash flow a scénáře, výnos, financování, náklady, rizika, lokální kontext, závěry a checklist otázek. Elektronický report. Neobsahuje závazné právní posouzení, technický průzkum na místě ani schválení úvěru.",
+  },
+  {
+    q: "Co se stane po kliknutí na „Získat detailní analýzu“?",
+    a: "Zanecháte kontakt a souhlas. Ozveme se s potvrzením rozsahu a postupem dodání. Dokud není spuštěná platební brána, jde o evidenci zájmu — ne o okamžitou platbu v e-shopu.",
   },
   {
     q: "Je bezplatný náhled investiční doporučení?",
     a: "Ne. Jde o orientační model a odhady pro rozhodnutí, zda má smysl jít do hloubky. Finální posouzení financování provádí banka nebo licencovaný partner.",
-  },
-  {
-    q: "Mohu nahrát dokumenty a fotky?",
-    a: "Nahrávání dokumentů připravujeme. Zatím použijte ruční vstup nebo Prémiovou objednávku s předáním podkladů partnerovi.",
   },
 ];

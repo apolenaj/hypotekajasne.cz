@@ -8,7 +8,7 @@ import { routes } from "@/lib/routes";
 export const metadata: Metadata = buildPageMetadata({
   title: "Strategie nabídky — asistent na nemovitost",
   description:
-    "MODEL opening, target a max cena, vyjednávací marže, scenario slider (yield, CF, IRR) a etický návrh textu nabídky.",
+    "Modelová otevírací, cílová a maximální cena, vyjednávací marže, scénáře výnosu a cash-flow a návrh textu nabídky.",
   path: routes.offerStrategy,
 });
 

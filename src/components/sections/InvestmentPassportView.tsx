@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -19,6 +19,7 @@ import {
   Wallet,
   X,
 } from "lucide-react";
+import { useFocusTrap } from "@/lib/a11y/focus-trap";
 import {
   evaluateInvestmentPassport,
   FINANCING_OPTIONS,
@@ -149,14 +150,29 @@ function MatchExplainDialog({
   market: MarketMatchResult;
   onClose: () => void;
 }) {
+  const panelRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  useFocusTrap(true, panelRef, {
+    onEscape: onClose,
+    initialFocusRef: closeRef,
+  });
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="match-explain-title"
+      role="presentation"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
-      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-5 shadow-xl sm:p-6">
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="match-explain-title"
+        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-5 shadow-xl sm:p-6"
+      >
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2
@@ -171,18 +187,19 @@ function MatchExplainDialog({
             </p>
           </div>
           <button
+            ref={closeRef}
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1 text-muted-foreground hover:bg-muted"
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal"
             aria-label="Zavřít"
           >
-            <X className="h-5 w-5" />
+            <X className="h-5 w-5" aria-hidden />
           </button>
         </div>
 
         <p className="mt-4 text-sm text-muted-foreground">
-          Σ (váha × fit). Fit = 100 − |atribut trhu − váš ideál| (kapitál má
-          budget fit).
+          Σ (váha × shoda). Shoda = 100 − |atribut trhu − váš ideál| (kapitál má
+          shodu s rozpočtem).
         </p>
 
         <ul className="mt-4 space-y-3">
@@ -202,7 +219,7 @@ function MatchExplainDialog({
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
                   Váha {(b.weight * 100).toFixed(0)} % · trh {b.marketValue} ·
-                  ideál {b.userIdeal} · fit {b.fit}
+                  ideál {b.userIdeal} · shoda {b.fit}
                 </p>
               </li>
             ))}
@@ -233,14 +250,14 @@ function ComparePanel({
   if (selected.length < 2) {
     return (
       <p className="text-sm text-muted-foreground">
-        Vyberte 2–3 trhy výše (checkbox) pro side-by-side srovnání.
+        Vyberte 2–3 trhy výše (checkbox) pro srovnání vedle sebe.
       </p>
     );
   }
 
   const rows: { label: string; get: (m: MarketMatchResult) => string }[] = [
     {
-      label: "Overall Match",
+      label: "Celková shoda",
       get: (m) => `${m.overallMatch}/100`,
     },
     {
@@ -353,7 +370,7 @@ function MarketCard({
           {market.name}
         </h3>
         <p className="mt-1 text-2xl font-bold tabular-nums text-deep-teal">
-          Overall Match {market.overallMatch}/100
+          Celková shoda {market.overallMatch}/100
         </p>
         <p className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground">
           Organické skóre · bez sponzoringu
@@ -446,9 +463,17 @@ function PassportDashboard({
 
   const toggleCompare = (id: string) => {
     setCompareIds((prev) => {
-      if (prev.includes(id)) return prev.filter((x) => x !== id);
-      if (prev.length >= 3) return [...prev.slice(1), id];
-      return [...prev, id];
+      let next: string[];
+      if (prev.includes(id)) next = prev.filter((x) => x !== id);
+      else if (prev.length >= 3) next = [...prev.slice(1), id];
+      else next = [...prev, id];
+      if (next.length >= 2) {
+        track("market_compared", {
+          tool_id: "investment_passport",
+          market_ids: next.slice(0, 3).join(","),
+        });
+      }
+      return next;
     });
   };
 
@@ -460,7 +485,7 @@ function PassportDashboard({
             Osobní investiční průvodce
           </p>
           <h1 className="mt-3 font-heading text-3xl font-bold md:text-4xl">
-            {formData.name}, váš market match
+            {formData.name}, vaše shoda trhů
           </h1>
           <p className="mt-2 text-sm text-white/80">
             {result.profileLabel} · váhy {result.weightsVersion}
@@ -495,10 +520,10 @@ function PassportDashboard({
 
         <div>
           <h2 className="font-heading text-xl font-bold text-text-dark">
-            Top 3 markets
+            Top 3 trhy
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Seřazeno podle organického Overall Match. Partnerství skóre
+            Seřazeno podle organické celkové shody. Partnerství skóre
             neovlivňuje — viz{" "}
             <Link href={routes.metodika} className="text-deep-teal underline">
               metodika
@@ -523,7 +548,7 @@ function PassportDashboard({
         <section className="rounded-2xl border border-border bg-white p-5 sm:p-6">
           <h3 className="flex items-center gap-2 font-heading text-lg font-bold text-text-dark">
             <GitCompare className="h-5 w-5 text-deep-teal" />
-            Side-by-side compare (2–3 země)
+            Srovnání vedle sebe (2–3 země)
           </h3>
           <p className="mt-1 text-sm text-muted-foreground">
             Můžete přidat i další trhy z organického žebříčku.
@@ -724,7 +749,7 @@ export function InvestmentPassportView() {
             Osobní investiční průvodce
           </p>
           <h1 className="mt-3 font-heading text-3xl font-bold md:text-5xl">
-            Market matching na míru
+            Přiřazení trhů na míru
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/85 md:text-lg">
             Transparentní vážené skóre napříč 10 dimenzemi. Top 3 trhy s
@@ -743,7 +768,7 @@ export function InvestmentPassportView() {
                 Kolik máte k dispozici vlastních prostředků?
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                Vstup do dimenze required capital.
+                Vstup do dimenze požadovaného kapitálu.
               </p>
               <label className="mt-8 block">
                 <span className="mb-2 block text-sm font-bold text-text-dark">
@@ -861,7 +886,7 @@ export function InvestmentPassportView() {
           {currentStep === 6 && (
             <div>
               <h2 className="text-2xl font-bold text-text-dark">
-                Kam zaslat výsledek market matchingu?
+                Kam zaslat výsledek přiřazení trhů?
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">
                 Po odeslání uvidíte Top 3 s rozkladem skóre. Kontakt je
@@ -937,7 +962,7 @@ export function InvestmentPassportView() {
                 </>
               ) : currentStep === TOTAL_STEPS ? (
                 <>
-                  Zobrazit market match
+                  Zobrazit shodu trhů
                   <ArrowRight className="h-4 w-4" />
                 </>
               ) : (

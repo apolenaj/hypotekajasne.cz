@@ -3,94 +3,91 @@
 import Link from "next/link";
 import {
   Building2,
-  Globe2,
-  Home,
-  RefreshCw,
+  Calculator,
+  ScanSearch,
   type LucideIcon,
 } from "lucide-react";
-import { getExperimentVariant } from "@/lib/analytics/experiments";
 import { track } from "@/lib/analytics/track";
 import { routes } from "@/lib/routes";
 
-type IntentPath = {
+type Need = {
   id: string;
   title: string;
   description: string;
-  nextStep: string;
+  cta: string;
   href: string;
   icon: LucideIcon;
 };
 
-const PATHS: IntentPath[] = [
+const NEEDS: Need[] = [
   {
-    id: "home",
-    title: "Chci vlastní bydlení",
-    description: "Orientační limit úvěru, LTV a splátka podle živých sazeb ČR.",
-    nextStep: "Otevřít kalkulačku bydlení",
-    href: routes.kalkulacky.root,
-    icon: Home,
+    id: "afford",
+    title: "Kolik si mohu dovolit?",
+    description:
+      "Orientační strop úvěru a splátky podle příjmu, vlastních zdrojů a sazby.",
+    cta: "Spočítat rozpočet",
+    href: routes.mojeMoznosti,
+    icon: Calculator,
   },
   {
-    id: "invest",
-    title: "Chci investovat",
-    description: "Profil rizika, kapitál a doporučené trhy bez marketingových frází.",
-    nextStep: "Spustit osobní průvodce",
-    href: routes.investicniPas,
+    id: "where",
+    title: "Kde dává nákup smysl?",
+    description:
+      "Porovnejte vlastnictví, financovatelnost a riziko napříč trhy — bez marketingových superlativů.",
+    cta: "Porovnat trhy",
+    href: "#destinace",
     icon: Building2,
   },
   {
-    id: "refinance",
-    title: "Chci refinancovat",
-    description: "Porovnejte současnou splátku s aktuálními nabídkami sledovaných bank.",
-    nextStep: "Otevřít radar refinancování",
-    href: routes.refinanceRadar,
-    icon: RefreshCw,
-  },
-  {
-    id: "abroad",
-    title: "Chci koupit v zahraničí",
-    description: "Vlastnictví, financovatelnost a rizika po destinacích — nejdřív data.",
-    nextStep: "Vybrat destinaci",
-    href: routes.pruvodceInvestora,
-    icon: Globe2,
+    id: "property",
+    title: "Vyplatí se konkrétní nemovitost?",
+    description:
+      "Investiční rentgen: výnos, cena/m², fit financování a rizikové faktory s označením DATA / MODEL / ODHAD.",
+    cta: "Otevřít rentgen",
+    href: routes.investicniRentgen,
+    icon: ScanSearch,
   },
 ];
 
-export function IntentPaths() {
+/**
+ * Tři hlavní potřeby — konverzní hierarchie hned pod hero.
+ */
+export function HomeNeeds() {
   return (
     <section
-      aria-labelledby="intent-paths-heading"
+      aria-labelledby="home-needs-heading"
       className="border-b border-border bg-[#f7f8f7]"
     >
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
         <div className="max-w-2xl">
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-deep-teal">
-            Pro koho to je
+            Co řešíte
           </p>
           <h2
-            id="intent-paths-heading"
+            id="home-needs-heading"
             className="mt-2 font-heading text-2xl font-bold tracking-tight text-text-dark sm:text-3xl"
           >
-            Čtyři jasné cesty
+            Tři otázky. Jeden jasný start.
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground sm:text-base">
-            Vyberte záměr — každá cesta má jeden další krok.
+            Vyberte potřebu — každá cesta vede do konkrétního nástroje, ne do
+            obecného marketingu.
           </p>
         </div>
 
-        <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
-          {PATHS.map((path) => {
-            const Icon = path.icon;
+        <ul className="mt-6 grid gap-3 sm:grid-cols-3 sm:gap-4">
+          {NEEDS.map((need) => {
+            const Icon = need.icon;
             return (
-              <li key={path.id}>
+              <li key={need.id} className="min-w-0">
                 <Link
-                  href={path.href}
+                  href={need.href}
                   onClick={() =>
                     track("homepage_intent_selected", {
-                      intent_id: path.id,
-                      path: path.href,
+                      intent_id: need.id,
+                      path: need.href,
                       experiment_id: "hero",
-                      variant_id: getExperimentVariant("hero"),
+                      variant_id: "needs_v1",
                     })
                   }
                   className="group flex h-full flex-col rounded-xl border border-border bg-white p-5 transition-[border-color,box-shadow] duration-200 hover:border-deep-teal/40 hover:shadow-[0_8px_30px_-12px_rgba(27,77,62,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal focus-visible:ring-offset-2"
@@ -99,13 +96,13 @@ export function IntentPaths() {
                     <Icon className="h-5 w-5" aria-hidden />
                   </span>
                   <h3 className="mt-4 font-heading text-lg font-semibold text-text-dark">
-                    {path.title}
+                    {need.title}
                   </h3>
                   <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
-                    {path.description}
+                    {need.description}
                   </p>
                   <span className="mt-4 text-sm font-semibold text-deep-teal">
-                    {path.nextStep} →
+                    {need.cta} →
                   </span>
                 </Link>
               </li>

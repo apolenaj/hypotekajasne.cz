@@ -105,7 +105,7 @@ export function buildExpertEscalation(
   let reason =
     "Preventivní konzultace s licencovaným právníkem nebo specialistou.";
   if (summary.materialIssueCount > 0) {
-    reason = `${summary.materialIssueCount} položek označeno jako potenciálně zásadní — doporučujeme human-expert review před nabídkou.`;
+    reason = `${summary.materialIssueCount} položek označeno jako potenciálně zásadní — doporučujeme konzultaci se specialistou před nabídkou.`;
   } else if (summary.verifiedCount === 0 && summary.unknownCount >= 3) {
     reason =
       "Většina položek je neznámá (GREY) — absence dat neznamená absenci rizika. Expert pomůže prioritizovat prověrku.";
@@ -115,7 +115,7 @@ export function buildExpertEscalation(
     recommended,
     reason,
     urgency: summary.materialIssueCount > 0 ? "high" : "standard",
-    ctaLabel: "Eskalovat na human-expert review",
+    ctaLabel: "Konzultovat se specialistou",
     ctaHref: routes.navrhNaMiru,
   };
 }
@@ -139,7 +139,7 @@ export function buildDueDiligenceModel(
       "GREEN vyžaduje evidence + source — AI nevyvozuje OK z absence dat.",
       "Checklist se personalizuje dle typu nemovitosti.",
       "RED = potenciální materiální issue — ne automatický právní závěr.",
-      "Human-expert escalation doporučena při RED nebo převaze GREY.",
+      "Při červeném hodnocení nebo převaze šedých položek doporučujeme konzultaci se specialistou.",
       "Hypotéka Jasně poskytuje edukaci — ne právní due diligence.",
     ],
   };

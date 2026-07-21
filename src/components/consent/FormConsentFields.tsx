@@ -4,9 +4,11 @@ import Link from "next/link";
 import {
   CONSENT_POLICY_VERSION,
   CONSENT_PURPOSES,
-  PARTNER_TRANSFER_SCOPE_LABELS,
+  buildConsentContextSummary,
+  buildPartnerTransferCheckboxLabel,
   type PartnerTransferScope,
 } from "@/lib/legal/consent-versions";
+import { isMortgagePartnerHandoffReady } from "@/lib/legal/partner-config";
 import {
   buildFormConsentRecord,
   type FormConsentRecord,
@@ -56,11 +58,27 @@ export function FormConsentFields({
   const set = (patch: Partial<FormConsentState>) =>
     onChange({ ...state, ...patch });
 
+  const handoffReady = isMortgagePartnerHandoffReady();
+  const isMortgageScope = state.partnerTransferScope === "mortgage_specialist";
+
+  /** Bez ověřené identity partnera nepožadujeme falešný partner-transfer souhlas. */
+  const effectiveShowPartnerTransfer =
+    showPartnerTransfer && (!isMortgageScope || handoffReady);
+
   return (
-    <fieldset className={className ?? "space-y-3 rounded-xl border border-border bg-slate-50 px-3 py-3 text-left text-xs leading-relaxed text-muted-foreground sm:text-sm"}>
+    <fieldset
+      className={
+        className ??
+        "space-y-3 rounded-xl border border-border bg-slate-50 px-3 py-3 text-left text-xs leading-relaxed text-muted-foreground sm:text-sm"
+      }
+    >
       <legend className="sr-only">Souhlasy se zpracováním údajů</legend>
       <p className="text-[11px] font-semibold uppercase tracking-wide text-deep-teal">
         Verze zásad: {CONSENT_POLICY_VERSION}
+      </p>
+
+      <p className="text-[11px] leading-relaxed text-muted-foreground">
+        {buildConsentContextSummary()}
       </p>
 
       <label className="flex items-start gap-2.5">
@@ -80,7 +98,19 @@ export function FormConsentFields({
         </span>
       </label>
 
-      {showPartnerTransfer ? (
+      {showPartnerTransfer && isMortgageScope && !handoffReady ? (
+        <p
+          role="status"
+          className="rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-2 text-[11px] leading-relaxed text-amber-950"
+        >
+          Předání licencovanému specialistovi zatím není produkčně aktivní
+          (chybí ověřená veřejná identifikace partnera). Vaše údaje zpracuje
+          provozovatel webu pro nezávaznou konzultaci. Hypotéka Jasně není
+          banka.
+        </p>
+      ) : null}
+
+      {effectiveShowPartnerTransfer ? (
         <label className="flex items-start gap-2.5">
           <input
             type="checkbox"
@@ -92,18 +122,19 @@ export function FormConsentFields({
             }
           />
           <span>
-            {CONSENT_PURPOSES.partner_transfer.checkboxLabel} Rozsah:{" "}
-            <strong className="text-text-dark">
-              {PARTNER_TRANSFER_SCOPE_LABELS[state.partnerTransferScope]}
-            </strong>
-            .{" "}
-            <Link
-              href={routes.partneri}
-              className="text-deep-teal underline"
-            >
-              Partneři
-            </Link>
-            .
+            {buildPartnerTransferCheckboxLabel(state.partnerTransferScope)}
+            {isMortgageScope && handoffReady ? (
+              <>
+                {" "}
+                <Link
+                  href={routes.partneri}
+                  className="text-deep-teal underline"
+                >
+                  Partneři
+                </Link>
+                .
+              </>
+            ) : null}
           </span>
         </label>
       ) : null}

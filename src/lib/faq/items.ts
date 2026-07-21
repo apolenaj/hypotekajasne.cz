@@ -13,6 +13,6 @@ export const FAQ_ITEMS = [
   },
   {
     q: "Komu předáváte mé kontakty?",
-    a: "Jen pokud o handoff požádáte. Předáváme licencovanému hypotečnímu partnerovi — IČO, role a JERRS odkaz (po ověření) najdete na /partneri. Majetio, makléř nebo developer jsou oddělené role.",
+    a: "Jen pokud o předání specialistovi výslovně souhlasíte a jen když je na /partneri zveřejněna ověřená identifikace partnera. Do té doby údaje přijímá provozovatel webu pro nezávaznou konzultaci. Majetio, makléř nebo developer jsou oddělené role. Hypotéka Jasně není banka.",
   },
 ] as const;

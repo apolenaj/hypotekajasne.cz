@@ -14,7 +14,7 @@ export function TrustNav({ currentPath }: { currentPath?: string }) {
             key={item.href}
             href={item.href}
             className={cn(
-              "rounded-full px-3 py-1 text-xs font-semibold transition",
+              "inline-flex min-h-11 items-center rounded-full px-3 py-2 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal",
               currentPath === item.href
                 ? "bg-deep-teal text-white"
                 : "border border-border text-muted-foreground hover:border-deep-teal/40"

@@ -77,7 +77,7 @@ export const predictionAnalysisByCountry: Record<CountryId, PredictionAnalysis> 
       ],
     },
     saudi: {
-      title: "SAE: Spekulativní růst a kratší historie",
+      title: "Saúdská Arábie: Spekulativní růst a kratší historie",
       intro:
         "Saúdská Arábie je emerging market — optimistický scénář reflektuje Vision 2030, konzervativní počítá s pomalejší adopcí. Dva motory zde fungují, ale s vyšší nejistotou odhadu.",
       sections: sharedSections,

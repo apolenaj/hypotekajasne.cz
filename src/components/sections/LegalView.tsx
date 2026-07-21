@@ -105,8 +105,9 @@ function OperatorBlock() {
       </dl>
       {!op.isProductionReady ? (
         <p className="mt-3 text-xs text-muted-foreground">
-          Úplná obchodní identifikace (právní jméno, IČO) bude doplněna před
-          spuštěním placených služeb. Kontaktní údaje výše slouží ke komunikaci.
+          Úplná obchodní identifikace (právní jméno, IČO) zatím není ve
+          veřejném configu. Kontaktní údaje výše slouží ke komunikaci;
+          placené služby zůstávají vypnuté, dokud není identita ověřena.
         </p>
       ) : null}
     </div>
@@ -223,11 +224,13 @@ function GdprContent() {
         <p>
           Údaje předáme jen pokud zaškrtnete souhlas s předáním a jen v uvedeném
           rozsahu (např. licencovaný hypoteční specialista, Majetio). Nejde o
-          plošné předání všem makléřům. Partneři:{" "}
+          plošné předání všem makléřům. Hypotéka Jasně není banka; konzultace je
+          nezávazná. Stav zveřejnění identity partnera:{" "}
           <Link href={routes.partneri} className="text-deep-teal underline">
             Partneři
           </Link>
-          .
+          . Pokud identifikace partnera není zveřejněna, formuláře přijímá
+          provozovatel webu (správce) bez produkčního partner handoff.
         </p>
       </section>
 
@@ -236,8 +239,8 @@ function GdprContent() {
         <p>
           Preference cookies ukládáme ve vašem prohlížeči do změny nebo smazání.
           Doba uchování poptávek a marketingových souhlasů bude upřesněna po
-          doplnění provozovatele — do té doby můžete požádat o výmaz na{" "}
-          {op.email}.
+          finálním právním textu provozovatele. Do té doby můžete požádat o
+          výmaz na {op.email}.
         </p>
       </section>
 

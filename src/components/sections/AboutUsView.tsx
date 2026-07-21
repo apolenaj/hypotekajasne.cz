@@ -22,17 +22,17 @@ const pillars = [
     icon: BarChart3,
     title: "Data s uvedeným statusem",
     description:
-      "Sazby, výnosy a skóre mají status (aktuální data / modelový výpočet / odhad…). Chybějící údaj nevymýšlíme — viz /metodika a /zdroje.",
+      "Sazby, výnosy a skóre mají status (aktuální data / modelový výpočet / odhad…). Chybějící údaj nevymýšlíme — viz Metodika a Zdroje.",
   },
   {
     icon: Code2,
     title: "Technologické nástroje",
     description:
-      "Kalkulačky, Hypoteční připravenost a market matching běží jako model. Výstup není závazná nabídka banky.",
+      "Kalkulačky, Hypoteční připravenost a přiřazení trhů běží jako model. Výstup není závazná nabídka banky.",
   },
   {
     icon: ClipboardList,
-    title: "Konkrétní proces handoffu",
+    title: "Konkrétní proces předání",
     description:
       "1) Vyplníte záměr a model. 2) Pokud chcete, předáme poptávku licencovanému specialistovi. 3) Schválení vždy provádí banka. 4) Majetio slouží k nemovitostem — odděleně.",
   },
@@ -158,8 +158,8 @@ export function AboutUsView() {
               Role, zkušenosti, odpovědnost za obsah
             </h2>
             <p className="mt-4 text-muted-foreground leading-relaxed">
-              Fotografie zobrazujeme jen když je dodána. LinkedIn doplníme po
-              potvrzení odkazu — pole je připravené.
+              Fotografie a LinkedIn zobrazujeme jen když jsou skutečně
+              dodané — neověřené odkazy neuvádíme.
             </p>
           </div>
 
@@ -193,7 +193,7 @@ export function AboutUsView() {
                       </a>
                     ) : (
                       <p className="mt-3 text-xs text-muted-foreground">
-                        LinkedIn: odkaz doplníme po ověření (pole připraveno).
+                        LinkedIn profil zatím není zveřejněn.
                       </p>
                     )}
                   </div>
@@ -302,7 +302,7 @@ export function AboutUsView() {
             <ShieldCheck className="h-6 w-6 text-emerald-800" />
           </div>
           <h3 className="font-heading mb-4 text-2xl font-bold text-emerald-900 md:text-3xl">
-            Chcete projít model a případně handoff?
+            Chcete projít model a případně předání specialistovi?
           </h3>
           <p className="mx-auto mb-8 max-w-2xl text-base leading-relaxed text-emerald-800">
             Hypoteční připravenost spočítá skóre a překážky. Konzultaci se

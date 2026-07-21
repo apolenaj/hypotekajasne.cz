@@ -3,10 +3,20 @@
  * Při změně textu ZVYŠTE verzi; staré záznamy zůstávají auditovatelné.
  */
 
-export const CONSENT_POLICY_VERSION = "2026-07-19.1" as const;
-export const COOKIE_POLICY_VERSION = "2026-07-19.1" as const;
-export const TERMS_VERSION = "2026-07-19.1" as const;
-export const PAID_ANALYSIS_TERMS_VERSION = "2026-07-19.1" as const;
+import {
+  isMortgagePartnerHandoffReady,
+  partnerPublicDisplayName,
+  getPrimaryMortgagePartner,
+} from "@/lib/legal/partner-config";
+import {
+  getOperatorIdentity,
+  operatorDisplayName,
+} from "@/lib/legal/operator";
+
+export const CONSENT_POLICY_VERSION = "2026-07-20.1" as const;
+export const COOKIE_POLICY_VERSION = "2026-07-20.1" as const;
+export const TERMS_VERSION = "2026-07-20.1" as const;
+export const PAID_ANALYSIS_TERMS_VERSION = "2026-07-20.1" as const;
 
 export type ConsentPurposeId =
   | "privacy_processing"
@@ -37,19 +47,19 @@ export const CONSENT_PURPOSES: Record<ConsentPurposeId, ConsentPurposeCopy> = {
     id: "privacy_processing",
     version: CONSENT_POLICY_VERSION,
     checkboxLabel:
-      "Souhlasím se zpracováním údajů za účelem vyřízení mé žádosti (viz Zásady ochrany osobních údajů).",
+      "Souhlasím se zpracováním údajů provozovatelem webu Hypotéka Jasně (správce) za účelem vyřízení mé nezávazné poptávky / konzultace (viz Zásady ochrany osobních údajů). Hypotéka Jasně není banka.",
     description:
-      "Zpracování kontaktních a kontextových údajů pro odpověď / vyřízení formuláře provozovatelem. Nejde o univerzální marketingový souhlas.",
+      "Zpracování kontaktních a kontextových údajů správcem (provozovatel Hypotéka Jasně) pro odpověď a vyřízení formuláře. Nejde o univerzální marketingový souhlas ani o nabídku banky.",
     required: true,
   },
   partner_transfer: {
     id: "partner_transfer",
     version: CONSENT_POLICY_VERSION,
     checkboxLabel:
-      "Souhlasím s předáním údajů licencovanému partnerovi v uvedeném rozsahu (partner-specific).",
+      "Souhlasím s předáním údajů licencovanému hypotečnímu specialistovi (samostatný správce) za účelem nezávazné konzultace hypotéky — v uvedeném rozsahu.",
     description:
-      "Výslovný souhlas s předáním konkrétnímu typu partnera. Odeslání formuláře samo o sobě není marketingový souhlas ani blanket transfer všem partnerům.",
-    required: false, // required dynamicky podle zdroje
+      "Výslovný souhlas s předáním konkrétnímu typu partnera. Partner jedná ve vlastní licenci; Hypotéka Jasně není banka ani zprostředkovatel dle z. č. 257/2016 Sb. Odeslání formuláře samo o sobě není marketingový souhlas.",
+    required: false,
   },
   marketing: {
     id: "marketing",
@@ -88,9 +98,42 @@ export const PARTNER_TRANSFER_SCOPE_LABELS: Record<
   PartnerTransferScope,
   string
 > = {
-  mortgage_specialist:
-    "Licencovaný hypoteční specialista (viz /partneri)",
+  mortgage_specialist: "Licencovaný hypoteční specialista",
   majetio: "Majetio — vyhledání a analýza nemovitostí / Finanční pas",
   broker_developer: "Makléř / developer (pouze pokud výslovně zvoleno)",
   none: "Bez předání třetí straně",
 };
+
+/** Dynamický checkbox text — bez odkazu na /partneri, pokud identita není zveřejněna. */
+export function buildPartnerTransferCheckboxLabel(
+  scope: PartnerTransferScope
+): string {
+  const base = CONSENT_PURPOSES.partner_transfer.checkboxLabel;
+  const scopeLabel = PARTNER_TRANSFER_SCOPE_LABELS[scope];
+
+  if (scope === "mortgage_specialist" && isMortgagePartnerHandoffReady()) {
+    const name = partnerPublicDisplayName(getPrimaryMortgagePartner());
+    return `${base} Příjemce: ${name}. Rozsah: ${scopeLabel}.`;
+  }
+
+  if (scope === "mortgage_specialist") {
+    return `${base} Rozsah: ${scopeLabel}. Identita konkrétního specialisty bude uvedena až po zveřejnění ověřených registračních údajů — do té doby údaje přijímá provozovatel webu.`;
+  }
+
+  return `${base} Rozsah: ${scopeLabel}.`;
+}
+
+/** Krátké shrnutí u formuláře (správce / účel / role). */
+export function buildConsentContextSummary(): string {
+  const op = getOperatorIdentity();
+  const spravce = operatorDisplayName(op);
+  const handoff = isMortgagePartnerHandoffReady();
+  return [
+    `Správce údajů z formuláře: ${spravce}.`,
+    "Účel: vyřízení nezávazné poptávky / konzultace.",
+    "Hypotéka Jasně není banka a neschvaluje úvěry.",
+    handoff
+      ? "Při souhlasu s předáním se stává samostatným správcem licencovaný hypoteční specialista (viz Partneři)."
+      : "Předání licencovanému specialistovi není produkčně aktivní, dokud není zveřejněna ověřená identita partnera.",
+  ].join(" ");
+}

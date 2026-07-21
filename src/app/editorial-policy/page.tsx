@@ -1,13 +1,10 @@
-import type { Metadata } from "next";
+import { getStaticPageSeo } from "@/lib/seo/pages";
 import Link from "next/link";
 import { TrustPageShell } from "@/components/trust/TrustPageShell";
 import { routes } from "@/lib/routes";
 
-export const metadata: Metadata = {
-  title: "Redakční zásady | HypotékaJasně.cz",
-  description:
-    "Jak píšeme YMYL obsah: autor, review, zdroje, aktualizace, zákaz nepodložených slibů.",
-};
+export const metadata = getStaticPageSeo("/editorial-policy");
+
 
 export default function EditorialPolicyPage() {
   return (

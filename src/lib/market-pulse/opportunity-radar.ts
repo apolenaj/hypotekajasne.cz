@@ -12,7 +12,7 @@ import type {
 } from "@/lib/market-pulse/types";
 
 const RADAR_DISCLAIMER =
-  "Opportunity Radar pouze upozorňuje na shodu s vašimi kritérii nad modelovými daty. Nejedná se o investiční doporučení ani garantovanou příležitost. Vždy ověřte konkrétní nemovitost a právní rámec.";
+  "Radar příležitostí pouze upozorňuje na shodu s vašimi kritérii nad modelovými daty. Nejedná se o investiční doporučení ani garantovanou příležitost. Vždy ověřte konkrétní nemovitost a právní rámec.";
 
 function priceDropPercent(countryId: CountryId): number | null {
   const series = getHistoricalChartData(countryId);

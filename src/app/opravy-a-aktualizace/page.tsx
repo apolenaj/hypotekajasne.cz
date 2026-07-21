@@ -1,13 +1,10 @@
-import type { Metadata } from "next";
+import { getStaticPageSeo } from "@/lib/seo/pages";
 import Link from "next/link";
 import { TrustPageShell } from "@/components/trust/TrustPageShell";
 import { routes } from "@/lib/routes";
 
-export const metadata: Metadata = {
-  title: "Opravy a aktualizace | HypotékaJasně.cz",
-  description:
-    "Veřejný changelog oprav YMYL obsahu, sazeb a metodiky.",
-};
+export const metadata = getStaticPageSeo("/opravy-a-aktualizace");
+
 
 /** Seed log — rozšiřujte chronologicky při každé veřejné opravě. */
 const CHANGELOG: {
@@ -33,7 +30,7 @@ const CHANGELOG: {
   {
     date: "2026-07-19",
     area: "Metodika",
-    summary: "Váhy market matchingu a pravidlo sponzoringu publikovány.",
+    summary: "Váhy přiřazení trhů a pravidlo sponzoringu publikovány.",
     href: routes.metodika,
   },
 ];

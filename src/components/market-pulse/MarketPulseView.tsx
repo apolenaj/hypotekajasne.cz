@@ -272,11 +272,11 @@ export function MarketPulseView() {
           ))}
         </section>
 
-        {/* Opportunity Radar */}
+        {/* Radar příležitostí */}
         <section className="rounded-2xl border border-amber-200 bg-amber-50/50 p-6">
           <h2 className="flex items-center gap-2 font-heading text-lg font-bold">
             <Bell className="h-5 w-5 text-amber-700" />
-            Opportunity Radar
+            Radar příležitostí
           </h2>
           <p className="mt-1 text-xs text-amber-900/80">
             {dashboard.opportunityRadar.disclaimer}
@@ -357,7 +357,7 @@ export function MarketPulseView() {
 
         {/* Regulatory changelog */}
         <section className="rounded-2xl border border-border bg-white p-6">
-          <h2 className="font-heading text-lg font-bold">Regulační changelog</h2>
+          <h2 className="font-heading text-lg font-bold">Regulační přehled změn</h2>
           <div className="mt-4 space-y-3">
             {dashboard.regulatoryChangelog.map((entry) => (
               <article

@@ -40,7 +40,7 @@ export const NBA_RULES: NbaRule[] = [
     build: () => ({
       action: "Doplňte příjem",
       reason: "Bez čistého příjmu je dostupnost a DSTI jen prázdný odhad.",
-      expectedBenefit: "Odemkne výpočet bezpečné splátky a skóre affordability.",
+      expectedBenefit: "Odemkne výpočet bezpečné splátky a skóre dostupnosti.",
       expiresAt: null,
       sourceData: {
         keys: ["income.totalNetIncome"],
@@ -63,7 +63,7 @@ export const NBA_RULES: NbaRule[] = [
       c.incomeNet > 0,
     build: (c) => ({
       action: "Nejdříve zlepšete finanční připravenost",
-      reason: `Vaše modelové skóre je ${c.readinessScore}/100 — pod prahem 50. Další kroky (nemovitost, handoff) mají nižší smysl, dokud se nezvedne základ.`,
+      reason: `Vaše modelové skóre je ${c.readinessScore}/100 — pod prahem 50. Další kroky (nemovitost, předání specialistovi) mají nižší smysl, dokud se nezvedne základ.`,
       expectedBenefit:
         "Simulace ve Finančním pasu ukáže nejrychlejší páky (závazky, zdroje, příjem).",
       expiresAt: null,
@@ -91,7 +91,7 @@ export const NBA_RULES: NbaRule[] = [
       reason:
         "Vlastní zdroje v modelu jsou nízké nebo chybí — LTV rámec a akontace limitují možnosti.",
       expectedBenefit:
-        "Uvidíte, jak doplnění equity nebo levnější cíl změní safe / recommended rozpočet.",
+        "Uvidíte, jak doplnění vlastního kapitálu nebo levnější cíl změní bezpečný / doporučený rozpočet.",
       expiresAt: null,
       sourceData: {
         keys: ["assets.totalOwnFundsModel", "financing.ownFundsRequirement"],
@@ -112,7 +112,7 @@ export const NBA_RULES: NbaRule[] = [
     build: (c) => ({
       action: "Doplňte profil připravenosti",
       reason: `Profil je hotový cca z ${c.profileCompleteness} % — chybí údaje potřebné pro spolehlivější model.`,
-      expectedBenefit: "Přesnější dimenze skóre a méně NEOVĚŘENO v dashboardu.",
+      expectedBenefit: "Přesnější dimenze skóre a méně NEOVĚŘENO v přehledu.",
       expiresAt: null,
       sourceData: {
         keys: ["profile.completeness"],
@@ -143,7 +143,7 @@ export const NBA_RULES: NbaRule[] = [
             ? "Fixace podle profilu právě končí nebo už skončila."
             : `Vaše fixace končí za ${m} měsíců — dává smysl připravit srovnání v klidu, ne na poslední chvíli.`,
         expectedBenefit:
-          "Čas na stress test sazby a nezávaznou konzultaci — bez nátlaku „jen dnes“.",
+          "Čas na zátěžový test sazby a nezávaznou konzultaci — bez nátlaku „jen dnes“.",
         expiresAt: daysFromNow(now, Math.max(7, m * 30)),
         sourceData: {
           keys: ["refinance.yearsLeft", "fixationMonthsRemaining"],
@@ -170,7 +170,7 @@ export const NBA_RULES: NbaRule[] = [
       action: "Simulovat pokles hodnoty nemovitosti",
       reason: `Modelové LTV je cca ${Math.round((c.estimatedLtv ?? 0) * 100)} % — při investici je cushion při poklesu ceny tenčí.`,
       expectedBenefit:
-        "V Rentgenu / modeláři uvidíte citlivost cash-flow a equity na pokles ceny (MODEL).",
+        "V Rentgenu / modeláři uvidíte citlivost peněžního toku a vlastního kapitálu na pokles ceny (model).",
       expiresAt: null,
       sourceData: {
         keys: ["propertyGoals.targetPrice", "assets.totalOwnFundsModel", "ltv"],
@@ -193,7 +193,7 @@ export const NBA_RULES: NbaRule[] = [
     build: (c) => ({
       action: `Zkontrolujte „${c.priceDropLabel ?? "nemovitost"}“ po poklesu ceny`,
       reason: `Uložená cena klesla o ${Math.abs(c.priceDropPct!).toFixed(0)} % — ověřte fit k safe rozpočtu.`,
-      expectedBenefit: "Aktualizovaný affordability fit bez zbytečného spěchu.",
+      expectedBenefit: "Aktualizovaný shodu dostupnosti bez zbytečného spěchu.",
       expiresAt: null,
       sourceData: {
         keys: ["watchlist.priceChangePct"],

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import { getStaticPageSeo } from "@/lib/seo/pages";
 import Link from "next/link";
 import { DataStatusBadge } from "@/components/trust/DataStatusBadge";
 import { TrustNav } from "@/components/trust/TrustPageShell";
@@ -13,16 +13,15 @@ import {
 import type { DataStatus } from "@/lib/data/types";
 import { routes } from "@/lib/routes";
 
-export const metadata: Metadata = {
-  title: "Metodika dat | HypotékaJasně.cz",
-  description:
-    "Odkud bereme data, jak často je aktualizujeme, co znamenají statusy a jak počítáme výnosy a skóre.",
-};
+export const metadata = getStaticPageSeo("/metodika");
+
 
 const STATUS_ORDER: DataStatus[] = [
   "LIVE",
   "VERIFIED",
-  "MODELLED",
+  "MODEL",
+  "ESTIMATE",
+  "UNVERIFIED",
   "PARTNER_QUOTE",
   "STALE",
 ];
@@ -44,6 +43,38 @@ export default function MetodikaPage() {
             Modelový výpočet nikdy nevydáváme za aktuální data.
           </strong>
         </p>
+
+        <section className="mt-12 space-y-4" aria-labelledby="abbrev-heading">
+          <h2
+            id="abbrev-heading"
+            className="font-heading text-xl font-semibold text-text-dark"
+          >
+            Odborné zkratky
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Na webu používáme běžné finančních zkratky. Při prvním výskytu je
+            vysvětlujeme česky:
+          </p>
+          <ul className="space-y-2 text-sm text-text-dark">
+            <li>
+              <strong>LTV</strong> — poměr úvěru k hodnotě nemovitosti
+            </li>
+            <li>
+              <strong>DTI</strong> — poměr dluhu k příjmu
+            </li>
+            <li>
+              <strong>DSTI</strong> — podíl splátek na příjmu
+            </li>
+            <li>
+              <strong>RPSN</strong> — roční procentní sazba nákladů
+            </li>
+            <li>
+              <strong>ROI / IRR / DSCR / NOI</strong> — návratnost, vnitřní
+              výnosové procento, krytí dluhové služby a provozní výsledek
+              nemovitosti
+            </li>
+          </ul>
+        </section>
 
         <section className="mt-12 space-y-4" aria-labelledby="statuses-heading">
           <h2
@@ -177,7 +208,7 @@ export default function MetodikaPage() {
               </p>
             </div>
             <div className="rounded-xl border border-border p-4">
-              <DataStatusBadge status="MODELLED" />
+              <DataStatusBadge status="MODEL" />
               <p className="mt-2 text-sm text-muted-foreground">
                 Orientační výchozí hodnoty, sazba bez pojištění (+0,3 p. b.),
                 zahraniční sazby, výnosy, historie, scénáře. Nikdy jako aktuální

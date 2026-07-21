@@ -19,11 +19,13 @@ import {
 } from "@/components/consent/FormConsentFields";
 import { consultationCountries } from "@/lib/mock-data";
 import { buildThankYouPath, submitLead } from "@/lib/leads";
+import { track } from "@/lib/analytics/track";
 
 export function LeadGen() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [formStarted, setFormStarted] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -33,6 +35,17 @@ export function LeadGen() {
   const [consent, setConsent] = useState(() =>
     emptyFormConsentState("mortgage_specialist")
   );
+
+  const markStarted = () => {
+    if (formStarted) return;
+    setFormStarted(true);
+    track("lead_form_started", { lead_source: "lead_gen", tool_id: "lead_gen" });
+    track("specialist_cta_clicked", {
+      cta_id: "kalkulacky_leadgen_form",
+      tool_id: "mortgage_calculator",
+      lead_source: "lead_gen",
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,9 +74,15 @@ export function LeadGen() {
     setLoading(false);
     if (!result.ok) {
       setError(result.error);
+      track("lead_form_error", {
+        lead_source: "lead_gen",
+        error_code: "api_or_network",
+      });
       return;
     }
 
+    track("lead_submitted", { lead_source: "lead_gen" });
+    track("lead_form_submitted_success", { lead_source: "lead_gen" });
     router.push(buildThankYouPath("lead_gen"));
   };
 
@@ -87,7 +106,10 @@ export function LeadGen() {
               id="name"
               label="Jméno"
               value={formData.name}
-              onChange={(v) => setFormData({ ...formData, name: v })}
+              onChange={(v) => {
+                markStarted();
+                setFormData({ ...formData, name: v });
+              }}
               required
             />
             <FloatingInput
@@ -95,7 +117,10 @@ export function LeadGen() {
               label="E-mail"
               type="email"
               value={formData.email}
-              onChange={(v) => setFormData({ ...formData, email: v })}
+              onChange={(v) => {
+                markStarted();
+                setFormData({ ...formData, email: v });
+              }}
               required
             />
             <FloatingInput
@@ -103,7 +128,10 @@ export function LeadGen() {
               label="Telefon"
               type="tel"
               value={formData.phone}
-              onChange={(v) => setFormData({ ...formData, phone: v })}
+              onChange={(v) => {
+                markStarted();
+                setFormData({ ...formData, phone: v });
+              }}
               required
             />
 

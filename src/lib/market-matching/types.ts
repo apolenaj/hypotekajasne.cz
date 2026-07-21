@@ -68,7 +68,7 @@ export type MarketProfile = {
   attributes: DimensionScores;
   financingOptions: string[];
   topRisks: string[];
-  dataStatus: "MODELLED" | "VERIFIED";
+  dataStatus: "MODEL" | "VERIFIED";
   lastReviewedAt: string;
   notes: string;
 };
@@ -108,7 +108,7 @@ export type MarketMatchResult = {
   financingOptions: string[];
   topRisks: string[];
   dataFreshness: {
-    status: "MODELLED" | "VERIFIED";
+    status: "MODEL" | "VERIFIED";
     lastReviewedAt: string;
     label: string;
   };

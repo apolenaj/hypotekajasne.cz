@@ -44,7 +44,7 @@ export const DOSSIER_SECTION_TITLES: Record<DossierSectionId, string> = {
   purchase_timeline: "Proces koupě",
   red_flags: "Rizikové faktory",
   sources: "Zdroje a metodika",
-  cta: "Další krok — Majetio",
+  cta: "Další krok",
 };
 
 /** Právní / regulatorní tvrzení s provenance. */

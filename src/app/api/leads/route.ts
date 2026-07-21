@@ -8,6 +8,7 @@ import {
 } from "@/lib/leads";
 import type { FormConsentRecord } from "@/lib/consent/records";
 import type { PartnerTransferScope } from "@/lib/legal/consent-versions";
+import { isMortgagePartnerHandoffReady } from "@/lib/legal/partner-config";
 
 function getSupabaseAdmin() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -60,13 +61,22 @@ function normalizePayload(
       : undefined;
 
   if (!name || !email || !email.includes("@")) {
-    return { error: "Vyplňte jméno a platný e-mail." };
+    return {
+      error:
+        "Chybí jméno nebo platný e-mail. Vyplňte obě pole — e-mail ve tvaru jmeno@domena.cz.",
+    };
   }
   if (!isLeadSource(source)) {
-    return { error: "Neplatný zdroj formuláře." };
+    return {
+      error:
+        "Neplatný zdroj formuláře. Obnovte stránku a odešlete formulář znovu.",
+    };
   }
   if (source !== "newsletter" && phone.length < 6) {
-    return { error: "Vyplňte telefon." };
+    return {
+      error:
+        "Telefon chybí nebo je příliš krátký. Zadejte číslo včetně předvolby (min. 6 znaků).",
+    };
   }
 
   const consentCheck = validateFormConsent(source, parseConsent(data.consent));
@@ -126,6 +136,10 @@ export async function POST(request: Request) {
         partner_transfer: payload.consent.partnerTransferAccepted === true,
         partner_scope: payload.consent.partnerTransferScope,
         consent_policy_version: payload.consent.policyVersion,
+        partner_handoff_ready: isMortgagePartnerHandoffReady(),
+        intake_mode: isMortgagePartnerHandoffReady()
+          ? "partner_handoff"
+          : "operator_only",
       },
     };
 

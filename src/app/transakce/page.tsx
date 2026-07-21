@@ -6,9 +6,9 @@ import { crumbs } from "@/lib/seo/breadcrumbs";
 import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Transakční místnost — workspace pro transakci",
+  title: "Transakční místnost — společný prostor pro transakci",
   description:
-    "Jeden workspace místo WhatsAppu a PDF: timeline, dokumenty s permission modelem, kontakty a úkoly. Vznikne po „Mám vážný zájem“.",
+    "Jeden přehled místo WhatsAppu a PDF: časová osa, dokumenty s oprávněními, kontakty a úkoly. Vznikne po „Mám vážný zájem“.",
   path: routes.dealRoom,
 });
 

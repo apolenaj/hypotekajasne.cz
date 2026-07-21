@@ -140,7 +140,7 @@ function priceTrends(countryId: CountryId): PulseTrend[] {
       getValue: (p) => p.apt70m,
       unit: "czk",
       claimKind: "MODEL",
-      status: "MODELLED",
+      status: "MODEL",
     })
   );
 }
@@ -153,7 +153,7 @@ function rentTrends(countryId: CountryId): PulseTrend[] {
       getValue: (p) => p.rent,
       unit: "czk_month",
       claimKind: "MODEL",
-      status: "MODELLED",
+      status: "MODEL",
     })
   );
 }
@@ -215,7 +215,7 @@ export function buildMarketMetrics(
       reliabilityNote:
         countryId === "cz"
           ? "CZ sazby LIVE ze scraperu; trend 1Y/3Y vs. modelové roční body."
-          : "Zahraniční sazby nejsou live — trend z modelových ročních snapshotů.",
+          : "Zahraniční sazby nejsou v aplikaci v reálném čase — trend z modelových ročních přehledů.",
     },
     {
       kind: "property_price",
@@ -230,9 +230,9 @@ export function buildMarketMetrics(
             value: latest.apt70m,
             unit: "czk",
             country: countryId,
-            source: "historical-data.ts — roční snapshoty",
+            source: "Historické roční přehledy sazeb",
             sourceType: "model",
-            status: "MODELLED",
+            status: "MODEL",
             confidence: countryId === "cz" ? 0.55 : 0.35,
           })
         : null,
@@ -246,7 +246,7 @@ export function buildMarketMetrics(
       ),
       reliabilityNote:
         countryId === "cz"
-          ? "CZ snapshoty editorial; foreign = škálované z CZ baseline."
+          ? "České roční přehledy (redakčně); zahraničí = škálované z české baseline."
           : "Modelované — ne aktuální nabídková cena z inzerce.",
     },
     {
@@ -264,7 +264,7 @@ export function buildMarketMetrics(
             country: countryId,
             source: "historical-data.ts",
             sourceType: "model",
-            status: "MODELLED",
+            status: "MODEL",
             confidence: 0.4,
           })
         : null,
@@ -289,7 +289,7 @@ export function buildMarketMetrics(
             country: countryId,
             source: "Odvozeno z modelové ceny a nájmu",
             sourceType: "model",
-            status: "MODELLED",
+            status: "MODEL",
             confidence: 0.35,
           })
         : null,
@@ -339,7 +339,7 @@ export function buildMarketMetrics(
             country: countryId,
             source: "market-matching market-profiles.ts",
             sourceType: "model",
-            status: "MODELLED",
+            status: "MODEL",
             confidence: 0.35,
             notes: "Proxy skóre likvidity — ne počet poptávek z inzerce.",
           })
@@ -354,7 +354,7 @@ export function buildMarketMetrics(
         endValue: profile?.attributes.liquidity ?? null,
         unit: "score",
         claimKind: "MODEL" as const,
-        status: "MODELLED" as const,
+        status: "MODEL" as const,
         unavailableReason:
           "Časová řada poptávky není k dispozici — zobrazeno statické proxy skóre.",
       })),
@@ -366,7 +366,7 @@ export function buildMarketMetrics(
               timeframe: "1Y" as const,
               text: `Modelové proxy skóre likvidity trhu ${countryConfigs[countryId].label}: ${profile.attributes.liquidity}/100 — nejde o live poptávku z inzerce.`,
               claimKind: "MODEL" as const,
-              status: "MODELLED" as const,
+              status: "MODEL" as const,
             },
           ]
         : [],
@@ -404,7 +404,7 @@ export function buildMarketMetrics(
       label: "Měnové riziko / FX",
       currentValue: profile?.attributes.currency_risk ?? null,
       currentLabel: profile
-        ? `Měnové riziko ${100 - profile.attributes.currency_risk}/100 (MODEL — vyšší = rizikovější)`
+        ? `Měnové riziko ${100 - profile.attributes.currency_risk}/100 (orientační model — vyšší = rizikovější)`
         : countryId === "cz"
           ? "CZK — domácí měna, bez FX expozice"
           : null,
@@ -428,7 +428,7 @@ export function buildMarketMetrics(
                 country: countryId,
                 source: "market-matching — currency_risk dimenze",
                 sourceType: "model",
-                status: "MODELLED",
+                status: "MODEL",
                 confidence: 0.35,
                 notes: "Modelové skóre — ne live FX kurz.",
               })
@@ -466,7 +466,7 @@ export function buildMarketMetrics(
                   timeframe: "1Y" as const,
                   text: `Modelové skóre měnového rizika pro ${countryConfigs[countryId].label}: ${100 - profile.attributes.currency_risk}/100 (vyšší = rizikovější). Live FX trend není k dispozici.`,
                   claimKind: "MODEL" as const,
-                  status: "MODELLED" as const,
+                  status: "MODEL" as const,
                 },
               ]
             : [],
@@ -482,8 +482,8 @@ export function buildMarketMetrics(
       currentLabel:
         countryId === "cz"
           ? `LTV vlastní bydlení ${REGULATORY_RECORDS.ltvOwnerStandard.value} % (ČNB VERIFIED)`
-          : profile
-            ? `Regulační skóre ${profile.attributes.regulation}/100 (MODEL editorial)`
+            : profile
+            ? `Regulační skóre ${profile.attributes.regulation}/100 (orientační přehled)`
             : null,
       record:
         countryId === "cz"
@@ -494,9 +494,9 @@ export function buildMarketMetrics(
                 value: profile.attributes.regulation,
                 unit: "score",
                 country: countryId,
-                source: "Editorial country dossier + market profile",
+                source: "Přehled země a tržní profil",
                 sourceType: "editorial",
-                status: "MODELLED",
+                status: "MODEL",
                 confidence: 0.5,
               })
             : null,
@@ -531,9 +531,9 @@ export function buildMarketMetrics(
                   id: `${countryId}.regulatory.score`,
                   metricKind: "regulatory" as const,
                   timeframe: "1Y" as const,
-                  text: `Editorial regulační skóre ${countryConfigs[countryId].label}: ${profile.attributes.regulation}/100 — detail v country dossier.`,
+                  text: `Orientační regulační skóre ${countryConfigs[countryId].label}: ${profile.attributes.regulation}/100 — detail v přehledu země.`,
                   claimKind: "MODEL" as const,
-                  status: "MODELLED" as const,
+                  status: "MODEL" as const,
                 },
               ]
             : [],
@@ -557,8 +557,8 @@ export function buildMarketMetrics(
         endValue: null,
         unit: "score",
         claimKind: "MODEL" as const,
-        status: "MODELLED" as const,
-        unavailableReason: "Rizikové události jsou editorial — ne live feed.",
+        status: "MODEL" as const,
+        unavailableReason: "Rizikové události jsou redakční přehled — ne automatický živý feed.",
       })),
       insights: (profile?.topRisks ?? []).map((risk, i) => ({
         id: `${countryId}.risk.${i}`,
@@ -566,10 +566,10 @@ export function buildMarketMetrics(
         timeframe: "1Y" as const,
         text: risk,
         claimKind: "MODEL" as const,
-        status: "MODELLED" as const,
+        status: "MODEL" as const,
       })),
       reliabilityNote:
-        "Riziková témata jsou editorial review — ne automatický detektor událostí.",
+        "Riziková témata jsou redakční přehled — ne automatický detektor událostí.",
     },
   ];
 

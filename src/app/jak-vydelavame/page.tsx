@@ -1,14 +1,11 @@
-import type { Metadata } from "next";
+import { getStaticPageSeo } from "@/lib/seo/pages";
 import Link from "next/link";
 import { TrustPageShell } from "@/components/trust/TrustPageShell";
 import { COMPENSATION_DISCLOSURE } from "@/lib/trust";
 import { routes } from "@/lib/routes";
 
-export const metadata: Metadata = {
-  title: "Jak vyděláváme | HypotékaJasně.cz",
-  description:
-    "Transparentní model: nástroje zdarma pro uživatele, odměna od partnera při realizaci.",
-};
+export const metadata = getStaticPageSeo("/jak-vydelavame");
+
 
 export default function JakVydelavamePage() {
   return (
@@ -34,7 +31,7 @@ export default function JakVydelavamePage() {
             zprostředkovatelskou odměnu.
           </li>
           <li>
-            Organické skóre market matchingu a připravenosti se za peníze
+            Organické skóre přiřazení trhů a připravenosti se za peníze
             nemění — viz{" "}
             <Link href={routes.metodika} className="text-deep-teal underline">
               metodika

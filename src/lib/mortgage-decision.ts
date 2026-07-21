@@ -5,6 +5,10 @@
 
 import { calculateAnnuityPayment } from "@/lib/calculators";
 import { getRecommendedMaxLtv, type MortgagePurpose } from "@/lib/cnb-limits";
+import {
+  maxLoanFromPayment,
+  totalPaidAndInterest as totalPaidAndInterestCore,
+} from "@/lib/finance-math/core";
 import type { IncomeSource } from "@/lib/banking";
 
 export type DecisionViewId = "bank_max" | "recommended" | "conservative";
@@ -87,6 +91,7 @@ export function estimateLivingCosts(household: HouseholdInput): number {
 
 /**
  * Max. úvěr z DSTI: (příjem * dstiCap - závazky) → anuitní invers.
+ * dstiCap is a MODEL policy input from the caller — not invented ČNB law.
  */
 export function maxLoanFromDsti(
   netIncome: number,
@@ -100,13 +105,7 @@ export function maxLoanFromDsti(
     0,
     netIncome * dstiCap - otherLiabilities - creditLimitPayments
   );
-  if (maxPayment <= 0) return 0;
-  if (annualRatePercent <= 0) return maxPayment * termYears * 12;
-
-  const r = annualRatePercent / 100 / 12;
-  const n = termYears * 12;
-  if (r === 0) return maxPayment * n;
-  return maxPayment * ((1 - Math.pow(1 + r, -n)) / r);
+  return maxLoanFromPayment(maxPayment, annualRatePercent, termYears);
 }
 
 export function maxLoanFromLtv(
@@ -126,9 +125,7 @@ export function totalPaidAndInterest(
   monthlyPayment: number,
   termYears: number
 ): { totalPaid: number; totalInterest: number } {
-  const totalPaid = Math.round(monthlyPayment * termYears * 12);
-  const totalInterest = Math.max(0, totalPaid - Math.round(loanAmount));
-  return { totalPaid, totalInterest };
+  return totalPaidAndInterestCore(loanAmount, monthlyPayment, termYears);
 }
 
 /**
@@ -233,9 +230,9 @@ function buildScenario(
     { label: string; description: string }
   > = {
     bank_max: {
-      label: "Bankovní maximum",
+      label: "Modelový maximální rozpočet",
       description:
-        "Orientační strop dle LTV a DSTI ~45 %. Nejde o příslib schválení.",
+        "Orientační horní hranice podle zadaných údajů. Skutečné podmínky a maximální úvěr stanoví banka.",
     },
     recommended: {
       label: "Doporučený rozpočet",

@@ -1,11 +1,7 @@
-import type { Metadata } from "next";
+import { getStaticPageSeo } from "@/lib/seo/pages";
 import { FutureProjectionsView } from "@/components/sections/FutureProjectionsView";
 
-export const metadata: Metadata = {
-  title: "Potenciální vývoj | HypotékaJasně.cz",
-  description:
-    "20leté predikce realitních trhů s inflací a přepínatelnými investičními scénáři.",
-};
+export const metadata = getStaticPageSeo("/kalkulacky/potencialni-vyvoj");
 
 export default function PotencialniVyvojPage() {
   return <FutureProjectionsView />;

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import { getStaticPageSeo } from "@/lib/seo/pages";
 import Link from "next/link";
 import { TrustPageShell } from "@/components/trust/TrustPageShell";
 import {
@@ -8,11 +8,8 @@ import {
 } from "@/lib/trust";
 import { routes } from "@/lib/routes";
 
-export const metadata: Metadata = {
-  title: "Centrum důvěry | HypotékaJasně.cz",
-  description:
-    "Komu dáváte data, kdo poskytuje kterou službu, jak vyděláváme a kde najdete metodiku, partnery a redakční zásady.",
-};
+export const metadata = getStaticPageSeo("/duvera");
+
 
 export default function DuveraPage() {
   return (

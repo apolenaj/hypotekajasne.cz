@@ -6,6 +6,11 @@ import {
   getAllAcademySlugs,
   EMPTY_MEDIA_PLANNED,
 } from "@/lib/academy";
+import {
+  MORTGAGE_MECHANICS_CLUSTER,
+  assertMechanicsClusterComplete,
+  getRelatedMechanicsLessons,
+} from "@/lib/academy/related-lessons";
 
 describe("academy catalog", () => {
   it("includes required SEO slugs", () => {
@@ -47,5 +52,15 @@ describe("academy catalog", () => {
     const ltv = getAcademyLesson("ltv");
     assert.ok(ltv);
     assert.equal(ltv!.media.video.src, null);
+  });
+
+  it("mechanics cluster cross-links LTV/DTI/DSTI/RPSN/fixace", () => {
+    assert.deepEqual(assertMechanicsClusterComplete(), []);
+    for (const slug of MORTGAGE_MECHANICS_CLUSTER) {
+      assert.equal(
+        getRelatedMechanicsLessons(slug).length,
+        MORTGAGE_MECHANICS_CLUSTER.length - 1
+      );
+    }
   });
 });

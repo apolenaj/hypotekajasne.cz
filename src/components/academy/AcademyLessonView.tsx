@@ -10,6 +10,10 @@ import {
   ACADEMY_LESSONS,
   getAcademyLessonPath,
 } from "@/lib/academy";
+import {
+  getMechanicsBridgeTools,
+  getRelatedMechanicsLessons,
+} from "@/lib/academy/related-lessons";
 import { AcademyLessonGamificationPanel } from "@/components/academy/AcademyLessonGamificationPanel";
 import { routes } from "@/lib/routes";
 import { crumbs } from "@/lib/seo/breadcrumbs";
@@ -50,6 +54,13 @@ function Section({
 
 export function AcademyLessonView({ lesson }: { lesson: AcademyLesson }) {
   const path = getAcademyLessonPath(lesson.slug);
+  const relatedLessons = getRelatedMechanicsLessons(lesson.slug);
+  const toolLinks = [
+    ...lesson.relatedTools,
+    ...getMechanicsBridgeTools(lesson.slug),
+  ].filter((t, i, arr) => arr.findIndex((x) => x.href === t.href) === i);
+  const toolsSectionN = relatedLessons.length > 0 ? 13 : 12;
+  const ctaSectionN = toolsSectionN + 1;
   const schemas: JsonLd[] = [
     courseJsonLd({
       name: lesson.title,
@@ -204,9 +215,30 @@ export function AcademyLessonView({ lesson }: { lesson: AcademyLesson }) {
             </ul>
           </Section>
 
-          <Section id="tools" n={12} title="Související nástroje">
+          {relatedLessons.length > 0 ? (
+            <Section id="related-lessons" n={12} title="Související lekce">
+              <p className="mb-3 text-sm text-muted-foreground">
+                LTV, DTI, DSTI, RPSN a fixace spolu tvoří základ hypoteční
+                mechaniky — čtěte je jako cluster, ne izolované pojmy.
+              </p>
+              <ul className="flex flex-wrap gap-2">
+                {relatedLessons.map((l) => (
+                  <li key={l.slug}>
+                    <Link
+                      href={l.href}
+                      className="inline-flex rounded-full border border-deep-teal/25 bg-deep-teal/5 px-3 py-1.5 text-sm font-semibold text-deep-teal hover:bg-deep-teal/10"
+                    >
+                      {l.shortLabel}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          ) : null}
+
+          <Section id="tools" n={toolsSectionN} title="Související nástroje">
             <ul className="flex flex-wrap gap-2">
-              {lesson.relatedTools.map((t) => (
+              {toolLinks.map((t) => (
                 <li key={t.href}>
                   <Link
                     href={t.href}
@@ -219,7 +251,7 @@ export function AcademyLessonView({ lesson }: { lesson: AcademyLesson }) {
             </ul>
           </Section>
 
-          <Section id="cta" n={13} title="Další krok">
+          <Section id="cta" n={ctaSectionN} title="Další krok">
             <Link
               href={lesson.cta.href}
               className="inline-flex rounded-lg bg-deep-teal px-5 py-3 text-sm font-bold text-white"
@@ -235,8 +267,8 @@ export function AcademyLessonView({ lesson }: { lesson: AcademyLesson }) {
               Další formáty obsahu
             </h2>
             <p className="mt-2 text-xs text-muted-foreground">
-              Jeden kanonický obsah → článek · video · krátké video · audio ·
-              e-book · newsletter.
+              Stejné téma můžete najít i jako článek, video, audio nebo e-mailové
+              shrnutí.
             </p>
             <ul className="mt-4 grid gap-2 sm:grid-cols-2">
               {lesson.derivatives.map((d) => (

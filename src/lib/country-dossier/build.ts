@@ -75,13 +75,19 @@ export function reviewClaim(
   source: string,
   sourceUrl: string | null = null
 ): LegalClaim {
+  const hasExternal =
+    typeof sourceUrl === "string" &&
+    (sourceUrl.startsWith("https://") || sourceUrl.startsWith("http://"));
   return {
     text,
     source,
     sourceUrl,
     asOf: LEGAL_REVIEW_AS_OF,
-    status: "VERIFIED",
-    notes: null,
+    // Bez externí URL nesmí být VERIFIED — interní editorial ≠ důkaz
+    status: hasExternal ? "VERIFIED" : "ESTIMATE",
+    notes: hasExternal
+      ? null
+      : "Bez odkazu na autoritu — status Odhad (ne Ověřeno).",
   };
 }
 
@@ -95,7 +101,7 @@ export function modelledClaim(
     source,
     sourceUrl: null,
     asOf,
-    status: "MODELLED",
+    status: "MODEL",
     notes: "Orientační pásmo — ověřte lokálně.",
   };
 }

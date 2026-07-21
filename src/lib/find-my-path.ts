@@ -33,7 +33,7 @@ export const investorPaths: InvestorPath[] = [
   {
     id: "low-risk",
     title: "Nižší relativní riziko",
-    desc: "Trhy s bližším právním rámcem EU / ČR. Riziko není nulové — vždy platí lokální due diligence.",
+    desc: "Trhy s bližším právním rámcem EU / ČR. Riziko není nulové — vždy platí lokální právní a technickou prověrku.",
     icon: "risk",
     markets: ["Česká republika", "Itálie", "Slovensko"],
     accent: "from-sky-500/15 to-blue-500/5",

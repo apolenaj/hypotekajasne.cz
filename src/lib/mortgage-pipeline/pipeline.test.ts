@@ -178,7 +178,7 @@ describe("normalizeScrapedBank", () => {
     );
   });
 
-  it("marks estimated without-insurance as MODELLED and strips APR", () => {
+  it("marks estimated without-insurance as MODEL and strips APR", () => {
     const scraped = sampleScraped({
       id: "ceska-sporitelna",
       bankName: "Česká spořitelna",
@@ -194,7 +194,7 @@ describe("normalizeScrapedBank", () => {
       p.productName.includes("bez pojištění")
     );
     assert.ok(without);
-    assert.equal(without!.status, "MODELLED");
+    assert.equal(without!.status, "MODEL");
     assert.equal(without!.representativeAPR, null);
   });
 });

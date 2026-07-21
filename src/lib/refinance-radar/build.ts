@@ -57,9 +57,9 @@ export function buildRefinanceRadarDashboard(input: {
     timeline,
     alerts,
     methodology: [
-      "Všechny scénáře splátek jsou MODEL — anuita na zadaném zůstatku.",
+      "Všechny scénáře splátek jsou orientační model — anuita na zadaném zůstatku.",
       "Tržní reference z bank_rates — ne vaše individuální nabídka.",
-      "Break-even = poplatky refinancování / měsíční úspora (MODEL).",
+      "Bod zvratu = poplatky refinancování / měsíční úspora (MODEL).",
       "Alerty jsou personalizované k vaší splátce a fixaci — ne generické „sazby klesly“.",
       "Ověření u specialisty před rozhodnutím — retention & revenue cycle.",
     ],

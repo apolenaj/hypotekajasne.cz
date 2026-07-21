@@ -42,7 +42,7 @@ export const ACADEMY_CHARACTERS: AcademyCharacter[] = [
     accentColor: "#8b6914",
     illustrationClass: "academy-char-inflation",
     animationStates: ["idle", "talking", "thinking"],
-    trustNote: "Scénáře jsou MODEL — ne predikce ČNB.",
+    trustNote: "Scénáře jsou orientační model — ne predikce ČNB.",
   },
   {
     id: "property_detective",
@@ -53,7 +53,7 @@ export const ACADEMY_CHARACTERS: AcademyCharacter[] = [
     accentColor: "#4a3728",
     illustrationClass: "academy-char-detective",
     animationStates: ["idle", "pointing", "thinking"],
-    trustNote: "Detektiv není právník — eskalace na human-expert zůstává.",
+    trustNote: "Detektiv není právník — při pochybnostech konzultujte specialistu.",
   },
 ];
 

@@ -72,7 +72,7 @@ export function buildAdvisorExportRows(result: PortfolioOsResult): string[][] {
       result.summary.liquidityReserve.blockers.join("; "),
     ],
     [],
-    ["NEMOVITOSTI", "Město", "Hodnota", "Equity", "Dluh", "Nájem", "CF", "Splátka", "Yield"],
+    ["NEMOVITOSTI", "Město", "Hodnota", "Vlastní kapitál", "Dluh", "Nájem", "Peněžní tok", "Splátka", "Výnos"],
   ];
 
   for (const p of result.properties) {
@@ -96,7 +96,7 @@ export function buildAdvisorExportRows(result: PortfolioOsResult): string[][] {
   }
 
   rows.push([]);
-  rows.push(["STRESS TESTY", "Scénář", "Equity stressed", "LTV stressed", "CF stressed", "Delta"]);
+  rows.push(["ZÁTĚŽOVÉ TESTY", "Scénář", "Vlastní kapitál po zátěži", "LTV po zátěži", "Peněžní tok po zátěži", "Změna"]);
   for (const s of result.stressTests) {
     rows.push([
       s.label,

@@ -24,7 +24,7 @@ export const ECOSYSTEM_ACTORS: EcosystemActor[] = [
     name: "Hypotéka Jasně",
     shortRole: "Informační a technologická platforma",
     whatTheyDo:
-      "Edukace, kalkulačky, Hypoteční připravenost, market matching, magazín. Předává poptávku licencovanému specialistovi, pokud o to požádáte.",
+      "Edukace, kalkulačky, Hypoteční připravenost, přiřazení trhů, magazín. Předává poptávku licencovanému specialistovi, pokud o to požádáte.",
     whatTheyDont:
       "Neposkytuje hypoteční úvěr, neschvaluje žádosti, není banka ani náhradou za individuální poradenství.",
     dataYouGive:
@@ -57,7 +57,7 @@ export const ECOSYSTEM_ACTORS: EcosystemActor[] = [
     name: "Majetio",
     shortRole: "Property discovery & analýza",
     whatTheyDo:
-      "Vyhledávání a analýza nemovitostí; handoff Finančního pasu z HJ (bez zbytečného PII).",
+      "Vyhledávání a analýza nemovitostí; předání Finančního pasu z HJ (bez zbytečného PII).",
     whatTheyDont:
       "Není hypoteční banka. Počet listingů neuvádíme bez ověřených dat.",
     dataYouGive:
@@ -104,7 +104,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
     ],
     experience: [
       "Vedení produktu a vývoje platformy Hypotéka Jasně",
-      "Propojení edukace, kalkulaček a handoffu na licencované partnery",
+      "Propojení edukace, kalkulaček a předání licencovaným partnery",
     ],
     education: [
       "Computing Technologies — University of Roehampton (Londýn)",
@@ -128,11 +128,11 @@ export const TEAM_MEMBERS: TeamMember[] = [
       "Předání kvalifikované poptávky do licencovaného procesu",
     ],
     experience: [
-      "11 let praxe v oblasti hypoték, úvěrů a pojištění (uváděno jako ověřitelná praxe na trhu — detaily licence viz /partneri)",
+      "11 let praxe v oblasti hypoték, úvěrů a pojištění (uváděno jako praxe na trhu — veřejná registrační identifikace partnera jen pokud je zveřejněna)",
       "Zkušenost s metodikami českých bank a dokládáním příjmů",
     ],
     education: [
-      "Odborná praxe ve finančních službách (doplníme formální vzdělání po potvrzení)",
+      "Odborná praxe ve finančních službách",
     ],
     contentResponsibility:
       "Spoluodpovídá za věcnou správnost hypotečních vysvětlení na webu. Nejde o slib schválení konkrétní žádosti.",
@@ -142,42 +142,18 @@ export const TEAM_MEMBERS: TeamMember[] = [
   },
 ];
 
-export type MortgagePartner = {
-  id: string;
-  name: string;
-  ico: string | null;
-  role: string;
-  licenceSummary: string;
-  /** Odkaz na veřejný registr (např. JERRS / ČNB) — null = dosud nezveřejněno */
-  jerrsVerificationUrl: string | null;
-  jerrsStatus: "LIVE" | "PENDING_VERIFICATION" | "COMING_SOON";
-  scope: string;
-  compensationDisclosure: string;
-};
-
-/**
- * Hypoteční partner — struktura připravena.
- * IČO a JERRS doplníme po ověření; nevymýšlíme falešné registrační údaje.
- */
-export const MORTGAGE_PARTNERS: MortgagePartner[] = [
-  {
-    id: "primary-mortgage-partner",
-    name: "Licencovaný hypoteční partner (doplnění po ověření)",
-    ico: null,
-    role: "Zprostředkování spotřebitelských úvěrů / hypoték dle registrace",
-    licenceSummary:
-      "Poskytuje službu v rozsahu své registrace u dohledového orgánu. Hypotéka Jasně není touto osobou.",
-    jerrsVerificationUrl: null,
-    jerrsStatus: "PENDING_VERIFICATION",
-    scope:
-      "Individuální konzultace, příprava podkladů, komunikace s bankami. Nezahrnuje závazné schválení úvěru.",
-    compensationDisclosure:
-      "Můžeme získat odměnu od partnera, pokud přes nás dojde k realizaci.",
-  },
-];
-
-export const COMPENSATION_DISCLOSURE =
-  "Můžeme získat odměnu od partnera, pokud přes nás dojde k realizaci.";
+/** Re-export SoT — jediný zdroj partner identity: `src/lib/legal/partner-config.ts`. */
+export {
+  getMortgagePartners,
+  getPrimaryMortgagePartner,
+  partnerPublicDisplayName,
+  isMortgagePartnerIdentityVerified,
+  isMortgagePartnerHandoffReady,
+  partnerJerrsPublicLabel,
+  COMPENSATION_DISCLOSURE,
+  type MortgagePartner,
+  type MortgagePartnerJerrsStatus,
+} from "@/lib/legal/partner-config";
 
 export const TRUST_NAV = [
   { href: "/duvera", label: "Centrum důvěry" },

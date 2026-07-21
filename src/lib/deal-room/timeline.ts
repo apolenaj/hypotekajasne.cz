@@ -128,7 +128,7 @@ export function buildDefaultTasks(createdAt: string): import("@/lib/deal-room/ty
     },
     {
       id: "task_financing",
-      title: "Doplnit dokumenty ve Vault pro financování",
+      title: "Doplnit dokumenty v dokumentovém trezoru pro financování",
       owner: "user",
       dueAt: addDays(createdAt, 14),
       done: false,

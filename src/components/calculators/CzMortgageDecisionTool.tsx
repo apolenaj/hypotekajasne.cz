@@ -11,6 +11,8 @@ import {
   Users,
 } from "lucide-react";
 import { InsuranceRateCards } from "@/components/calculators/InsuranceRateCards";
+import { RateProvenanceBanner } from "@/components/calculators/RateProvenanceBanner";
+import { CalculationKindBadge } from "@/components/calculators/CalculationKindBadge";
 import { CalculatorDisclaimer } from "@/components/calculators/CalculatorDisclaimer";
 import { MortgageProductCard } from "@/components/trust/MortgageProductCard";
 import { DataStatusBadge } from "@/components/trust/DataStatusBadge";
@@ -46,7 +48,7 @@ import {
   MORTGAGE_PURPOSE_OPTIONS,
   type MortgagePurpose,
 } from "@/lib/cnb-limits";
-import { pickRate, pickRpsn, useCurrentRates } from "@/lib/rates";
+import { pickRpsn, useMortgageRateEngine } from "@/lib/rates";
 import { useMortgageProducts } from "@/lib/mortgage-products";
 import { routes } from "@/lib/routes";
 import { DOMESTIC_BANKS } from "@/lib/banking";
@@ -136,13 +138,15 @@ export function CzMortgageDecisionTool() {
   const [activeView, setActiveView] =
     useState<DecisionViewId>("recommended");
 
-  const { rates, loading: ratesLoading } = useCurrentRates();
+  const { rates, resolved } =
+    useMortgageRateEngine(hasInsurance);
   const { bankRates, loading: bankRatesLoading } = useBankRates();
   const { products, loading: productsLoading } = useMortgageProducts();
 
   const rateWith = rates.rateWithInsurance;
   const rateWithout = rates.rateWithoutInsurance;
-  const nominalRate = pickRate(rates, hasInsurance);
+  /** Vždy spočitatelná sazba — LIVE / OVĚŘENO / MODEL (nikdy null). */
+  const nominalRate = resolved.ratePercent;
   const rpsn = pickRpsn(rates, hasInsurance);
 
   const decision = useMemo(
@@ -314,15 +318,19 @@ export function CzMortgageDecisionTool() {
           </div>
         </div>
 
+        <RateProvenanceBanner resolved={resolved} />
+
         <InsuranceRateCards
           hasInsurance={hasInsurance}
           onSelect={setHasInsurance}
-          rateWithInsurance={rateWith}
-          rateWithoutInsurance={rateWithout}
+          rateWithInsurance={rateWith ?? resolved.ratePercent}
+          rateWithoutInsurance={rateWithout ?? resolved.ratePercent}
           rpsnWithInsurance={rates.rpsnWithInsurance}
           rpsnWithoutInsurance={rates.rpsnWithoutInsurance}
-          withoutRateOrientational={rates.withoutInsuranceOrientational}
-          loading={ratesLoading}
+          withoutRateOrientational={
+            rates.withoutInsuranceOrientational || resolved.isModelFallback
+          }
+          loading={false}
         />
 
         <button
@@ -474,15 +482,23 @@ export function CzMortgageDecisionTool() {
           </h3>
           {decision.rateUsed != null ? (
             <p className="text-xs text-muted-foreground">
-              Modelová sazba {decision.rateUsed.toFixed(2)} % · fixace{" "}
-              {fixationYears} let
+              Použitá sazba {decision.rateUsed.toFixed(2)} % · {resolved.uiKind}{" "}
+              · fixace {fixationYears} let
             </p>
-          ) : (
-            <p className="text-xs text-amber-800">
-              Chybí živá sazba — splátky nelze spočítat.
-            </p>
-          )}
+          ) : null}
         </div>
+
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+          <CalculationKindBadge kind="exact" />
+          <CalculationKindBadge kind="model" />
+          {decision.rateUsed != null || decision.rpsn != null ? (
+            <CalculationKindBadge kind="external" />
+          ) : null}
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Splátka a LTV jsou přesná matematika ze vstupů. DSTI stropy scénářů a
+          životní náklady jsou model. Sazba / RPSN jen z ověřených dat.
+        </p>
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Metric label="1. Výše úvěru" value={fmt(active.loanAmount)} accent />

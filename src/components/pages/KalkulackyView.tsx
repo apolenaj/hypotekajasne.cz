@@ -56,6 +56,10 @@ export function KalkulackyView() {
             tool_id: "mortgage_calculator",
             country_id: id,
           });
+          track("country_calculator_started", {
+            tool_id: "mortgage_calculator",
+            country_id: id,
+          });
         }}
       />
       <LeadGen />

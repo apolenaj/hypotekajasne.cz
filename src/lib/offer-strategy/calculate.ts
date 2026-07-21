@@ -71,7 +71,7 @@ export function buildOfferStrategyOutput(
     ],
     claimKind: "MODEL",
     disclaimer:
-      "MODEL — orientační strategie nabídky, ne znalecký posudek ani garantovaná valuace. Negociační rozhodnutí je vždy na vás.",
+      "Orientační strategie nabídky — ne znalecký posudek ani garantovaná valuace. Negociační rozhodnutí je vždy na vás.",
   };
 }
 

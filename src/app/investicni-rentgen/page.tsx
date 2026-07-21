@@ -1,4 +1,6 @@
-import type { Metadata } from "next";
+import { getStaticPageSeo } from "@/lib/seo/pages";
+import { JsonLdScript } from "@/components/seo/JsonLdScript";
+import { faqPageJsonLd } from "@/lib/seo/json-ld";
 import {
   RentgenBottomCta,
   RentgenDemoReport,
@@ -10,16 +12,25 @@ import {
   RentgenWhatWeAnalyze,
 } from "@/components/property-rentgen/RentgenLandingSections";
 import { RentgenToolIsland } from "@/components/property-rentgen/RentgenToolIsland";
-import { formatAnalysisPrice, formatAnalysisPriceLabel } from "@/lib/property-rentgen";
+import {
+  formatAnalysisPriceLabel,
+  RENTGEN_FAQ,
+  withAnalysisPrice,
+} from "@/lib/property-rentgen";
 
-export const metadata: Metadata = {
-  title: "Investiční rentgen | Analýza nemovitosti | HypotékaJasně.cz",
-  description: `Bezplatný náhled a kompletní analýza nemovitosti za ${formatAnalysisPrice()}. Údaje označujeme jako Data, Modelový výpočet, Odhad nebo Neověřeno.`,
-};
+export const metadata = getStaticPageSeo("/investicni-rentgen");
 
 export default function InvesticniRentgenPage() {
+  const faqSchema = faqPageJsonLd(
+    RENTGEN_FAQ.map((item) => ({
+      question: withAnalysisPrice(item.q),
+      answer: withAnalysisPrice(item.a),
+    }))
+  );
+
   return (
     <div className="bg-white">
+      <JsonLdScript data={faqSchema} />
       <RentgenHero />
       <RentgenValueProp />
       <RentgenWhatWeAnalyze />

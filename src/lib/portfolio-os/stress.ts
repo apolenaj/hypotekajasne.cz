@@ -95,7 +95,7 @@ const SCENARIO_META: Record<
   },
   values_minus_15pct: {
     label: "Hodnoty −15 %",
-    description: "Snížení value observations o 15 % — stress equity a LTV.",
+    description: "Snížení pozorovaných hodnot o 15 % — zátěž vlastního kapitálu a LTV.",
   },
   rent_minus_10pct: {
     label: "Nájem −10 %",
@@ -146,7 +146,7 @@ export function runStressTests(
           stressed.ltv != null ? Math.round(stressed.ltv * 1000) / 1000 : null,
         monthlyNetCashFlowCzk: Math.round(stressed.netCf),
       },
-      deltaSummary: `Equity ${deltaEquity >= 0 ? "+" : ""}${Math.round(deltaEquity).toLocaleString("cs-CZ")} Kč · CF ${deltaCf >= 0 ? "+" : ""}${Math.round(deltaCf).toLocaleString("cs-CZ")} Kč/měs.`,
+      deltaSummary: `Vlastní kapitál ${deltaEquity >= 0 ? "+" : ""}${Math.round(deltaEquity).toLocaleString("cs-CZ")} Kč · peněžní tok ${deltaCf >= 0 ? "+" : ""}${Math.round(deltaCf).toLocaleString("cs-CZ")} Kč/měs.`,
       claimKind: "MODEL",
     };
   });

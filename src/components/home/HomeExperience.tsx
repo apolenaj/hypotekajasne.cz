@@ -3,11 +3,16 @@
 import { useCallback, useState, useSyncExternalStore } from "react";
 import { HomeDashboard } from "@/components/dashboard/HomeDashboard";
 import { CockpitHero } from "@/components/home/CockpitHero";
+import { HomeNeeds } from "@/components/home/HomeNeeds";
+import { HomePersonalSnapshot } from "@/components/home/HomePersonalSnapshot";
+import { HomeHowItWorks } from "@/components/home/HomeHowItWorks";
 import { LiveDataTrustBar } from "@/components/home/LiveDataTrustBar";
-import { IntentPaths } from "@/components/home/IntentPaths";
 import { AffordabilityWidget } from "@/components/home/AffordabilityWidget";
 import { DestinationDataGrid } from "@/components/home/DestinationDataGrid";
-import { HomePlatformSections } from "@/components/home/HomePlatformSections";
+import { HomeProductPreviews } from "@/components/home/HomeProductPreviews";
+import { HomeTrustBlock } from "@/components/home/HomeTrustBlock";
+import { HomeTeamStrip } from "@/components/home/HomeTeamStrip";
+import { HomeFinalCta } from "@/components/home/HomeFinalCta";
 import { resolveHomeMode, setHomeMode } from "@/lib/dashboard";
 import { loadFinancialProfile } from "@/lib/financial-passport";
 
@@ -38,17 +43,22 @@ function MarketingHome({ onEnterDashboard }: { onEnterDashboard: () => void }) {
         </div>
       ) : null}
       <CockpitHero />
-      <IntentPaths />
+      <HomeNeeds />
+      <HomePersonalSnapshot />
+      <HomeHowItWorks />
       <LiveDataTrustBar />
       <AffordabilityWidget />
       <DestinationDataGrid />
-      <HomePlatformSections />
+      <HomeProductPreviews />
+      <HomeTrustBlock />
+      <HomeTeamStrip />
+      <HomeFinalCta />
     </>
   );
 }
 
 /**
- * Progressive home: marketing cockpit OR personalized dashboard.
+ * Progressive home: conversion marketing cockpit OR personalized dashboard.
  */
 export function HomeExperience() {
   const ready = useIsClient();
@@ -74,7 +84,7 @@ export function HomeExperience() {
     return (
       <>
         <CockpitHero />
-        <IntentPaths />
+        <HomeNeeds />
       </>
     );
   }

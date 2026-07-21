@@ -155,12 +155,12 @@ function WidgetSlot({
           <ol className="list-decimal space-y-2 pl-5 text-sm">
             <li>
               <Link
-                href={routes.navrhNaMiru}
+                href={routes.mojeMoznosti}
                 className="font-semibold text-deep-teal underline"
               >
-                Hypoteční připravenost
+                Zjistit moje možnosti
               </Link>{" "}
-              — uloží lokální profil
+              — krátká diagnostika a personalizovaný výsledek
             </li>
             <li>
               <Link
@@ -182,8 +182,8 @@ function WidgetSlot({
           <Card title="Moje připravenost">
             <EmptyState
               message="Zatím nemáte vytvořený finanční profil."
-              ctaHref={routes.financniPas}
-              ctaLabel="Vytvořit finanční profil"
+              ctaHref={routes.mojeMoznosti}
+              ctaLabel="Zjistit moje možnosti"
             />
           </Card>
         );
@@ -230,8 +230,8 @@ function WidgetSlot({
           <Card title="Můj bezpečný rozpočet">
             <EmptyState
               message="Bezpečný rozpočet spočítáme z vašeho finančního profilu."
-              ctaHref={routes.navrhNaMiru}
-              ctaLabel="Spustit hypoteční připravenost"
+              ctaHref={routes.mojeMoznosti}
+              ctaLabel="Zjistit moje možnosti"
             />
           </Card>
         );
@@ -318,7 +318,7 @@ function WidgetSlot({
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Fit: {p.statusLabel}
+                    Shoda: {p.statusLabel}
                     {p.investmentScore != null
                       ? ` · invest. skóre ${p.investmentScore}/100 (model)`
                       : ""}
@@ -397,7 +397,7 @@ function WidgetSlot({
             </div>
           </div>
           <p className="mt-2 text-[11px] text-muted-foreground">
-            Model — sledované nemovitosti, ne potvrzené vlastnictví.
+            Orientační přehled — sledované nemovitosti, ne potvrzené vlastnictví.
           </p>
           <Link
             href={routes.portfolio}

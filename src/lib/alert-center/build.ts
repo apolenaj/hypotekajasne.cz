@@ -83,12 +83,12 @@ export function buildAlertCenterDashboard(input: {
     channelStatus: channelStatusMap(),
     consentNote: ALERT_CENTER_CONSENT_NOTE,
     methodology: [
-      "Každý alert má severity, priority, reason, action, expiresAt, dataSource.",
-      "Deduplication přes fingerprint — stejná změna sazby = jeden alert.",
-      "Žádné generické „Sazby klesly“ — vždy LTV/profil/splátka kontext.",
-      "Why am I seeing this? = transparentní vysvětlení triggeru.",
-      "Preference: immediate / daily / weekly / off per type nebo globálně.",
-      "Email/push COMING_SOON — vyžadují consent, in-app je default.",
+      "Každé upozornění má důvod, doporučený další krok a platnost.",
+      "Stejnou změnu (např. sazbu) sloučíme — neuvidíte pět duplicit.",
+      "Žádné obecné „Sazby klesly“ — vždy kontext LTV / profilu / splátky.",
+      "„Proč to vidím?“ vysvětluje konkrétní spouštěč.",
+      "Frekvenci nastavíte: ihned, denní souhrn, týdenní souhrn, nebo vypnuto.",
+      "E-mail a push připravujeme — vyžadují souhlas; na webu jsou upozornění dostupná hned.",
     ],
   };
 }

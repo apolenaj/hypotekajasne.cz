@@ -24,7 +24,7 @@ export const COPILOT_QUICK_ACTIONS: {
   {
     id: "risk_analysis",
     label: "Analyzovat riziko",
-    prompt: "Analyzuj rizika mého profilu včetně stress testu sazby +2 %.",
+    prompt: "Analyzuj rizika mého profilu včetně zátěžového testu sazby +2 %.",
   },
   {
     id: "action_plan",

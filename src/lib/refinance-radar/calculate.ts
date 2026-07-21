@@ -230,9 +230,9 @@ export function compareStayVsRefinance(input: {
   ];
 
   let summary =
-    "MODEL — orientační porovnání. Nezohledňuje bonitu, LTV ani individuální podmínky banky.";
+    "Orientační porovnání — nezohledňuje bonitu, LTV ani individuální podmínky banky.";
   if (breakEven != null && monthlySaving > 0) {
-    summary += ` Break-even po poplatcích: cca ${breakEven} měsíců při úspoře ${Math.round(monthlySaving).toLocaleString("cs-CZ")} Kč/měs.`;
+    summary += ` Bod zvratu po poplatcích: cca ${breakEven} měsíců při úspoře ${Math.round(monthlySaving).toLocaleString("cs-CZ")} Kč/měs.`;
   }
 
   return {
@@ -269,7 +269,7 @@ export function importFromFinancialProfile(
     out.remainingTermYears = Math.min(30, Math.round(profile.yearsLeft));
   }
   if (profile.intent === "refinance") {
-    out.label = "Hypotéka z Financial Passportu";
+    out.label = "Hypotéka z Finančního pasu";
   }
   return out;
 }

@@ -8,6 +8,7 @@ import {
   COOKIE_POLICY_VERSION,
   type PartnerTransferScope,
 } from "@/lib/legal/consent-versions";
+import { isMortgagePartnerHandoffReady } from "@/lib/legal/partner-config";
 
 export type FormConsentRecord = {
   policyVersion: typeof CONSENT_POLICY_VERSION | string;
@@ -35,8 +36,8 @@ export type CookieConsentRecord = {
 
 export const COOKIE_STORAGE_KEY = "hj_cookie_consent_v1";
 
-/** Zdroje, u kterých je partner transfer povinný (handoff). */
-export function requiresPartnerTransfer(source: LeadSource): boolean {
+/** Zdroje s UI záměrem předání partnerovi (i když handoff ještě není ready). */
+export function isPartnerHandoffLeadSource(source: LeadSource): boolean {
   return (
     source === "lead_gen" ||
     source === "navrh_na_miru" ||
@@ -45,6 +46,17 @@ export function requiresPartnerTransfer(source: LeadSource): boolean {
     source === "property_analysis" ||
     source === "country_hub"
   );
+}
+
+/** Zdroje, u kterých je partner transfer povinný při odeslání. */
+export function requiresPartnerTransfer(source: LeadSource): boolean {
+  if (!isPartnerHandoffLeadSource(source)) return false;
+
+  // Majetio scope — vždy vyžaduj výslovný souhlas (i bez hypotečního partnera)
+  if (source === "property_analysis") return true;
+
+  // Hypoteční handoff jen s ověřenou identitou partnera
+  return isMortgagePartnerHandoffReady();
 }
 
 /** Newsletter = výslovný marketing; bez marketingAccepted neukládat. */
@@ -56,7 +68,17 @@ export function defaultPartnerScope(
   source: LeadSource
 ): PartnerTransferScope {
   if (source === "property_analysis") return "majetio";
-  if (requiresPartnerTransfer(source)) return "mortgage_specialist";
+  if (
+    source === "lead_gen" ||
+    source === "navrh_na_miru" ||
+    source === "investment_passport" ||
+    source === "mortgage_calculator" ||
+    source === "country_hub"
+  ) {
+    return isMortgagePartnerHandoffReady()
+      ? "mortgage_specialist"
+      : "none";
+  }
   return "none";
 }
 
@@ -96,6 +118,8 @@ export function validateFormConsent(
       ...consent,
       policyVersion: consent.policyVersion || CONSENT_POLICY_VERSION,
       marketingAccepted: Boolean(consent.marketingAccepted),
+      partnerTransferScope:
+        consent.partnerTransferScope || defaultPartnerScope(source),
       consentedAt: consent.consentedAt || new Date().toISOString(),
     },
   };

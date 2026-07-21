@@ -15,6 +15,7 @@ export type {
   DataSourceType,
   DataStatus,
   DataUnit,
+  ExternalProvenance,
 } from "@/lib/data/types";
 
 export {

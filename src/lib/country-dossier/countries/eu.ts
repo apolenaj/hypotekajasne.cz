@@ -41,6 +41,10 @@ function euBase(
     timelineHint: string;
     txCosts: string;
     taxNote: string;
+    /** Musí být explicitní pro každou zemi — žádný sdílený IBI/IMU text. */
+    holdingCosts: string;
+    holdingCostsLabel: string;
+    ownershipModelLabel: string;
   }
 ) {
   const ownershipClaim = reviewClaim(ownershipNote, `${name} — vlastnický režim EU`, null);
@@ -81,7 +85,7 @@ function euBase(
       kind: "ownership",
       title: sectionTitle("ownership"),
       summary: ownershipNote,
-      modelLabel: "Freehold (obecně) / lokální výjimky",
+      modelLabel: extras.ownershipModelLabel,
       bullets: [{ text: ownershipClaim.text, claim: ownershipClaim }],
     },
     {
@@ -108,15 +112,12 @@ function euBase(
       id: "holding_costs",
       kind: "costs",
       title: sectionTitle("holding_costs"),
-      summary: "IBI / lokalita, společenství, pojištění — ověřte u správce.",
+      summary: extras.holdingCosts,
       lines: [
         {
-          label: "Roční daně + správa",
-          range: "lokálně individuální",
-          claim: modelledClaim(
-            "Průběžné roční náklady závisí na obci a společenství vlastníků.",
-            name
-          ),
+          label: extras.holdingCostsLabel,
+          range: "lokálně individuální — ověřte u obce / správce",
+          claim: modelledClaim(extras.holdingCosts, `${name} holding costs`),
         },
       ],
     },
@@ -132,7 +133,10 @@ function euBase(
     narrative("inheritance", "EU dědické nařízení může pomoci, ale nemovitost se řídí i lex rei sitae.", [
       {
         text: "Přeshraniční dědictví plánujte — není automaticky „jako v ČR“.",
-        claim: modelledClaim("Cross-border succession needs advice.", "EU Succession Regulation context"),
+        claim: modelledClaim(
+          "Přeshraniční dědictví vyžaduje odborné poradenství.",
+          "Kontext nařízení EU o dědictví (Succession Regulation)"
+        ),
       },
     ]),
     narrative("fx_risk", "EUR vs. CZK — kurz ovlivňuje výnos i splátku CZK úvěru.", [
@@ -173,10 +177,10 @@ function euBase(
     sourcesSection(
       {
         text: `Poslední právní review: ${LEGAL_REVIEW_AS_OF}`,
-        source: "Editorial HypotékaJasně.cz (po kontrole)",
+        source: "HypotékaJasně.cz (redakční review)",
         sourceUrl: null,
         asOf: LEGAL_REVIEW_AS_OF,
-        status: "VERIFIED",
+        status: "ESTIMATE",
       },
       [ownershipClaim]
     ),
@@ -198,6 +202,10 @@ export const spainDossier = euBase(
     txCosts: "Orientace 10–13 % nad cenou (ITP/IVA, notář, právní).",
     taxNote:
       "Nerezidenti zdaňují příjem z nájmu v ES; domovská rezidence v ČR řeší zápočet — ověřte u poradce.",
+    holdingCosts:
+      "IBI (municipální daň z nemovitosti) + společenství vlastníků + pojištění — sazba IBI se liší obcí.",
+    holdingCostsLabel: "IBI + správa + pojištění",
+    ownershipModelLabel: "Freehold (plné vlastnictví) se zápisem do Registro de la Propiedad",
   }
 );
 
@@ -213,6 +221,10 @@ export const italyDossier = euBase(
     timelineHint: "Compromesso → rogito — počítejte s měsíci, ne dny.",
     txCosts: "Daně z převodu + notář — často vysoké jednotky % (typ nemovitosti rozhoduje).",
     taxNote: "Cedolare secca / IRPEF režimy — neplatí univerzálně pro každého nerezidenta.",
+    holdingCosts:
+      "IMU (roční daň z nemovitosti, typicky u druhé nemovitosti) + condominio + pojištění — ověřte u obce.",
+    holdingCostsLabel: "IMU + správa + pojištění",
+    ownershipModelLabel: "Freehold se zápisem (Conservatoria / notaio)",
   }
 );
 
@@ -228,6 +240,10 @@ export const croatiaDossier = euBase(
     timelineHint: "Prověrka ZK + převod — týdny až měsíce.",
     txCosts: "Převodní daň/poplatky + právní — ověřte aktuální sazby.",
     taxNote: "Příjem z nájmu zdaňujte dle chorvatských a českých pravidel rezidence.",
+    holdingCosts:
+      "Komunální / místní poplatky + správa + pojištění — konkrétní roční daň z nemovitosti ověřujeme u místní obce.",
+    holdingCostsLabel: "Místní poplatky + správa + pojištění",
+    ownershipModelLabel: "Vlastnictví se zápisem do zemljišnih knjiga / katastru",
   }
 );
 
@@ -242,6 +258,10 @@ export const slovakiaDossier = euBase(
     shortRent: "Short-term může podléhat obecní regulaci a daňové evidenci.",
     timelineHint: "Podobné ČR — úschova + návrh na vklad.",
     txCosts: "Poplatky + právní služby — nižší než ES/IT typicky, stále ne nulové.",
-    taxNote: "Nájem a daň z nemovitosti řešte dle SK předpisů a české rezidence.",
+    taxNote: "Nájem a daň z nehnuteľností řešte dle SK předpisů a české rezidence.",
+    holdingCosts:
+      "Daň z nehnuteľností (obecní) + správa / SVJ + pojištění — ověřte sazbu u obce.",
+    holdingCostsLabel: "Daň z nehnuteľností + správa + pojištění",
+    ownershipModelLabel: "Freehold se zápisem do slovenského katastra",
   }
 );

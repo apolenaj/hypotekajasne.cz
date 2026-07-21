@@ -221,10 +221,10 @@ export function buildPortfolioOs(input: {
     recommendations,
     methodology: [
       "Moje portfolio agreguje digitální karty nemovitostí — hodnoty jen z pozorování ceny.",
-      "LTV, weighted yield a CF jsou MODEL — ne bankovní schválení.",
-      "Stress testy jsou orientační šoky na stejném modelu.",
-      "Doporučení jsou explainable scénáře A/B/C — bez pokynu k prodeji.",
-      "Export pro účetního obsahuje claim kinds a blockery.",
+      "LTV, vážený výnos a peněžní tok jsou orientační model — ne bankovní schválení.",
+      "Zátěžové testy jsou orientační šoky na stejném modelu.",
+      "Doporučení jsou srozumitelné scénáře A/B/C — bez pokynu k prodeji.",
+      "Export pro účetního obsahuje typ údaje a případné překážky.",
     ],
   };
 }

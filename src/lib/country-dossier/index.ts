@@ -26,6 +26,9 @@ export function getCountryDossier(countryId: CountryId): CountryDossier {
   return COUNTRY_DOSSIERS[countryId];
 }
 
+export { buildExecutiveSnapshot } from "@/lib/country-dossier/market-snapshot";
+export type { ExecutiveSnapshot, SnapshotField } from "@/lib/country-dossier/market-snapshot";
+
 export type {
   CountryDossier,
   DossierSection,

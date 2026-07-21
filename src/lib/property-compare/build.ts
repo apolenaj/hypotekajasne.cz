@@ -110,9 +110,9 @@ function buildExitScenarios(
   baseInput: InvestmentEngineInput
 ): ExitScenarioRow[] {
   const scenarios: { id: "bear" | "base" | "bull"; label: string }[] = [
-    { id: "bear", label: "Bear" },
-    { id: "base", label: "Base" },
-    { id: "bull", label: "Bull" },
+    { id: "bear", label: "Pesimistický" },
+    { id: "base", label: "Základní" },
+    { id: "bull", label: "Optimistický" },
   ];
   return scenarios.map(({ id, label }) => {
     const r = calculateInvestment(baseInput, id);
@@ -255,7 +255,7 @@ function buildMetricsForProperty(
       discountPremiumPct,
       "MODEL",
       discountPremiumPct != null
-        ? "Premium (+) / sleva (−) vůči modelové fair value."
+        ? "Prémie (+) / sleva (−) vůči modelové férové hodnotě."
         : undefined
     ),
     grossYieldPct: claimed(
@@ -264,7 +264,7 @@ function buildMetricsForProperty(
     ),
     netYieldPct: claimed(result.netYield, "MODEL"),
     monthlyCashFlow: claimed(result.monthlyCashFlow, "MODEL"),
-    irrPct: claimed(result.irr, "MODEL", "IRR z investment engine (base, 7 let)."),
+    irrPct: claimed(result.irr, "MODEL", "IRR z investičního modelu (základní, 7 let)."),
     requiredCash: claimed(
       Math.round(result.initialEquity),
       equityKind === "DATA" ? "DATA" : "MODEL",
@@ -303,13 +303,13 @@ const CATEGORY_META: Record<
   { title: string; pick: (m: ComparePropertyMetrics) => number | null; higherIsBetter: boolean; format: (v: number) => string }
 > = {
   best_cash_flow: {
-    title: "Best cash flow",
+    title: "Nejlepší peněžní tok",
     pick: (m) => m.monthlyCashFlow.value,
     higherIsBetter: true,
     format: (v) => fmtCzk(v),
   },
   best_appreciation: {
-    title: "Best appreciation potential",
+    title: "Nejvyšší potenciál růstu hodnoty",
     pick: (m) =>
       m.exitScenarios.find((e) => e.scenario === "bull")?.irrPct ??
       m.irrPct.value,
@@ -317,19 +317,19 @@ const CATEGORY_META: Record<
     format: (v) => fmtPct(v),
   },
   lowest_risk: {
-    title: "Lowest risk",
+    title: "Nejnižší riziko",
     pick: (m) => m.riskScore.value,
     higherIsBetter: false,
     format: (v) => `${Math.round(v)}/100`,
   },
   lowest_capital: {
-    title: "Lowest required capital",
+    title: "Nejnižší požadovaný kapitál",
     pick: (m) => m.requiredCash.value,
     higherIsBetter: false,
     format: (v) => fmtCzk(v),
   },
   best_user_fit: {
-    title: "Best fit for user",
+    title: "Nejlepší shoda s profilem",
     pick: (m) => affordabilityScore(m.affordability),
     higherIsBetter: true,
     format: (v) => `${Math.round(v)}/100`,
@@ -389,8 +389,8 @@ function buildTradeoffs(metrics: ComparePropertyMetrics[]): PropertyTradeoff[] {
     const risk = m.riskScore.value;
     const irr = m.irrPct.value;
 
-    if (cf >= 5_000) pros.push("vyšší měsíční cash flow");
-    else if (cf < 0) cons.push("záporný cash flow (MODEL)");
+    if (cf >= 5_000) pros.push("vyšší měsíční peněžní tok");
+    else if (cf < 0) cons.push("záporný peněžní tok (MODEL)");
 
     if (loc >= 82) pros.push("lepší lokalita (modelové skóre)");
     else if (loc < 72) cons.push("nižší skóre lokality");
@@ -401,15 +401,15 @@ function buildTradeoffs(metrics: ComparePropertyMetrics[]): PropertyTradeoff[] {
     if (risk <= 40) pros.push("nižší modelové riziko");
     else if (risk >= 55) cons.push("vyšší modelové riziko");
 
-    if (irr != null && irr >= 0.08) pros.push("vyšší růstový potenciál (IRR bull/base)");
+    if (irr != null && irr >= 0.08) pros.push("vyšší růstový potenciál (IRR optimistický/základní)");
     else if (irr != null && irr < 0.05) cons.push("nižší růstový potenciál");
 
     const prem = m.discountPremiumPct.value;
-    if (prem != null && prem < -0.05) pros.push("pod modelovou fair value (sleva)");
-    if (prem != null && prem > 0.1) cons.push("premium vůči modelové fair value");
+    if (prem != null && prem < -0.05) pros.push("pod modelovou férovou hodnotou (sleva)");
+    if (prem != null && prem > 0.1) cons.push("prémie vůči modelové férové hodnotě");
 
     if (m.affordability?.verdict === "within_safe_budget") {
-      pros.push("fit k safe rozpočtu z passportu");
+      pros.push("shoda s bezpečným rozpočtem z Finančního pasu");
     } else if (m.affordability?.verdict === "above_budget") {
       cons.push("nad modelem rozpočtu");
     }
@@ -441,6 +441,13 @@ function profileFitScore(m: ComparePropertyMetrics, hasPassport: boolean): numbe
   return weight > 0 ? score / weight : 50;
 }
 
+const AFFORDABILITY_VERDICT_LABELS: Record<string, string> = {
+  within_safe_budget: "ve bezpečném rozpočtu",
+  within_max_estimate: "v max. odhadu",
+  above_budget: "nad rozpočtem",
+  insufficient_data: "bez Finančního pasu",
+};
+
 function buildProfileRecommendation(
   metrics: ComparePropertyMetrics[],
   hasPassport: boolean
@@ -453,7 +460,7 @@ function buildProfileRecommendation(
       headline: "Přidejte 2–5 nemovitostí",
       explanation: "Porovnání vyžaduje alespoň dvě nemovitosti se srovnatelnými vstupy.",
       notAbsoluteBest:
-        "Žádné absolutní pořadí — každá nemovitost má jiné trade-offs.",
+        "Žádné absolutní pořadí — každá nemovitost má jiné kompromisy.",
       tradeoffs: [],
       weightsUsed: [],
     };
@@ -467,22 +474,25 @@ function buildProfileRecommendation(
 
   const weightsUsed = hasPassport
     ? [
-        "35 % affordability (Financial Passport)",
-        "20 % cash flow",
+        "35 % dostupnost (Finanční pas)",
+        "20 % peněžní tok",
         "20 % nízké riziko",
         "15 % likvidita",
-        "10 % růst (bull IRR)",
+        "10 % růst (optimistický IRR)",
       ]
     : [
-        "20 % cash flow",
+        "20 % peněžní tok",
         "20 % nízké riziko",
         "15 % likvidita",
-        "10 % růst — bez passportu chybí váha affordability",
+        "10 % růst — bez Finančního pasu chybí váha dostupnosti",
       ];
 
   let explanation = `${top.label} vychází nejlépe pro váš profil podle váženého modelu`;
   if (hasPassport && top.affordability) {
-    explanation += ` (affordability: ${top.affordability.verdict.replace(/_/g, " ")})`;
+    const verdictLabel =
+      AFFORDABILITY_VERDICT_LABELS[top.affordability.verdict] ??
+      top.affordability.verdict.replace(/_/g, " ");
+    explanation += ` (dostupnost: ${verdictLabel})`;
   }
   explanation += ".";
 
@@ -500,7 +510,7 @@ function buildProfileRecommendation(
     headline: `Nejlepší pro váš profil: ${top.label}`,
     explanation,
     notAbsoluteBest:
-      "Toto není absolutní „nejlepší nemovitost“ — v jiných kategoriích může vyhrát jiná položka (viz WINNER BY CATEGORY).",
+      "Toto není absolutní „nejlepší nemovitost“ — v jiných kategoriích může vyhrát jiná položka (viz Vítěz podle kategorie).",
     tradeoffs,
     weightsUsed,
   };
@@ -551,12 +561,12 @@ export function buildPropertyComparison(input: {
     categoryWinners: pickCategoryWinners(metrics, hasPassport),
     profileRecommendation: buildProfileRecommendation(metrics, hasPassport),
     methodology: [
-      "Finanční metriky (yield, NOI, CF, DSCR, IRR) z investment engine — MODEL.",
-      "Fair value = referenční Kč/m² lokality × plocha — ne znalecký posudek.",
+      "Finanční metriky (výnos, NOI, peněžní tok, DSCR, IRR) z investičního modelu — MODEL.",
+      "Férová hodnota = referenční Kč/m² lokality × plocha — ne znalecký posudek.",
       "Lokalita, likvidita a poptávka po nájmu = syntetická skóre platformy.",
-      "Affordability fit jen s Financial Passport — jinak NEOVĚŘENO / vynecháno.",
-      "Exit scénáře Bear / Base / Bull — stejný engine, odlišné delty.",
-      "Žádné absolutní pořadí bez vysvětlení trade-offs.",
+      "Shoda dostupnosti jen s Finančním pasem — jinak NEOVĚŘENO / vynecháno.",
+      "Scénáře výstupu Pesimistický / Základní / Optimistický — stejný model, odlišné delty.",
+      "Žádné absolutní pořadí bez vysvětlení kompromisů.",
     ],
   };
 }

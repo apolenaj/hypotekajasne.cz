@@ -3,8 +3,10 @@
  * Titles must stay unique — enforced by seo.test.ts.
  */
 
+import type { Metadata } from "next";
 import { routes, countrySlugs, getCountryGuidePath } from "@/lib/routes";
 import { countryOrder } from "@/lib/calculators";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
 export type StaticPageSeo = {
   path: string;
@@ -19,6 +21,8 @@ export type StaticPageSeo = {
     | "yearly"
     | "never";
   priority?: number;
+  /** When true, page is catalogued for audits but must not appear in sitemap. */
+  noIndex?: boolean;
 };
 
 export const STATIC_PAGE_SEO: StaticPageSeo[] = [
@@ -65,6 +69,8 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     description:
       "Organizace, role, objednávky analýzy nemovitosti, tracking, reporty Majetio, developer projekty, fakturace, audit. Platba neovlivňuje investiční skóre.",
     priority: 0.89,
+    /** BETA demo — do not index until commercially live */
+    noIndex: true,
   },
   {
     path: routes.reportEngine,
@@ -84,7 +90,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     path: routes.marketPulse,
     title: "Tržní puls — vývoj trhů bez clickbaitu",
     description:
-      "Trendy sazeb, cen, nájmů a yieldu pro podporované trhy. Opportunity Radar upozorňuje na shodu s kritérii — ne garantuje investici.",
+      "Trendy sazeb, cen, nájmů a yieldu pro podporované trhy. Radar příležitostí upozorňuje na shodu s kritérii — ne garantuje investici.",
     priority: 0.86,
   },
   {
@@ -98,15 +104,17 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     path: routes.offerStrategy,
     title: "Strategie nabídky — asistent",
     description:
-      "MODEL opening, target, max cena, scenario slider yield/CF/IRR a etický návrh textu. Ne znalecký posudek.",
+      "Modelová otevírací, cílová a maximální cena, scénáře výnosu a cash-flow a návrh textu nabídky. Nejde o znalecký posudek.",
     priority: 0.83,
   },
   {
     path: routes.dealRoom,
-    title: "Transakční místnost — workspace pro transakci",
+    title: "Transakční místnost — společný prostor pro transakci",
     description:
-      "Timeline, dokumenty s permission modelem, kontakty a úkoly. Vznikne po „Mám vážný zájem“. Nahrazuje chaos z WhatsAppu a e-mailů.",
+      "Časová osa, dokumenty s oprávněními, kontakty a úkoly. Vznikne po „Mám vážný zájem“. Nahrazuje chaos z WhatsAppu a e-mailů.",
     priority: 0.84,
+    /** BETA demo — do not index until commercially live */
+    noIndex: true,
   },
   {
     path: routes.documentVault,
@@ -119,7 +127,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     path: routes.globalFinancing,
     title: "Mapa globálního financování — cesty financování",
     description:
-      "Porovnejte lokální hypotéku, české zajištěné financování, plán developera, hotovost a kombinace. Partner-ready architektura pro marketplace.",
+      "Porovnejte lokální hypotéku, české zajištěné financování, plán developera, hotovost a kombinace — přehledně v jedné mapě.",
     priority: 0.88,
   },
   {
@@ -133,7 +141,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     path: routes.portfolio,
     title: "Moje portfolio — správa více nemovitostí",
     description:
-      "Souhrn hodnoty, vlastní kapitál, LTV, cash flow, koncentrace rizik a stress testy. Export pro poradce.",
+      "Souhrn hodnoty, vlastní kapitál, LTV, peněžní tok, koncentrace rizik a zátěžové testy. Export pro poradce.",
     priority: 0.86,
   },
   {
@@ -147,14 +155,14 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     path: routes.investicniPas,
     title: "Osobní investiční průvodce",
     description:
-      "Transparentní market matching: Top 3 trhy, váhy dimenzí a srovnání — organické skóre se neprodává.",
+      "Transparentní přiřazení trhů: Top 3 trhy, váhy dimenzí a srovnání — organické skóre se neprodává.",
     priority: 0.9,
   },
   {
     path: routes.investicniRentgen,
     title: "Investiční rentgen nemovitosti",
     description:
-      "Bezplatný náhled metrik a Prémiová analýza nemovitosti. Údaje: Data, Modelový výpočet, Odhad, Neověřeno.",
+      "Bezplatný snapshot a detailní analýza nemovitosti (4 990 Kč). Údaje: Data, Model, Odhad, Neověřeno — bez garantovaného výnosu.",
     priority: 0.85,
   },
   {
@@ -166,9 +174,9 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
   },
   {
     path: routes.investicniRentgenPorovnani,
-    title: "Porovnání nemovitostí — profesionální compare",
+    title: "Porovnání nemovitostí — profesionální srovnání",
     description:
-      "Srovnejte 2–5 nemovitostí: yield, IRR, DSCR, riziko, fit k profilu. Trade-offs a shareable odkaz.",
+      "Srovnejte 2–5 nemovitostí: výnos, peněžní tok, IRR, DSCR, riziko a shodu s profilem. Kompromisy a sdílený odkaz.",
     priority: 0.75,
   },
   {
@@ -177,6 +185,13 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     description:
       "Lekce LTV, RPSN, fixace, DTI, DSTI a další — jednoduše řečeno, s příklady a FAQ.",
     priority: 0.85,
+  },
+  {
+    path: `${routes.akademie}/cesty`,
+    title: "Vzdělávací cesty | Hypoteční akademie",
+    description:
+      "První bydlení, OSVČ, refinancování, investice, zahraničí — průběh 0–100 %, odznaky bez sérií, vzdělávání → nástroj.",
+    priority: 0.8,
   },
   {
     path: routes.clanky,
@@ -236,7 +251,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     path: routes.metodika,
     title: "Metodika dat",
     description:
-      "Statusy AKTUÁLNÍ DATA / OVĚŘENO / MODELOVÝ VÝPOČET, zdroje a váhy market matchingu.",
+      "Statusy AKTUÁLNÍ DATA / OVĚŘENO / MODELOVÝ VÝPOČET, zdroje a váhy přiřazení trhů.",
     priority: 0.7,
   },
   {
@@ -263,7 +278,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     path: routes.partneri,
     title: "Partneři",
     description:
-      "Licencovaný hypoteční partner: IČO, role, JERRS (po ověření) a scope.",
+      "Role hypotečního partnera vůči platformě. Registrační údaje zveřejňujeme jen po ověření.",
     priority: 0.6,
   },
   {
@@ -277,7 +292,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     path: routes.oMajetio,
     title: "O Majetio",
     description:
-      "Property discovery oddělené od Hypotéka Jasně — handoff Finančního pasu.",
+      "Property discovery oddělené od Hypotéka Jasně — předání Finančního pasu.",
     priority: 0.55,
   },
   {
@@ -343,6 +358,26 @@ export function countryGuideSeoEntries(): StaticPageSeo[] {
   });
 }
 
-export function getStaticPageSeo(path: string): StaticPageSeo | undefined {
+export function findStaticPageSeo(path: string): StaticPageSeo | undefined {
   return STATIC_PAGE_SEO.find((p) => p.path === path);
+}
+
+/**
+ * Full Next.js Metadata (canonical, OG, Twitter) from the static catalog.
+ * Throws if path is missing — prevents silent homepage canonical inheritance.
+ */
+export function getStaticPageSeo(path: string): Metadata {
+  const entry = findStaticPageSeo(path);
+  if (!entry) {
+    throw new Error(`STATIC_PAGE_SEO missing entry for path: ${path}`);
+  }
+  return buildPageMetadata({
+    title: entry.title,
+    description: entry.description,
+    path: entry.path,
+    noIndex: entry.noIndex,
+    ...(path === "/en"
+      ? { locale: "en" as const, alternatePath: { cs: "/", en: "/en" } }
+      : {}),
+  });
 }

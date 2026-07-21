@@ -45,6 +45,7 @@ export function getPaidAnalysisTerms(): PaidAnalysisTerms {
     ],
     outOfScope: [
       ...p.excludes,
+      ...p.isNot,
       "Účast na jednání s bankou nebo developerem.",
       "Právní zastoupení nebo daňové poradenství.",
     ],

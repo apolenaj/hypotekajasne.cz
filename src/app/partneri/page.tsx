@@ -1,38 +1,53 @@
-import type { Metadata } from "next";
+import { getStaticPageSeo } from "@/lib/seo/pages";
 import Link from "next/link";
 import { TrustPageShell } from "@/components/trust/TrustPageShell";
 import {
   COMPENSATION_DISCLOSURE,
-  MORTGAGE_PARTNERS,
-} from "@/lib/trust";
+  getMortgagePartners,
+  isMortgagePartnerHandoffReady,
+  partnerJerrsPublicLabel,
+  partnerPublicDisplayName,
+} from "@/lib/legal/partner-config";
 import { routes } from "@/lib/routes";
 
-export const metadata: Metadata = {
-  title: "Partneři | HypotékaJasně.cz",
-  description:
-    "Licencovaný hypoteční partner: IČO, role, JERRS, scope a transparentní odměna.",
-};
+export const metadata = getStaticPageSeo("/partneri");
+
 
 export default function PartneriPage() {
+  const partners = getMortgagePartners();
+  const handoffReady = isMortgagePartnerHandoffReady();
+
   return (
     <TrustPageShell
       currentPath="/partneri"
       eyebrow="Centrum důvěry"
       title="Partneři"
-      lead="Hypotéka Jasně předává poptávky licencovaným specialistům. Níže je připravená struktura partnera — registrační údaje doplníme po ověření, nevymýšlíme je."
+      lead="Hypotéka Jasně je informační platforma — není banka. Individuální zprostředkování hypotéky provádí licencovaný specialista. Registrační údaje partnera zveřejňujeme jen když jsou ověřené; neověřené údaje neuvádíme."
     >
       <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
         {COMPENSATION_DISCLOSURE}
       </p>
 
+      {!handoffReady ? (
+        <p
+          role="status"
+          className="rounded-xl border border-border bg-slate-50 px-4 py-3 text-sm text-text-dark"
+        >
+          Předání poptávek licencovanému specialistovi není produkčně aktivní,
+          dokud není zveřejněna ověřená identifikace partnera (právní jméno, IČO,
+          odkaz na veřejný registr). Do té doby formuláře přijímá provozovatel
+          webu pro nezávaznou konzultaci.
+        </p>
+      ) : null}
+
       <ul className="space-y-6">
-        {MORTGAGE_PARTNERS.map((p) => (
+        {partners.map((p) => (
           <li
             key={p.id}
             className="rounded-2xl border border-border p-5 sm:p-6"
           >
             <h2 className="font-heading text-lg font-bold text-text-dark">
-              {p.name}
+              {partnerPublicDisplayName(p)}
             </h2>
             <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
               <div>
@@ -40,7 +55,7 @@ export default function PartneriPage() {
                   IČO
                 </dt>
                 <dd className="mt-0.5 text-text-dark">
-                  {p.ico ?? "Doplníme po ověření (zatím neuvedeno)"}
+                  {p.ico ?? "Neuvedeno — nezveřejňujeme neověřené údaje"}
                 </dd>
               </div>
               <div>
@@ -59,15 +74,11 @@ export default function PartneriPage() {
               </div>
               <div className="sm:col-span-2">
                 <dt className="text-xs font-bold uppercase text-muted-foreground">
-                  JERRS / veřejný registr
+                  Veřejný registr (např. JERRS / ČNB)
                 </dt>
                 <dd className="mt-0.5">
                   <span className="mr-2 rounded border border-stone-300 bg-stone-100 px-1.5 py-0.5 text-[10px] font-bold">
-                    {p.jerrsStatus === "LIVE"
-                      ? "Ověřeno"
-                      : p.jerrsStatus === "PENDING_VERIFICATION"
-                        ? "Čeká na ověření"
-                        : "Připravujeme"}
+                    {partnerJerrsPublicLabel(p.jerrsStatus)}
                   </span>
                   {p.jerrsVerificationUrl ? (
                     <a
@@ -80,8 +91,7 @@ export default function PartneriPage() {
                     </a>
                   ) : (
                     <span className="text-muted-foreground">
-                      Odkaz na JERRS / ČNB registr zveřejníme po ověření identity
-                      partnera.
+                      Odkaz na veřejný registr zatím není zveřejněn.
                     </span>
                   )}
                 </dd>

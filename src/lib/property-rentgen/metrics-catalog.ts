@@ -54,14 +54,14 @@ export const RENTGEN_METRICS_CATALOG: MetricCatalogItem[] = [
   {
     id: "net_yield",
     label: "Orientační čistý výnos",
-    description: "Po modelových nákladech — Prémiové.",
+    description: "Po modelových nákladech — detailní analýza.",
     tier: "premium",
     typicalKind: "MODEL",
   },
   {
     id: "cash_flow",
     label: "Měsíční peněžní tok (model)",
-    description: "Nájem minus modelová splátka — Prémiové.",
+    description: "Nájem minus modelová splátka — detailní analýza.",
     tier: "premium",
     typicalKind: "MODEL",
   },
@@ -75,7 +75,7 @@ export const RENTGEN_METRICS_CATALOG: MetricCatalogItem[] = [
   {
     id: "liquidity",
     label: "Likvidita lokality",
-    description: "Editorial / model — bez falešné přesnosti.",
+    description: "Redakční / modelový odhad — bez falešné přesnosti.",
     tier: "premium",
     typicalKind: "ODHAD",
   },
@@ -89,7 +89,7 @@ export const RENTGEN_METRICS_CATALOG: MetricCatalogItem[] = [
   {
     id: "sensitivity",
     label: "Citlivost na sazbu a neobsazenost",
-    description: "Scénáře modelu — Prémiové.",
+    description: "Scénáře modelu — detailní analýza.",
     tier: "premium",
     typicalKind: "MODEL",
   },

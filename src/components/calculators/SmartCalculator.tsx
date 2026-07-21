@@ -48,7 +48,7 @@ export function SmartCalculator({ country }: SmartCalculatorProps) {
                 topic="yields"
                 label="Výnos"
                 source={`countryConfigs.${country}.defaultRentalYield`}
-                notes="Jen výchozí nájem v engine — ne live kotace."
+                notes="Jen výchozí nájem v modelu — ne aktuální nabídka z trhu."
               />
             </div>
           </div>

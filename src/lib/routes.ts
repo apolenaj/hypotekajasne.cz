@@ -3,6 +3,7 @@ import { countryOrder, type CountryId } from "@/lib/calculators";
 export const routes = {
   home: "/",
   navrhNaMiru: "/navrh-na-miru",
+  mojeMoznosti: "/moje-moznosti",
   copilot: "/copilot",
   financniPas: "/financni-pas",
   dashboard: "/dashboard",

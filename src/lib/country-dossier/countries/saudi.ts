@@ -126,7 +126,7 @@ export const saudiDossier: CountryDossier = assemble(
         {
           label: "Service / community fees",
           range: "projektově",
-          claim: modelledClaim("U master-planned komunit často významná položka.", "Developer / community rules"),
+          claim: modelledClaim("U master-planned komunit často významná položka.", "Pravidla developera / komunity"),
         },
       ],
     },
@@ -146,7 +146,10 @@ export const saudiDossier: CountryDossier = assemble(
     narrative("inheritance", "Dědění s cizím prvkem vyžaduje plánování; právo KSA a právo domovského státu se mohou střetávat.", [
       {
         text: "Přeshraniční dědictví řešte předem s právníkem obou jurisdikcí.",
-        claim: modelledClaim("Není univerzální EU-style pasportizace dědictví.", "Cross-border estate practice"),
+        claim: modelledClaim(
+          "Není univerzální pasportizace dědictví ve stylu EU.",
+          "Praxe přeshraničního dědictví"
+        ),
       },
     ]),
     narrative("fx_risk", "SAR vs. CZK/EUR — kurzové riziko u výnosu i při exit.", [
@@ -157,8 +160,11 @@ export const saudiDossier: CountryDossier = assemble(
     ]),
     narrative("short_term_rentals", "Krátkodobé pronájmy mohou podléhat licencím a hotelovým pravidlům.", [
       {
-        text: "Provoz typu short-stay ověřte u regulátora a v community rules — nepočítáme s absolutní volností.",
-        claim: modelledClaim("Regulace se vyvíjí s turismem a Vision 2030.", "KSA hospitality licensing"),
+        text: "Provoz krátkodobého pronájmu ověřte u regulátora a v pravidlech komunity — nepočítáme s absolutní volností.",
+        claim: modelledClaim(
+          "Regulace se vyvíjí s turismem a Vision 2030.",
+          "Licence pro pohostinství v KSA"
+        ),
       },
     ]),
     {
@@ -201,10 +207,10 @@ export const saudiDossier: CountryDossier = assemble(
     sourcesSection(
       {
         text: `Poslední právní review dossieru KSA: ${LEGAL_REVIEW_AS_OF} (režim od 22. 1. 2026)`,
-        source: "Editorial HypotékaJasně.cz (po kontrole)",
+        source: "HypotékaJasně.cz (redakční review)",
         sourceUrl: null,
         asOf: LEGAL_REVIEW_AS_OF,
-        status: "VERIFIED",
+        status: "ESTIMATE",
       },
       [REGA_LAW, ZONE_CLAIM, PREMIUM_RESIDENCY_CLAIM, HOLY_CITIES]
     ),

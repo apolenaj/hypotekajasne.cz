@@ -1,11 +1,7 @@
-import type { Metadata } from "next";
+import { getStaticPageSeo } from "@/lib/seo/pages";
 import { AboutMajetioView } from "@/components/sections/AboutMajetioView";
 
-export const metadata: Metadata = {
-  title: "Hypotéka Jasně a Majetio | Finance a nemovitosti",
-  description:
-    "Hypotéka Jasně: finance a rozhodování. Majetio: vyhledání, analýza a koupě nemovitosti. Finanční pas jako most — bez falešných počtů nabídek.",
-};
+export const metadata = getStaticPageSeo("/o-majetio");
 
 export default function OMajetioPage() {
   return <AboutMajetioView />;

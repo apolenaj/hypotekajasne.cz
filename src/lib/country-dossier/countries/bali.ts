@@ -12,7 +12,7 @@ import type { CountryDossier } from "@/lib/country-dossier/types";
 
 const LEASEHOLD = reviewClaim(
   "Cizinci standardně nenabývají freehold půdy jako v EU; běžné jsou leasehold / právo stavby přes PT PMA / lokalní struktury. Konkrétní struktura musí projít indonéským právníkem.",
-  "Indonesia foreign property ownership practice",
+  "Praxe vlastnictví nemovitostí cizinci v Indonésii",
   null
 );
 
@@ -25,7 +25,7 @@ export const baliDossier: CountryDossier = assemble(
       { text: LEASEHOLD.text, claim: LEASEHOLD },
       { text: "Standardní bankovní hypotéka pro cizince v datech není — neukazujeme generických 80 % LTV." },
     ]),
-    narrative("suitability", "Pro zkušenější investory s právní rezervou a hotovostí / developer schedule.", [
+    narrative("suitability", "Pro zkušenější investory s právní rezervou a hotovostí / platebním plánem developera.", [
       { text: "Nevhodné jako „snadný pasivní příjem“ bez lokálního partnera a kontroly licence." },
     ]),
     {
@@ -66,7 +66,7 @@ export const baliDossier: CountryDossier = assemble(
         {
           label: "Právní + převod",
           range: "jednotky % + fixed fees",
-          claim: modelledClaim("Záleží na lease term a struktuře.", "Bali transaction practice"),
+          claim: modelledClaim("Záleží na lease term a struktuře.", "Praxe transakcí na Bali"),
         },
       ],
     },
@@ -79,14 +79,20 @@ export const baliDossier: CountryDossier = assemble(
         {
           label: "Provoz + správa",
           range: "významná měsíční položka",
-          claim: modelledClaim("Operating costs can erase headline yield.", "Villa ops Bali"),
+          claim: modelledClaim(
+            "Provozní náklady mohou smazat inzerovaný výnos.",
+            "Provoz vil na Bali"
+          ),
         },
       ],
     },
     narrative("rental_tax", "Daň a licence na turistický pronájem ověřte lokálně.", [
       {
         text: "Bez správné licence a daňové registrace hrozí sankce — výnos v inzerci ≠ čistý výnos.",
-        claim: modelledClaim("STR tax/licensing must be verified.", "Bali tourism compliance"),
+        claim: modelledClaim(
+          "Daň a licence krátkodobého pronájmu (STR) je nutné ověřit.",
+          "Soulad s turistickými předpisy na Bali"
+        ),
       },
     ]),
     narrative("exit", "Likvidita leasehold závisí na zbývající době nájmu a kvalitě smlouvy.", [
@@ -103,8 +109,11 @@ export const baliDossier: CountryDossier = assemble(
     ]),
     narrative("short_term_rentals", "Turistický pronájem vyžaduje compliance (licence, zónování).", [
       {
-        text: "Ne všechny zóny dovolují komerční short-stay.",
-        claim: modelledClaim("Zoning and licences vary by kabupaten.", "Bali STR rules"),
+        text: "Ne všechny zóny dovolují komerční krátkodobý pronájem.",
+        claim: modelledClaim(
+          "Zónování a licence se liší podle kabupaten.",
+          "Pravidla krátkodobého pronájmu (STR) na Bali"
+        ),
       },
     ]),
     {
@@ -114,7 +123,7 @@ export const baliDossier: CountryDossier = assemble(
       summary: "Právní struktura často trvá déle než „rezervace vily“.",
       steps: [
         { order: 1, title: "Právní struktura", detail: "Lease / PT / due diligence pozemku.", durationHint: "3–8 týdnů" },
-        { order: 2, title: "Smlouva + platby", detail: "Schedule developera nebo cash.", durationHint: "dle projektu" },
+        { order: 2, title: "Smlouva + platby", detail: "Platební plán developera nebo hotovost.", durationHint: "dle projektu" },
         { order: 3, title: "Zápisy / notář", detail: "Lokální registrace práv.", durationHint: "2–6 týdnů" },
         { order: 4, title: "Provozní setup", detail: "Licence, správa, pojištění.", durationHint: "2–4 týdny" },
       ],
@@ -134,10 +143,10 @@ export const baliDossier: CountryDossier = assemble(
     sourcesSection(
       {
         text: `Poslední právní review dossieru Bali: ${LEGAL_REVIEW_AS_OF}`,
-        source: "Editorial HypotékaJasně.cz (po kontrole)",
+        source: "HypotékaJasně.cz (redakční review)",
         sourceUrl: null,
         asOf: LEGAL_REVIEW_AS_OF,
-        status: "VERIFIED",
+        status: "ESTIMATE",
       },
       [LEASEHOLD]
     ),

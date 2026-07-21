@@ -7,9 +7,9 @@ import { crumbs } from "@/lib/seo/breadcrumbs";
 import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Porovnání nemovitostí — profesionální compare",
+  title: "Porovnání nemovitostí — profesionální srovnání",
   description:
-    "Srovnejte 2–5 nemovitostí: yield, cash flow, IRR, DSCR, riziko a fit k profilu. Kategorie vítězů, trade-offs, shareable link a PDF report.",
+    "Srovnejte 2–5 nemovitostí: výnos, peněžní tok, IRR, DSCR, riziko a shodu s profilem. Kategorie vítězů, kompromisy, sdílený odkaz a PDF report.",
   path: routes.investicniRentgenPorovnani,
 });
 

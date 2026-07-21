@@ -6,7 +6,7 @@
 export type MortgageProductStatus =
   | "LIVE"
   | "VERIFIED"
-  | "MODELLED"
+  | "MODEL"
   | "PARTNER_QUOTE"
   | "STALE";
 

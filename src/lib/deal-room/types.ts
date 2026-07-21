@@ -25,7 +25,7 @@ export const DEAL_ROOM_SECTION_LABELS: Record<DealRoomSectionId, string> = {
   documents: "Dokumenty",
   questions: "Dotazy",
   offers: "Nabídky",
-  timeline: "Timeline",
+  timeline: "Časová osa",
   contacts: "Kontakty",
   tasks: "Úkoly",
 };

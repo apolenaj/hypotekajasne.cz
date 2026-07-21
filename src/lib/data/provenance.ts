@@ -21,6 +21,8 @@ export type ProvenanceFields = Pick<
   | "unit"
   | "country"
   | "value"
+  | "provenance"
+  | "internalStorageRef"
 >;
 
 export type MethodologyTopic =
@@ -55,7 +57,7 @@ export const METHODOLOGY_BLURBS: Record<MethodologyTopic, string> = {
   scoring:
     "Osobní investiční průvodce počítá organické skóre 0–100 jako vážený součet shody napříč dimenzemi (kapitál, financování, výnos, riziko, vlastnictví, likvidita, měna, regulace, horizont, účel). Placené partnerství organické skóre nemění — sponzoring musí být označen mimo žebříček.",
   general:
-    "Každé důležité číslo má status (aktuální data / ověřeno / modelový výpočet / nabídka partnera / čeká na aktualizaci), zdroj a datum. Modelový výpočet nikdy nevydáváme za aktuální data.",
+    "Každé důležité číslo má status (aktuální data / ověřeno / model / odhad / neověřeno), veřejný zdroj a datum. Interní soubor není důkazem. Model nikdy nevydáváme za aktuální data.",
 };
 
 export type CountryProvenanceItem = {
@@ -76,7 +78,7 @@ export function getCountryProvenance(
     {
       label: "Hypoteční sazby",
       domain: "rates",
-      status: isCz ? "LIVE" : "MODELLED",
+      status: isCz ? "LIVE" : "MODEL",
       source: isCz
         ? "Oficiální weby českých bank"
         : "Modelové výchozí hodnoty — bez živého bankovního lístku",
@@ -98,7 +100,7 @@ export function getCountryProvenance(
     {
       label: "LTV / DTI limity",
       domain: "ltv",
-      status: isCz ? "VERIFIED" : "MODELLED",
+      status: isCz ? "VERIFIED" : "MODEL",
       source: isCz
         ? "ČNB — makroobezřetnostní doporučení"
         : "Obecný popis trhu (editorial) — ověřte lokální limity",
@@ -110,7 +112,7 @@ export function getCountryProvenance(
     {
       label: "Tržní ceny / výnosy",
       domain: "yields",
-      status: "MODELLED",
+      status: "MODEL",
       source: "Orientační modelová pásma pro srovnání",
       lastVerifiedAt: "2026-04-01",
       notes: "Nejde o nabídku konkrétní nemovitosti.",
@@ -118,7 +120,7 @@ export function getCountryProvenance(
     {
       label: "Historie a predikce",
       domain: "historical",
-      status: "MODELLED",
+      status: "MODEL",
       source: "Ilustrativní model / editorial",
       lastVerifiedAt: "2026-04-01",
       notes: "Nejde o oficiální prognózu.",
@@ -126,10 +128,14 @@ export function getCountryProvenance(
     {
       label: "Právní / daňový přehled",
       domain: "legal",
-      status: "VERIFIED",
-      source: "Editorial přehled země",
+      status: isCz ? "ESTIMATE" : "UNVERIFIED",
+      source: isCz
+        ? "Editorial přehled — ověřte ČÚZK / MF / Finanční správu"
+        : "Orientační přehled bez plné externí provenance",
       lastVerifiedAt: "2026-04-01",
-      notes: "Není individuální právní rada.",
+      notes: isCz
+        ? "Bez individuální právní rady. Ověřené limity ČNB viz LTV/DTI."
+        : "Chybí dostatečná externí provenance → Neověřeno / Odhad.",
     },
   ];
 }
@@ -153,5 +159,7 @@ export function toProvenanceFields(
     validFrom: partial.validFrom ?? null,
     lastFetchedAt: partial.lastFetchedAt ?? null,
     lastVerifiedAt: partial.lastVerifiedAt ?? null,
+    provenance: partial.provenance ?? null,
+    internalStorageRef: partial.internalStorageRef ?? null,
   });
 }

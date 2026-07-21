@@ -77,7 +77,7 @@ describe("Portfolio OS", () => {
     });
     const csv = buildAdvisorExportCsv(r);
     assert.match(csv, /Moje portfolio/);
-    assert.match(csv, /STRESS TESTY/);
+    assert.match(csv, /ZÁTĚŽOVÉ TESTY/);
     assert.match(csv, /METODIKA/);
     assert.match(csv, /Hodnota nemovitostí/);
   });

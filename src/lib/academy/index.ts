@@ -1,5 +1,6 @@
 export * from "@/lib/academy/types";
 export * from "@/lib/academy/catalog";
+export * from "@/lib/academy/related-lessons";
 
 import { routes } from "@/lib/routes";
 

@@ -1,65 +1,64 @@
 /**
- * B2B Professional Portal — architektura jako kód (SaaS vrstva).
- * Dokumentace pro engineering + product; ne marketing copy.
+ * B2B Professional Portal — přehled vrstev pro partnery (klientský jazyk).
  */
 
 export const B2B_ARCHITECTURE_LAYERS = [
   {
     id: "identity",
-    name: "Identity & Organizations",
+    name: "Organizace a role",
     description:
-      "Organization accounts, member roles, org switcher. BETA: localStorage; production: auth provider + org tenancy.",
+      "Účty firem, členové týmu a přepínání mezi organizacemi. Přihlášení a správa přístupů postupně rozšiřujeme.",
   },
   {
     id: "catalog",
-    name: "Property & Project Catalog",
+    name: "Nemovitosti a projekty",
     description:
-      "Agent property submissions; developer projects/units/availability/documents.",
+      "Evidence poptávek makléřů a developerských projektů včetně jednotek a dokumentů.",
   },
   {
     id: "analysis_engine",
-    name: "Analysis Engine (score-isolated)",
+    name: "Analýza (oddělené skóre)",
     description:
-      "Investment metrics computed from independent + modelled data BEFORE payment. Payment unlocks delivery only.",
+      "Investiční ukazatele spočítáme z nezávislých a modelových údajů ještě před platbou. Platba odemyká doručení reportu, skóre nemění.",
   },
   {
     id: "billing",
-    name: "Billing-ready Commerce",
+    name: "Fakturace",
     description:
-      "Invoice drafts, SKUs, line items, tax fields. Stripe/payment gateway hook via externalPaymentIntentId.",
+      "Návrhy faktur, ceníkové položky a daňové údaje. Napojení platební brány připravujeme.",
   },
   {
     id: "report_delivery",
-    name: "Report Delivery",
+    name: "Doručení reportů",
     description:
-      "Report Engine integration — download, PDF-ready HTML, expiring share links.",
+      "Stažení reportu, tisk do PDF a časově omezené odkazy ke sdílení.",
   },
   {
     id: "engagement",
-    name: "Anonymized Engagement",
+    name: "Anonymní sledování zájmu",
     description:
-      "Share link views/downloads — hashed viewer id, no PII in analytics layer.",
+      "Počítáme zobrazení a stažení sdílených odkazů bez osobních údajů v analytice.",
   },
   {
     id: "leads",
-    name: "Qualified Interest (consent-gated)",
+    name: "Kvalifikovaný zájem (se souhlasem)",
     description:
-      "Contact details only after explicit consent record; audit trail required.",
+      "Kontakty ukládáme jen po výslovném souhlasu a s auditním záznamem.",
   },
   {
     id: "audit",
-    name: "Audit Log",
+    name: "Auditní záznam",
     description:
-      "Append-only org-scoped actions — billing, orders, shares, consent events.",
+      "Přehled důležitých akcí v organizaci — objednávky, sdílení, fakturace a souhlasy.",
   },
 ] as const;
 
 export const B2B_SCORE_ISOLATION_RULES = [
-  "Investment score is computed at order creation from independent_data and modelled_estimate only.",
-  "partner_provided fields are displayed separately and never enter score formula.",
-  "Payment status (awaiting_payment → paid) does NOT trigger score recomputation.",
-  "Sponsored placements are visual slots only — doesNotAffectScore: true enforced in types.",
-  "Majetio Property Intelligence branding is delivery attribution, not score modifier.",
+  "Investiční skóre se spočítá při vytvoření objednávky jen z nezávislých dat a modelových odhadů.",
+  "Údaje od partnera zobrazujeme odděleně a do skóre nevstupují.",
+  "Stav platby (čeká na platbu → zaplaceno) skóre znovu nepočítá.",
+  "Sponzorované pozice jsou jen vizuální sloty — skóre nemění.",
+  "Označení Majetio Property Intelligence je attribution doručení, ne úprava skóre.",
 ] as const;
 
 export const B2B_API_SURFACE = [
@@ -70,4 +69,4 @@ export const B2B_API_SURFACE = [
 ] as const;
 
 export const B2B_FUTURE_SUBSCRIPTION_NOTE =
-  "subscription_enterprise plan is architecture-ready (BillingPlanId + invoice drafts) — activation COMING_SOON.";
+  "Firemní předplatné připravujeme — zatím je k dispozici evidence jednotlivých analýz.";

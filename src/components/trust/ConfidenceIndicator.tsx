@@ -22,9 +22,11 @@ export function ConfidenceIndicator({
   const clamped = Math.max(0, Math.min(1, confidence));
   const pct = Math.round(clamped * 100);
 
-  // MODELLED max visual cue — never imply bank-grade confidence
+  // MODEL / ESTIMATE max visual cue — never imply bank-grade confidence
   const capped =
-    status === "MODELLED" ? Math.min(clamped, 0.6) : clamped;
+    status === "MODEL" || status === "ESTIMATE" || status === "UNVERIFIED"
+      ? Math.min(clamped, 0.6)
+      : clamped;
   const displayPct = Math.round(capped * 100);
 
   return (
@@ -47,14 +49,16 @@ export function ConfidenceIndicator({
       >
         <span id={id} className="sr-only">
           Důvěra {pct} procent
-          {status === "MODELLED" ? " (modelový strop)" : ""}
+          {status === "MODEL" || status === "ESTIMATE"
+            ? " (modelový strop)"
+            : ""}
         </span>
         <div
           className={cn(
             "h-full rounded-full transition-[width] duration-300",
-            status === "STALE"
+            status === "STALE" || status === "UNVERIFIED"
               ? "bg-slate-400"
-              : status === "MODELLED"
+              : status === "MODEL" || status === "ESTIMATE"
                 ? "bg-amber-500"
                 : status === "LIVE"
                   ? "bg-deep-teal"

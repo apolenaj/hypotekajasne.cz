@@ -1,6 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import {
+  cloneElement,
+  isValidElement,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type ReactElement,
+} from "react";
 import Link from "next/link";
 import { ClaimBadge } from "@/components/property-rentgen/ClaimBadge";
 import {
@@ -38,7 +47,7 @@ const MODES: { id: RentgenInputMode; label: string; hint: string }[] = [
   {
     id: "upload",
     label: "Nahrání",
-    hint: "Dokumenty a fotky — připravujeme; zatím manuál nebo Prémiová analýza.",
+    hint: "Dokumenty a fotky — připravujeme; zatím manuál nebo detailní analýza.",
   },
 ];
 
@@ -47,36 +56,65 @@ function Field({
   children,
 }: {
   label: string;
-  children: React.ReactNode;
+  children: ReactElement<{ id?: string; "aria-label"?: string }>;
 }) {
+  const id = useId();
   return (
-    <label className="block text-sm">
-      <span className="font-medium text-text-dark">{label}</span>
-      <div className="mt-1.5">{children}</div>
-    </label>
+    <div className="block text-sm">
+      <label htmlFor={id} className="font-medium text-text-dark">
+        {label}
+      </label>
+      <div className="mt-1.5">
+        {isValidElement(children)
+          ? cloneElement(children, { id, "aria-label": undefined })
+          : children}
+      </div>
+    </div>
   );
 }
 
 function TextField({
+  id,
   value,
   onChange,
   placeholder,
+  label,
   inputMode = "text",
+  "aria-label": ariaLabel,
 }: {
+  id?: string;
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
+  label?: string;
   inputMode?: "text" | "numeric" | "url" | "email" | "tel";
+  "aria-label"?: string;
 }) {
-  return (
+  const autoId = useId();
+  const inputId = id ?? (label ? autoId : undefined);
+  const input = (
     <input
+      id={inputId}
       type="text"
       inputMode={inputMode}
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
+      aria-label={label ? undefined : ariaLabel || placeholder || "Textové pole"}
       className="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm outline-none ring-deep-teal/30 focus:ring-2"
     />
+  );
+  if (!label) return input;
+  return (
+    <div>
+      <label
+        htmlFor={inputId}
+        className="mb-1 block text-xs font-semibold text-text-dark"
+      >
+        {label}
+      </label>
+      {input}
+    </div>
   );
 }
 
@@ -92,6 +130,10 @@ export function RentgenToolIsland() {
   const [consent, setConsent] = useState(() =>
     emptyFormConsentState("majetio")
   );
+  const startedRef = useRef(false);
+  const freeViewedRef = useRef(false);
+  const premiumViewedRef = useRef(false);
+  const premiumBlockRef = useRef<HTMLDivElement>(null);
 
   const patch = <K extends keyof ManualPropertyInput>(
     key: K,
@@ -102,6 +144,47 @@ export function RentgenToolIsland() {
     () => (ran ? buildFreePreview(input, mode) : null),
     [ran, input, mode]
   );
+
+  useEffect(() => {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    track("rentgen_started", {
+      tool_id: "property_rentgen",
+      price_band: "free",
+      experiment_id: "free_preview",
+      variant_id: getExperimentVariant("free_preview"),
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!preview || freeViewedRef.current) return;
+    freeViewedRef.current = true;
+    track("free_result_viewed", {
+      tool_id: "property_rentgen",
+      price_band: "free",
+      experiment_id: "free_preview",
+      variant_id: getExperimentVariant("free_preview"),
+    });
+  }, [preview]);
+
+  useEffect(() => {
+    const el = premiumBlockRef.current;
+    if (!el || premiumViewedRef.current) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting || premiumViewedRef.current) return;
+        premiumViewedRef.current = true;
+        track("premium_viewed", {
+          tool_id: "property_rentgen",
+          price_band: "premium",
+        });
+        obs.disconnect();
+      },
+      { threshold: 0.35 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [preview]);
 
   const canPreview =
     mode === "upload"
@@ -123,6 +206,12 @@ export function RentgenToolIsland() {
       return;
     setPremiumLoading(true);
     setPremiumMsg(null);
+    track("premium_cta_clicked", {
+      tool_id: "property_rentgen",
+      price_band: "premium",
+      experiment_id: "free_preview",
+      variant_id: getExperimentVariant("free_preview"),
+    });
     track("analysis_checkout_started", {
       tool_id: "property_rentgen",
       price_band: "premium",
@@ -159,7 +248,7 @@ export function RentgenToolIsland() {
     setPremiumLoading(false);
     setPremiumMsg(
       res.ok
-        ? "Poptávka odeslána. Ozveme se s dalším postupem Prémiové analýzy."
+        ? "Poptávka odeslána. Ozveme se s potvrzením rozsahu a postupem dodání detailní analýzy."
         : res.error
     );
     if (res.ok) {
@@ -341,9 +430,8 @@ export function RentgenToolIsland() {
                   Nahrání dokumentů a fotek
                 </p>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Funkce bude dostupná později. Zatím použijte manuální zadání
-                  výše — nebo objednejte Prémiovou analýzu a podklady předáte
-                  partnerovi bezpečně.
+                  Funkce bude dostupná později. Zatím použijte manuální zadání —
+                  nebo požádejte o detailní analýzu a podklady předáte partnerovi.
                 </p>
                 <ClaimBadge kind="NEOVERENO" className="mt-3" />
               </div>
@@ -354,6 +442,10 @@ export function RentgenToolIsland() {
               disabled={!canPreview || mode === "upload"}
               onClick={() => {
                 setRan(true);
+                track("property_input_completed", {
+                  tool_id: "property_rentgen",
+                  price_band: "free",
+                });
                 track("analysis_started", {
                   tool_id: "property_rentgen",
                   price_band: "free",
@@ -370,11 +462,15 @@ export function RentgenToolIsland() {
           <div className="rounded-2xl border border-border bg-white p-5 sm:p-6">
             {!preview ? (
               <p className="text-sm text-muted-foreground">
-                Výsledek bezplatného náhledu se zobrazí zde: orientační výnos, cena/m²,
-                vhodnost financování a varovné signály — každý s typem claimu.
+                Výsledek bezplatného náhledu se zobrazí zde: orientační výnos,
+                cena/m², vhodnost financování a varovné signály — každý s typem
+                claimu.
               </p>
             ) : (
               <div className="space-y-4">
+                <p className="text-xs font-bold uppercase tracking-wide text-deep-teal">
+                  Bezplatný výsledek
+                </p>
                 <div>
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase text-muted-foreground">
@@ -446,32 +542,54 @@ export function RentgenToolIsland() {
               </div>
             )}
 
-            <div className="mt-6 rounded-xl border border-muted-gold/40 bg-muted-gold/10 p-4">
+            <div
+              ref={premiumBlockRef}
+              id="premium-objednavka"
+              className="mt-6 scroll-mt-28 rounded-xl border border-muted-gold/40 bg-muted-gold/10 p-4"
+            >
               <p className="text-sm font-bold text-text-dark">
                 {formatAnalysisPriceLabel()}
               </p>
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                Navíc oproti free: cash flow, scénáře, náklady, rizika, lokální
+                kontext, závěry a elektronický report.{" "}
+                <strong className="font-semibold text-text-dark">Není</strong>{" "}
+                garantovaný výnos, právní due diligence bez právníka, technická
+                inspekce bez partnera ani schválení banky.
+              </p>
+              <p className="mt-2 text-xs font-semibold text-text-dark">
+                Co následuje po CTA
+              </p>
+              <ul className="mt-1 space-y-1 text-xs text-muted-foreground">
+                {PROPERTY_ANALYSIS_PRICING.ctaNextSteps.map((s) => (
+                  <li key={s}>→ {s}</li>
+                ))}
+              </ul>
               <div className="mt-3 space-y-2">
                 {!isPaidAnalysisCommerciallyAvailable() ? (
                   <p className="rounded-lg border border-border bg-white px-3 py-2 text-xs text-muted-foreground">
                     Připravujeme — zatím můžete zanechat kontakt. Nejde o
-                    objednávku ani platbu.
+                    objednávku ani platbu v e-shopu.
                   </p>
                 ) : null}
                 <TextField
+                  label="Jméno"
                   value={premiumName}
                   onChange={setPremiumName}
-                  placeholder="Jméno"
+                  placeholder="Jan Novák"
                 />
                 <TextField
+                  label="E-mail"
                   value={premiumEmail}
                   onChange={setPremiumEmail}
-                  placeholder="E-mail"
+                  placeholder="jan@email.cz"
                   inputMode="email"
                 />
                 <TextField
+                  label="Telefon"
                   value={premiumPhone}
                   onChange={setPremiumPhone}
-                  placeholder="Telefon"
+                  placeholder="+420 …"
                   inputMode="tel"
                 />
                 <FormConsentFields
@@ -502,8 +620,8 @@ export function RentgenToolIsland() {
                   {premiumLoading
                     ? "Odesílám…"
                     : isPaidAnalysisCommerciallyAvailable()
-                      ? `Objednat · ${formatAnalysisPrice()}`
-                      : "Mám zájem — připravujeme"}
+                      ? `${PROPERTY_ANALYSIS_PRICING.ctaLabel} · ${formatAnalysisPrice()}`
+                      : `${PROPERTY_ANALYSIS_PRICING.ctaLabel} — zanechat zájem`}
                 </button>
                 {premiumMsg ? (
                   <p className="text-xs text-muted-foreground">{premiumMsg}</p>

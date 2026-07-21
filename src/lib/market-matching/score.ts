@@ -1,3 +1,5 @@
+import { statusBadgeLabel } from "@/lib/data/display";
+import { TERM_CS } from "@/lib/i18n/ui-cs";
 import { unifiedDestinations } from "@/lib/unified-destinations";
 import { MARKET_PROFILES, WEIGHTS_VERSION } from "@/lib/market-matching/market-profiles";
 import {
@@ -214,7 +216,7 @@ export function scoreMarket(
 
   if (whyMatches.length === 0) {
     whyMatches.push(
-      "Žádná dimenze nevyniká — match je průměrný; srovnejte s jinými trhy."
+      "Žádná dimenze nevyniká — shoda je průměrná; srovnejte s jinými trhy."
     );
   }
   if (whyNotMatches.length === 0) {
@@ -247,7 +249,7 @@ export function scoreMarket(
     dataFreshness: {
       status: profile.dataStatus,
       lastReviewedAt: profile.lastReviewedAt,
-      label: `${profile.dataStatus} · kontrola ${profile.lastReviewedAt} (před ${ageDays} dny)`,
+      label: `${statusBadgeLabel(profile.dataStatus)} · kontrola ${profile.lastReviewedAt} (před ${ageDays} dny)`,
     },
     breakdown,
     isSponsored: false,
@@ -256,10 +258,10 @@ export function scoreMarket(
 }
 
 function profileLabel(data: PassportFormData): string {
-  if (data.purpose === "yield_max") return "Yield maximizer";
-  if (data.purpose === "partial_use") return "Lifestyle + yield";
+  if (data.purpose === "yield_max") return TERM_CS.yieldMaximizer;
+  if (data.purpose === "partial_use") return TERM_CS.lifestyleYield;
   if (data.purpose === "conservative") return "Konzervativní ochrana hodnoty";
-  if (data.purpose === "flipping") return "Value-add / flipping";
+  if (data.purpose === "flipping") return TERM_CS.valueAddFlipping;
   return "Vyvážený investor";
 }
 
@@ -301,12 +303,12 @@ export function matchMarkets(data: PassportFormData): MatchingResult {
 /** Lidsky čitelný rozklad pro „Proč tento trh získal X/100?“ */
 export function formatMatchExplanation(match: MarketMatchResult): string {
   const lines = [
-    `Overall Match ${match.overallMatch}/100 (organické skóre, weights ${WEIGHTS_VERSION}).`,
-    "Vzorec: Σ (váha × fit), fit = 100 − |atribut trhu − ideál uživatele| (u kapitálu speciální budget fit).",
+    `Celková shoda ${match.overallMatch}/100 (organické skóre, váhy ${WEIGHTS_VERSION}).`,
+    "Vzorec: Σ (váha × shoda), shoda = 100 − |atribut trhu − ideál uživatele| (u kapitálu speciální shoda s rozpočtem).",
     "",
     ...match.breakdown.map(
       (b) =>
-        `• ${b.label}: váha ${(b.weight * 100).toFixed(0)} % × fit ${b.fit} → +${b.weightedContribution.toFixed(1)} b.`
+        `• ${b.label}: váha ${(b.weight * 100).toFixed(0)} % × shoda ${b.fit} → +${b.weightedContribution.toFixed(1)} b.`
     ),
   ];
   return lines.join("\n");

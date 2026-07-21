@@ -45,8 +45,8 @@ export type AlertDeliveryPreference =
   | "off";
 
 export const DELIVERY_PREFERENCE_LABELS: Record<AlertDeliveryPreference, string> = {
-  immediate: "Okamžitě (in-app)",
-  daily_digest: "Denní digest",
+  immediate: "Okamžitě (v aplikaci)",
+  daily_digest: "Denní souhrn",
   weekly_digest: "Týdenní digest",
   off: "Vypnuto",
 };

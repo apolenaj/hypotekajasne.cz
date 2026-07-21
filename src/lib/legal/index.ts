@@ -18,7 +18,26 @@ export {
   ANALYTICS_LEGAL_BASIS,
   CONSENT_PURPOSES,
   PARTNER_TRANSFER_SCOPE_LABELS,
+  buildPartnerTransferCheckboxLabel,
+  buildConsentContextSummary,
   type ConsentPurposeId,
   type PartnerTransferScope,
 } from "@/lib/legal/consent-versions";
 export { getPaidAnalysisTerms } from "@/lib/legal/paid-analysis-terms";
+export {
+  getMortgagePartners,
+  getPrimaryMortgagePartner,
+  partnerPublicDisplayName,
+  isMortgagePartnerIdentityVerified,
+  isMortgagePartnerHandoffReady,
+  partnerJerrsPublicLabel,
+  auditPartnerConfig,
+  COMPENSATION_DISCLOSURE,
+  type MortgagePartner,
+  type MortgagePartnerJerrsStatus,
+} from "@/lib/legal/partner-config";
+export {
+  collectLegalProductionIssues,
+  assertLegalProductionGate,
+  PUBLIC_STAGING_PHRASES,
+} from "@/lib/legal/production-guard";

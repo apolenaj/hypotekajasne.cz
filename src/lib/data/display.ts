@@ -12,12 +12,12 @@ export function isMissingData(
 
 /**
  * Text pro UI při chybějících datech.
- * STALE → „Data ověřujeme“; jinak „Na vyžádání“.
+ * STALE / UNVERIFIED → „Data ověřujeme“; jinak „Na vyžádání“.
  */
 export function missingDataLabel(
   status?: DataStatus | null
 ): "Na vyžádání" | "Data ověřujeme" {
-  if (status === "STALE") return "Data ověřujeme";
+  if (status === "STALE" || status === "UNVERIFIED") return "Data ověřujeme";
   return "Na vyžádání";
 }
 
@@ -63,7 +63,11 @@ export function formatDataValue(
     });
   }
 
-  if (orientational || record.status === "MODELLED") {
+  if (
+    orientational ||
+    record.status === "MODEL" ||
+    record.status === "ESTIMATE"
+  ) {
     return `${formatted} *orientačně`;
   }
   if (record.status === "PARTNER_QUOTE") {
@@ -78,12 +82,16 @@ export function statusBadgeLabel(status: DataStatus): string {
       return "Aktuální data";
     case "VERIFIED":
       return "Ověřeno";
-    case "MODELLED":
-      return "Modelový výpočet";
+    case "MODEL":
+      return "Model";
+    case "ESTIMATE":
+      return "Odhad";
+    case "UNVERIFIED":
+      return "Neověřeno";
     case "PARTNER_QUOTE":
       return "Nabídka partnera";
     case "STALE":
-      return "Čeká na aktualizaci";
+      return "Údaj potřebuje aktualizaci";
     default:
       return status;
   }
@@ -93,15 +101,19 @@ export function statusBadgeLabel(status: DataStatus): string {
 export function statusDescription(status: DataStatus): string {
   switch (status) {
     case "LIVE":
-      return "Údaj ze zdroje, který pravidelně kontrolujeme. Stále nejde o závaznou nabídku banky.";
+      return "Aktuálně načteno z definovaného živého zdroje. Stále nejde o závaznou nabídku banky.";
     case "VERIFIED":
-      return "Manuálně ověřený editorial nebo oficiální rámec (např. ČNB).";
-    case "MODELLED":
-      return "Orientační modelový výpočet — není skutečná bankovní nabídka ani živá kotace.";
+      return "Ověřeno proti primárnímu nebo autoritativnímu externímu zdroji (např. ČNB, ČÚZK). Interní soubor sám o sobě nestačí.";
+    case "MODEL":
+      return "Výsledek modelu nebo kalkulace založené na explicitních předpokladech — není živá kotace.";
+    case "ESTIMATE":
+      return "Odborný nebo datový odhad s nižší jistotou. Berte jako orientační.";
+    case "UNVERIFIED":
+      return "Informace, kterou nemáme dostatečně podloženou externí autoritou.";
     case "PARTNER_QUOTE":
       return "Údaj od partnera — ověřený provozovatelem, ne veřejný ceník.";
     case "STALE":
-      return "Neaktuální nebo chybějící data — ověřujeme, čísla nevymýšlíme.";
+      return "Údaj potřebuje aktualizaci — ověřujeme zdroj a čísla nevymýšlíme.";
     default:
       return "";
   }

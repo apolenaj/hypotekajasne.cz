@@ -77,7 +77,6 @@ function AlertCard({
             <span className="text-[10px] font-bold uppercase text-muted-foreground">
               {ALERT_TYPE_LABELS[alert.type]}
             </span>
-            <span className="text-[10px] font-bold">P{alert.priority}</span>
             <DataStatusBadge status={alert.dataSource.status} />
             <ClaimBadge kind={alert.dataSource.claimKind} />
           </div>
@@ -86,7 +85,7 @@ function AlertCard({
         </div>
         <button
           type="button"
-          aria-label="Zavřít alert"
+          aria-label="Zavřít upozornění"
           onClick={() => onDismiss(alert.id)}
           className="rounded p-1 hover:bg-black/5"
         >
@@ -107,7 +106,7 @@ function AlertCard({
           onClick={() => setShowWhy(!showWhy)}
           className="rounded-full border px-3 py-1 text-xs font-semibold"
         >
-          Why am I seeing this?
+          Proč to vidím?
         </button>
       </div>
       {showWhy && (
@@ -128,18 +127,17 @@ function AlertCard({
               ? "Aktuální data"
               : alert.dataSource.status === "VERIFIED"
                 ? "Ověřeno"
-                : alert.dataSource.status === "MODELLED"
+                : alert.dataSource.status === "MODEL"
                   ? "Modelový výpočet"
                   : alert.dataSource.status === "PARTNER_QUOTE"
                     ? "Nabídka partnera"
-                    : "Čeká na aktualizaci"}
-            {alert.dataSource.recordId ? ` · ${alert.dataSource.recordId}` : ""}
+                    : "Údaj potřebuje aktualizaci"}
           </span>
         </p>
       )}
       {alert.expiresAt && (
         <p className="mt-2 text-[10px] text-muted-foreground">
-          Expiruje: {new Date(alert.expiresAt).toLocaleString("cs-CZ")}
+          Platí do: {new Date(alert.expiresAt).toLocaleString("cs-CZ")}
         </p>
       )}
     </article>
@@ -216,8 +214,8 @@ export function AlertCenterView() {
           <FeatureStatusBadge status={ALERT_CENTER_FEATURE_STATUS} />
           <h1 className="mt-2 font-heading text-3xl font-black">Centrum upozornění</h1>
           <p className="mt-2 max-w-xl text-sm text-emerald-50/90">
-            Centrální alerty ze sazeb, fixace, dokumentů, regulace a transakcí.
-            Deduplication — ne pět alertů o stejné změně.
+            Upozornění na změny sazeb, blížící se konec fixace, dokumenty a
+            regulaci — stejnou změnu sloučíme do jednoho přehledného záznamu.
           </p>
         </div>
       </header>
@@ -225,7 +223,7 @@ export function AlertCenterView() {
       <main className="mx-auto max-w-4xl space-y-8 px-4 py-10">
         {dashboard.dedupedCount > 0 && (
           <p className="text-center text-xs text-muted-foreground">
-            Sloučeno {dashboard.dedupedCount} duplicitních alertů.
+            Sloučeno {dashboard.dedupedCount} podobných upozornění.
           </p>
         )}
 
@@ -234,7 +232,7 @@ export function AlertCenterView() {
           {(
             [
               ["immediate", `Okamžité (${dashboard.immediateAlerts.length})`],
-              ["digest", `Digest (${dashboard.digestAlerts.length})`],
+              ["digest", `Souhrn (${dashboard.digestAlerts.length})`],
               ["all", `Vše (${dashboard.alerts.length})`],
             ] as const
           ).map(([key, label]) => (
@@ -255,8 +253,8 @@ export function AlertCenterView() {
         <section className="space-y-3">
           {list.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Žádné alerty pro zvolený režim — neznamená to „vše OK“, jen absence
-              triggerů nebo vypnuté typy.
+              Pro zvolený režim zatím žádná upozornění — to neznamená, že je
+              vše v pořádku; jen teď nemáme nový podnět nebo máte typ vypnutý.
             </p>
           ) : (
             list.map((a) => (
@@ -329,7 +327,7 @@ export function AlertCenterView() {
         <section className="rounded-2xl border border-border bg-muted/30 p-6">
           <h2 className="flex items-center gap-2 font-heading text-lg font-bold">
             <Bell className="h-5 w-5" />
-            Notification channels
+            Kanály upozornění
           </h2>
           <p className="mt-1 text-xs text-muted-foreground">{dashboard.consentNote}</p>
           <ul className="mt-4 space-y-3">
@@ -342,7 +340,13 @@ export function AlertCenterView() {
                   {ch.channel === "in_app" && <Bell className="h-4 w-4" />}
                   {ch.channel === "email" && <Mail className="h-4 w-4" />}
                   {ch.channel === "push" && <Smartphone className="h-4 w-4" />}
-                  <span className="font-semibold capitalize">{ch.channel.replace("_", "-")}</span>
+                  <span className="font-semibold">
+                    {ch.channel === "in_app"
+                      ? "Na webu"
+                      : ch.channel === "email"
+                        ? "E-mail"
+                        : "Push v prohlížeči"}
+                  </span>
                   <FeatureStatusBadge status={ch.status} />
                 </div>
                 <p className="text-xs text-muted-foreground">{ch.description}</p>
@@ -363,7 +367,8 @@ export function AlertCenterView() {
                         )
                       }
                     />
-                    Opt-in {ch.consentRequired ? "(vyžaduje consent)" : ""}
+                    Zapnout
+                    {ch.consentRequired ? " (vyžaduje souhlas)" : ""}
                   </label>
                 )}
               </li>

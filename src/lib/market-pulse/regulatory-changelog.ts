@@ -13,7 +13,7 @@ export const REGULATORY_CHANGELOG: RegulatoryChangelogEntry[] = [
     summary:
       "Makroobezřetnostní doporučení pro investiční úvěry: LTV maximálně 70 % a DTI limit 7. Týká typicky třetí a další obytné nemovitosti nebo nemovitosti určené k pronájmu.",
     source: "Česká národní banka",
-    sourceUrl: "https://www.cnb.cz/",
+    sourceUrl: "https://www.cnb.cz/cs/financni-stabilita/makroobezretnostni-politika/",
     status: "VERIFIED",
     claimKind: "DATA",
   },
@@ -24,7 +24,7 @@ export const REGULATORY_CHANGELOG: RegulatoryChangelogEntry[] = [
     title: "ČNB — vlastní bydlení LTV 80 % / 90 % (do 36 let)",
     summary: CNB_LIMITS.ownerOccupied.note,
     source: "Česká národní banka",
-    sourceUrl: "https://www.cnb.cz/",
+    sourceUrl: "https://www.cnb.cz/cs/financni-stabilita/makroobezretnostni-politika/",
     status: "VERIFIED",
     claimKind: "DATA",
   },
@@ -36,7 +36,7 @@ export const REGULATORY_CHANGELOG: RegulatoryChangelogEntry[] = [
     summary:
       "Ukazatele DTI a DSTI u úvěrů na vlastní bydlení zůstávají deaktivované — banky je mohou používat interně, nejsou plošně povinné.",
     source: "Česká národní banka",
-    sourceUrl: "https://www.cnb.cz/",
+    sourceUrl: "https://www.cnb.cz/cs/financni-stabilita/makroobezretnostni-politika/",
     status: "VERIFIED",
     claimKind: "DATA",
   },
@@ -47,10 +47,10 @@ export const REGULATORY_CHANGELOG: RegulatoryChangelogEntry[] = [
     title: "Španělsko — regionální regulace krátkodobých pronájmů",
     summary:
       "Municipality (Barcelona, Madrid, Málaga aj.) zpřísňují podmínky pro krátkodobé pronájmy — ověřte konkrétní lokalitu před koupí.",
-    source: "Editorial review — country dossier ES",
+    source: "Přehled země ES (redakční odhad)",
     sourceUrl: null,
-    status: "MODELLED",
-    claimKind: "MODEL",
+    status: "ESTIMATE",
+    claimKind: "ODHAD",
   },
   {
     id: "ae-freehold-zones",
@@ -59,10 +59,10 @@ export const REGULATORY_CHANGELOG: RegulatoryChangelogEntry[] = [
     title: "SAE — freehold zóny pro cizince",
     summary:
       "Vlastnictví freehold je možné v designovaných zónách; mimo ně leasehold nebo jiné struktury. Financování a daňový režim individuálně.",
-    source: "Editorial review — country dossier AE",
+    source: "Přehled země AE (redakční odhad)",
     sourceUrl: null,
-    status: "MODELLED",
-    claimKind: "MODEL",
+    status: "ESTIMATE",
+    claimKind: "ODHAD",
   },
   {
     id: "id-foreign-ownership",
@@ -71,10 +71,10 @@ export const REGULATORY_CHANGELOG: RegulatoryChangelogEntry[] = [
     title: "Indonésie — omezení přímého vlastnictví pro cizince",
     summary:
       "Cizinci typicky využívají leasehold / strukturované holdingy — ověřte právní rámec před transakcí.",
-    source: "Editorial review — country dossier ID",
+    source: "Přehled země ID (redakční odhad)",
     sourceUrl: null,
-    status: "MODELLED",
-    claimKind: "MODEL",
+    status: "ESTIMATE",
+    claimKind: "ODHAD",
   },
   {
     id: "sa-vision2030",
@@ -83,10 +83,10 @@ export const REGULATORY_CHANGELOG: RegulatoryChangelogEntry[] = [
     title: "SA — podmínky vlastnictví pro cizince (Vision 2030)",
     summary:
       "Rámec se vyvíjí v rámci Vision 2030 — individuální due diligence a lokální právník nutný.",
-    source: "Editorial review — country dossier SA",
+    source: "Přehled země SA (redakční odhad)",
     sourceUrl: null,
-    status: "MODELLED",
-    claimKind: "MODEL",
+    status: "ESTIMATE",
+    claimKind: "ODHAD",
   },
 ];
 

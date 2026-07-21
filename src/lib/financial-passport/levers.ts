@@ -42,7 +42,7 @@ export function rankScoreLevers(
       id: "pay_consumer",
       title: "Splatit spotřebitelské splátky",
       simulationId: "pay_off_loan",
-      rationale: "Odstranění měsíčních splátek zvedá affordability i debt_load.",
+      rationale: "Odstranění měsíčních splátek zvedá dostupnost i dimenzi zadlužení.",
     },
     {
       id: "add_equity",
@@ -56,7 +56,7 @@ export function rankScoreLevers(
       title: "Navýšit čistý příjem (+5 tis.)",
       simulationId: "increase_income",
       amount: 5_000,
-      rationale: "Vyšší příjem posílí affordability i odolnost.",
+      rationale: "Vyšší příjem posílí dostupnost i odolnost.",
     },
     {
       id: "cheaper",

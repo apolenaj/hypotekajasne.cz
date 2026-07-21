@@ -108,7 +108,7 @@ export function runPipelineCore(
     stats.autoPublished += 1;
     const next: MortgageProduct = {
       ...product,
-      status: product.status === "MODELLED" ? "MODELLED" : product.status,
+      status: product.status === "MODEL" ? "MODEL" : product.status,
     };
     decisions.push({
       product: next,

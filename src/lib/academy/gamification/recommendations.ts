@@ -17,7 +17,7 @@ function estimateLtv(profile: FinancialProfileAnswers | null): number | null {
 
 /**
  * Situační doporučení — Copilot-style, bez halucinací.
- * Vychází z Financial Passport / readiness profilu.
+ * Vychází z Finanční pas / readiness profilu.
  */
 export function recommendLessons(
   profile: FinancialProfileAnswers | null = loadFinancialProfile()
@@ -105,7 +105,7 @@ export function recommendLessons(
       id: "rec_default_ltv",
       lessonSlug: "ltv",
       headline: "Začněte 5min lekcí LTV — základ každého hypotečního rozhodnutí.",
-      reason: "Bez profilu doporučujeme univerzální základ — doplníte Financial Passport pro personalizaci.",
+      reason: "Bez profilu doporučujeme univerzální základ — doplníte Finanční pas pro personalizaci.",
       estimatedMinutes: 5,
       characterId: "banker_bohous",
       tryOnScenarioHref: routes.financniPas,

@@ -4,7 +4,7 @@ import type { ComparePropertyInput } from "@/lib/property-compare/types";
 export const DEMO_COMPARE_PROPERTIES: ComparePropertyInput[] = [
   {
     id: "demo_a",
-    label: "Property A — Ostrava byt",
+    label: "Nemovitost A — Ostrava byt",
     country: "Česká republika",
     city: "Ostrava",
     propertyType: "Byt",
@@ -20,7 +20,7 @@ export const DEMO_COMPARE_PROPERTIES: ComparePropertyInput[] = [
   },
   {
     id: "demo_b",
-    label: "Property B — Praha byt",
+    label: "Nemovitost B — Praha byt",
     country: "Česká republika",
     city: "Praha",
     propertyType: "Byt",

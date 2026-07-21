@@ -16,6 +16,7 @@ import {
   navCta,
   type NavLinkItem,
 } from "@/lib/navigation";
+import { useFocusTrap } from "@/lib/a11y/focus-trap";
 import { loadReadiness } from "@/lib/mortgage-readiness/storage";
 import { cn } from "@/lib/utils";
 
@@ -54,6 +55,7 @@ function NavItemLink({
       >
         <span className="inline-flex items-center gap-2">
           {item.label}
+          <span className="sr-only"> (otevře se v novém okně)</span>
           <ExternalLink className="h-3.5 w-3.5 shrink-0 opacity-60" aria-hidden />
         </span>
       </a>
@@ -112,12 +114,13 @@ function DesktopDropdown({
       <button
         type="button"
         aria-expanded={open}
-        aria-haspopup="menu"
+        aria-haspopup="true"
         aria-controls={menuId}
         onClick={() => setOpen((value) => !value)}
         className={cn(
           "inline-flex h-10 items-center gap-1 rounded-lg px-2 text-sm font-medium text-gray-600",
           "transition-colors hover:bg-deep-teal/5 hover:text-deep-teal",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal focus-visible:ring-offset-2",
           open && "bg-deep-teal/5 text-deep-teal"
         )}
       >
@@ -134,7 +137,6 @@ function DesktopDropdown({
       {open ? (
         <div
           id={menuId}
-          role="menu"
           className={cn(
             "absolute top-full z-[100] pt-1",
             align === "right" ? "right-0" : "left-0"
@@ -190,25 +192,18 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openMobileGroup, setOpenMobileGroup] = useState<string | null>(null);
   const drawerTitleId = useId();
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   const closeMobile = useCallback(() => {
     setMobileOpen(false);
     setOpenMobileGroup(null);
   }, []);
 
-  useEffect(() => {
-    if (!mobileOpen) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeMobile();
-    };
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = prev;
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [mobileOpen, closeMobile]);
+  useFocusTrap(mobileOpen, drawerRef, {
+    onEscape: closeMobile,
+    initialFocusRef: closeButtonRef,
+  });
 
   return (
     <header
@@ -266,7 +261,7 @@ export function Navbar() {
           <HeaderCta className="hidden max-w-[10rem] truncate px-3 text-xs sm:inline-flex" />
           <button
             type="button"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-deep-teal transition-colors hover:bg-gray-50"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-deep-teal transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal"
             onClick={() => setMobileOpen(true)}
             aria-expanded={mobileOpen}
             aria-controls="mobile-nav-drawer"
@@ -279,6 +274,7 @@ export function Navbar() {
 
       {mobileOpen ? (
         <div
+          ref={drawerRef}
           id="mobile-nav-drawer"
           className="fixed inset-0 z-[60] xl:hidden"
           role="dialog"
@@ -290,6 +286,7 @@ export function Navbar() {
             className="absolute inset-0 bg-black/40"
             aria-label="Zavřít menu"
             onClick={closeMobile}
+            tabIndex={-1}
           />
           <div className="absolute inset-y-0 right-0 flex w-full max-w-sm flex-col bg-white shadow-2xl">
             <div className="flex h-14 shrink-0 items-center justify-between border-b border-gray-100 px-4">
@@ -300,8 +297,9 @@ export function Navbar() {
                 Menu
               </p>
               <button
+                ref={closeButtonRef}
                 type="button"
-                className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-deep-teal hover:bg-gray-50"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-deep-teal hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal"
                 onClick={closeMobile}
                 aria-label="Zavřít menu"
               >

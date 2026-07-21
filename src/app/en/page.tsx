@@ -4,8 +4,6 @@ import { buildPageMetadata } from "@/lib/seo/metadata";
 import { t } from "@/lib/i18n/messages";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { crumbs } from "@/lib/seo/breadcrumbs";
-import { JsonLdScript } from "@/components/seo/JsonLdScript";
-import { organizationJsonLd, webSiteJsonLd } from "@/lib/seo/json-ld";
 import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = buildPageMetadata({
@@ -19,6 +17,7 @@ export const metadata: Metadata = buildPageMetadata({
 
 /**
  * Curated EN hub — not a machine-translated mirror of the Czech site.
+ * Organization/WebSite JSON-LD lives in root layout only (no duplicate graph).
  */
 export default function EnglishHubPage() {
   const copy = t("en").enHub;
@@ -29,7 +28,6 @@ export default function EnglishHubPage() {
         <Breadcrumbs
           items={crumbs({ name: "English", path: "/en" })}
         />
-        <JsonLdScript data={[organizationJsonLd(), webSiteJsonLd()]} />
 
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-deep-teal">
           Locale · en
@@ -81,7 +79,7 @@ export default function EnglishHubPage() {
           <p className="mt-4 text-xs text-muted-foreground">
             Related:{" "}
             <Link href={routes.duvera} className="text-deep-teal underline">
-              Trust Center (CS)
+              Trust & methodology (CS)
             </Link>
             {" · "}
             <Link href={routes.metodika} className="text-deep-teal underline">

@@ -1,33 +1,35 @@
 "use client";
 
 import Link from "next/link";
-import { DataStatusBadge } from "@/components/trust/DataStatusBadge";
 import { DataSourcePopover } from "@/components/trust/DataSourcePopover";
-import { LastUpdated } from "@/components/trust/LastUpdated";
-import { StaleDataAlert } from "@/components/trust/StaleDataAlert";
 import { MethodologyDrawer } from "@/components/trust/MethodologyDrawer";
+import { RateProvenanceBanner } from "@/components/calculators/RateProvenanceBanner";
 import { marketAggregateToRecords } from "@/lib/data/live-rates";
 import { withEffectiveStatus } from "@/lib/data/freshness";
 import {
   TRACKED_CZ_BANKS_COUNT,
   TRACKED_MARKETS_COUNT,
 } from "@/lib/destination-metrics";
-import { useCurrentRates } from "@/lib/rates";
+import { useMortgageRateEngine } from "@/lib/rates";
 import { routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
+function uiKindLabel(kind: "LIVE" | "OVĚŘENO" | "MODEL"): string {
+  if (kind === "LIVE") return "Aktuální data";
+  if (kind === "OVĚŘENO") return "Ověřeno";
+  return "Modelový výpočet";
+}
+
 export function LiveDataTrustBar({ className }: { className?: string }) {
-  const { rates, loading } = useCurrentRates();
+  const { rates, loading, resolved } = useMortgageRateEngine(true);
   const live = withEffectiveStatus(
     marketAggregateToRecords(rates).withInsurance
   );
-  const status = live.status;
-  const hasLive = status === "LIVE" && live.value != null;
 
-  const rateLabel =
-    hasLive && typeof live.value === "number"
-      ? `od ${live.value.toLocaleString("cs-CZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %`
-      : null;
+  const rateLabel = `${resolved.ratePercent.toLocaleString("cs-CZ", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })} %`;
 
   return (
     <section
@@ -57,16 +59,16 @@ export function LiveDataTrustBar({ className }: { className?: string }) {
               Stav dat
             </p>
             <div className="mt-1 flex flex-wrap items-center gap-1.5">
-              {loading ? (
+              {loading && resolved.isModelFallback ? (
                 <span className="text-sm text-muted-foreground">Načítám…</span>
               ) : (
                 <>
-                  <DataStatusBadge status={status} />
-                  {rateLabel && (
-                    <span className="text-xs font-medium tabular-nums text-muted-foreground">
-                      {rateLabel}
-                    </span>
-                  )}
+                  <span className="inline-flex items-center rounded-md bg-deep-teal/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-deep-teal ring-1 ring-inset ring-deep-teal/20">
+                    {uiKindLabel(resolved.uiKind)}
+                  </span>
+                  <span className="text-xs font-medium tabular-nums text-muted-foreground">
+                    {rateLabel}
+                  </span>
                   <DataSourcePopover
                     record={live}
                     methodologyTopic="rates"
@@ -80,14 +82,13 @@ export function LiveDataTrustBar({ className }: { className?: string }) {
             <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
               Poslední update
             </p>
-            <div className="mt-1">
-              <LastUpdated
-                at={rates.updatedAt}
-                status={status}
-                label=""
-                className="text-sm font-semibold text-text-dark [&_span]:hidden"
-              />
-            </div>
+            <p className="mt-1 text-sm font-semibold tabular-nums text-text-dark">
+              {resolved.lastVerifiedAt
+                ? new Date(resolved.lastVerifiedAt).toLocaleDateString("cs-CZ")
+                : rates.updatedAt
+                  ? new Date(rates.updatedAt).toLocaleDateString("cs-CZ")
+                  : "—"}
+            </p>
           </li>
         </ul>
 
@@ -101,9 +102,9 @@ export function LiveDataTrustBar({ className }: { className?: string }) {
           </Link>
         </div>
       </div>
-      {!loading && status === "STALE" && (
+      {(resolved.isModelFallback || resolved.uiKind === "OVĚŘENO") && (
         <div className="mx-auto max-w-7xl px-4 pb-3 sm:px-6 lg:px-8">
-          <StaleDataAlert />
+          <RateProvenanceBanner resolved={resolved} />
         </div>
       )}
     </section>

@@ -40,7 +40,7 @@ export function buildOfferStrategyModel(
           : 50_000,
     },
     methodology: [
-      "Všechny ceny a výnosy jsou MODEL — ne garantovaná valuace.",
+      "Všechny ceny a výnosy jsou orientační model — ne garantovaná valuace.",
       "Fair-value rozsah zadává uživatel nebo import z analýzy (Rentgen).",
       "Konkurence se promítá jen pokud verified = true.",
       "Opening discount reflektuje DOM, stav, urgenci — ne manipulaci.",

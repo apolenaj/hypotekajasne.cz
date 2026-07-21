@@ -3,6 +3,8 @@
  */
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
+import fs from "node:fs";
+import path from "node:path";
 import {
   absoluteUrl,
   getSiteOrigin,
@@ -10,7 +12,12 @@ import {
   shouldNoIndex,
 } from "@/lib/seo/site";
 import { buildPageMetadata } from "@/lib/seo/metadata";
-import { STATIC_PAGE_SEO, countryGuideSeoEntries } from "@/lib/seo/pages";
+import {
+  STATIC_PAGE_SEO,
+  countryGuideSeoEntries,
+  findStaticPageSeo,
+  getStaticPageSeo,
+} from "@/lib/seo/pages";
 import {
   articleJsonLd,
   breadcrumbListJsonLd,
@@ -19,6 +26,7 @@ import {
   organizationJsonLd,
   videoObjectJsonLd,
   webApplicationJsonLd,
+  webSiteJsonLd,
 } from "@/lib/seo/json-ld";
 import {
   buildSitemapBucket,
@@ -28,6 +36,12 @@ import {
 import { formatCurrency, formatDate, formatNumber } from "@/lib/i18n/format";
 import { LOCALES, localizedPath, stripLocalePrefix } from "@/lib/i18n/config";
 import { PUBLISHED_EN_PATHS } from "@/lib/i18n/messages";
+import {
+  MORTGAGE_MECHANICS_CLUSTER,
+  assertMechanicsClusterComplete,
+  getRelatedMechanicsLessons,
+} from "@/lib/academy/related-lessons";
+import { getCountryThematicCluster } from "@/lib/country-dossier/thematic-cluster";
 
 describe("site canonical strategy", () => {
   it("uses production hypotekajasne.cz origin by default", () => {
@@ -104,6 +118,20 @@ describe("metadata builder", () => {
     });
     assert.equal((m.robots as { index?: boolean }).index, false);
   });
+
+  it("getStaticPageSeo builds page-specific canonical (not homepage)", () => {
+    const m = getStaticPageSeo("/faq");
+    assert.equal(m.alternates?.canonical, "https://hypotekajasne.cz/faq");
+    assert.notEqual(m.alternates?.canonical, "https://hypotekajasne.cz");
+    assert.equal(
+      (m.openGraph as { url?: string }).url,
+      "https://hypotekajasne.cz/faq"
+    );
+  });
+
+  it("getStaticPageSeo throws on unknown path", () => {
+    assert.throws(() => getStaticPageSeo("/does-not-exist-seo"), /missing/i);
+  });
 });
 
 describe("sitemap index", () => {
@@ -125,17 +153,46 @@ describe("sitemap index", () => {
     assert.ok(urls.some((u) => u.includes("/faq")));
   });
 
+  it("pages bucket excludes thank-you / noIndex catalog entries", () => {
+    const urls = buildSitemapBucket("pages").map((e) => e.url);
+    assert.ok(!urls.some((u) => u.includes("/dekujeme")));
+  });
+
+  it("academy bucket includes cesty hub and path pages", () => {
+    const pageUrls = buildSitemapBucket("pages").map((e) => e.url);
+    const urls = buildSitemapBucket("academy").map((e) => e.url);
+    assert.ok(pageUrls.some((u) => u.endsWith("/akademie/cesty")));
+    assert.ok(urls.some((u) => u.includes("/akademie/cesty/first_home")));
+    assert.ok(urls.some((u) => u.includes("/akademie/ltv")));
+  });
+
   it("articles and academy buckets are non-empty", () => {
     assert.ok(buildSitemapBucket("articles").length > 0);
     assert.ok(buildSitemapBucket("academy").length > 0);
     assert.ok(buildSitemapBucket("countries").length > 0);
   });
+
+  it("every STATIC_PAGE_SEO path (except noIndex) is in pages sitemap or is home", () => {
+    const urls = new Set(buildSitemapBucket("pages").map((e) => e.url));
+    for (const p of STATIC_PAGE_SEO) {
+      if (p.noIndex || p.path === "/dekujeme") continue;
+      assert.ok(
+        urls.has(absoluteUrl(p.path)),
+        `missing from sitemap: ${p.path}`
+      );
+    }
+  });
 });
 
 describe("json-ld — no fake reviews", () => {
-  it("organization has no aggregateRating", () => {
+  it("organization has @id matching WebSite publisher", () => {
     const org = organizationJsonLd();
+    const site = webSiteJsonLd();
     assert.equal(org["@type"], "Organization");
+    assert.equal(org["@id"], "https://hypotekajasne.cz/#organization");
+    assert.deepEqual(site.publisher, {
+      "@id": "https://hypotekajasne.cz/#organization",
+    });
     assert.equal(org.aggregateRating, undefined);
     assert.equal(org.review, undefined);
   });
@@ -190,6 +247,74 @@ describe("json-ld — no fake reviews", () => {
       { name: "FAQ", path: "/faq" },
     ]);
     assert.equal(bc["@type"], "BreadcrumbList");
+  });
+});
+
+describe("academy + country SEO clusters", () => {
+  it("mortgage mechanics cluster is complete and cross-linked", () => {
+    assert.deepEqual(assertMechanicsClusterComplete(), []);
+    for (const slug of MORTGAGE_MECHANICS_CLUSTER) {
+      const related = getRelatedMechanicsLessons(slug);
+      assert.equal(related.length, MORTGAGE_MECHANICS_CLUSTER.length - 1);
+      assert.ok(!related.some((r) => r.slug === slug));
+    }
+  });
+
+  it("country thematic cluster covers financing→taxes→ownership→calcs→academy", () => {
+    const links = getCountryThematicCluster("cz");
+    const topics = new Set(links.map((l) => l.topic));
+    for (const t of [
+      "financing",
+      "taxes",
+      "ownership",
+      "calculators",
+      "academy",
+    ] as const) {
+      assert.ok(topics.has(t), `missing topic ${t}`);
+    }
+  });
+});
+
+describe("app pages must not inherit homepage-only raw metadata", () => {
+  it("no page.tsx exports raw Metadata object without buildPageMetadata/getStaticPageSeo", () => {
+    const appRoot = path.resolve("src/app");
+    const offenders: string[] = [];
+
+    function walk(dir: string) {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          walk(full);
+          continue;
+        }
+        if (entry.name !== "page.tsx") continue;
+        const src = fs.readFileSync(full, "utf8");
+        const hasRaw =
+          /export const metadata:\s*Metadata\s*=\s*\{/.test(src) ||
+          /export const metadata\s*=\s*\{\s*\n\s*title:/.test(src);
+        const usesBuilder =
+          src.includes("buildPageMetadata(") ||
+          src.includes("getStaticPageSeo(") ||
+          src.includes("rootMetadata");
+        if (hasRaw && !usesBuilder) {
+          offenders.push(path.relative(process.cwd(), full));
+        }
+      }
+    }
+
+    walk(appRoot);
+    assert.deepEqual(offenders, []);
+  });
+
+  it("catalog paths used by getStaticPageSeo exist in STATIC_PAGE_SEO", () => {
+    for (const required of [
+      "/investicni-rentgen",
+      "/akademie/cesty",
+      "/faq",
+      "/kontakt",
+    ]) {
+      assert.ok(findStaticPageSeo(required), required);
+    }
   });
 });
 

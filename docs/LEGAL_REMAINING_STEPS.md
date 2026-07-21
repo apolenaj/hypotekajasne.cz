@@ -1,6 +1,19 @@
 # Zbývající externí právní kroky
 
-Stav k 2026-07-20. Veřejné UI už **nezobrazuje** TODO / „Legal review required“ / názvy env. Níže jsou kroky, které musí dokončit provozovatel + právník **mimo** produktový kód.
+Stav k 2026-07-21 (PROMPT 17E). Veřejné UI **nezobrazuje** staging fráze („doplníme“, „čeká na ověření“). Níže jsou kroky, které musí dokončit provozovatel + právník **mimo** produktový kód.
+
+**Tento dokument neznamená právní compliance.** Finální review musí udělat kvalifikovaný český právník.
+
+## Centrální SoT v kódu
+
+| Oblast | Soubor / env |
+|--------|----------------|
+| Provozovatel | `src/lib/legal/operator.ts` — `LEGAL_OPERATOR_*` |
+| Hypoteční partner | `src/lib/legal/partner-config.ts` — `LEGAL_PARTNER_*` |
+| Souhlasy | `src/lib/legal/consent-versions.ts` (verze `2026-07-20.1`) |
+| CI gate | `npm run check:legal` / `LEGAL_STRICT_PRODUCTION=true` |
+
+Dokud chybí `LEGAL_PARTNER_LEGAL_NAME` + `LEGAL_PARTNER_ICO` + `LEGAL_PARTNER_JERRS_URL`, je **partner handoff vypnutý** (formuláře = provozovatel-only, nezávazná konzultace).
 
 ## Blokuje placené služby
 
@@ -15,35 +28,40 @@ Stav k 2026-07-20. Veřejné UI už **nezobrazuje** TODO / „Legal review requi
    - do té doby UI: „Připravujeme“ / evidence zájmu, ne koupě
 3. **Spotřebitelské podmínky digitální služby** (odstoupení, reklamace, dodání) — finální text českého právníka před zapnutím plateb.
 
+## Blokuje produkční partner handoff
+
+4. **Ověřit a vyplnit partnera** (veřejná data — nastavte i `NEXT_PUBLIC_…` varianty, aby client formuláře a API měly stejný stav):
+   - `LEGAL_PARTNER_LEGAL_NAME` / `NEXT_PUBLIC_LEGAL_PARTNER_LEGAL_NAME`
+   - `LEGAL_PARTNER_ICO` / `NEXT_PUBLIC_LEGAL_PARTNER_ICO`
+   - `LEGAL_PARTNER_JERRS_URL` / `NEXT_PUBLIC_LEGAL_PARTNER_JERRS_URL`
+   - volitelně role / licence summary / scope
+5. Po vyplnění ověřit `/partneri` a že formuláře znovu vyžadují partner-transfer checkbox.
+6. Pro hard CI gate: `LEGAL_STRICT_PRODUCTION=true`.
+
 ## GDPR / cookies (soulad s implementací)
 
 Implementace dnes:
 
 - analytika i marketing cookies **jen po souhlasu** (banner + `ConsentGatedScripts`)
 - preference v **localStorage** prohlížeče
-- formulářové souhlasy: vyřízení žádosti / předání partnerovi / marketing — oddělené checkboxy
+- formulářové souhlasy: vyřízení žádosti / předání partnerovi / marketing — oddělené checkboxy + shrnutí správce / účel / „nejde o banku“
 
 Zbývá externě:
 
-4. **Doba uchování** poptávek a marketingových souhlasů — potvrdit právníkem (veřejný text je záměrně opatrný).
-5. **Seznam zpracovatelů** (hosting, databáze, e-mail) — doplnit konkrétní subjekty a DPA smlouvy; veřejný text dnes říká „doplní provozovatel“.
-6. **Meta Pixel / GA** — pokud se zapnou ID v env, ověřit že policy + banner pokrývají skutečné cookies (marketing je zatím tenčí než plný pixel stack).
-7. **Serverový audit trail cookie souhlasů** (volitelné) — dnes jen client storage; právník rozhodne, zda stačí.
-
-## Partneři / regulace
-
-8. **Ověření partnerů v JERRS / ČNB** a zveřejnění odkazu na `/partneri` (stav „Čeká na ověření“).
-9. Potvrdit, že web **není** zprostředkovatel dle z. č. 257/2016 Sb. — text regulovaných hranic už je ve veřejném UI; právník zkontroluje formulaci.
+7. **Doba uchování** poptávek a marketingových souhlasů — potvrdit právníkem.
+8. **Seznam zpracovatelů** (hosting, databáze, e-mail) — konkrétní subjekty a DPA.
+9. **Meta Pixel / GA** — pokud se zapnou ID v env, ověřit policy + banner.
+10. **Serverový audit trail cookie souhlasů** (volitelné).
 
 ## Editorial / YMYL
 
-10. Finální review GDPR, smluv, zásad a cookies kvalifikovaným českým právníkem.
-11. Review textů Akademie / Magazín u YMYL tvrzení (autor + odborná kontrola už v šabloně).
+11. Finální review GDPR, smluv, zásad a cookies kvalifikovaným českým právníkem.
+12. Review textů Akademie / Magazín u YMYL tvrzení.
 
 ## Co záměrně nevymýšlíme
 
 - IČO / DIČ / obchodní jméno bez ověření
-- falešné licence partnerů
+- falešné licence partnerů / JERRS odkazy
 - detailní odstoupení u digitálního obsahu před právním textem
 - doby uchování „jako by byly finální“, dokud nejsou potvrzené
 

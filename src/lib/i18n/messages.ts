@@ -53,7 +53,7 @@ export const messages: Record<Locale, MessageTree> = {
         "Czech information platform: mortgage data, market comparisons and calculators — not a bank. Licensed advice via partners.",
     },
     nav: {
-      trust: "Trust Center",
+      trust: "Trust & methodology",
       methodology: "Methodology",
       contact: "Contact",
     },

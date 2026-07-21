@@ -24,7 +24,7 @@ export function seedDemoDealRoomDocuments(
       },
       {
         id: "dr_doc_reservation",
-        label: "Rezervační smlouva (draft)",
+        label: "Rezervační smlouva (koncept)",
         vaultDocumentId: null,
         visibleToRoles: ["user"],
         claimKind: "NEOVERENO",

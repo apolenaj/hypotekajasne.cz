@@ -132,7 +132,7 @@ export const DEMO_DEVELOPER_PROJECT: DeveloperProject = {
       id: "plan_standard",
       projectId: "proj_rezidence_vltava",
       name: "Standardní platební plán",
-      disclaimer: "MODEL — finální podmínky ve smlouvě s developerem.",
+      disclaimer: "Orientační model — finální podmínky ve smlouvě s developerem.",
       installments: [
         {
           dueAt: "2026-08-01",

@@ -1,10 +1,7 @@
-import type { Metadata } from "next";
+import { getStaticPageSeo } from "@/lib/seo/pages";
 import { LegalView } from "@/components/sections/LegalView";
 
-export const metadata: Metadata = {
-  title: "Zásady | HypotékaJasně.cz",
-  description: "Zásady používání platformy HypotékaJasně.cz.",
-};
+export const metadata = getStaticPageSeo("/pravni/zasady");
 
 export default function ZasadyPage() {
   return <LegalView type="zasady" />;
