@@ -7,7 +7,7 @@ import {
   sectionTitle,
   sourcesSection,
 } from "@/lib/country-dossier/build";
-import { LEGAL_REVIEW_AS_OF } from "@/lib/country-dossier/shared";
+import { LEGAL_REVIEW_AS_OF, dossierEditorialLegalReviewText } from "@/lib/country-dossier/shared";
 import type { CountryDossier, FinancingLane } from "@/lib/country-dossier/types";
 
 function euFinancingLanes(maxLtvNote: string): FinancingLane[] {
@@ -176,8 +176,8 @@ function euBase(
     },
     sourcesSection(
       {
-        text: `Poslední právní review: ${LEGAL_REVIEW_AS_OF}`,
-        source: "HypotékaJasně.cz (redakční review)",
+        text: dossierEditorialLegalReviewText("EU trhy"),
+        source: "HypotekaJasne.cz (redakční review)",
         sourceUrl: null,
         asOf: LEGAL_REVIEW_AS_OF,
         status: "ESTIMATE",

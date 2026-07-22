@@ -14,7 +14,7 @@ import {
 } from "@/lib/financing/types";
 
 const DISCLAIMER =
-  "Orientační model HypotékaJasně.cz. Nejde o nabídku ani příslib schválení. Produkty a sazby bez ověřeného zdroje nezobrazujeme jako dostupné.";
+  "Orientační model Hypotéka Jasně. Nejde o nabídku ani příslib schválení. Produkty a sazby bez ověřeného zdroje nezobrazujeme jako dostupné.";
 
 function emptyResult(
   input: FinancingCalculationInput,

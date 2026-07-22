@@ -1,10 +1,12 @@
 import { routes } from "@/lib/routes";
-import { getAcademyLessonPath } from "@/lib/academy";
+import { getAcademyLessonPath } from "@/lib/academy/lesson-path";
 import type {
   AcademyCharacter,
   AcademyCharacterId,
+  AcademyProgressStore,
   LearningPath,
   LearningPathId,
+  LearningPathStep,
   LessonToolBridge,
 } from "@/lib/academy/gamification/types";
 
@@ -85,12 +87,20 @@ function quizStep(slug: string, label: string) {
   };
 }
 
+/** Primární cesty — zobrazené jako hlavní nabídka. */
+export const PRIMARY_LEARNING_PATH_IDS: LearningPathId[] = [
+  "first_home",
+  "first_investment",
+  "refinance",
+  "foreign_property",
+];
+
 export const LEARNING_PATHS: LearningPath[] = [
   {
     id: "first_home",
-    title: "První bydlení",
-    subtitle: "LTV, DSTI a fixace — základ před první prohlídkou.",
-    persona: "Vlastní bydlení, první hypotéka",
+    title: "První hypotéka",
+    subtitle: "LTV, DSTI, RPSN a fixace — základ před první prohlídkou.",
+    persona: "Vlastní bydlení",
     guideCharacterId: "banker_bohous",
     badgeId: "ready_first_viewing",
     steps: [
@@ -121,32 +131,34 @@ export const LEARNING_PATHS: LearningPath[] = [
     ],
   },
   {
-    id: "osvc_mortgage",
-    title: "Hypotéka pro OSVČ",
-    subtitle: "DTI, DSTI a doložení příjmů — bez slibů schválení.",
-    persona: "OSVČ / živnostník",
-    guideCharacterId: "banker_bohous",
-    badgeId: "understand_ltv",
+    id: "first_investment",
+    title: "Investiční nemovitost",
+    subtitle: "Peněžní tok, DTI a páka — základy investora.",
+    persona: "První investiční byt",
+    guideCharacterId: "investor_igor",
+    badgeId: "investor_basics_complete",
     steps: [
-      lessonStep("dti", "Lekce: DTI", 5),
-      quizStep("dti", "Kvíz: DTI"),
-      lessonStep("dsti", "Lekce: DSTI", 4),
-      quizStep("dsti", "Kvíz: DSTI"),
-      lessonStep("ltv", "Lekce: LTV a akontace", 5),
+      lessonStep("ltv", "Lekce: LTV (páka)", 5),
       quizStep("ltv", "Kvíz: LTV"),
+      lessonStep("cash-flow", "Lekce: Peněžní tok", 5),
+      quizStep("cash-flow", "Kvíz: Peněžní tok"),
+      lessonStep("dti", "Lekce: DTI", 4),
+      quizStep("dti", "Kvíz: DTI"),
+      lessonStep("snowball", "Lekce: Sněhová koule", 4),
+      quizStep("snowball", "Kvíz: Sněhová koule"),
       {
         kind: "calculator",
-        id: "calc_osvc_readiness",
-        label: "Hypoteční připravenost",
-        href: routes.navrhNaMiru,
-        estimatedMinutes: 8,
+        id: "calc_investment_rentgen",
+        label: "Investiční rentgen",
+        href: routes.investicniRentgen,
+        estimatedMinutes: 10,
         weight: 0.2,
       },
       {
         kind: "practical_task",
-        id: "task_osvc_vault",
-        label: "Praktický úkol: checklist dokumentů OSVČ",
-        href: routes.documentVault,
+        id: "task_investment_model",
+        label: "Praktický úkol: modelovat první byt",
+        href: routes.investicniRentgenModelar,
         estimatedMinutes: 15,
         weight: 0.15,
       },
@@ -185,42 +197,8 @@ export const LEARNING_PATHS: LearningPath[] = [
     ],
   },
   {
-    id: "first_investment",
-    title: "První investiční byt",
-    subtitle: "Peněžní tok, DTI a páka — základy investora.",
-    persona: "První investiční nemovitost",
-    guideCharacterId: "investor_igor",
-    badgeId: "investor_basics_complete",
-    steps: [
-      lessonStep("ltv", "Lekce: LTV (páka)", 5),
-      quizStep("ltv", "Kvíz: LTV"),
-      lessonStep("cash-flow", "Lekce: Peněžní tok", 5),
-      quizStep("cash-flow", "Kvíz: Peněžní tok"),
-      lessonStep("dti", "Lekce: DTI", 4),
-      quizStep("dti", "Kvíz: DTI"),
-      lessonStep("snowball", "Lekce: Sněhová koule", 4),
-      quizStep("snowball", "Kvíz: Sněhová koule"),
-      {
-        kind: "calculator",
-        id: "calc_investment_rentgen",
-        label: "Investiční rentgen",
-        href: routes.investicniRentgen,
-        estimatedMinutes: 10,
-        weight: 0.2,
-      },
-      {
-        kind: "practical_task",
-        id: "task_investment_model",
-        label: "Praktický úkol: modelovat první byt",
-        href: routes.investicniRentgenModelar,
-        estimatedMinutes: 15,
-        weight: 0.15,
-      },
-    ],
-  },
-  {
     id: "foreign_property",
-    title: "Zahraniční nemovitost",
+    title: "Koupě v zahraničí",
     subtitle: "Freehold, off-plan, escrow — právní a finanční rámec.",
     persona: "Nákup mimo ČR",
     guideCharacterId: "property_detective",
@@ -252,6 +230,38 @@ export const LEARNING_PATHS: LearningPath[] = [
         label: "Praktický úkol: checklist prověrky",
         href: routes.dueDiligence,
         estimatedMinutes: 20,
+        weight: 0.15,
+      },
+    ],
+  },
+  {
+    id: "osvc_mortgage",
+    title: "Hypotéka pro OSVČ",
+    subtitle: "DTI, DSTI a doložení příjmů — bez slibů schválení.",
+    persona: "OSVČ / živnostník",
+    guideCharacterId: "banker_bohous",
+    badgeId: "understand_ltv",
+    steps: [
+      lessonStep("dti", "Lekce: DTI", 5),
+      quizStep("dti", "Kvíz: DTI"),
+      lessonStep("dsti", "Lekce: DSTI", 4),
+      quizStep("dsti", "Kvíz: DSTI"),
+      lessonStep("ltv", "Lekce: LTV a akontace", 5),
+      quizStep("ltv", "Kvíz: LTV"),
+      {
+        kind: "calculator",
+        id: "calc_osvc_readiness",
+        label: "Hypoteční připravenost",
+        href: routes.navrhNaMiru,
+        estimatedMinutes: 8,
+        weight: 0.2,
+      },
+      {
+        kind: "practical_task",
+        id: "task_osvc_vault",
+        label: "Praktický úkol: checklist dokumentů OSVČ",
+        href: routes.documentVault,
+        estimatedMinutes: 15,
         weight: 0.15,
       },
     ],
@@ -300,6 +310,57 @@ export function getAcademyPathHref(pathId: LearningPathId): string {
   return `${routes.akademie}/cesty/${pathId}`;
 }
 
+export function isPrimaryLearningPath(id: LearningPathId): boolean {
+  return PRIMARY_LEARNING_PATH_IDS.includes(id);
+}
+
+export function estimatePathReadingMinutes(path: LearningPath): number {
+  return path.steps.reduce((sum, step) => sum + step.estimatedMinutes, 0);
+}
+
+function isStepDone(
+  store: AcademyProgressStore,
+  step: LearningPathStep
+): boolean {
+  switch (step.kind) {
+    case "lesson":
+      return step.lessonSlug
+        ? Boolean(store.lessonReadAt[step.lessonSlug])
+        : false;
+    case "quiz":
+      return step.lessonSlug
+        ? Boolean(store.quizPassedAt[step.lessonSlug])
+        : false;
+    case "calculator":
+      return Boolean(store.calculatorUsedAt[step.id]);
+    case "practical_task":
+      return Boolean(store.practicalTaskDoneAt[step.id]);
+    default:
+      return false;
+  }
+}
+
+/** Další nedokončený krok — preferuje lekci, jinak první otevřený krok. */
+export function getNextRecommendedStep(
+  path: LearningPath,
+  store: AcademyProgressStore
+): LearningPathStep | null {
+  const incomplete = path.steps.filter((s) => !isStepDone(store, s));
+  if (incomplete.length === 0) return null;
+  return (
+    incomplete.find((s) => s.kind === "lesson") ??
+    incomplete.find((s) => s.kind === "quiz") ??
+    incomplete[0] ??
+    null
+  );
+}
+
+export function getPathCalculatorStep(
+  path: LearningPath
+): LearningPathStep | null {
+  return path.steps.find((s) => s.kind === "calculator") ?? null;
+}
+
 /** Education → tool → personalized result */
 export const LESSON_TOOL_BRIDGES: LessonToolBridge[] = [
   {
@@ -339,6 +400,18 @@ export const LESSON_TOOL_BRIDGES: LessonToolBridge[] = [
     description: "Cash flow na konkrétní nemovitost v modeláři.",
   },
   {
+    lessonSlug: "snowball",
+    label: "Vyzkoušet na mém vlastním scénáři",
+    href: routes.portfolio,
+    description: "Sněhová koule v kontextu portfolia (MODEL).",
+  },
+  {
+    lessonSlug: "americka-hypoteka",
+    label: "Vyzkoušet na mém vlastním scénáři",
+    href: routes.refinanceRadar,
+    description: "Americká hypotéka vs. refinancování — orientační model.",
+  },
+  {
     lessonSlug: "freehold-vs-leasehold",
     label: "Vyzkoušet na mém vlastním scénáři",
     href: routes.dueDiligence,
@@ -349,6 +422,12 @@ export const LESSON_TOOL_BRIDGES: LessonToolBridge[] = [
     label: "Vyzkoušet na mém vlastním scénáři",
     href: routes.dueDiligence,
     description: "Off-plan položky v Due Diligence Engine.",
+  },
+  {
+    lessonSlug: "escrow",
+    label: "Vyzkoušet na mém vlastním scénáři",
+    href: routes.dueDiligence,
+    description: "Escrow a jistotní účet v checklistu prověrky.",
   },
   {
     lessonSlug: "inflace",

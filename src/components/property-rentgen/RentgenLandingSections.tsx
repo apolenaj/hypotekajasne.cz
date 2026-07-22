@@ -1,12 +1,13 @@
 import Link from "next/link";
-import { ClaimBadge, ClaimLegend } from "@/components/property-rentgen/ClaimBadge";
+import { ClaimBadge, ClaimLegend, MethodBadge } from "@/components/property-rentgen/ClaimBadge";
 import {
-  ANALYSIS_PRODUCT_TIERS,
-  ANONYMOUS_DEMO_REPORT,
+  ANONYMOUS_SAMPLE_REPORT,
   RENTGEN_FAQ,
   RENTGEN_METRICS_CATALOG,
   formatAnalysisPrice,
   formatTierPrice,
+  getAnalysisTier,
+  getRentgenPremiumConfig,
   withAnalysisPrice,
   PROPERTY_ANALYSIS_PRICING,
 } from "@/lib/property-rentgen";
@@ -143,7 +144,7 @@ export function RentgenMetricsGrid() {
           id="metrics-heading"
           className="font-heading text-2xl font-bold text-text-dark sm:text-3xl"
         >
-          12 hlavních metrik
+          14 hlavních metrik
         </h2>
         <p className="mt-3 text-sm text-muted-foreground">
           Bezplatný náhled pokrývá základ; zbytek je v detailní analýze.
@@ -171,7 +172,7 @@ export function RentgenMetricsGrid() {
 }
 
 export function RentgenDemoReport() {
-  const demo = ANONYMOUS_DEMO_REPORT;
+  const demo = ANONYMOUS_SAMPLE_REPORT;
   return (
     <section
       id="ukazka"
@@ -187,7 +188,7 @@ export function RentgenDemoReport() {
             id="demo-heading"
             className="font-heading text-2xl font-bold text-text-dark sm:text-3xl"
           >
-            Ukázka anonymizované struktury reportu
+            Ukázka struktury reportu (13 sekcí)
           </h2>
         </div>
         <p className="mt-2 text-sm text-muted-foreground">{demo.subtitle}</p>
@@ -195,13 +196,43 @@ export function RentgenDemoReport() {
           {demo.disclaimer}
         </p>
 
+        <div className="mt-8 space-y-4">
+          {demo.sections.map((section) => (
+            <article
+              key={section.id}
+              className="overflow-hidden rounded-2xl border border-border bg-white shadow-sm"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-[#f7f8f7] px-5 py-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    {section.title}
+                  </p>
+                  <p className="text-[10px] font-bold uppercase text-deep-teal">
+                    {section.tier === "free" ? "Free snapshot" : "Premium report"}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  <MethodBadge method={section.method} />
+                  <ClaimBadge kind={section.claimKind} />
+                </div>
+              </div>
+              <div className="px-5 py-4">
+                <p className="text-sm text-text-dark">{section.summary}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{section.methodNote}</p>
+                <ul className="mt-3 list-disc pl-5 text-sm text-muted-foreground">
+                  {section.bullets.map((b) => (
+                    <li key={b}>{b}</li>
+                  ))}
+                </ul>
+              </div>
+            </article>
+          ))}
+        </div>
+
         <div className="mt-8 overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
           <div className="border-b border-border bg-deep-teal px-5 py-4 text-white">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-gold">
-              {demo.title}
-            </p>
-            <p className="mt-1 font-heading text-lg font-bold">
-              Demo ID: {demo.id}
+              Kompaktní metriky (DEMO)
             </p>
           </div>
           <div className="grid gap-0 sm:grid-cols-2">
@@ -227,18 +258,18 @@ export function RentgenDemoReport() {
           </div>
           <div className="border-t border-border bg-[#f7f8f7] px-5 py-4">
             <p className="text-xs font-semibold uppercase text-deep-teal">
-              Vhodnost financování (DEMO)
+              Financing fit (DEMO)
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
               <ClaimBadge kind={demo.financingFit.kind} className="mr-2" />
               {demo.financingFit.value}
             </p>
             <p className="mt-3 text-xs font-semibold uppercase text-amber-800">
-              Varovné signály (DEMO)
+              Warning signals (DEMO)
             </p>
             <ul className="mt-1 space-y-1">
-              {demo.redFlags.map((f) => (
-                <li key={f.text} className="text-sm text-muted-foreground">
+              {demo.warningSignals.map((f) => (
+                <li key={f.id} className="text-sm text-muted-foreground">
                   <ClaimBadge kind={f.kind} className="mr-2" />
                   {f.text}
                 </li>
@@ -283,6 +314,8 @@ export function RentgenFaq() {
 
 export function RentgenPricing() {
   const p = PROPERTY_ANALYSIS_PRICING;
+  const premiumCfg = getRentgenPremiumConfig();
+  const tiers = getAnalysisTier();
   return (
     <section
       id="cena"
@@ -297,12 +330,15 @@ export function RentgenPricing() {
           Co je zdarma, za co platíte
         </h2>
         <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
-          Jedna cena detailní analýzy: {formatAnalysisPrice()}. Pokročilá due
-          diligence není e-shop produkt — jen individuální poptávka.
+          Jedna cena detailní analýzy: {formatAnalysisPrice()}. Premium stav:{" "}
+          <strong>{premiumCfg.statusLabel}</strong>
+          {!premiumCfg.commerciallyActive
+            ? " — bez fake checkoutu, jen zájem nebo příprava."
+            : "."}
         </p>
 
         <div className="mt-8 grid gap-5 lg:grid-cols-3">
-          {ANALYSIS_PRODUCT_TIERS.map((tier) => {
+          {tiers.map((tier) => {
             const isPremium = tier.id === "premium";
             const isInquiry = tier.id === "advanced_inquiry";
             return (
@@ -321,7 +357,13 @@ export function RentgenPricing() {
                       : "text-xs font-bold uppercase tracking-wide text-deep-teal"
                   }
                 >
-                  {isInquiry ? "Na poptávku" : isPremium ? "Placené" : "Zdarma"}
+                  {isInquiry
+                    ? "Na poptávku"
+                    : isPremium
+                      ? premiumCfg.commerciallyActive
+                        ? "Placené · aktivní"
+                        : "Placené · Připravujeme"
+                      : "Zdarma"}
                 </p>
                 <p className="mt-2 font-heading text-xl font-bold text-text-dark">
                   {tier.name}
@@ -348,6 +390,24 @@ export function RentgenPricing() {
                 </ul>
                 {isPremium ? (
                   <>
+                    {!premiumCfg.commerciallyActive ? (
+                      <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-950">
+                        Připravujeme — produkt zatím nelze koupit online. Formulář
+                        slouží k evidenci zájmu, ne k platbě.
+                      </p>
+                    ) : (
+                      <p className="mt-3 text-xs font-semibold text-text-dark">
+                        Deliverable: elektronický report se 13 sekcemi (viz ukázka).
+                      </p>
+                    )}
+                    <p className="mt-3 text-xs font-semibold text-text-dark">
+                      Dodání (SLA)
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {premiumCfg.deliverySla.configured
+                        ? premiumCfg.deliverySla.label
+                        : premiumCfg.deliverySla.note}
+                    </p>
                     <p className="mt-3 text-xs font-semibold text-text-dark">
                       Po CTA
                     </p>
@@ -360,7 +420,9 @@ export function RentgenPricing() {
                       href="#nastroj"
                       className="mt-6 inline-flex w-full items-center justify-center rounded-lg bg-muted-gold px-4 py-3 text-sm font-bold text-[#0b3d3a]"
                     >
-                      {p.ctaLabel}
+                      {premiumCfg.commerciallyActive
+                        ? p.ctaLabel
+                        : `${p.ctaLabel} — Připravujeme`}
                     </a>
                   </>
                 ) : tier.id === "free" ? (

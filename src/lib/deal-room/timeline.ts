@@ -93,7 +93,7 @@ export function buildDefaultContacts(): import("@/lib/deal-room/types").DealRoom
     },
     {
       role: "mortgage_specialist",
-      label: "Licencovaný specialista",
+      label: "Hypoteční partner",
       email: null,
       phone: null,
       connected: false,

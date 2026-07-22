@@ -4,6 +4,7 @@ import {
   computeDimensionScores,
   overallFromDimensions,
 } from "@/lib/financial-passport/dimensions";
+import { buildNextActions } from "@/lib/financial-passport/next-actions";
 import {
   ageToRange,
   fromReadinessAnswers,
@@ -19,7 +20,11 @@ import type {
   PassportFinancing,
   PassportRisk,
 } from "@/lib/financial-passport/types";
-import { PASSPORT_CLAIM_NOTE } from "@/lib/financial-passport/types";
+import {
+  FINANCING_STATUS_LABELS,
+  PASSPORT_CLAIM_NOTE,
+  READINESS_BAND_LABELS,
+} from "@/lib/financial-passport/types";
 import type { ReadinessAnswers } from "@/lib/mortgage-readiness/types";
 
 function totalIncome(p: FinancialProfileAnswers): number {
@@ -206,6 +211,8 @@ export function buildFinancialPassportDocument(
       : null;
 
   const incomeStabDim = dimensions.find((d) => d.id === "income_stability");
+  const band = profileBand(overall);
+  const financingStatus = financingStatusFromScore(overall);
 
   const goals: string[] = [];
   if (profile.intent) goals.push(purposeLabel(profile.intent));
@@ -297,9 +304,12 @@ export function buildFinancialPassportDocument(
     readiness: {
       overall,
       dimensions,
-      band: profileBand(overall),
-      financingStatus: financingStatusFromScore(overall),
+      band,
+      bandLabel: READINESS_BAND_LABELS[band] ?? band,
+      financingStatus,
+      financingStatusLabel: FINANCING_STATUS_LABELS[financingStatus],
       topLevers: [],
+      nextActions: buildNextActions(profile, rate, overall),
       claimKind: "MODEL",
     },
     strengths: result.strengths,

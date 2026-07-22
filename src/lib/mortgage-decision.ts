@@ -4,7 +4,12 @@
  */
 
 import { calculateAnnuityPayment } from "@/lib/calculators";
-import { getRecommendedMaxLtv, type MortgagePurpose } from "@/lib/cnb-limits";
+import type { MortgagePurpose } from "@/lib/cnb-limits";
+import {
+  AGE_PURPOSE_DEPENDENCY_NOTICE,
+  evaluateCzMortgageRegulation,
+  type MortgageRegulationResult,
+} from "@/lib/mortgage-regulation";
 import {
   maxLoanFromPayment,
   totalPaidAndInterest as totalPaidAndInterestCore,
@@ -20,7 +25,8 @@ export type HouseholdInput = {
 
 export type MortgageDecisionInput = {
   purpose: MortgagePurpose;
-  age: number;
+  /** null = věk neznámý — engine neaplikuje young LTV */
+  age: number | null;
   netIncome: number;
   incomeSource: IncomeSource;
   household: HouseholdInput;
@@ -43,6 +49,10 @@ export type MortgageDecisionInput = {
   /** Reprezentativní RPSN jen se validním příkladem */
   representativeApr: number | null;
   hasValidAprExample: boolean;
+  /** Již vlastněné obytné (bez kupované); null = neznámé */
+  numberOfOwnedResidentialProperties?: number | null;
+  investmentPurpose?: boolean | null;
+  effectiveDate?: string;
 };
 
 export type StressScenario = {
@@ -79,6 +89,8 @@ export type MortgageDecisionResult = {
   /** RPSN pouze pokud korektně dostupné */
   rpsn: number | null;
   rateUsed: number | null;
+  regulation: MortgageRegulationResult;
+  agePurposeNotice: string;
   disclaimer: string;
 };
 
@@ -230,7 +242,7 @@ function buildScenario(
     { label: string; description: string }
   > = {
     bank_max: {
-      label: "Modelový maximální rozpočet",
+      label: "Orientační maximum",
       description:
         "Orientační horní hranice podle zadaných údajů. Skutečné podmínky a maximální úvěr stanoví banka.",
     },
@@ -313,13 +325,17 @@ function buildScenario(
 export function calculateMortgageDecision(
   input: MortgageDecisionInput
 ): MortgageDecisionResult {
-  const youngBoost = input.age > 0 && input.age < 36;
-  const maxLtvPercent =
-    input.purpose === "investment"
-      ? getRecommendedMaxLtv("investment")
-      : youngBoost
-        ? 90
-        : getRecommendedMaxLtv("owner_occupied");
+  const regulation = evaluateCzMortgageRegulation({
+    purpose: input.purpose,
+    age: input.age,
+    numberOfOwnedResidentialProperties:
+      input.numberOfOwnedResidentialProperties ?? null,
+    investmentPurpose:
+      input.investmentPurpose ?? input.purpose === "investment",
+    applicantType: "individual",
+    effectiveDate: input.effectiveDate,
+  });
+  const maxLtvPercent = regulation.maxLtv;
 
   const requestedLoan = Math.max(0, input.propertyPrice - input.ownFunds);
   const requestedLtv =
@@ -380,7 +396,11 @@ export function calculateMortgageDecision(
         ? input.representativeApr
         : null,
     rateUsed: input.nominalRate,
-    disclaimer:
-      "Výsledky jsou orientační model HypotékaJasně.cz. Nejde o nabídku ani příslib schválení úvěru bankou. Individuální posouzení provádí licencovaný specialista / banka.",
+    regulation,
+    agePurposeNotice: AGE_PURPOSE_DEPENDENCY_NOTICE,
+    disclaimer: [
+      "Výsledky jsou orientační model Hypotéka Jasně. Nejde o nabídku ani příslib schválení úvěru bankou. Individuální posouzení provádí banka / partner po ověření identity.",
+      regulation.frameworkDisclaimer,
+    ].join(" "),
   };
 }

@@ -6,6 +6,7 @@
  */
 
 import type { AnalyticsEventName } from "@/lib/analytics/events";
+import { PRODUCT_KPIS, KPI_PRIVACY_NOTE } from "@/lib/analytics/kpi";
 
 export type FunnelStageId =
   | "traffic"
@@ -40,6 +41,8 @@ export const FUNNEL_STAGES: FunnelStage[] = [
     entryEvents: [
       "primary_cta_clicked",
       "homepage_intent_selected",
+      "intent_selected",
+      "homepage_view",
       "onboarding_started",
       "moznosti_started",
       "calculator_started",
@@ -47,9 +50,12 @@ export const FUNNEL_STAGES: FunnelStage[] = [
       "passport_started",
       "investment_pass_started",
       "rentgen_started",
+      "property_xray_started",
       "analysis_started",
+      "refinance_radar_started",
       "copilot_opened",
       "market_viewed",
+      "market_compare_started",
       "country_viewed",
       "country_calculator_started",
     ],
@@ -65,8 +71,11 @@ export const FUNNEL_STAGES: FunnelStage[] = [
       "result_viewed",
       "prescore_completed",
       "passport_completed",
+      "financial_passport_created",
       "investment_pass_completed",
+      "investment_passport_completed",
       "free_result_viewed",
+      "property_xray_completed",
       "financing_option_selected",
       "market_compared",
     ],
@@ -77,6 +86,7 @@ export const FUNNEL_STAGES: FunnelStage[] = [
     description: "Consenting lead success or premium checkout intent.",
     entryEvents: [
       "lead_form_submitted_success",
+      "lead_form_submitted",
       "lead_submitted",
       "premium_cta_clicked",
       "analysis_checkout_started",
@@ -88,7 +98,7 @@ export const FUNNEL_STAGES: FunnelStage[] = [
     id: "partner_handoff",
     label: "Partner handoff",
     description: "Explicit transfer to licensed partner or Majetio.",
-    entryEvents: ["partner_handoff", "majetio_clicked"],
+    entryEvents: ["partner_handoff", "partner_handoff_requested", "majetio_clicked"],
   },
   {
     id: "mortgage_completed",
@@ -164,25 +174,29 @@ export type FunnelDashboardSpec = {
   privacyNote: string;
   northStar: typeof NORTH_STAR_FUNNEL;
   stages: FunnelStage[];
+  kpis: typeof PRODUCT_KPIS;
   recommendedWidgets: string[];
 };
 
 export const FUNNEL_DASHBOARD_SPEC: FunnelDashboardSpec = {
-  version: "2026-07-21.17M",
+  version: "2026-07-22.19M",
   currencyDisplay: "CZK",
-  privacyNote:
-    "Dashboard metrics use event counts and coarse buckets only — no incomes, loan amounts, emails, phones, or Copilot free text.",
+  privacyNote: KPI_PRIVACY_NOTE,
   northStar: NORTH_STAR_FUNNEL,
   stages: FUNNEL_STAGES,
+  kpis: PRODUCT_KPIS,
   recommendedWidgets: [
-    "North-star: page_view → primary_cta_clicked → onboarding_completed → lead_form_submitted_success",
+    "North-star: homepage_view → primary_cta_clicked → onboarding_completed → lead_form_submitted",
+    "KPI: kpi_calculator_completion_rate (calculator_completed / calculator_started)",
+    "KPI: kpi_lead_conversion (lead_form_submitted / lead_form_started)",
+    "KPI: kpi_qualified_lead_rate (lead_qualified on lead_form_submitted)",
+    "KPI: kpi_investment_xray_completion (property_xray_completed / property_xray_started)",
+    "KPI: kpi_refinancing_activation (refinance_radar_started / page_view on radar)",
+    "KPI: kpi_returning_users_share (visitor_type=returning)",
+    "KPI: kpi_market_compare_lead_conversion (after market_compare_started)",
     "Onboarding step drop-off (onboarding_step_completed by step)",
-    "onboarding_abandoned rate by last step",
-    "Calculator start → result_viewed → specialist_cta_clicked by tool_id",
-    "market_viewed → country_calculator_started → lead by country_id",
-    "Rentgen: rentgen_started → free_result_viewed → premium_cta_clicked",
-    "Copilot: copilot_opened → copilot_question_submitted (question_category only)",
-    "Lead form: lead_form_started → success vs lead_form_error by error_code",
+    "Rentgen: property_xray_started → property_xray_completed → premium_cta_clicked",
+    "Attribution: events by utm_source / utm_medium / utm_campaign (consent only)",
     "Experiment uplift (hero / CTA / form / preview / majetio)",
   ],
 };

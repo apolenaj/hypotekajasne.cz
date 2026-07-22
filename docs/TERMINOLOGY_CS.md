@@ -35,6 +35,23 @@ Jednotný zdroj pravdy pro veřejnou češtinu. Implementace: `src/lib/i18n/ui-c
 | Overall Match | Celková shoda |
 | Premium Data Dossier | Prémiový datový přehled země |
 
+## CTA slovesa (progressive disclosure)
+
+| Akce | Veřejná čeština |
+|---|---|
+| Primary product CTA | Zjistit moje možnosti |
+| Spočítat výsledek nástroje | Spočítat |
+| Další krok ve wizardu | Pokračovat |
+| Uložení výsledku | Uložit výsledek |
+| Úprava vstupů | Upravit vstupy |
+| Odeslání leadu | Odeslat |
+| Disclosure výpočtu | Jak jsme to spočítali |
+| Panel po výsledku | Co mám udělat dál? |
+
+Na každé významné stránce / výsledku: **jedno** primary CTA. Detaily (LTV, stress, předpoklady) až po kliknutí na „Jak jsme to spočítali“.
+
+Implementace: `src/lib/ux/cta.ts`, `ExplainDisclosure`, `WhatNextPanel`.
+
 ## Doménové termíny
 
 | EN / hybrid | CS |
@@ -61,13 +78,17 @@ Jednotný zdroj pravdy pro veřejnou češtinu. Implementace: `src/lib/i18n/ui-c
 
 ## Statusy dat (badge)
 
-| Enum | CS label |
+| Enum | Veřejný label (PROMPT 13) |
 |---|---|
-| LIVE | Aktuální data |
-| VERIFIED | Ověřeno |
-| MODELLED | Modelový výpočet |
-| PARTNER_QUOTE | Nabídka partnera |
-| STALE | Údaj potřebuje aktualizaci |
+| LIVE | LIVE |
+| VERIFIED | VERIFIED |
+| MODEL | MODEL |
+| ESTIMATE | ESTIMATE |
+| UNVERIFIED | UNVERIFIED |
+| STALE | NEEDS UPDATE |
+| PARTNER_QUOTE | PARTNER OFFER |
+
+Vysvětlení: `src/lib/data/public-methodology.ts` (`PUBLIC_STATUS_MEANINGS`).
 
 ## Statusy funkcí
 

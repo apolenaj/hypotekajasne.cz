@@ -6,23 +6,28 @@ import { routes } from "@/lib/routes";
 const STATUS_ROWS = [
   {
     id: "DATA",
-    label: "DATA",
-    text: "Údaj ze zdroje, který pravidelně kontrolujeme (např. sazby bank).",
+    label: "Data",
+    text: "Údaj ze zdroje, který kontrolujeme (např. sazby z bankovních dat).",
   },
   {
     id: "MODEL",
-    label: "MODEL",
+    label: "Model",
     text: "Orientační výpočet platformy — není živá kotace ani nabídka banky.",
   },
   {
     id: "ODHAD",
-    label: "ODHAD",
+    label: "Odhad",
     text: "Hrubý odhad z dostupných vstupů; vyžaduje ověření.",
+  },
+  {
+    id: "NEOVERENO",
+    label: "Neověřeno",
+    text: "Informace, kterou zatím nemáme dostatečně podloženou.",
   },
 ] as const;
 
 /**
- * Trust band — statusy, metodika, role, partner (bez falešných čísel).
+ * Trust — silná zpráva + malé vysvětlení statusů.
  */
 export function HomeTrustBlock() {
   return (
@@ -39,16 +44,15 @@ export function HomeTrustBlock() {
             id="home-trust-heading"
             className="mt-2 font-heading text-2xl font-bold text-text-dark sm:text-3xl"
           >
-            DATA / MODEL / ODHAD — vždy víte, co čtete
+            Data, model nebo odhad? Vždy víte, s čím pracujete.
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground sm:text-base">
-            Hypotéka Jasně je informační platforma. Nejsme banka ani licencovaný
-            zprostředkovatel. Individuální zprostředkování provádí partner — jen
-            se souhlasem a jen pokud je jeho identita zveřejněna.
+            U čísel a tvrzení ukazujeme status. Bez marketingových superlativů a
+            bez vydávání modelu za nabídku banky.
           </p>
         </div>
 
-        <ul className="mt-6 grid gap-3 sm:grid-cols-3">
+        <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {STATUS_ROWS.map((row) => (
             <li
               key={row.id}
@@ -77,23 +81,11 @@ export function HomeTrustBlock() {
             Metodika
           </Link>
           <Link
-            href={routes.zdroje}
-            className="inline-flex h-11 items-center gap-2 rounded-lg border border-border bg-white px-4 text-sm font-semibold text-text-dark hover:border-deep-teal/40"
-          >
-            Zdroje
-          </Link>
-          <Link
             href={routes.duvera}
             className="inline-flex h-11 items-center gap-2 rounded-lg border border-border bg-white px-4 text-sm font-semibold text-text-dark hover:border-deep-teal/40"
           >
             <ShieldCheck className="h-4 w-4" aria-hidden />
             Centrum důvěry
-          </Link>
-          <Link
-            href={routes.partneri}
-            className="inline-flex h-11 items-center gap-2 rounded-lg border border-border bg-white px-4 text-sm font-semibold text-text-dark hover:border-deep-teal/40"
-          >
-            Partneři
           </Link>
         </div>
       </div>

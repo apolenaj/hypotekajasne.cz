@@ -42,7 +42,7 @@ const CNB_PROVENANCE_BASE: Omit<ExternalProvenance, "title"> = {
 
   lastCheckedAt: CNB_CHECKED,
 
-  reviewedBy: "redakce HypotékaJasně",
+  reviewedBy: "redakce Hypotéka Jasně",
 
   reviewMethod: "Manuální kontrola oficiální stránky ČNB",
 
@@ -218,7 +218,7 @@ export const REGULATORY_RECORDS = {
 
       title: "Modelový práh DSTI varování",
 
-      organization: "HypotékaJasně.cz — model",
+      organization: "HypotekaJasne.cz — model",
 
       url: null,
 
@@ -266,7 +266,7 @@ export const REGULATORY_RECORDS = {
 
       title: "Modelový práh DSTI nebezpečí",
 
-      organization: "HypotékaJasně.cz — model",
+      organization: "HypotekaJasne.cz — model",
 
       url: null,
 

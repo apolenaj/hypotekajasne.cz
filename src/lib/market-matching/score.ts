@@ -3,6 +3,7 @@ import { TERM_CS } from "@/lib/i18n/ui-cs";
 import { unifiedDestinations } from "@/lib/unified-destinations";
 import { MARKET_PROFILES, WEIGHTS_VERSION } from "@/lib/market-matching/market-profiles";
 import {
+  DIMENSION_HINTS_CS,
   DIMENSION_LABELS_CS,
   DIMENSION_WEIGHTS,
   MATCH_DIMENSIONS,
@@ -11,6 +12,7 @@ import {
   type MarketMatchResult,
   type MarketProfile,
   type MatchingResult,
+  type ScoreChangeHint,
   type UserPreferenceProfile,
 } from "@/lib/market-matching/types";
 
@@ -37,91 +39,185 @@ export type PassportFormData = {
   phone: string;
 };
 
-const BUDGET_MULTIPLIER = 3;
+/** What-if overrides — přepočítá organické skóre bez partner vlivu. */
+export type WhatIfParams = {
+  capitalCzk: number;
+  horizon: HorizonChoice;
+  /** 0–100: požadovaný výnos (agresivita) */
+  yieldAppetite: number;
+  /** 0–100: tolerance rizika (vyšší = více rizika OK) */
+  riskTolerance: number;
+  /** vlastní užívání vs investice */
+  useMode: "investment" | "own_use" | "mixed";
+};
+
+export const BUDGET_MULTIPLIER = 3;
 
 function clamp(n: number, min = 0, max = 100): number {
   return Math.max(min, Math.min(max, n));
 }
 
-/** Fit: jak blízko je trh ideálu uživatele (0–100). */
+/** Fit: jak blízko je trh ideálu uživatele (0–100). Deterministické. */
 export function dimensionFit(marketValue: number, userIdeal: number): number {
   return clamp(100 - Math.abs(marketValue - userIdeal));
 }
 
 export function buildUserIdeals(data: PassportFormData): DimensionScores {
   const ideals: DimensionScores = {
-    required_capital: 70,
-    financing_availability: 70,
-    target_yield: 55,
-    volatility_risk: 65,
-    ownership_security: 75,
+    capital_fit: 70,
+    financing_fit: 70,
+    yield_potential: 55,
+    ownership_accessibility: 75,
     liquidity: 65,
-    currency_risk: 70,
-    regulation: 70,
-    investment_horizon: 60,
-    intended_use: 65,
+    fx_risk: 70,
+    regulatory_complexity: 70,
+    tax_complexity: 68,
+    operational_complexity: 65,
+    user_goal_fit: 65,
   };
 
   if (data.financing === "max_leverage") {
-    ideals.financing_availability = 92;
-    ideals.required_capital = 75;
+    ideals.financing_fit = 92;
+    ideals.capital_fit = 75;
   } else if (data.financing === "partial") {
-    ideals.financing_availability = 70;
-    ideals.required_capital = 65;
+    ideals.financing_fit = 70;
+    ideals.capital_fit = 65;
   } else if (data.financing === "cash") {
-    ideals.financing_availability = 35;
-    ideals.required_capital = 55;
+    ideals.financing_fit = 35;
+    ideals.capital_fit = 55;
   }
 
   if (data.purpose === "yield_max") {
-    ideals.target_yield = 90;
-    ideals.intended_use = 85;
-    ideals.volatility_risk = 45;
+    ideals.yield_potential = 90;
+    ideals.user_goal_fit = 85;
+    ideals.operational_complexity = 45;
   } else if (data.purpose === "partial_use") {
-    ideals.intended_use = 92;
-    ideals.target_yield = 60;
-    ideals.ownership_security = 80;
+    ideals.user_goal_fit = 92;
+    ideals.yield_potential = 60;
+    ideals.ownership_accessibility = 80;
   } else if (data.purpose === "conservative") {
-    ideals.volatility_risk = 88;
-    ideals.ownership_security = 92;
-    ideals.currency_risk = 90;
-    ideals.regulation = 88;
-    ideals.target_yield = 40;
+    ideals.operational_complexity = 88;
+    ideals.ownership_accessibility = 92;
+    ideals.fx_risk = 90;
+    ideals.regulatory_complexity = 88;
+    ideals.tax_complexity = 85;
+    ideals.yield_potential = 40;
   } else if (data.purpose === "flipping") {
     ideals.liquidity = 88;
-    ideals.investment_horizon = 35;
-    ideals.target_yield = 70;
-    ideals.financing_availability = 75;
+    ideals.yield_potential = 70;
+    ideals.financing_fit = 75;
+    ideals.operational_complexity = 55;
   }
 
   if (data.region === "exotic_high_yield") {
-    ideals.currency_risk = 35;
-    ideals.target_yield = Math.max(ideals.target_yield, 85);
-    ideals.regulation = 45;
+    ideals.fx_risk = 35;
+    ideals.yield_potential = Math.max(ideals.yield_potential, 85);
+    ideals.regulatory_complexity = 45;
+    ideals.tax_complexity = 45;
   } else if (data.region === "eu_stability") {
-    ideals.regulation = 85;
-    ideals.ownership_security = 85;
-    ideals.currency_risk = 75;
+    ideals.regulatory_complexity = 85;
+    ideals.ownership_accessibility = 85;
+    ideals.fx_risk = 75;
+    ideals.tax_complexity = 70;
   } else if (data.region === "czech_slovak") {
-    ideals.currency_risk = 95;
-    ideals.regulation = 90;
-    ideals.ownership_security = 92;
-    ideals.financing_availability = Math.max(ideals.financing_availability, 85);
+    ideals.fx_risk = 95;
+    ideals.regulatory_complexity = 90;
+    ideals.ownership_accessibility = 92;
+    ideals.tax_complexity = 88;
+    ideals.financing_fit = Math.max(ideals.financing_fit, 85);
   }
 
   if (data.horizon === "3_months") {
-    ideals.investment_horizon = 30;
-    ideals.liquidity = 80;
+    ideals.liquidity = 85;
+    ideals.operational_complexity = 70;
   } else if (data.horizon === "6_months") {
-    ideals.investment_horizon = 45;
     ideals.liquidity = 75;
   } else if (data.horizon === "1_year") {
-    ideals.investment_horizon = 65;
+    ideals.liquidity = 65;
   } else if (data.horizon === "just_looking") {
-    ideals.investment_horizon = 80;
+    ideals.liquidity = 55;
+    ideals.ownership_accessibility = Math.max(ideals.ownership_accessibility, 80);
   }
 
   return ideals;
+}
+
+/**
+ * Map what-if sliders onto form fields + ideal tweaks via purpose/region-compatible form.
+ */
+export function applyWhatIfToForm(
+  base: PassportFormData,
+  whatIf: WhatIfParams
+): PassportFormData {
+  let purpose: PurposeChoice = base.purpose || "conservative";
+  if (whatIf.useMode === "investment") {
+    purpose =
+      whatIf.yieldAppetite >= 70
+        ? "yield_max"
+        : whatIf.riskTolerance < 40
+          ? "conservative"
+          : "yield_max";
+  } else if (whatIf.useMode === "own_use") {
+    purpose = "partial_use";
+  } else {
+    purpose =
+      whatIf.yieldAppetite >= 65 ? "yield_max" : "partial_use";
+  }
+
+  if (whatIf.riskTolerance < 35 && whatIf.useMode !== "own_use") {
+    purpose = "conservative";
+  }
+
+  let region: RegionChoice = base.region || "eu_stability";
+  if (whatIf.riskTolerance >= 75 && whatIf.yieldAppetite >= 70) {
+    region = "exotic_high_yield";
+  } else if (whatIf.riskTolerance <= 40) {
+    region = base.region === "czech_slovak" ? "czech_slovak" : "eu_stability";
+  }
+
+  return {
+    ...base,
+    capital: String(Math.max(0, Math.round(whatIf.capitalCzk))),
+    horizon: whatIf.horizon,
+    purpose,
+    region,
+  };
+}
+
+export function whatIfFromForm(data: PassportFormData): WhatIfParams {
+  const capital = Number(String(data.capital).replace(/\s/g, "")) || 0;
+  let yieldAppetite = 55;
+  let riskTolerance = 50;
+  let useMode: WhatIfParams["useMode"] = "mixed";
+
+  if (data.purpose === "yield_max") {
+    yieldAppetite = 85;
+    useMode = "investment";
+    riskTolerance = 65;
+  } else if (data.purpose === "partial_use") {
+    yieldAppetite = 55;
+    useMode = "own_use";
+    riskTolerance = 45;
+  } else if (data.purpose === "conservative") {
+    yieldAppetite = 35;
+    useMode = "investment";
+    riskTolerance = 25;
+  } else if (data.purpose === "flipping") {
+    yieldAppetite = 70;
+    useMode = "investment";
+    riskTolerance = 60;
+  }
+
+  if (data.region === "exotic_high_yield") riskTolerance = Math.max(riskTolerance, 75);
+  if (data.region === "czech_slovak") riskTolerance = Math.min(riskTolerance, 40);
+
+  return {
+    capitalCzk: capital,
+    horizon: data.horizon || "1_year",
+    yieldAppetite,
+    riskTolerance,
+    useMode,
+  };
 }
 
 function capitalFit(
@@ -136,13 +232,11 @@ function capitalFit(
   else if (budget >= entry * 1.05) reachableVsEntry = "above";
   else if (budget < entry * 0.85) reachableVsEntry = "below";
 
-  // Prefer markets where budget covers entry without extreme over/under
   if (budget < min) return { fit: clamp((budget / min) * 40), reachableVsEntry };
   if (budget < entry) {
     const ratio = (budget - min) / (entry - min || 1);
     return { fit: clamp(55 + ratio * 30), reachableVsEntry };
   }
-  // Comfortable headroom, slight penalty if massively overcapitalized vs market
   const over = budget / entry;
   if (over > 4) return { fit: 78, reachableVsEntry };
   return { fit: clamp(88 + Math.min(12, (over - 1) * 4)), reachableVsEntry };
@@ -155,16 +249,104 @@ function explainDimension(
   fit: number
 ): string {
   const label = DIMENSION_LABELS_CS[dim];
+  const hint = DIMENSION_HINTS_CS[dim];
   if (fit >= 80) {
-    return `${label}: trh (${marketValue}) je blízko vašemu ideálu (${userIdeal}).`;
+    return `${label}: trh (${marketValue}) je blízko vašemu ideálu (${userIdeal}). ${hint}.`;
   }
   if (marketValue > userIdeal + 15) {
-    return `${label}: trh skóruje výše (${marketValue}) než váš ideál (${userIdeal}) — jiný profil atraktivity.`;
+    return `${label}: trh skóruje výše (${marketValue}) než ideál (${userIdeal}) — jiný profil atraktivity.`;
   }
   if (marketValue < userIdeal - 15) {
     return `${label}: trh (${marketValue}) zaostává za ideálem (${userIdeal}).`;
   }
   return `${label}: mírný rozdíl (trh ${marketValue} vs ideál ${userIdeal}).`;
+}
+
+function buildWhatWouldChangeScore(
+  profile: MarketProfile,
+  prefs: UserPreferenceProfile,
+  breakdown: DimensionBreakdown[],
+  cap: { reachableVsEntry: "below" | "near" | "above" }
+): ScoreChangeHint[] {
+  const hints: ScoreChangeHint[] = [];
+  const weakest = [...breakdown].sort((a, b) => a.fit - b.fit).slice(0, 3);
+
+  for (const w of weakest) {
+    if (w.fit >= 75) continue;
+    if (w.dimension === "capital_fit") {
+      hints.push({
+        id: "capital",
+        label: "Zvýšit vlastní kapitál / dosažitelný rozpočet",
+        detail: `Typický vstup ${profile.typicalEntryCapitalCzk.toLocaleString("cs-CZ")} Kč (min. ${profile.typicalMinCapitalCzk.toLocaleString("cs-CZ")} Kč). Stav: ${cap.reachableVsEntry}.`,
+        direction: "up",
+      });
+    } else if (w.dimension === "financing_fit") {
+      hints.push({
+        id: "financing",
+        label: "Upravit preferenci financování",
+        detail:
+          "Max. páka preferuje trhy s hypotékou; cash snižuje váhu financování.",
+        direction: "either",
+      });
+    } else if (w.dimension === "yield_potential") {
+      hints.push({
+        id: "yield",
+        label: "Snížit / zvýšit požadovaný výnos",
+        detail:
+          "Nižší apetit výnosu lépe sedí konzervativním trhům; vyšší favorizuje exotiku (MODEL).",
+        direction: "either",
+      });
+    } else if (
+      w.dimension === "fx_risk" ||
+      w.dimension === "regulatory_complexity" ||
+      w.dimension === "tax_complexity" ||
+      w.dimension === "operational_complexity"
+    ) {
+      hints.push({
+        id: `risk-${w.dimension}`,
+        label: "Upravit toleranci rizika",
+        detail: `${w.label}: ideál ${w.userIdeal} vs trh ${w.marketValue}. Nižší tolerance preference domácích/EU trhů.`,
+        direction: "up",
+      });
+    } else if (w.dimension === "user_goal_fit") {
+      hints.push({
+        id: "use-mode",
+        label: "Změnit vlastní užívání vs investice",
+        detail:
+          "Mix vlastní užívání + pronájem preferuje jiné trhy než čistý yield.",
+        direction: "either",
+      });
+    } else {
+      hints.push({
+        id: w.dimension,
+        label: `Upravit ideál: ${w.label}`,
+        detail: w.explanation,
+        direction: "either",
+      });
+    }
+  }
+
+  if (prefs.capitalCzk > 0 && cap.reachableVsEntry === "above") {
+    hints.push({
+      id: "horizon",
+      label: "Prodloužit horizont",
+      detail:
+        "Delší horizont snižuje tlak na okamžitou likviditu a může zvýšit shodu u méně likvidních trhů.",
+      direction: "up",
+    });
+  }
+
+  if (hints.length === 0) {
+    hints.push({
+      id: "stable",
+      label: "Profil je již dobře sladěn",
+      detail:
+        "Malé změny kapitálu nebo výnosového apetitu pořád posunou pořadí — vyzkoušejte what-if.",
+      direction: "either",
+    });
+  }
+
+  return hints.slice(0, 5);
 }
 
 export function scoreMarket(
@@ -183,9 +365,10 @@ export function scoreMarket(
     const marketValue = profile.attributes[dimension];
     const userIdeal = prefs.ideals[dimension];
     const fit =
-      dimension === "required_capital"
+      dimension === "capital_fit"
         ? cap.fit
         : dimensionFit(marketValue, userIdeal);
+    const score = Math.round(fit);
     const weightedContribution = weight * fit;
     return {
       dimension,
@@ -193,7 +376,8 @@ export function scoreMarket(
       weight,
       marketValue,
       userIdeal,
-      fit: Math.round(fit),
+      score,
+      fit: score,
       weightedContribution,
       explanation: explainDimension(dimension, marketValue, userIdeal, fit),
     };
@@ -239,6 +423,12 @@ export function scoreMarket(
     overallMatch: clamp(overallMatch),
     whyMatches,
     whyNotMatches,
+    whatWouldChangeScore: buildWhatWouldChangeScore(
+      profile,
+      prefs,
+      breakdown,
+      cap
+    ),
     capitalRequired: {
       typicalMinCzk: profile.typicalMinCapitalCzk,
       typicalEntryCzk: profile.typicalEntryCapitalCzk,
@@ -267,6 +457,7 @@ function profileLabel(data: PassportFormData): string {
 
 /**
  * Organický ranking. Žádný partner boost se sem nepřidává.
+ * Deterministicky reprodukovatelné ze stejného PassportFormData.
  */
 export function matchMarkets(data: PassportFormData): MatchingResult {
   const capital = Number(String(data.capital).replace(/\s/g, "")) || 0;
@@ -285,7 +476,6 @@ export function matchMarkets(data: PassportFormData): MatchingResult {
     (a, b) => b.overallMatch - a.overallMatch
   );
 
-  // Explicitní ochrana: sponsored never mixes into organic sort key
   const organicOnly = allMarkets.filter((m) => m.isSponsored === false);
 
   return {
@@ -300,18 +490,46 @@ export function matchMarkets(data: PassportFormData): MatchingResult {
   };
 }
 
+/** What-if: přepočet z override parametrů. */
+export function matchMarketsWhatIf(
+  base: PassportFormData,
+  whatIf: WhatIfParams
+): MatchingResult {
+  return matchMarkets(applyWhatIfToForm(base, whatIf));
+}
+
 /** Lidsky čitelný rozklad pro „Proč tento trh získal X/100?“ */
 export function formatMatchExplanation(match: MarketMatchResult): string {
   const lines = [
     `Celková shoda ${match.overallMatch}/100 (organické skóre, váhy ${WEIGHTS_VERSION}).`,
-    "Vzorec: Σ (váha × shoda), shoda = 100 − |atribut trhu − ideál uživatele| (u kapitálu speciální shoda s rozpočtem).",
+    "Vzorec: Σ (váha × score), score = 100 − |atribut trhu − ideál uživatele| (u Capital fit shoda s rozpočtem).",
     "",
     ...match.breakdown.map(
       (b) =>
-        `• ${b.label}: váha ${(b.weight * 100).toFixed(0)} % × shoda ${b.fit} → +${b.weightedContribution.toFixed(1)} b.`
+        `• ${b.label}: score ${b.score}, weight ${(b.weight * 100).toFixed(0)} % → +${b.weightedContribution.toFixed(1)} b. — ${b.explanation}`
     ),
+    "",
+    "Co by změnilo skóre?",
+    ...match.whatWouldChangeScore.map((h) => `• ${h.label}: ${h.detail}`),
   ];
   return lines.join("\n");
 }
 
-export { DIMENSION_WEIGHTS, DIMENSION_LABELS_CS, MATCH_DIMENSIONS, WEIGHTS_VERSION };
+/**
+ * Recompute overall from breakdown — for determinism tests.
+ */
+export function recomputeOverallFromBreakdown(
+  breakdown: DimensionBreakdown[]
+): number {
+  return clamp(
+    Math.round(breakdown.reduce((s, b) => s + b.weightedContribution, 0))
+  );
+}
+
+export {
+  DIMENSION_WEIGHTS,
+  DIMENSION_LABELS_CS,
+  DIMENSION_HINTS_CS,
+  MATCH_DIMENSIONS,
+  WEIGHTS_VERSION,
+};

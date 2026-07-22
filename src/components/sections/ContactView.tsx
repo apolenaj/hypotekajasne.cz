@@ -10,6 +10,7 @@ import {
 } from "@/components/consent/FormConsentFields";
 import { siteContact } from "@/lib/mock-data";
 import { buildThankYouPath, submitLead } from "@/lib/leads";
+import { getPartnerClaimLabels } from "@/lib/partners/verification";
 
 const inputClass =
   "mt-1.5 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20";
@@ -106,8 +107,7 @@ export function ContactView() {
               </p>
             </div>
             <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm leading-relaxed text-amber-950">
-              Hypotéka Jasně je informační platforma. Neposkytujeme hypotéky ani
-              licencované poradenství — propojujeme vás s ověřenými experty.
+              {getPartnerClaimLabels().connectBlurb}
             </div>
           </div>
 

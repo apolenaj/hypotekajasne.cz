@@ -5,13 +5,13 @@
  */
 
 export const DATA_STATUS_LABELS_EN = {
-  LIVE: "LIVE DATA",
+  LIVE: "LIVE",
   VERIFIED: "VERIFIED",
   MODEL: "MODEL",
   ESTIMATE: "ESTIMATE",
   UNVERIFIED: "UNVERIFIED",
-  PARTNER_QUOTE: "PARTNER QUOTE",
-  STALE: "AWAITING UPDATE",
+  PARTNER_QUOTE: "PARTNER OFFER",
+  STALE: "NEEDS UPDATE",
 } as const;
 
 export const FEATURE_STATUS_LABELS_EN = {
@@ -61,7 +61,7 @@ export const ACADEMY_UI_EN = {
   nextStep: "Next step",
   simplySaid: "In simple terms",
   realExample: "Real example",
-  howCalculated: "How it is calculated",
+  howCalculated: "How we calculated it",
   bankOrInvestor: "What the bank / investor looks at",
   commonMistake: "Common mistake",
   miniCalculator: "Interactive mini calculator",
@@ -70,7 +70,7 @@ export const ACADEMY_UI_EN = {
   learningPaths: "Learning paths",
   badges: "Badges",
   educationToTool: "Education → tool → your result",
-  whatNext: "What’s next?",
+  whatNext: "What should I do next?",
   reusePipeline: "Other content formats",
   reusePipelineLead:
     "One canonical lesson → article · video · short · audio · e-book · newsletter.",

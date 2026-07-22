@@ -14,6 +14,7 @@ import {
   rateCitation,
   readinessCitation,
 } from "@/lib/copilot/citations";
+import { prependRateNotice } from "@/lib/copilot/response-meta";
 import type {
   ClaimKind,
   CopilotCitation,
@@ -23,6 +24,7 @@ import type {
   CopilotUsedInput,
 } from "@/lib/copilot/types";
 import { routes } from "@/lib/routes";
+import { MODEL_FALLBACK_RATE_PERCENT } from "@/lib/rates/model-fallback";
 
 export type ToolBundle = {
   markdown: string;
@@ -31,6 +33,8 @@ export type ToolBundle = {
   usedInputs: CopilotUsedInput[];
   dataKeys: string[];
   cta: { label: string; href: string }[];
+  modelAssumptions?: string[];
+  unknowns?: string[];
 };
 
 function fmtCzk(n: number): string {
@@ -53,6 +57,12 @@ function needProfile(context: CopilotSessionContext): ToolBundle | null {
     citations: [readinessCitation(), methodologyCitation()],
     usedInputs: [],
     dataKeys: [],
+    unknowns: [
+      "Příjem",
+      "Vlastní zdroje",
+      "Záměr financování",
+      "Závazky a limity DSTI",
+    ],
     cta: [
       { label: "Vyplnit připravenost", href: routes.navrhNaMiru },
       { label: "Kalkulačky", href: routes.kalkulacky.root },
@@ -60,16 +70,45 @@ function needProfile(context: CopilotSessionContext): ToolBundle | null {
   };
 }
 
+function rateClaimFromContext(context: CopilotSessionContext): ClaimKind {
+  if (context.rateLayer === "LIVE" && context.modelRateClaimKind === "DATA") {
+    return "DATA";
+  }
+  if (context.rateLayer === "STALE") {
+    return "NEOVERENO";
+  }
+  return "MODEL";
+}
+
 function runReadiness(
   answers: ReadinessAnswers,
-  rate: number | null
+  context: CopilotSessionContext
 ): { result: ReadinessResult; rateUsed: number; claim: ClaimKind } {
-  const rateUsed = rate != null && rate > 0 ? rate : 5;
+  const rate = context.modelRatePercent;
+  const rateUsed =
+    rate != null && rate > 0 ? rate : MODEL_FALLBACK_RATE_PERCENT;
   return {
     result: calculateReadiness(answers, rateUsed),
     rateUsed,
-    claim: rate != null && rate > 0 ? "DATA" : "MODEL",
+    claim: rateClaimFromContext(context),
   };
+}
+
+function rateAssumptions(
+  context: CopilotSessionContext,
+  rateUsed: number,
+  claim: ClaimKind
+): string[] {
+  const assumptions: string[] = [
+    `Úroková sazba ${rateUsed.toFixed(2)} % p.a. (${claim === "DATA" ? "FACT / živá vrstva" : claim === "NEOVERENO" ? "zastaralá / neověřená vrstva" : "MODEL"})`,
+    "Anuitní splátka a limity LTV/DSTI dle modelu Hypoteční připravenosti — ne dle interní metodiky konkrétní banky.",
+  ];
+  if (context.rateLayer !== "LIVE") {
+    assumptions.push(
+      "Živá bankovní nabídka není použita jako závazný vstup — výsledek je orientační."
+    );
+  }
+  return assumptions;
 }
 
 export function toolAffordability(
@@ -80,34 +119,45 @@ export function toolAffordability(
   if (gate) return gate;
   if (!answers) return needProfile({ ...context, hasReadinessProfile: false })!;
 
-  const { result, rateUsed, claim } = runReadiness(
-    answers,
-    context.modelRatePercent
-  );
+  const { result, rateUsed, claim } = runReadiness(answers, context);
   const high = result.financingRange?.high ?? 0;
   const low = result.financingRange?.low ?? 0;
   const safeProperty =
     high > 0 ? high + Math.max(0, answers.ownFunds) : null;
+  const rateLabel =
+    claim === "DATA"
+      ? "živá / ověřená sazba"
+      : claim === "NEOVERENO"
+        ? "poslední dostupná (neaktuální) sazba"
+        : "modelová sazba";
 
-  const md = [
-    "## Orientační dostupnost",
-    "",
-    `Podle **vašeho lokálního profilu** a modelové sazby **${rateUsed.toFixed(2)} % p.a.**:`,
-    "",
-    `- Orientační pásmo úvěru: **${fmtCzk(low)} – ${fmtCzk(high)}**`,
-    safeProperty
-      ? `- S vlastními zdroji to odpovídá nemovitosti kolem **${fmtCzk(safeProperty)}** (hrubý strop, ne nabídka banky)`
-      : null,
-    `- Skóre připravenosti: **${result.score}/100**`,
-    "",
-    "### Co to Není",
-    "- Není to schválení úvěru ani závazná nabídka banky.",
-    "- Bezpečná dostupnost zde znamená modelový strop z DSTI/LTV rámce nástroje, ne životní komfort.",
-    "",
-    result.ownFundsNote ? `> ${result.ownFundsNote}` : null,
-  ]
-    .filter(Boolean)
-    .join("\n");
+  const md = prependRateNotice(
+    [
+      "## Orientační dostupnost",
+      "",
+      `Podle **vašeho lokálního profilu** a ${rateLabel} **${rateUsed.toFixed(2)} % p.a.**:`,
+      "",
+      `- Orientační pásmo úvěru: **${fmtCzk(low)} – ${fmtCzk(high)}**`,
+      safeProperty
+        ? `- S vlastními zdroji to odpovídá nemovitosti kolem **${fmtCzk(safeProperty)}** (hrubý strop, ne nabídka banky)`
+        : null,
+      `- Skóre připravenosti: **${result.score}/100** (MODEL)`,
+      "",
+      "### Evidence",
+      `- Sazba: **${claim === "DATA" ? "FACT" : claim === "NEOVERENO" ? "UNKNOWN / zastaralé" : "MODEL"}**`,
+      "- Pásmo úvěru a skóre: **MODEL** (algoritmus připravenosti)",
+      "- Neznámé: interní limity konkrétní banky, odhad nemovitosti, scoring",
+      "",
+      "### Co to Není",
+      "- Není to schválení úvěru ani závazná nabídka banky.",
+      "- Bezpečná dostupnost zde znamená modelový strop z DSTI/LTV rámce nástroje, ne životní komfort.",
+      "",
+      result.ownFundsNote ? `> ${result.ownFundsNote}` : null,
+    ]
+      .filter(Boolean)
+      .join("\n"),
+    context
+  );
 
   return {
     markdown: md,
@@ -120,7 +170,7 @@ export function toolAffordability(
     ],
     citations: [
       readinessCitation(),
-      rateCitation(context.modelRateUpdatedAt, claim === "DATA" ? context.modelRateClaimKind : "MODEL"),
+      rateCitation(context.modelRateUpdatedAt, claim),
       methodologyCitation(),
     ],
     usedInputs: [
@@ -137,13 +187,19 @@ export function toolAffordability(
         claimKind: "DATA",
       },
       {
-        key: "model_rate",
-        label: "Modelová sazba",
+        key: "rate",
+        label: claim === "DATA" ? "Sazba (živá vrstva)" : "Sazba (model / ne živá)",
         display: `${rateUsed.toFixed(2)} %`,
         claimKind: claim,
       },
     ],
-    dataKeys: ["readiness.answers", "rate.model"],
+    dataKeys: ["readiness.answers", "rate"],
+    modelAssumptions: rateAssumptions(context, rateUsed, claim),
+    unknowns: [
+      "Schválení konkrétní bankou",
+      "Odhad ceny nemovitosti bankou",
+      "Interní výjimky a scoring banky",
+    ],
     cta: [
       { label: "Upravit profil", href: routes.navrhNaMiru },
       { label: "Detailní kalkulačka", href: routes.kalkulacky.root },
@@ -159,7 +215,7 @@ export function toolExplainScore(
   if (gate) return gate;
   if (!answers) return needProfile({ ...context, hasReadinessProfile: false })!;
 
-  const { result, rateUsed } = runReadiness(answers, context.modelRatePercent);
+  const { result, rateUsed } = runReadiness(answers, context);
 
   const md = [
     `## Proč skóre ${result.score}/100`,
@@ -218,7 +274,7 @@ export function toolReachTarget(
   if (gate) return gate;
   if (!answers) return needProfile({ ...context, hasReadinessProfile: false })!;
 
-  const { result, rateUsed } = runReadiness(answers, context.modelRatePercent);
+  const { result, rateUsed } = runReadiness(answers, context);
   const high = result.financingRange?.high ?? 0;
   const gap = Math.max(0, targetLoanOrPrice - high);
   const ownFunds = Math.max(0, answers.ownFunds);
@@ -288,7 +344,7 @@ export function toolPropertySafe(
   if (gate) return gate;
   if (!answers) return needProfile({ ...context, hasReadinessProfile: false })!;
 
-  const { result, rateUsed } = runReadiness(answers, context.modelRatePercent);
+  const { result, rateUsed } = runReadiness(answers, context);
   const high = result.financingRange?.high ?? 0;
   const capacity = high + Math.max(0, answers.ownFunds);
   const loanNeeded = Math.max(0, price - Math.max(0, answers.ownFunds));
@@ -369,7 +425,7 @@ export function toolCompareProperties(
   const gate = needProfile(context);
   const { result } =
     answers && context.hasReadinessProfile
-      ? runReadiness(answers, context.modelRatePercent)
+      ? runReadiness(answers, context)
       : { result: null };
   const capacity =
     result && answers
@@ -445,7 +501,7 @@ export function toolRateStress(
   if (gate) return gate;
   if (!answers) return needProfile({ ...context, hasReadinessProfile: false })!;
 
-  const { result, rateUsed } = runReadiness(answers, context.modelRatePercent);
+  const { result, rateUsed, claim } = runReadiness(answers, context);
   const loan = result.financingRange?.high ?? 0;
   const age = answers.age ?? 40;
   const termYears = Math.min(30, Math.max(5, 65 - age));
@@ -457,19 +513,22 @@ export function toolRateStress(
       : 0;
   const delta = stressPay - basePay;
 
-  const md = [
-    `## Zátěžový test: sazba +${bumpPp} p.b. při refixaci`,
-    "",
-    `Model na úvěru **${fmtCzk(loan)}**, splatnost **${termYears} let**:`,
-    "",
-    `| Scénář | Sazba | Měsíční splátka |`,
-    `|---|---|---|`,
-    `| Základ | ${rateUsed.toFixed(2)} % | ${fmtCzk(basePay)} |`,
-    `| Stress | ${(rateUsed + bumpPp).toFixed(2)} % | ${fmtCzk(stressPay)} |`,
-    `| Rozdíl | +${bumpPp} p.b. | **+${fmtCzk(delta)}** |`,
-    "",
-    "Jde o **anuitní model** HypotékaJasně, ne o konkrétní produkt banky po refixaci.",
-  ].join("\n");
+  const md = prependRateNotice(
+    [
+      `## Zátěžový test: sazba +${bumpPp} p.b. při refixaci`,
+      "",
+      `Model na úvěru **${fmtCzk(loan)}**, splatnost **${termYears} let** (evidence: **MODEL**):`,
+      "",
+      `| Scénář | Sazba | Měsíční splátka |`,
+      `|---|---|---|`,
+      `| Základ | ${rateUsed.toFixed(2)} % | ${fmtCzk(basePay)} |`,
+      `| Stress | ${(rateUsed + bumpPp).toFixed(2)} % | ${fmtCzk(stressPay)} |`,
+      `| Rozdíl | +${bumpPp} p.b. | **+${fmtCzk(delta)}** |`,
+      "",
+      "Jde o **anuitní model** Hypotéka Jasně, ne o konkrétní produkt banky po refixaci. Nejde o garanci splátky.",
+    ].join("\n"),
+    context
+  );
 
   return {
     markdown: md,
@@ -482,7 +541,7 @@ export function toolRateStress(
     ],
     citations: [
       decisionCitation(),
-      rateCitation(context.modelRateUpdatedAt, context.modelRateClaimKind),
+      rateCitation(context.modelRateUpdatedAt, claim),
       methodologyCitation(),
     ],
     usedInputs: [
@@ -493,13 +552,27 @@ export function toolRateStress(
         claimKind: "MODEL",
       },
       {
+        key: "rate",
+        label: "Sazba ve scénáři",
+        display: `${rateUsed.toFixed(2)} %`,
+        claimKind: claim,
+      },
+      {
         key: "stress_bump",
         label: "Nárůst sazby",
         display: `+${bumpPp} p.b.`,
         claimKind: "MODEL",
       },
     ],
-    dataKeys: ["readiness.financingRange", "rate.model"],
+    dataKeys: ["readiness.financingRange", "rate"],
+    modelAssumptions: [
+      ...rateAssumptions(context, rateUsed, claim),
+      `Stress scénář: +${bumpPp} p.b. k sazbě (hypotetický, ne predikce trhu).`,
+    ],
+    unknowns: [
+      "Skutečná sazba banky po refixaci",
+      "Poplatky a pojištění nové smlouvy",
+    ],
     cta: [{ label: "Kalkulačka", href: routes.kalkulacky.root }],
   };
 }
@@ -630,7 +703,7 @@ export function toolMissingDocuments(
   const md = [
     "## Orientační checklist dokumentů",
     "",
-    "Seznam je **edukativní MODEL** HypotékaJasně — každá banka má vlastní seznam.",
+    "Seznam je **edukativní MODEL** Hypotéka Jasně — každá banka má vlastní seznam.",
     "",
     ...items.map((i) => `- [ ] ${i}`),
     "",
@@ -684,7 +757,7 @@ export function toolActionPlan(
   if (gate) return gate;
   if (!answers) return needProfile({ ...context, hasReadinessProfile: false })!;
 
-  const { result } = runReadiness(answers, context.modelRatePercent);
+  const { result } = runReadiness(answers, context);
   const plan = result.actionPlan;
 
   const md = [
@@ -737,7 +810,7 @@ export function toolRiskAnalysis(
   if (gate) return gate;
   if (!answers) return needProfile({ ...context, hasReadinessProfile: false })!;
 
-  const { result, rateUsed } = runReadiness(answers, context.modelRatePercent);
+  const { result, rateUsed } = runReadiness(answers, context);
   const stress = toolRateStress(context, answers, 2);
 
   const md = [
@@ -800,7 +873,7 @@ export function toolNextStep(
     };
   }
 
-  const { result } = runReadiness(answers, context.modelRatePercent);
+  const { result } = runReadiness(answers, context);
   const primary = result.nextSteps[0] ?? "Zkontrolujte profil a zátěžový test sazby.";
 
   const md = [
@@ -838,7 +911,7 @@ export function toolContactSpecialist(): ToolBundle {
     markdown: [
       "## Kontaktovat specialistu",
       "",
-      "Předání kontaktu licencovanému partnerovi probíhá **jen se souhlasem** (oddělený od marketingu).",
+      "Předání kontaktu partnerovi probíhá **jen se souhlasem** (oddělený od marketingu) a jen pokud je identita partnera ověřena.",
       "",
       "1. Dokončete / zkontrolujte [Hypoteční připravenost](" +
         routes.navrhNaMiru +
@@ -918,11 +991,18 @@ export function toolOutOfScope(): ToolBundle {
       "Neposkytuji příslib schválení, daňové optimalizace „obejitím“ ani právní zastoupení.",
       "",
       "Mohu: spočítat modelovou dostupnost, vysvětlit skóre, zátěžový test, checklist a nasměrovat na specialistu.",
+      "",
+      "Evidence: požadavek spadá do **UNKNOWN / mimo SoT** — neodpovídám spekulací.",
     ].join("\n"),
     tools: [{ toolId: "guardrail.out_of_scope", ok: true, summary: "refused" }],
     citations: [methodologyCitation()],
     usedInputs: [],
     dataKeys: [],
+    unknowns: [
+      "Schválení bankou",
+      "Individuální právní/daňová rada",
+      "Garantovaný výnos",
+    ],
     cta: [{ label: "Otevřít připravenost", href: routes.navrhNaMiru }],
   };
 }

@@ -25,8 +25,8 @@ import { REGULATORY_CHANGELOG } from "@/lib/market-pulse/regulatory-changelog";
 import { analyzeConcentration } from "@/lib/portfolio-os/concentration";
 import type { PortfolioPropertyRow } from "@/lib/portfolio-os/types";
 import { generateRefinanceAlerts } from "@/lib/refinance-radar/alerts";
-import { DEMO_REFINANCE_PROFILE } from "@/lib/refinance-radar/demo";
 import type { RefinanceLoanProfile } from "@/lib/refinance-radar/types";
+import { loadRefinanceRadarStore } from "@/lib/refinance-radar/storage";
 import { monthsUntilFixation } from "@/lib/refinance-radar/calculate";
 import { generateWatchAlertCandidates } from "@/lib/watchlist/alerts";
 import type { WatchTarget } from "@/lib/watchlist/types";
@@ -92,9 +92,9 @@ export function collectRateChangeAlerts(ctx: AlertCollectContext): CentralAlert[
 
 export function collectFixationAlerts(ctx: AlertCollectContext): CentralAlert[] {
   const now = ctx.now ?? new Date();
-  const profile = ctx.refinanceProfile ?? DEMO_REFINANCE_PROFILE;
+  const profile = resolveRefinanceProfile(ctx);
   const marketRate = ctx.rates?.rateWithInsurance ?? null;
-  if (!profile.fixationEnd || marketRate == null) return [];
+  if (!profile?.fixationEnd || marketRate == null) return [];
 
   const monthsLeft = monthsUntilFixation(profile.fixationEnd, now);
   if (monthsLeft == null || monthsLeft > 12) return [];
@@ -292,9 +292,26 @@ export function collectAllAlertCandidates(ctx: AlertCollectContext): CentralAler
   ];
 }
 
+/** Prefer explicit profile → stored watch → stored profile. Never invent DEMO for Alert Center. */
+function resolveRefinanceProfile(
+  ctx: AlertCollectContext
+): RefinanceLoanProfile | null {
+  if (ctx.refinanceProfile) return ctx.refinanceProfile;
+  try {
+    const store = loadRefinanceRadarStore();
+    if (store.profile && store.preferences.watchEnabled) return store.profile;
+    if (store.profile) return store.profile;
+  } catch {
+    /* SSR / no storage */
+  }
+  return null;
+}
+
 /** Refinance radar milestones as FIXATION type (deduped separately) */
 export function collectRefinanceRadarAlerts(ctx: AlertCollectContext): CentralAlert[] {
-  const profile = ctx.refinanceProfile ?? DEMO_REFINANCE_PROFILE;
+  const profile = resolveRefinanceProfile(ctx);
+  if (!profile) return [];
+
   const { alerts } = generateRefinanceAlerts({
     profile,
     marketRatePercent: ctx.rates?.rateWithInsurance ?? null,

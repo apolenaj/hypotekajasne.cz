@@ -4,6 +4,8 @@ import {
   DEFAULT_OG_IMAGE,
   getSiteOrigin,
   shouldNoIndex,
+  SITE_BRAND,
+  SITE_DOMAIN_LABEL,
   SITE_NAME,
 } from "@/lib/seo/site";
 import {
@@ -65,7 +67,11 @@ function buildAlternates(
  */
 export function buildPageMetadata(input: PageSeoInput): Metadata {
   const locale = input.locale ?? DEFAULT_LOCALE;
-  const title = input.title.includes(SITE_NAME)
+  const titleAlreadyBranded =
+    input.title.includes(SITE_NAME) ||
+    input.title.includes(SITE_BRAND) ||
+    input.title.includes(SITE_DOMAIN_LABEL);
+  const title = titleAlreadyBranded
     ? input.title
     : `${input.title} | ${SITE_NAME}`;
   const og = input.ogImage ?? DEFAULT_OG_IMAGE;
@@ -112,7 +118,7 @@ export function buildPageMetadata(input: PageSeoInput): Metadata {
 }
 
 export const rootMetadata = buildPageMetadata({
-  title: "HypotékaJasně.cz | Co si můžete dovolit. Kde koupit. Jak financovat.",
+  title: "Hypotéka Jasně | Co si můžete dovolit. Kde koupit. Jak financovat.",
   description:
     "Informační platforma: živá hypoteční data ČR, srovnání trhů, kalkulačky a jasný další krok — bydlení, investice, refinancování i zahraničí. Nejsme banka.",
   path: "/",

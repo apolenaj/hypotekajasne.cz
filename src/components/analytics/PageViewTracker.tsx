@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { track } from "@/lib/analytics/track";
+import { track, trackCanonical } from "@/lib/analytics/track";
 
 function referrerHost(): string | undefined {
   try {
@@ -13,8 +13,13 @@ function referrerHost(): string | undefined {
   }
 }
 
+function isHomePath(path: string): boolean {
+  return path === "/" || path === "/en";
+}
+
 /**
  * Fires page_view on client navigations (App Router).
+ * Homepage also fires homepage_view for dashboard KPIs.
  * Consent-gated inside track() — no vendor calls here.
  */
 export function PageViewTracker() {
@@ -25,11 +30,21 @@ export function PageViewTracker() {
     if (!pathname) return;
     if (last.current === pathname) return;
     last.current = pathname;
-    track("page_view", {
+
+    const base = {
       path: pathname,
       referrer_host: referrerHost(),
       funnel_id: "moje_moznosti_north_star",
-    });
+    };
+
+    track("page_view", base);
+
+    if (isHomePath(pathname)) {
+      trackCanonical("homepage_view", "page_view", {
+        ...base,
+        path: pathname,
+      });
+    }
   }, [pathname]);
 
   return null;

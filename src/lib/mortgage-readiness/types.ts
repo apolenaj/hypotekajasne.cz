@@ -118,7 +118,7 @@ export type ReadinessResult = {
 };
 
 export const MODEL_DISCLAIMER =
-  "Algoritmický orientační model – finální posouzení provádí banka/licencovaný partner.";
+  "Algoritmický orientační model – finální posouzení provádí banka/partner.";
 
 export const FOREIGN_COUNTRY_OPTIONS = [
   "SAE (Dubaj)",

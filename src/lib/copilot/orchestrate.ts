@@ -6,6 +6,7 @@ import {
   extractPropertyPrice,
   extractTargetMillion,
 } from "@/lib/copilot/intents";
+import { buildResponseMeta } from "@/lib/copilot/response-meta";
 import {
   parsePricesFromMessage,
   toolActionPlan,
@@ -60,6 +61,7 @@ function runIntent(input: CopilotOrchestratorInput): ToolBundle {
           ...toolClarify(),
           markdown:
             "## Cena nemovitosti chybí\n\nNapište např. „Je byt za 6,2 milionu pro mě bezpečný?“ nebo přidejte nemovitost v panelu.",
+          unknowns: ["Cena nemovitosti v dotazu"],
         };
       }
       return toolPropertySafe(context, answers, price, properties[0]?.label);
@@ -89,7 +91,7 @@ function runIntent(input: CopilotOrchestratorInput): ToolBundle {
 }
 
 /**
- * Full pipeline: intent → tools → citations → guardrails.
+ * Full pipeline: intent → tools → citations → response meta → guardrails.
  * Context/permission is prepared by the caller (browser-local profile).
  */
 export function orchestrateCopilot(
@@ -107,6 +109,20 @@ export function orchestrateCopilot(
   const messageId = createMessageId();
   const at = new Date().toISOString();
 
+  const gated = bundle.tools.some(
+    (t) => t.toolId === "permission_gate" || !t.ok
+  );
+
+  const responseMeta = buildResponseMeta({
+    citations: bundle.citations,
+    usedInputs: bundle.usedInputs,
+    context: input.context,
+    intent: detected.intent,
+    modelAssumptions: bundle.modelAssumptions,
+    unknowns: bundle.unknowns,
+    gated,
+  });
+
   const raw: CopilotOrchestratorResult = {
     message: {
       id: messageId,
@@ -119,6 +135,7 @@ export function orchestrateCopilot(
       tools: bundle.tools,
       auditId,
       cta: bundle.cta,
+      responseMeta,
     },
     audit: {
       id: auditId,
@@ -128,6 +145,8 @@ export function orchestrateCopilot(
       citationIds: bundle.citations.map((c) => c.id),
       dataKeysUsed: bundle.dataKeys,
       guardrailFlags: [],
+      confidence: responseMeta.confidence,
+      sourcesUsed: responseMeta.sourcesUsed,
     },
   };
 

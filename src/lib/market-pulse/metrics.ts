@@ -402,9 +402,9 @@ export function buildMarketMetrics(
     {
       kind: "fx",
       label: "Měnové riziko / FX",
-      currentValue: profile?.attributes.currency_risk ?? null,
+      currentValue: profile?.attributes.fx_risk ?? null,
       currentLabel: profile
-        ? `Měnové riziko ${100 - profile.attributes.currency_risk}/100 (orientační model — vyšší = rizikovější)`
+        ? `Měnové riziko ${100 - profile.attributes.fx_risk}/100 (orientační model — vyšší = rizikovější)`
         : countryId === "cz"
           ? "CZK — domácí měna, bez FX expozice"
           : null,
@@ -423,10 +423,10 @@ export function buildMarketMetrics(
           : profile
             ? makeDataRecord({
                 id: `pulse.${countryId}.fx.risk`,
-                value: 100 - profile.attributes.currency_risk,
+                value: 100 - profile.attributes.fx_risk,
                 unit: "score",
                 country: countryId,
-                source: "market-matching — currency_risk dimenze",
+                source: "market-matching — fx_risk dimenze",
                 sourceType: "model",
                 status: "MODEL",
                 confidence: 0.35,
@@ -464,7 +464,7 @@ export function buildMarketMetrics(
                   id: `${countryId}.fx.risk`,
                   metricKind: "fx" as const,
                   timeframe: "1Y" as const,
-                  text: `Modelové skóre měnového rizika pro ${countryConfigs[countryId].label}: ${100 - profile.attributes.currency_risk}/100 (vyšší = rizikovější). Live FX trend není k dispozici.`,
+                  text: `Modelové skóre měnového rizika pro ${countryConfigs[countryId].label}: ${100 - profile.attributes.fx_risk}/100 (vyšší = rizikovější). Live FX trend není k dispozici.`,
                   claimKind: "MODEL" as const,
                   status: "MODEL" as const,
                 },
@@ -478,12 +478,12 @@ export function buildMarketMetrics(
       currentValue:
         countryId === "cz"
           ? REGULATORY_RECORDS.ltvOwnerStandard.value
-          : profile?.attributes.regulation ?? null,
+          : profile?.attributes.regulatory_complexity ?? null,
       currentLabel:
         countryId === "cz"
           ? `LTV vlastní bydlení ${REGULATORY_RECORDS.ltvOwnerStandard.value} % (ČNB VERIFIED)`
             : profile
-            ? `Regulační skóre ${profile.attributes.regulation}/100 (orientační přehled)`
+            ? `Regulační skóre ${profile.attributes.regulatory_complexity}/100 (orientační přehled)`
             : null,
       record:
         countryId === "cz"
@@ -491,7 +491,7 @@ export function buildMarketMetrics(
           : profile
             ? makeDataRecord({
                 id: `pulse.${countryId}.regulation.score`,
-                value: profile.attributes.regulation,
+                value: profile.attributes.regulatory_complexity,
                 unit: "score",
                 country: countryId,
                 source: "Přehled země a tržní profil",
@@ -531,7 +531,7 @@ export function buildMarketMetrics(
                   id: `${countryId}.regulatory.score`,
                   metricKind: "regulatory" as const,
                   timeframe: "1Y" as const,
-                  text: `Orientační regulační skóre ${countryConfigs[countryId].label}: ${profile.attributes.regulation}/100 — detail v přehledu země.`,
+                  text: `Orientační regulační skóre ${countryConfigs[countryId].label}: ${profile.attributes.regulatory_complexity}/100 — detail v přehledu země.`,
                   claimKind: "MODEL" as const,
                   status: "MODEL" as const,
                 },
@@ -542,9 +542,9 @@ export function buildMarketMetrics(
     {
       kind: "risk_events",
       label: "Riziková témata",
-      currentValue: profile ? 100 - profile.attributes.volatility_risk : null,
+      currentValue: profile ? 100 - profile.attributes.operational_complexity : null,
       currentLabel: profile
-        ? `Modelové riziko ${100 - profile.attributes.volatility_risk}/100`
+        ? `Modelové riziko ${100 - profile.attributes.operational_complexity}/100`
         : null,
       record: null,
       trends: PULSE_TIMEFRAMES.map((tf) => ({

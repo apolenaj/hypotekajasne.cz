@@ -18,6 +18,7 @@ import {
   buildFreePreview,
   formatAnalysisPrice,
   formatAnalysisPriceLabel,
+  getRentgenPremiumConfig,
   type ManualPropertyInput,
   type RentgenInputMode,
 } from "@/lib/property-rentgen";
@@ -29,9 +30,8 @@ import {
   emptyFormConsentState,
   toConsentRecord,
 } from "@/components/consent/FormConsentFields";
-import { track } from "@/lib/analytics/track";
+import { track, trackCanonical } from "@/lib/analytics/track";
 import { getExperimentVariant } from "@/lib/analytics/experiments";
-import { isPaidAnalysisCommerciallyAvailable } from "@/lib/legal";
 
 const MODES: { id: RentgenInputMode; label: string; hint: string }[] = [
   {
@@ -135,6 +135,8 @@ export function RentgenToolIsland() {
   const premiumViewedRef = useRef(false);
   const premiumBlockRef = useRef<HTMLDivElement>(null);
 
+  const premiumCfg = useMemo(() => getRentgenPremiumConfig(), []);
+
   const patch = <K extends keyof ManualPropertyInput>(
     key: K,
     value: ManualPropertyInput[K]
@@ -148,7 +150,7 @@ export function RentgenToolIsland() {
   useEffect(() => {
     if (startedRef.current) return;
     startedRef.current = true;
-    track("rentgen_started", {
+    trackCanonical("property_xray_started", "rentgen_started", {
       tool_id: "property_rentgen",
       price_band: "free",
       experiment_id: "free_preview",
@@ -159,7 +161,7 @@ export function RentgenToolIsland() {
   useEffect(() => {
     if (!preview || freeViewedRef.current) return;
     freeViewedRef.current = true;
-    track("free_result_viewed", {
+    trackCanonical("property_xray_completed", "free_result_viewed", {
       tool_id: "property_rentgen",
       price_band: "free",
       experiment_id: "free_preview",
@@ -252,7 +254,7 @@ export function RentgenToolIsland() {
         : res.error
     );
     if (res.ok) {
-      track("lead_submitted", {
+      trackCanonical("lead_form_submitted", "lead_submitted", {
         lead_source: "property_analysis",
         tool_id: "property_rentgen",
         price_band: "premium",
@@ -507,10 +509,73 @@ export function RentgenToolIsland() {
                     </p>
                   ) : null}
                 </div>
+
+                {preview.marketComparison ? (
+                  <div className="rounded-xl border border-border bg-[#f7f8f7] p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs font-semibold uppercase text-muted-foreground">
+                        Porovnání trhu
+                      </p>
+                      <ClaimBadge kind={preview.marketComparison.kind} />
+                    </div>
+                    <p className="mt-1 text-sm text-text-dark">
+                      {preview.marketComparison.summary}
+                    </p>
+                    {preview.marketComparison.hasMarketData &&
+                    preview.marketComparison.deltaPercent.value != null ? (
+                      <p className="mt-1 text-xs tabular-nums text-deep-teal">
+                        Δ vs. reference:{" "}
+                        {preview.marketComparison.deltaPercent.value > 0 ? "+" : ""}
+                        {preview.marketComparison.deltaPercent.value} %
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
+
+                {preview.modelCashFlow ? (
+                  <div className="rounded-xl border border-border bg-[#f7f8f7] p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs font-semibold uppercase text-muted-foreground">
+                        Modelové cash flow / měs.
+                      </p>
+                      <ClaimBadge kind="MODEL" />
+                    </div>
+                    <dl className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <dt className="text-muted-foreground">Nájem</dt>
+                        <dd className="font-semibold tabular-nums">
+                          {preview.modelCashFlow.monthlyRent.value?.toLocaleString("cs-CZ") ?? "—"} Kč
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-muted-foreground">Splátka (model)</dt>
+                        <dd className="font-semibold tabular-nums">
+                          {preview.modelCashFlow.monthlyMortgageModel.value?.toLocaleString("cs-CZ") ?? "—"} Kč
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-muted-foreground">Provoz (model)</dt>
+                        <dd className="font-semibold tabular-nums">
+                          {preview.modelCashFlow.monthlyOpsModel.value?.toLocaleString("cs-CZ") ?? "—"} Kč
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-muted-foreground">Netto (model)</dt>
+                        <dd className="font-bold tabular-nums text-deep-teal">
+                          {preview.modelCashFlow.netMonthlyModel.value?.toLocaleString("cs-CZ") ?? "—"} Kč
+                        </dd>
+                      </div>
+                    </dl>
+                    <p className="mt-2 text-[11px] text-muted-foreground">
+                      {preview.modelCashFlow.note}
+                    </p>
+                  </div>
+                ) : null}
+
                 <div>
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase text-muted-foreground">
-                      Vhodnost financování
+                      Financing fit
                     </p>
                     <ClaimBadge kind={preview.financingFit.kind} />
                   </div>
@@ -518,14 +583,35 @@ export function RentgenToolIsland() {
                     {preview.financingFit.value}
                   </p>
                 </div>
+
+                <div>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs font-semibold uppercase text-muted-foreground">
+                      Data quality
+                    </p>
+                    <ClaimBadge kind="MODEL" />
+                  </div>
+                  <p className="mt-1 text-lg font-bold tabular-nums text-deep-teal">
+                    {preview.dataQuality.score}/100
+                    <span className="ml-2 text-sm font-normal text-muted-foreground">
+                      {preview.dataQuality.label}
+                    </span>
+                  </p>
+                  {preview.dataQuality.missingFields.length > 0 ? (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Chybí: {preview.dataQuality.missingFields.join(", ")}
+                    </p>
+                  ) : null}
+                </div>
+
                 <div>
                   <p className="text-xs font-semibold uppercase text-amber-800">
-                    Varovné signály
+                    Warning signals
                   </p>
                   <ul className="mt-2 space-y-2">
-                    {preview.redFlags.map((f) => (
+                    {preview.warningSignals.map((f) => (
                       <li
-                        key={f.text}
+                        key={f.id}
                         className="flex flex-wrap items-start gap-2 text-sm text-muted-foreground"
                       >
                         <ClaimBadge kind={f.kind} />
@@ -547,15 +633,45 @@ export function RentgenToolIsland() {
               id="premium-objednavka"
               className="mt-6 scroll-mt-28 rounded-xl border border-muted-gold/40 bg-muted-gold/10 p-4"
             >
-              <p className="text-sm font-bold text-text-dark">
-                {formatAnalysisPriceLabel()}
-              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-sm font-bold text-text-dark">
+                  {formatAnalysisPriceLabel()}
+                </p>
+                <span
+                  className={cn(
+                    "rounded-full px-2 py-0.5 text-[10px] font-bold uppercase",
+                    premiumCfg.commerciallyActive
+                      ? "bg-emerald-100 text-emerald-900"
+                      : "bg-amber-100 text-amber-900"
+                  )}
+                >
+                  {premiumCfg.statusLabel}
+                </span>
+              </div>
+              {!premiumCfg.commerciallyActive ? (
+                <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-950">
+                  Připravujeme — zatím nelze koupit online (žádný fake checkout).
+                  Můžete zanechat zájem; ozveme se po spuštění produktu.
+                </p>
+              ) : (
+                <p className="mt-2 text-xs font-semibold text-text-dark">
+                  Deliverable: elektronický report — executive summary, scénáře,
+                  stress test, checklist, red flags, data quality, decision framework.
+                </p>
+              )}
               <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                Navíc oproti free: cash flow, scénáře, náklady, rizika, lokální
-                kontext, závěry a elektronický report.{" "}
+                Navíc oproti free: kompletní 13 sekcí reportu.{" "}
                 <strong className="font-semibold text-text-dark">Není</strong>{" "}
                 garantovaný výnos, právní due diligence bez právníka, technická
                 inspekce bez partnera ani schválení banky.
+              </p>
+              <p className="mt-2 text-xs font-semibold text-text-dark">
+                Dodání (SLA)
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {premiumCfg.deliverySla.configured
+                  ? premiumCfg.deliverySla.label
+                  : premiumCfg.deliverySla.note}
               </p>
               <p className="mt-2 text-xs font-semibold text-text-dark">
                 Co následuje po CTA
@@ -566,12 +682,6 @@ export function RentgenToolIsland() {
                 ))}
               </ul>
               <div className="mt-3 space-y-2">
-                {!isPaidAnalysisCommerciallyAvailable() ? (
-                  <p className="rounded-lg border border-border bg-white px-3 py-2 text-xs text-muted-foreground">
-                    Připravujeme — zatím můžete zanechat kontakt. Nejde o
-                    objednávku ani platbu v e-shopu.
-                  </p>
-                ) : null}
                 <TextField
                   label="Jméno"
                   value={premiumName}
@@ -619,9 +729,9 @@ export function RentgenToolIsland() {
                 >
                   {premiumLoading
                     ? "Odesílám…"
-                    : isPaidAnalysisCommerciallyAvailable()
+                    : premiumCfg.commerciallyActive
                       ? `${PROPERTY_ANALYSIS_PRICING.ctaLabel} · ${formatAnalysisPrice()}`
-                      : `${PROPERTY_ANALYSIS_PRICING.ctaLabel} — zanechat zájem`}
+                      : `${PROPERTY_ANALYSIS_PRICING.ctaLabel} — Připravujeme`}
                 </button>
                 {premiumMsg ? (
                   <p className="text-xs text-muted-foreground">{premiumMsg}</p>

@@ -6,6 +6,8 @@ export const REFINANCE_RADAR_FEATURE_STATUS = "BETA" as const;
 /** Timeline milestone months before fixation end */
 export const FIXATION_ALERT_MONTHS = [12, 9, 6, 3, 1] as const;
 
+export type RefinanceRateStatus = "LIVE" | "STALE" | "MODEL" | "UNAVAILABLE";
+
 export type RefinanceLoanProfile = {
   id: string;
   label: string;
@@ -14,6 +16,8 @@ export type RefinanceLoanProfile = {
   ratePercent: number;
   fixationEnd: string;
   monthlyPaymentCzk: number;
+  /** Orientační hodnota nemovitosti — volitelné (LTV kontext) */
+  propertyValueCzk: number | null;
   remainingTermYears: number;
   hasInsuranceBundle: boolean;
   /** One-off refinancing fees (odhad / user) */
@@ -31,6 +35,8 @@ export type MarketRateReference = {
   ratePercent: number | null;
   label: string;
   claimKind: ClaimKind;
+  /** LIVE vs MODEL — nikdy nevydávat MODEL za bankovní nabídku */
+  rateStatus: RefinanceRateStatus;
   note: string;
   updatedAt: string | null;
 };
@@ -86,6 +92,9 @@ export type RefinanceRadarDashboard = {
   profile: RefinanceLoanProfile;
   monthsToFixation: number | null;
   daysToFixation: number | null;
+  /** Doporučený začátek řešení = konec fixace − N měsíců (default 6) */
+  recommendedStartDate: string | null;
+  recommendedStartMonthsBefore: number;
   currentRate: { value: number; claimKind: ClaimKind };
   marketReference: MarketRateReference;
   paymentScenarios: PaymentScenario[];
@@ -102,6 +111,9 @@ export type RefinanceRadarStore = {
   alerts: RefinanceRadarAlert[];
   preferences: {
     maxAlertsPerMonth: number;
+    /** In-app hlídání v prohlížeči — e-mail zatím není dostupný */
+    watchEnabled: boolean;
+    watchSavedAt: string | null;
   };
 };
 
@@ -117,6 +129,8 @@ export function emptyLoanProfile(
     ratePercent: partial?.ratePercent ?? 0,
     fixationEnd: partial?.fixationEnd ?? "",
     monthlyPaymentCzk: partial?.monthlyPaymentCzk ?? 0,
+    propertyValueCzk:
+      partial?.propertyValueCzk !== undefined ? partial.propertyValueCzk : null,
     remainingTermYears: partial?.remainingTermYears ?? 25,
     hasInsuranceBundle: partial?.hasInsuranceBundle ?? true,
     refinancingFeesCzk: partial?.refinancingFeesCzk ?? 25_000,

@@ -17,7 +17,7 @@ export default function KalkulackyPage() {
     <>
       <JsonLdScript
         data={webApplicationJsonLd({
-          name: "HypotékaJasně kalkulačky",
+          name: "Hypotéka Jasně kalkulačky",
           description:
             "Webové kalkulačky hypotéky a investic — orientační model, ne závazná nabídka.",
           path: routes.kalkulacky.root,

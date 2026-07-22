@@ -15,7 +15,10 @@ import {
   TEAM_MEMBERS,
   type TeamMember,
 } from "@/lib/trust";
+import { getPartnerClaimLabels } from "@/lib/partners/verification";
 import { routes } from "@/lib/routes";
+
+const partnerLabels = getPartnerClaimLabels();
 
 const pillars = [
   {
@@ -33,8 +36,7 @@ const pillars = [
   {
     icon: ClipboardList,
     title: "Konkrétní proces předání",
-    description:
-      "1) Vyplníte záměr a model. 2) Pokud chcete, předáme poptávku licencovanému specialistovi. 3) Schválení vždy provádí banka. 4) Majetio slouží k nemovitostem — odděleně.",
+    description: `1) Vyplníte záměr a model. 2) Pokud chcete a partner je ověřen, předáme poptávku partnerovi. 3) Schválení vždy provádí banka. 4) Majetio slouží k nemovitostem — odděleně. Stav: ${partnerLabels.badgeLabel}.`,
   },
 ];
 
@@ -98,12 +100,13 @@ export function AboutUsView() {
             O nás · Centrum důvěry
           </span>
           <h1 className="font-heading mb-6 text-4xl leading-tight font-extrabold text-white md:text-5xl">
-            Lidé a role za HypotékaJasně.cz
+            Lidé a role za Hypotéka Jasně
           </h1>
           <p className="mx-auto max-w-3xl text-lg leading-relaxed font-light text-emerald-50/90 md:text-xl">
-            Jsme technologická platforma. Individuální zprostředkování dělá
-            licencovaný specialista. Úvěr schvaluje banka. Do 30 sekund víte, komu
-            dáváte data — detail v{" "}
+            Jsme technologická platforma. Nejsme banka. Individuální
+            zprostředkování provádí partner — jen se souhlasem a jen pokud je
+            jeho identita ověřena a zveřejněna ({partnerLabels.badgeLabel}).
+            Úvěr schvaluje banka. Do 30 sekund víte, komu dáváte data — detail v{" "}
             <Link href={routes.duvera} className="underline decoration-white/40">
               Centru důvěry
             </Link>
@@ -167,7 +170,8 @@ export function AboutUsView() {
             {TEAM_MEMBERS.map((member, i) => (
               <article
                 key={member.id}
-                className="rounded-3xl border border-border bg-white p-5 shadow-sm sm:p-6"
+                id={member.id}
+                className="scroll-mt-24 rounded-3xl border border-border bg-white p-5 shadow-sm sm:p-6"
               >
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-[11rem_1fr] md:grid-cols-[13rem_1fr]">
                   <ProfilePhoto
@@ -282,14 +286,18 @@ export function AboutUsView() {
           </h2>
           <p className="leading-relaxed text-gray-600">
             <strong className="font-semibold text-gray-900">
-              HypotékaJasně.cz
+              Hypotéka Jasně
             </strong>{" "}
+            <span className="text-sm font-medium text-gray-500">
+              (HypotekaJasne.cz)
+            </span>{" "}
             edukuje a modeluje.{" "}
             <strong className="font-semibold text-gray-900">Majetio</strong>{" "}
-            pomáhá s nemovitostmi. Licencovaný specialista zprostředkovává.
-            Banka schvaluje. Makléř/developer prodává.{" "}
+            pomáhá s nemovitostmi.{" "}
+            {partnerLabels.roleLabel} zprostředkovává individuální konzultaci,
+            pokud je ověřen. Banka schvaluje. Makléř/developer prodává.{" "}
             <Link href={routes.partneri} className="text-deep-teal underline">
-              Partneři a licence
+              Partneři a ověření
             </Link>
             .
           </p>

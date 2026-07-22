@@ -24,7 +24,7 @@ export const ECOSYSTEM_ACTORS: EcosystemActor[] = [
     name: "Hypotéka Jasně",
     shortRole: "Informační a technologická platforma",
     whatTheyDo:
-      "Edukace, kalkulačky, Hypoteční připravenost, přiřazení trhů, magazín. Předává poptávku licencovanému specialistovi, pokud o to požádáte.",
+      "Edukace, kalkulačky, Hypoteční připravenost, přiřazení trhů, magazín. Předává poptávku partnerovi jen se souhlasem a jen pokud je jeho identita ověřena a zveřejněna.",
     whatTheyDont:
       "Neposkytuje hypoteční úvěr, neschvaluje žádosti, není banka ani náhradou za individuální poradenství.",
     dataYouGive:
@@ -32,14 +32,14 @@ export const ECOSYSTEM_ACTORS: EcosystemActor[] = [
   },
   {
     id: "licensed_specialist",
-    name: "Licencovaný specialista",
-    shortRole: "Zprostředkování / poradenství dle licence",
+    name: "Hypoteční partner",
+    shortRole: "Zprostředkování po ověření identity",
     whatTheyDo:
-      "Individuální posouzení, výběr produktů, komunikace s bankami v rozsahu své registrace (např. ČNB / JERRS).",
+      "Individuální posouzení a komunikace s bankami v rozsahu své registrace — teprve když je na /partneri zveřejněna ověřená identifikace.",
     whatTheyDont:
-      "Není totéž co Hypotéka Jasně web. Schválení úvěru neprovádí — to dělá banka.",
+      "Není totéž co Hypotéka Jasně web. Schválení úvěru neprovádí — to dělá banka. Bez zveřejněné identity neuvádíme „licencovaný“ / „ověřený“.",
     dataYouGive:
-      "Kompletní úvěrová dokumentace podle požadavků banky a specialisty.",
+      "Kompletní úvěrová dokumentace podle požadavků banky a partnera.",
   },
   {
     id: "bank",
@@ -98,13 +98,13 @@ export const TEAM_MEMBERS: TeamMember[] = [
     initials: "JA",
     role: "Zakladatel & CEO — produkt a technologie",
     responsibilities: [
-      "Produktová vize HypotékaJasně.cz",
+      "Produktová vize Hypotéka Jasně",
       "Datový a technologický ekosystém",
       "Srozumitelnost modelů pro uživatele",
     ],
     experience: [
       "Vedení produktu a vývoje platformy Hypotéka Jasně",
-      "Propojení edukace, kalkulaček a předání licencovaným partnery",
+      "Propojení edukace, kalkulaček a předání ověřenému partnerovi (pokud je zveřejněn)",
     ],
     education: [
       "Computing Technologies — University of Roehampton (Londýn)",
@@ -125,7 +125,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
     responsibilities: [
       "Kontrola, že webové modely odpovídají běžné bankovní praxi",
       "Vysvětlení limitů LTV/DSTI a nestandardních příjmů",
-      "Předání kvalifikované poptávky do licencovaného procesu",
+      "Předání kvalifikované poptávky partnerovi po ověření identity",
     ],
     experience: [
       "11 let praxe v oblasti hypoték, úvěrů a pojištění (uváděno jako praxe na trhu — veřejná registrační identifikace partnera jen pokud je zveřejněna)",
@@ -163,5 +163,12 @@ export const TRUST_NAV = [
   { href: "/editorial-policy", label: "Redakční zásady" },
   { href: "/jak-vydelavame", label: "Jak vyděláváme" },
   { href: "/partneri", label: "Partneři" },
-  { href: "/opravy-a-aktualizace", label: "Opravy a aktualizace" },
+  { href: "/opravy-a-aktualizace", label: "Co jsme aktualizovali" },
 ] as const;
+
+export { listPublicChangelog, PUBLIC_CHANGELOG } from "@/lib/trust/public-changelog";
+export {
+  NUMBER_PIPELINE_STEPS,
+  EDITORIAL_LEGAL_SOURCES_LABEL,
+  editorialLegalSourcesReviewText,
+} from "@/lib/trust/number-pipeline";

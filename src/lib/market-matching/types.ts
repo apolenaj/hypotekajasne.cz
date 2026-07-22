@@ -1,51 +1,67 @@
 /**
- * Transparentní market-matching — dimenze a váhy.
- * Placené partnerství NESMÍ měnit organic score.
+ * Transparentní market-matching — dimenze a váhy (PROMPT 16).
+ * Placené partnerství / affiliate NESMÍ měnit organic score.
  */
 
 export const MATCH_DIMENSIONS = [
-  "required_capital",
-  "financing_availability",
-  "target_yield",
-  "volatility_risk",
-  "ownership_security",
+  "capital_fit",
+  "financing_fit",
+  "yield_potential",
+  "ownership_accessibility",
   "liquidity",
-  "currency_risk",
-  "regulation",
-  "investment_horizon",
-  "intended_use",
+  "fx_risk",
+  "regulatory_complexity",
+  "tax_complexity",
+  "operational_complexity",
+  "user_goal_fit",
 ] as const;
 
 export type MatchDimension = (typeof MATCH_DIMENSIONS)[number];
 
-/** Váhy organického skóre — součet = 1. Dokumentováno na /metodika. */
+/**
+ * Váhy organického skóre — součet = 1.
+ * Vyšší atribut trhu = atraktivnější (u complexity = nižší složitost pro investora).
+ */
 export const DIMENSION_WEIGHTS: Record<MatchDimension, number> = {
-  required_capital: 0.14,
-  financing_availability: 0.12,
-  target_yield: 0.12,
-  volatility_risk: 0.1,
-  ownership_security: 0.12,
-  liquidity: 0.08,
-  currency_risk: 0.08,
-  regulation: 0.08,
-  investment_horizon: 0.08,
-  intended_use: 0.08,
+  capital_fit: 0.12,
+  financing_fit: 0.11,
+  yield_potential: 0.12,
+  ownership_accessibility: 0.11,
+  liquidity: 0.09,
+  fx_risk: 0.09,
+  regulatory_complexity: 0.09,
+  tax_complexity: 0.08,
+  operational_complexity: 0.09,
+  user_goal_fit: 0.1,
 };
 
 export const DIMENSION_LABELS_CS: Record<MatchDimension, string> = {
-  required_capital: "Požadovaný kapitál",
-  financing_availability: "Dostupnost financování",
-  target_yield: "Cílový výnos",
-  volatility_risk: "Volatilita / riziko",
-  ownership_security: "Jistota vlastnictví",
-  liquidity: "Likvidita",
-  currency_risk: "Měnové riziko",
-  regulation: "Regulace",
-  investment_horizon: "Investiční horizont",
-  intended_use: "Zamýšlené použití",
+  capital_fit: "Capital fit",
+  financing_fit: "Financing fit",
+  yield_potential: "Yield potential",
+  ownership_accessibility: "Ownership accessibility",
+  liquidity: "Liquidity",
+  fx_risk: "FX risk",
+  regulatory_complexity: "Regulatory complexity",
+  tax_complexity: "Tax complexity",
+  operational_complexity: "Operational complexity",
+  user_goal_fit: "User-goal fit",
 };
 
-/** Vyšší atribut = atraktivnější na dané ose (u rizika = nižší riziko). */
+export const DIMENSION_HINTS_CS: Record<MatchDimension, string> = {
+  capital_fit: "Shoda vašeho kapitálu / rozpočtu s typickým vstupem na trhu",
+  financing_fit: "Dostupnost financování vůči vaší preferenci páky",
+  yield_potential: "Modelový potenciál výnosu vůči vašemu apetitu",
+  ownership_accessibility: "Přístupnost a jistota vlastnické struktury",
+  liquidity: "Jak snadno lze pozici opustit",
+  fx_risk: "Měnové riziko (vyšší = bezpečnější / méně FX)",
+  regulatory_complexity: "Regulatorní náročnost (vyšší = jednodušší rámec)",
+  tax_complexity: "Daňová náročnost (vyšší = jednodušší pro investora)",
+  operational_complexity: "Provozní náročnost (správa, sezónnost, vzdálenost)",
+  user_goal_fit: "Shoda s cílem: investice vs vlastní užívání",
+};
+
+/** Vyšší atribut = atraktivnější na dané ose. */
 export type DimensionScores = Record<MatchDimension, number>;
 
 export type MarketId =
@@ -61,9 +77,7 @@ export type MarketId =
 export type MarketProfile = {
   id: MarketId;
   name: string;
-  /** Orientační minimální kapitál (CZK) pro smysluplný vstup */
   typicalMinCapitalCzk: number;
-  /** Orientační typický vstup (CZK) */
   typicalEntryCapitalCzk: number;
   attributes: DimensionScores;
   financingOptions: string[];
@@ -82,12 +96,26 @@ export type UserPreferenceProfile = {
 export type DimensionBreakdown = {
   dimension: MatchDimension;
   label: string;
+  /** 0–1 */
   weight: number;
+  /** 0–100 market attribute */
   marketValue: number;
+  /** 0–100 user ideal */
   userIdeal: number;
+  /** 0–100 fit */
+  score: number;
+  /** Alias of score — API clarity for PROMPT 16 */
   fit: number;
   weightedContribution: number;
   explanation: string;
+};
+
+export type ScoreChangeHint = {
+  id: string;
+  label: string;
+  detail: string;
+  /** Expected direction if user acts on hint */
+  direction: "up" | "down" | "either";
 };
 
 export type MarketMatchResult = {
@@ -100,6 +128,8 @@ export type MarketMatchResult = {
   overallMatch: number;
   whyMatches: string[];
   whyNotMatches: string[];
+  /** „Co by změnilo skóre?“ */
+  whatWouldChangeScore: ScoreChangeHint[];
   capitalRequired: {
     typicalMinCzk: number;
     typicalEntryCzk: number;
@@ -113,7 +143,7 @@ export type MarketMatchResult = {
     label: string;
   };
   breakdown: DimensionBreakdown[];
-  /** Vždy false u organického rankingu; sponzoring jen explicitně označený */
+  /** Vždy false u organického rankingu */
   isSponsored: false;
   organicScoreUntouched: true;
 };

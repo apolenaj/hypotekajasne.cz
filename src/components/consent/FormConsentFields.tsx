@@ -6,9 +6,15 @@ import {
   CONSENT_PURPOSES,
   buildConsentContextSummary,
   buildPartnerTransferCheckboxLabel,
+  buildPrivacyProcessingCheckboxLabel,
   type PartnerTransferScope,
 } from "@/lib/legal/consent-versions";
 import { isMortgagePartnerHandoffReady } from "@/lib/legal/partner-config";
+import { getPartnerClaimLabels } from "@/lib/partners/verification";
+import {
+  isLegalIdentityComplete,
+  LEGAL_IDENTITY_INCOMPLETE_PUBLIC_MESSAGE,
+} from "@/config/legal";
 import {
   buildFormConsentRecord,
   type FormConsentRecord,
@@ -59,6 +65,7 @@ export function FormConsentFields({
     onChange({ ...state, ...patch });
 
   const handoffReady = isMortgagePartnerHandoffReady();
+  const identityComplete = isLegalIdentityComplete();
   const isMortgageScope = state.partnerTransferScope === "mortgage_specialist";
 
   /** Bez ověřené identity partnera nepožadujeme falešný partner-transfer souhlas. */
@@ -81,6 +88,15 @@ export function FormConsentFields({
         {buildConsentContextSummary()}
       </p>
 
+      {!identityComplete ? (
+        <p
+          role="status"
+          className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-[11px] leading-relaxed text-slate-700"
+        >
+          {LEGAL_IDENTITY_INCOMPLETE_PUBLIC_MESSAGE}
+        </p>
+      ) : null}
+
       <label className="flex items-start gap-2.5">
         <input
           type="checkbox"
@@ -90,7 +106,7 @@ export function FormConsentFields({
           onChange={(e) => set({ privacyAccepted: e.target.checked })}
         />
         <span>
-          {CONSENT_PURPOSES.privacy_processing.checkboxLabel}{" "}
+          {buildPrivacyProcessingCheckboxLabel()}{" "}
           <Link href={routes.legal.gdpr} className="text-deep-teal underline">
             GDPR
           </Link>
@@ -103,10 +119,7 @@ export function FormConsentFields({
           role="status"
           className="rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-2 text-[11px] leading-relaxed text-amber-950"
         >
-          Předání licencovanému specialistovi zatím není produkčně aktivní
-          (chybí ověřená veřejná identifikace partnera). Vaše údaje zpracuje
-          provozovatel webu pro nezávaznou konzultaci. Hypotéka Jasně není
-          banka.
+          {getPartnerClaimLabels().leadIntakeDisclosure}
         </p>
       ) : null}
 

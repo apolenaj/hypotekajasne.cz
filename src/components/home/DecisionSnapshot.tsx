@@ -9,7 +9,7 @@ import {
 } from "@/lib/destination-metrics";
 import { estimateAffordability } from "@/lib/affordability";
 import { formatCurrency } from "@/lib/calculators";
-import { useMortgageRateEngine } from "@/lib/rates";
+import { rateUiBadgeLabel, useMortgageRateEngine } from "@/lib/rates";
 import { routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
@@ -31,12 +31,6 @@ function formatUpdated(iso: string | null | undefined): string {
     hour: "2-digit",
     minute: "2-digit",
   });
-}
-
-function uiKindLabel(kind: "LIVE" | "OVĚŘENO" | "MODEL"): string {
-  if (kind === "LIVE") return "Aktuální data";
-  if (kind === "OVĚŘENO") return "Ověřeno";
-  return "Modelový výpočet";
 }
 
 /**
@@ -76,7 +70,7 @@ export function DecisionSnapshot({ className }: { className?: string }) {
         </div>
         {!loading ? (
           <span className="rounded-md bg-white/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
-            {uiKindLabel(resolved.uiKind)}
+            {rateUiBadgeLabel(resolved.uiKind)}
           </span>
         ) : null}
       </div>
@@ -89,7 +83,7 @@ export function DecisionSnapshot({ className }: { className?: string }) {
               ? "…"
               : formatRateCs(resolved.ratePercent)}
             <span className="ml-1 text-xs font-medium text-white/55">
-              p. a.
+              {resolved.isModelFallback ? "p. a. · model" : "p. a."}
             </span>
           </dd>
         </div>
@@ -117,7 +111,9 @@ export function DecisionSnapshot({ className }: { className?: string }) {
         </div>
       </dl>
 
-      {resolved.isModelFallback || resolved.uiKind === "OVĚŘENO" ? (
+      {resolved.isModelFallback ||
+      resolved.uiKind === "STALE" ||
+      resolved.uiKind === "OVĚŘENO" ? (
         <p className="mt-3 text-[11px] leading-relaxed text-white/65">
           {resolved.explanation}
         </p>

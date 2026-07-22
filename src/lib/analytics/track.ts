@@ -8,6 +8,7 @@ import {
   type AnalyticsEventName,
   type AnalyticsPayload,
 } from "@/lib/analytics/events";
+import { getAnalyticsContext } from "@/lib/analytics/attribution";
 import {
   installAnalyticsDebugGlobals,
   isAnalyticsDebugEnabled,
@@ -60,9 +61,12 @@ export function track(
   }
   ensureDebugGlobals();
 
-  const safe: Record<string, unknown> = { ...payload };
+  const merged: Record<string, unknown> = {
+    ...getAnalyticsContext(),
+    ...payload,
+  };
   try {
-    assertSafeAnalyticsPayload(safe);
+    assertSafeAnalyticsPayload(merged);
   } catch (err) {
     if (isAnalyticsDebugEnabled() || process.env.NODE_ENV === "development") {
       console.warn("[analytics] blocked unsafe payload", event, err);
@@ -70,6 +74,7 @@ export function track(
     return { sent: false, adapter: "noop_unconfigured", reason: "unsafe_payload" };
   }
 
+  const safe = merged as AnalyticsPayload;
   const consented = hasAnalyticsConsent();
   const debug = isAnalyticsDebugEnabled();
 
@@ -92,6 +97,19 @@ export function track(
     adapter: adapter.id,
     reason: adapter.sendsToProduction ? undefined : "unconfigured",
   };
+}
+
+/**
+ * Fire canonical dashboard event + legacy alias (migration continuity).
+ */
+export function trackCanonical(
+  canonical: AnalyticsEventName,
+  legacy: AnalyticsEventName,
+  payload: AnalyticsPayload = {}
+): TrackResult {
+  const primary = track(canonical, payload);
+  if (canonical !== legacy) track(legacy, payload);
+  return primary;
 }
 
 /** Dual-fire helper: legacy + new name (migration continuity). */

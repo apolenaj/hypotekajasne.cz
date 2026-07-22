@@ -1,10 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
 import {
   AlertTriangle,
-  ChevronRight,
   HelpCircle,
   SlidersHorizontal,
   Target,
@@ -14,6 +12,8 @@ import {
   ClaimLegend,
 } from "@/components/property-rentgen/ClaimBadge";
 import { FeatureStatusBadge } from "@/components/majetio/FeatureStatusBadge";
+import { WhatNextPanel } from "@/components/ux/WhatNextPanel";
+import { CTA_CS } from "@/lib/ux/cta";
 import {
   buildOfferStrategyModel,
   defaultOfferStrategyInput,
@@ -349,13 +349,29 @@ export function OfferStrategyView() {
             ))}
           </ul>
           <ClaimLegend />
-          <Link
-            href={routes.dealRoom}
-            className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-deep-teal underline"
-          >
-            Pokračovat v Transakční místnosti
-            <ChevronRight className="h-4 w-4" />
-          </Link>
+          <WhatNextPanel
+            className="mt-5 bg-white"
+            actions={[
+              {
+                id: "deal-room",
+                label: "Pokračovat v Transakční místnosti",
+                description: "Kroky realizace a checklist transakce.",
+                href: routes.dealRoom,
+                primary: true,
+              },
+              {
+                id: "rentgen",
+                label: CTA_CS.analyzeProperty,
+                description: "Prověřte čísla nabídky.",
+                href: routes.investicniRentgen,
+              },
+              {
+                id: "moznosti",
+                label: CTA_CS.discoverOptions,
+                href: routes.mojeMoznosti,
+              },
+            ]}
+          />
         </section>
       </main>
     </div>

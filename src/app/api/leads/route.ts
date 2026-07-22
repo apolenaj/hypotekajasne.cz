@@ -9,6 +9,10 @@ import {
 import type { FormConsentRecord } from "@/lib/consent/records";
 import type { PartnerTransferScope } from "@/lib/legal/consent-versions";
 import { isMortgagePartnerHandoffReady } from "@/lib/legal/partner-config";
+import {
+  canAcceptPersonalLeads,
+  LEGAL_LEAD_BLOCKED_PUBLIC_MESSAGE,
+} from "@/lib/legal";
 
 function getSupabaseAdmin() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -100,6 +104,13 @@ function normalizePayload(
 
 export async function POST(request: Request) {
   try {
+    if (!canAcceptPersonalLeads()) {
+      return NextResponse.json(
+        { error: LEGAL_LEAD_BLOCKED_PUBLIC_MESSAGE },
+        { status: 503 }
+      );
+    }
+
     const raw = await request.json();
     const normalized = normalizePayload(raw);
 

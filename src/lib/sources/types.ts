@@ -36,6 +36,56 @@ export type AuthorityKind =
   | "court"
   | "other_official";
 
+/** Typ zdroje pro FactClaim (PROMPT 3). */
+export type FactSourceType =
+  | AuthorityKind
+  | "model"
+  | "market_practice"
+  | "other";
+
+/**
+ * Jednotný faktický claim — UI nesmí hardcodovat silnější znění mimo tuto vrstvu.
+ */
+export type FactClaimStatus =
+  | "VERIFIED"
+  | "UNVERIFIED"
+  | "NEEDS_UPDATE"
+  | "MODEL"
+  | "ESTIMATE";
+
+export type FactClaim = {
+  id: string;
+  /** Veřejné znění tvrzení */
+  claim: string;
+  /** Hodnota / shrnutí (číslo, %, text) */
+  value: string | number | null;
+  jurisdiction: string;
+  sourceName: string;
+  sourceUrl: string | null;
+  sourceType: FactSourceType;
+  verifiedAt: string | null;
+  validFrom?: string | null;
+  validTo?: string | null;
+  status: FactClaimStatus;
+  notes?: string | null;
+  /** Tematická skupina pro audit */
+  topic:
+    | "ltv_dti_dsti"
+    | "tax"
+    | "cadastre"
+    | "fees"
+    | "ownership"
+    | "foreign_mortgage"
+    | "purchase_costs"
+    | "regulatory"
+    | "other";
+};
+
+/** Když chybí automatický research / ověřený deep-link. */
+export const MANUAL_VERIFICATION_NOTE =
+  "Vyžaduje ruční ověření proti primárnímu předpisu. Projekt nemá automatický web research — konkrétní URL nevymýšlíme.";
+
+
 export type SourceTopic =
   | "rates"
   | "macroprudential"

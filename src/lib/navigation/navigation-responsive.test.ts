@@ -68,7 +68,8 @@ describe("navigation structure", () => {
   });
 
   it("CTA variants exist for anonymous and returning users", () => {
-    assert.ok(navCta.default.href.includes("navrh-na-miru"));
+    assert.ok(navCta.default.href.includes("moje-moznosti"));
+    assert.ok(navCta.default.label.includes("možnosti"));
     assert.ok(navCta.returning.href.includes("dashboard"));
   });
 });

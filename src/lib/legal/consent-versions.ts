@@ -9,11 +9,13 @@ import {
   getPrimaryMortgagePartner,
 } from "@/lib/legal/partner-config";
 import {
-  getOperatorIdentity,
-  operatorDisplayName,
-} from "@/lib/legal/operator";
+  canUseStrongPartnerTrustClaims,
+  getPartnerClaimLabels,
+  getPrimaryPartnerVerification,
+} from "@/lib/partners/verification";
+import { getLegalIdentityConfig } from "@/config/legal";
 
-export const CONSENT_POLICY_VERSION = "2026-07-20.1" as const;
+export const CONSENT_POLICY_VERSION = "2026-07-21.1" as const;
 export const COOKIE_POLICY_VERSION = "2026-07-20.1" as const;
 export const TERMS_VERSION = "2026-07-20.1" as const;
 export const PAID_ANALYSIS_TERMS_VERSION = "2026-07-20.1" as const;
@@ -56,9 +58,9 @@ export const CONSENT_PURPOSES: Record<ConsentPurposeId, ConsentPurposeCopy> = {
     id: "partner_transfer",
     version: CONSENT_POLICY_VERSION,
     checkboxLabel:
-      "Souhlasím s předáním údajů licencovanému hypotečnímu specialistovi (samostatný správce) za účelem nezávazné konzultace hypotéky — v uvedeném rozsahu.",
+      "Souhlasím s předáním údajů ověřenému hypotečnímu partnerovi (samostatný správce) za účelem nezávazné konzultace hypotéky — v uvedeném rozsahu.",
     description:
-      "Výslovný souhlas s předáním konkrétnímu typu partnera. Partner jedná ve vlastní licenci; Hypotéka Jasně není banka ani zprostředkovatel dle z. č. 257/2016 Sb. Odeslání formuláře samo o sobě není marketingový souhlas.",
+      "Výslovný souhlas s předáním konkrétnímu partnerovi. Partner jedná ve vlastní registraci; Hypotéka Jasně není banka ani zprostředkovatel dle z. č. 257/2016 Sb. Odeslání formuláře samo o sobě není marketingový souhlas. Checkbox se nabízí jen pokud je partner ověřen.",
     required: false,
   },
   marketing: {
@@ -94,46 +96,68 @@ export type PartnerTransferScope =
   | "broker_developer"
   | "none";
 
+export function getPartnerTransferScopeLabels(): Record<
+  PartnerTransferScope,
+  string
+> {
+  const verified = canUseStrongPartnerTrustClaims();
+  return {
+    mortgage_specialist: verified
+      ? "Ověřený hypoteční partner"
+      : "Hypoteční partner (předání až po ověření identity)",
+    majetio: "Majetio — vyhledání a analýza nemovitostí / Finanční pas",
+    broker_developer: "Makléř / developer (pouze pokud výslovně zvoleno)",
+    none: "Bez předání třetí straně",
+  };
+}
+
+/** @deprecated Prefer getPartnerTransferScopeLabels() — static snapshot for docs. */
 export const PARTNER_TRANSFER_SCOPE_LABELS: Record<
   PartnerTransferScope,
   string
 > = {
-  mortgage_specialist: "Licencovaný hypoteční specialista",
+  mortgage_specialist: "Hypoteční partner (předání až po ověření identity)",
   majetio: "Majetio — vyhledání a analýza nemovitostí / Finanční pas",
   broker_developer: "Makléř / developer (pouze pokud výslovně zvoleno)",
   none: "Bez předání třetí straně",
 };
 
+/** Dynamický checkbox text — používá centrální legal config (bez TODO stringů). */
+export function buildPrivacyProcessingCheckboxLabel(): string {
+  const cfg = getLegalIdentityConfig();
+  const spravce = cfg.dataControllerName;
+  return `Souhlasím se zpracováním údajů správcem (${spravce}) za účelem vyřízení mé nezávazné poptávky / konzultace (viz Zásady ochrany osobních údajů). Hypotéka Jasně není banka.`;
+}
+
 /** Dynamický checkbox text — bez odkazu na /partneri, pokud identita není zveřejněna. */
 export function buildPartnerTransferCheckboxLabel(
   scope: PartnerTransferScope
 ): string {
-  const base = CONSENT_PURPOSES.partner_transfer.checkboxLabel;
-  const scopeLabel = PARTNER_TRANSFER_SCOPE_LABELS[scope];
+  const scopeLabel = getPartnerTransferScopeLabels()[scope];
 
   if (scope === "mortgage_specialist" && isMortgagePartnerHandoffReady()) {
     const name = partnerPublicDisplayName(getPrimaryMortgagePartner());
-    return `${base} Příjemce: ${name}. Rozsah: ${scopeLabel}.`;
+    return `Souhlasím s předáním údajů ověřenému hypotečnímu partnerovi (samostatný správce) za účelem nezávazné konzultace hypotéky. Příjemce: ${name}. Rozsah: ${scopeLabel}.`;
   }
 
   if (scope === "mortgage_specialist") {
-    return `${base} Rozsah: ${scopeLabel}. Identita konkrétního specialisty bude uvedena až po zveřejnění ověřených registračních údajů — do té doby údaje přijímá provozovatel webu.`;
+    return `Souhlasím se zpracováním údajů provozovatelem webu pro nezávaznou konzultaci. Předání třetímu partnerovi zatím není aktivní. Rozsah: ${scopeLabel}.`;
   }
 
-  return `${base} Rozsah: ${scopeLabel}.`;
+  return `Souhlasím s předáním údajů partnerovi (samostatný správce) v uvedeném rozsahu. Rozsah: ${scopeLabel}.`;
 }
 
 /** Krátké shrnutí u formuláře (správce / účel / role). */
 export function buildConsentContextSummary(): string {
-  const op = getOperatorIdentity();
-  const spravce = operatorDisplayName(op);
-  const handoff = isMortgagePartnerHandoffReady();
+  const cfg = getLegalIdentityConfig();
+  const spravce = cfg.dataControllerName;
+  const privacy = cfg.privacyEmail;
+  const labels = getPartnerClaimLabels(getPrimaryPartnerVerification());
   return [
     `Správce údajů z formuláře: ${spravce}.`,
+    `Kontakt pro ochranu údajů: ${privacy}.`,
     "Účel: vyřízení nezávazné poptávky / konzultace.",
     "Hypotéka Jasně není banka a neschvaluje úvěry.",
-    handoff
-      ? "Při souhlasu s předáním se stává samostatným správcem licencovaný hypoteční specialista (viz Partneři)."
-      : "Předání licencovanému specialistovi není produkčně aktivní, dokud není zveřejněna ověřená identita partnera.",
+    labels.leadIntakeDisclosure,
   ].join(" ");
 }

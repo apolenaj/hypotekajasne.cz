@@ -4,11 +4,15 @@
 
 import {
   matchMarkets,
+  matchMarketsWhatIf,
+  applyWhatIfToForm,
+  whatIfFromForm,
   type FinancingChoice,
   type HorizonChoice,
   type PassportFormData,
   type PurposeChoice,
   type RegionChoice,
+  type WhatIfParams,
 } from "@/lib/market-matching/score";
 import type {
   MarketMatchResult,
@@ -21,9 +25,16 @@ export type {
   PassportFormData,
   PurposeChoice,
   RegionChoice,
+  WhatIfParams,
 };
 
 export type { MarketMatchResult, MatchingResult };
+
+export {
+  matchMarketsWhatIf,
+  applyWhatIfToForm,
+  whatIfFromForm,
+};
 
 export const initialPassportForm: PassportFormData = {
   capital: "",

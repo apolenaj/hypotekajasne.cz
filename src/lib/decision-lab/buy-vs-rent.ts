@@ -142,7 +142,7 @@ export function simulateBuyVsRent(input: BuyVsRentInput): BuyVsRentResult {
       title: "Koupě vs. nájem — čisté jmění",
       methodology:
         "Porovnává čisté jmění kupujícího (hodnota nemovitosti − zůstatek úvěru) s portfoliem nájemce (akontace+tx investované alternativním výnosem ± rozdíl ročních nákladů). Bod zvratu = první rok dominance dle těchto předpokladů.",
-      source: "Laboratoř rozhodnutí (HypotékaJasně.cz)",
+      source: "Laboratoř rozhodnutí (HypotekaJasne.cz)",
       sourceUrl: null,
       statusNote:
         "MODELOVÝ VÝPOČET — výsledky závisí na vstupech, ne na historické jistotě.",

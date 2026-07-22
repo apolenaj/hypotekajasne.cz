@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { buildPageMetadata } from "@/lib/seo/metadata";
-import { getArticle } from "@/lib/magazine";
+import { getArticle, getPerson } from "@/lib/magazine";
 import { MagazineArticleView } from "@/components/magazine/MagazineArticleView";
 import { getAllArticleSlugs } from "@/lib/magazine";
 import { notFound } from "next/navigation";
@@ -25,6 +25,7 @@ export async function generateMetadata({
       noIndex: true,
     });
   }
+  const author = getPerson(article.authorId);
   return buildPageMetadata({
     title: article.title,
     description: article.description,
@@ -32,7 +33,7 @@ export async function generateMetadata({
     type: "article",
     publishedTime: article.publishedAt,
     modifiedTime: article.updatedAt,
-    authors: [article.authorId],
+    authors: [author.name],
     ogImage: {
       url: article.hero.src,
       alt: article.hero.alt,

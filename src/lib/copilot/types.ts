@@ -3,7 +3,19 @@
  * Orchestrace nad ověřenými nástroji; žádné volné halucinace sazeb/zákonů.
  */
 
+/** Legacy claim labels used in citations/UI chips (Czech product language). */
 export type ClaimKind = "DATA" | "MODEL" | "ODHAD" | "NEOVERENO";
+
+/**
+ * Internal evidence taxonomy (PROMPT 15) — every answer must distinguish these.
+ * Mapped from ClaimKind: DATA→FACT, MODEL→MODEL, ODHAD→ESTIMATE, NEOVERENO→UNKNOWN.
+ */
+export type CopilotEvidenceKind = "FACT" | "MODEL" | "ESTIMATE" | "UNKNOWN";
+
+export type CopilotConfidence = "HIGH" | "MEDIUM" | "LOW";
+
+/** Rate layer visible to tools (from resolveMortgageRate). */
+export type CopilotRateLayer = "LIVE" | "STALE" | "MODEL";
 
 export type CopilotIntentId =
   | "affordability"
@@ -52,6 +64,28 @@ export type CopilotToolCall = {
   summary: string;
 };
 
+export type CopilotSummaryChip = {
+  id: string;
+  label: string;
+};
+
+export type CopilotResponseMeta = {
+  confidence: CopilotConfidence;
+  confidenceLabelCs: string;
+  sourcesUsed: number;
+  freshSources: number;
+  staleSources: number;
+  modelCount: number;
+  estimateCount: number;
+  unknownCount: number;
+  modelAssumptions: string[];
+  unknowns: string[];
+  evidenceKinds: CopilotEvidenceKind[];
+  /** Explicit when live rate missing / model fallback */
+  rateNotice: string | null;
+  summaryChips: CopilotSummaryChip[];
+};
+
 export type CopilotAuditEntry = {
   id: string;
   at: string;
@@ -60,6 +94,8 @@ export type CopilotAuditEntry = {
   citationIds: string[];
   dataKeysUsed: string[];
   guardrailFlags: string[];
+  confidence?: CopilotConfidence;
+  sourcesUsed?: number;
 };
 
 export type CopilotMessageRole = "user" | "assistant" | "system";
@@ -75,6 +111,8 @@ export type CopilotMessage = {
   tools?: CopilotToolCall[];
   auditId?: string;
   cta?: { label: string; href: string }[];
+  /** Confidence, freshness, assumptions — required on tool answers */
+  responseMeta?: CopilotResponseMeta;
 };
 
 /** Non-PII session property slot for compare / safety checks. */
@@ -102,6 +140,8 @@ export type CopilotSessionContext = {
   modelRatePercent: number | null;
   modelRateUpdatedAt: string | null;
   modelRateClaimKind: ClaimKind;
+  /** LIVE / STALE / MODEL — drives rate disclaimer */
+  rateLayer?: CopilotRateLayer;
 };
 
 export type CopilotOrchestratorInput = {
@@ -118,7 +158,7 @@ export type CopilotOrchestratorResult = {
 };
 
 export const COPILOT_SYSTEM_DISCLAIMER =
-  "HypotékaJasně Finanční AI průvodce pracuje jen s ověřenými daty platformy, výsledky kalkulaček a vaším lokálním profilem. Nejde o schválení úvěru ani o regulované osobní finanční doporučení — finální posouzení dělá banka / licencovaný specialista.";
+  "Hypotéka Jasně Finanční AI průvodce pracuje jen s ověřenými daty platformy, výsledky kalkulaček a vaším lokálním profilem. Nejde o schválení úvěru ani o regulované osobní finanční doporučení — finální posouzení dělá banka / partner.";
 
 export const COPILOT_FORBIDDEN_PROMISES = [
   "schválíme vám úvěr",
@@ -126,4 +166,6 @@ export const COPILOT_FORBIDDEN_PROMISES = [
   "banka vám půjčí",
   "garantovaný výnos",
   "zaručeně dosáhnete",
+  "právní rada",
+  "garantujeme hypotéku",
 ] as const;

@@ -1,3 +1,10 @@
+export {
+  ClaimSourceBadge,
+} from "@/components/trust/ClaimSourceBadge";
+export {
+  SourceEvidenceDrawer,
+  SourceEvidenceBadgeButton,
+} from "@/components/trust/SourceEvidenceDrawer";
 export { DataStatusBadge } from "@/components/trust/DataStatusBadge";
 export { DataSourcePopover } from "@/components/trust/DataSourcePopover";
 export { LastUpdated } from "@/components/trust/LastUpdated";

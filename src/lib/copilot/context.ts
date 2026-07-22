@@ -7,8 +7,10 @@ import {
 import type {
   ClaimKind,
   CopilotPropertyDraft,
+  CopilotRateLayer,
   CopilotSessionContext,
 } from "@/lib/copilot/types";
+import { MODEL_FALLBACK_RATE_PERCENT } from "@/lib/rates/model-fallback";
 
 const PROPERTIES_KEY = "hj-copilot-properties-v1";
 
@@ -53,6 +55,7 @@ export function buildSessionContext(opts?: {
   modelRatePercent?: number | null;
   modelRateUpdatedAt?: string | null;
   modelRateClaimKind?: ClaimKind;
+  rateLayer?: CopilotRateLayer;
   properties?: CopilotPropertyDraft[];
 }): {
   context: CopilotSessionContext;
@@ -60,12 +63,24 @@ export function buildSessionContext(opts?: {
 } {
   const stored = typeof window !== "undefined" ? loadReadiness() : null;
   const answers = (stored?.answers as ReadinessAnswers | undefined) ?? null;
-  const rate = opts?.modelRatePercent ?? 5;
-  const result = answers ? calculateReadiness(answers, rate) : null;
+  const rateLayer = opts?.rateLayer ?? "MODEL";
+  const rate =
+    opts?.modelRatePercent ??
+    (rateLayer === "MODEL" ? MODEL_FALLBACK_RATE_PERCENT : null);
+  const result =
+    answers && rate != null ? calculateReadiness(answers, rate) : null;
   const intentLabel =
     answers?.intent != null
       ? INTENT_OPTIONS.find((o) => o.id === answers.intent)?.label ?? null
       : null;
+
+  const claimKind: ClaimKind =
+    opts?.modelRateClaimKind ??
+    (rateLayer === "LIVE"
+      ? "DATA"
+      : rateLayer === "STALE"
+        ? "NEOVERENO"
+        : "MODEL");
 
   return {
     answers,
@@ -78,9 +93,10 @@ export function buildSessionContext(opts?: {
       ownFundsBand: answers ? fundsBand(answers.ownFunds) : null,
       targetPrice: answers?.targetPrice ?? null,
       properties: opts?.properties ?? loadCopilotProperties(),
-      modelRatePercent: opts?.modelRatePercent ?? null,
+      modelRatePercent: opts?.modelRatePercent ?? rate,
       modelRateUpdatedAt: opts?.modelRateUpdatedAt ?? null,
-      modelRateClaimKind: opts?.modelRateClaimKind ?? "MODEL",
+      modelRateClaimKind: claimKind,
+      rateLayer,
     },
   };
 }

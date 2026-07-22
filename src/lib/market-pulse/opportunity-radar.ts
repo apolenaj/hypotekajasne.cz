@@ -29,11 +29,11 @@ function grossYieldPercent(countryId: CountryId): number | null {
   return computeGrossYield(latest.apt70m, latest.rent);
 }
 
-/** Vyšší skóre = rizikovější trh (inverze volatility_risk z profilu) */
+/** Vyšší skóre = rizikovější trh (inverze operational_complexity z profilu) */
 function marketRiskScore(countryId: CountryId): number | null {
   const profile = getMarketProfile(countryId);
   if (!profile) return null;
-  return 100 - profile.attributes.volatility_risk;
+  return 100 - profile.attributes.operational_complexity;
 }
 
 function entryCapitalCzk(countryId: CountryId): number | null {

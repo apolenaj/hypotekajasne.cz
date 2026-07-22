@@ -7,7 +7,7 @@ import {
   ScanSearch,
   type LucideIcon,
 } from "lucide-react";
-import { track } from "@/lib/analytics/track";
+import { trackCanonical } from "@/lib/analytics/track";
 import { routes } from "@/lib/routes";
 
 type Need = {
@@ -83,7 +83,7 @@ export function HomeNeeds() {
                 <Link
                   href={need.href}
                   onClick={() =>
-                    track("homepage_intent_selected", {
+                    trackCanonical("intent_selected", "homepage_intent_selected", {
                       intent_id: need.id,
                       path: need.href,
                       experiment_id: "hero",

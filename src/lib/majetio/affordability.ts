@@ -10,7 +10,7 @@ import type {
 } from "@/lib/majetio/contracts";
 
 const DISCLAIMER =
-  "Orientační model HypotékaJasně — nejde o schválení bankou ani investiční doporučení.";
+  "Orientační model Hypotéka Jasně — nejde o schválení bankou ani investiční doporučení.";
 
 /**
  * Vyhodnocení „Mohu si to dovolit?“ proti volitelnému Financial Passport.

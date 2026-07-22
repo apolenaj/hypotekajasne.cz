@@ -8,7 +8,7 @@ import { routes } from "@/lib/routes";
 export const metadata: Metadata = buildPageMetadata({
   title: "Hlídač refinancování — sledujte fixaci a porovnejte nabídky",
   description:
-    "Personalizovaná upozornění k fixaci, scénáře splátky (model), Zůstat vs. refinancovat. CTA na specialistu.",
+    "Spočítejte čas do konce fixace, modelové scénáře splátek a uložte si in-app hlídání. Orientační model — ne individuální nabídka banky.",
   path: routes.refinanceRadar,
 });
 

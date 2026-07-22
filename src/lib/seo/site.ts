@@ -1,14 +1,40 @@
 /**
  * Canonical site + Vercel deployment URL strategy.
  *
- * Production canonical: https://hypotekajasne.cz
- * Preview/staging: noindex; never promote Vercel *.vercel.app as canonical.
+ * Configure production canonical via:
+ *   NEXT_PUBLIC_SITE_URL=https://hypotekajasne.cz
+ *
+ * Preview/staging: robots noindex; never promote *.vercel.app as canonical.
+ * If NEXT_PUBLIC_SITE_URL points at vercel.app, we fall back to PRODUCTION_ORIGIN.
  */
 
-export const PRODUCTION_HOST = "hypotekajasne.cz";
+import {
+  SITE_BRAND,
+  SITE_DOMAIN_HOST,
+  SITE_DOMAIN_LABEL,
+  SITE_NAME,
+  SITE_NAME_SHORT,
+} from "@/lib/brand";
+
+export const PRODUCTION_HOST = SITE_DOMAIN_HOST;
 export const PRODUCTION_ORIGIN = `https://${PRODUCTION_HOST}`;
 
 export type DeployEnv = "production" | "preview" | "development";
+
+/** Hosts that must never appear as the public canonical domain. */
+export function isDisallowedCanonicalOrigin(origin: string): boolean {
+  try {
+    const host = new URL(origin).hostname.toLowerCase();
+    return (
+      host === "vercel.app" ||
+      host.endsWith(".vercel.app") ||
+      host.includes("localhost") ||
+      host === "127.0.0.1"
+    );
+  } catch {
+    return true;
+  }
+}
 
 export function getDeployEnv(): DeployEnv {
   const v = process.env.VERCEL_ENV;
@@ -28,8 +54,8 @@ export function getDeployEnv(): DeployEnv {
  * Preview uses production origin for canonical URLs (and robots noindex).
  */
 export function getSiteOrigin(): string {
-  const explicit = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
-  if (explicit && !explicit.includes("vercel.app")) {
+  const explicit = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "").trim();
+  if (explicit && !isDisallowedCanonicalOrigin(explicit)) {
     return explicit;
   }
   return PRODUCTION_ORIGIN;
@@ -56,13 +82,12 @@ export function absoluteUrl(path: string): string {
   return `${base}${p}`;
 }
 
-export const SITE_NAME = "HypotékaJasně.cz";
-export const SITE_NAME_SHORT = "Hypotéka Jasně";
+export { SITE_BRAND, SITE_DOMAIN_LABEL, SITE_NAME, SITE_NAME_SHORT };
 
 export const DEFAULT_OG_IMAGE = {
   /** Resolved via app/opengraph-image.tsx — metadataBase + /opengraph-image */
   url: "/opengraph-image",
   width: 1200,
   height: 630,
-  alt: "HypotékaJasně.cz — hypoteční data a investiční nástroje",
+  alt: `${SITE_BRAND} (${SITE_DOMAIN_LABEL}) — hypoteční data a investiční nástroje`,
 } as const;

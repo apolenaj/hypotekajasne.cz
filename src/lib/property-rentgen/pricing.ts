@@ -3,10 +3,12 @@
  *
  * Obchodní rozhodnutí: 4 990 Kč (nikoli 5 000).
  * Override ceny: NEXT_PUBLIC_PROPERTY_ANALYSIS_PRICE_CZK
+ * SLA: NEXT_PUBLIC_RENTGEN_PREMIUM_SLA_DAYS nebo NEXT_PUBLIC_RENTGEN_PREMIUM_SLA_LABEL
  *
  * ADVANCED due diligence není aktivní SKU — jen individuální poptávka.
  */
 
+import { getRentgenPremiumConfig } from "@/lib/property-rentgen/product-config";
 export type AnalysisProductTierId = "free" | "premium" | "advanced_inquiry";
 
 export type AnalysisProductTier = {
@@ -127,11 +129,11 @@ export const ANALYSIS_PRODUCT_TIERS: AnalysisProductTier[] = [
       "Hloubková modelová analýza s reportem — za jednotnou cenu z centrálního ceníku.",
     priceCzk: PROPERTY_ANALYSIS_PRICING.amountCzk,
     priceDisplayOverride: null,
-    commerciallyActive: true,
+    commerciallyActive: false,
     includes: [...PROPERTY_ANALYSIS_PRICING.includes],
     excludes: [...PROPERTY_ANALYSIS_PRICING.excludes],
     isNot: [...PROPERTY_ANALYSIS_PRICING.isNot],
-    deliveryExpectation: [...PROPERTY_ANALYSIS_PRICING.ctaNextSteps],
+    deliveryExpectation: [],
   },
   {
     id: "advanced_inquiry",
@@ -143,7 +145,7 @@ export const ANALYSIS_PRODUCT_TIERS: AnalysisProductTier[] = [
     commerciallyActive: false,
     includes: [
       "Individuální rozsah dle poptávky",
-      "Koordinace s licencovaným partnerem / specialistou",
+      "Koordinace s ověřeným partnerem / specialistou",
     ],
     excludes: [
       "Automatický online nákup",
@@ -160,11 +162,29 @@ export const ANALYSIS_PRODUCT_TIERS: AnalysisProductTier[] = [
 ];
 
 export function getAnalysisTier(): AnalysisProductTier[] {
-  return ANALYSIS_PRODUCT_TIERS;
+  const premiumCfg = getRentgenPremiumConfig();
+  return ANALYSIS_PRODUCT_TIERS.map((tier) => {
+    if (tier.id !== "premium") return tier;
+    return {
+      ...tier,
+      commerciallyActive: premiumCfg.commerciallyActive,
+      includes: premiumCfg.deliverables.slice(0, 6),
+      deliveryExpectation: premiumCfg.deliverySla.configured
+        ? [
+            premiumCfg.deliverySla.label!,
+            premiumCfg.deliverySla.note,
+            ...PROPERTY_ANALYSIS_PRICING.ctaNextSteps,
+          ]
+        : [
+            premiumCfg.deliverySla.note,
+            ...PROPERTY_ANALYSIS_PRICING.ctaNextSteps,
+          ],
+    };
+  });
 }
 
 export function getPremiumTier(): AnalysisProductTier {
-  return ANALYSIS_PRODUCT_TIERS.find((t) => t.id === "premium")!;
+  return getAnalysisTier().find((t) => t.id === "premium")!;
 }
 
 export function getFreeTier(): AnalysisProductTier {

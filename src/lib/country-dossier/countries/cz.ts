@@ -10,9 +10,16 @@ import {
 import {
   CNB_INVESTMENT_CLAIM,
   CNB_OWNER_OCCUPIED_CLAIM,
+  CZ_ACQUISITION_TAX_CLAIM,
+  CZ_CADASTRE_VKLAD_FEE_CLAIM,
+  CZ_LEGAL_ESCROW_COST_CLAIM,
+  CZ_PROPERTY_TAX_CLAIM,
   LEGAL_REVIEW_AS_OF,
   TITLE_TRANSFER_CZ_CLAIM,
+  dossierEditorialLegalReviewText,
 } from "@/lib/country-dossier/shared";
+import { requireFactClaim } from "@/lib/sources/fact-claims";
+import { factClaimCostRange } from "@/lib/sources/fact-claims-display";
 import type { CountryDossier } from "@/lib/country-dossier/types";
 
 export const czDossier: CountryDossier = assemble(
@@ -91,25 +98,25 @@ export const czDossier: CountryDossier = assemble(
       summary: "Nad kupní cenu počítejte s daněmi/poplatky a právní úschovou.",
       lines: [
         {
-          label: "Daň z nabytí",
-          range: "od 2016 neplatí kupující (historický kontext)",
-          claim: reviewClaim(
-            "Daň z nabytí nemovitých věcí byla zrušena; ověřte aktuální daňový režim u poradce.",
-            "MF ČR / daňové předpisy"
+          label: "Daň z nabytí nemovitých věcí",
+          range: factClaimCostRange(
+            requireFactClaim("cz.tax.acquisition.abolished_2020")
           ),
+          claim: CZ_ACQUISITION_TAX_CLAIM,
         },
         {
           label: "Právní služby + úschova",
-          range: "orientačně 10–25 tis. Kč+",
-          claim: modelledClaim(
-            "Cena závisí na složitosti transakce a poskytovateli (advokát / notář / banka).",
-            "Tržní praxe ČR"
+          range: factClaimCostRange(
+            requireFactClaim("cz.fees.legal_escrow_band")
           ),
+          claim: CZ_LEGAL_ESCROW_COST_CLAIM,
         },
         {
-          label: "Katastrální poplatky",
-          range: "řádově stovky až tisíce Kč",
-          claim: modelledClaim("Podle typu návrhu na vklad.", "ČÚZK praxe"),
+          label: "Katastr — správní poplatek za návrh na vklad",
+          range: factClaimCostRange(
+            requireFactClaim("cz.cadastre.vklad_fee")
+          ),
+          claim: CZ_CADASTRE_VKLAD_FEE_CLAIM,
         },
       ],
     },
@@ -122,10 +129,7 @@ export const czDossier: CountryDossier = assemble(
         {
           label: "Daň z nemovitých věcí",
           range: "obecní sazby — individuálně",
-          claim: reviewClaim(
-            "Daň z nemovitých věcí spravují obce; výše není univerzální.",
-            "Zákon o dani z nemovitých věcí"
-          ),
+          claim: CZ_PROPERTY_TAX_CLAIM,
         },
         {
           label: "SVJ / správa + pojištění",
@@ -204,13 +208,13 @@ export const czDossier: CountryDossier = assemble(
     },
     sourcesSection(
       {
-        text: `Poslední právní review dossieru ČR: ${LEGAL_REVIEW_AS_OF}`,
-        source: "HypotékaJasně.cz (redakční review)",
+        text: dossierEditorialLegalReviewText("ČR"),
+        source: "HypotekaJasne.cz (redakční review)",
         sourceUrl: null,
         asOf: LEGAL_REVIEW_AS_OF,
         status: "ESTIMATE",
       },
-      [CNB_OWNER_OCCUPIED_CLAIM, CNB_INVESTMENT_CLAIM, TITLE_TRANSFER_CZ_CLAIM]
+      [CNB_OWNER_OCCUPIED_CLAIM, CNB_INVESTMENT_CLAIM, TITLE_TRANSFER_CZ_CLAIM, CZ_ACQUISITION_TAX_CLAIM, CZ_CADASTRE_VKLAD_FEE_CLAIM]
     ),
     ctaSection("cz"),
   ]

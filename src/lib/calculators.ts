@@ -188,7 +188,7 @@ export const dubaiFinancingOptions = [
 export const tooltips = {
   price: "Kupní cena nemovitosti včetně všech poplatků spojených s převodem.",
   savings:
-    "Vlastní zdroje, které vložíte do koupě. Ovlivňují LTV (poměr úvěru k hodnotě). U vlastního bydlení ČNB cílí na LTV do 80 % (do 36 let až 90 %); u investičních hypoték od 4/2026 doporučuje max. 70 %.",
+    "Vlastní zdroje, které vložíte do koupě. Ovlivňují LTV (poměr úvěru k hodnotě). U vlastního bydlení ČNB cílí na LTV do 80 % (do 36 let až 90 % jen při známém věku); u investičních hypoték od 4/2026 doporučuje max. 70 %. Výsledek závisí na věku a účelu financování.",
   financingType:
     "Způsob financování se liší podle země. V Dubaji můžete volit off-plan splátky, hypotéku pro cizince nebo americkou hypotéku s českou zástavou.",
   interestRate:

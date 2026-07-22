@@ -22,13 +22,13 @@ export function recommendEducation(
       .slice(0, 2);
 
     for (const d of weak) {
-      if (d.id === "equity" || d.id === "affordability") {
+      if (d.id === "equity" || d.id === "affordability_stress") {
         picks.push({ slug: "ltv", reason: d.explanation });
       }
-      if (d.id === "debt_load" || d.id === "affordability") {
+      if (d.id === "debt_load" || d.id === "affordability_stress") {
         picks.push({ slug: "dsti", reason: d.explanation });
       }
-      if (d.id === "resilience") {
+      if (d.id === "affordability_stress") {
         picks.push({ slug: "fixace", reason: "Citlivost na sazbu po fixaci" });
       }
       if (d.id === "documentation_readiness") {

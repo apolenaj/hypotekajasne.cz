@@ -19,7 +19,7 @@ import {
 } from "@/components/consent/FormConsentFields";
 import { consultationCountries } from "@/lib/mock-data";
 import { buildThankYouPath, submitLead } from "@/lib/leads";
-import { track } from "@/lib/analytics/track";
+import { track, trackCanonical } from "@/lib/analytics/track";
 
 export function LeadGen() {
   const router = useRouter();
@@ -81,8 +81,11 @@ export function LeadGen() {
       return;
     }
 
-    track("lead_submitted", { lead_source: "lead_gen" });
     track("lead_form_submitted_success", { lead_source: "lead_gen" });
+    trackCanonical("lead_form_submitted", "lead_submitted", {
+      lead_source: "lead_gen",
+      tool_id: "lead_gen",
+    });
     router.push(buildThankYouPath("lead_gen"));
   };
 

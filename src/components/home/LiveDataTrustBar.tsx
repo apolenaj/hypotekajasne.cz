@@ -10,15 +10,12 @@ import {
   TRACKED_CZ_BANKS_COUNT,
   TRACKED_MARKETS_COUNT,
 } from "@/lib/destination-metrics";
-import { useMortgageRateEngine } from "@/lib/rates";
+import {
+  rateUiBadgeLabel,
+  useMortgageRateEngine,
+} from "@/lib/rates";
 import { routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
-
-function uiKindLabel(kind: "LIVE" | "OVĚŘENO" | "MODEL"): string {
-  if (kind === "LIVE") return "Aktuální data";
-  if (kind === "OVĚŘENO") return "Ověřeno";
-  return "Modelový výpočet";
-}
 
 export function LiveDataTrustBar({ className }: { className?: string }) {
   const { rates, loading, resolved } = useMortgageRateEngine(true);
@@ -64,10 +61,11 @@ export function LiveDataTrustBar({ className }: { className?: string }) {
               ) : (
                 <>
                   <span className="inline-flex items-center rounded-md bg-deep-teal/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-deep-teal ring-1 ring-inset ring-deep-teal/20">
-                    {uiKindLabel(resolved.uiKind)}
+                    {rateUiBadgeLabel(resolved.uiKind)}
                   </span>
                   <span className="text-xs font-medium tabular-nums text-muted-foreground">
                     {rateLabel}
+                    {resolved.isModelFallback ? " (model)" : null}
                   </span>
                   <DataSourcePopover
                     record={live}
@@ -83,11 +81,13 @@ export function LiveDataTrustBar({ className }: { className?: string }) {
               Poslední update
             </p>
             <p className="mt-1 text-sm font-semibold tabular-nums text-text-dark">
-              {resolved.lastVerifiedAt
-                ? new Date(resolved.lastVerifiedAt).toLocaleDateString("cs-CZ")
-                : rates.updatedAt
-                  ? new Date(rates.updatedAt).toLocaleDateString("cs-CZ")
-                  : "—"}
+              {loading
+                ? "…"
+                : resolved.lastVerifiedAt
+                  ? new Date(resolved.lastVerifiedAt).toLocaleDateString("cs-CZ")
+                  : rates.updatedAt
+                    ? new Date(rates.updatedAt).toLocaleDateString("cs-CZ")
+                    : "—"}
             </p>
           </li>
         </ul>
@@ -102,7 +102,10 @@ export function LiveDataTrustBar({ className }: { className?: string }) {
           </Link>
         </div>
       </div>
-      {(resolved.isModelFallback || resolved.uiKind === "OVĚŘENO") && (
+      {!loading &&
+        (resolved.isModelFallback ||
+          resolved.uiKind === "STALE" ||
+          resolved.uiKind === "OVĚŘENO") && (
         <div className="mx-auto max-w-7xl px-4 pb-3 sm:px-6 lg:px-8">
           <RateProvenanceBanner resolved={resolved} />
         </div>

@@ -210,7 +210,7 @@ export function calculateReadiness(
 
   const nextSteps = [
     "Uložte si výsledek a aktualizujte ho po změně příjmu nebo závazků.",
-    "Nechte si model ověřit licencovaným specialistou — bez příslibu schválení.",
+    "Nechte si model ověřit individuální konzultací — bez příslibu schválení.",
     "Porovnejte orientační rozpočet s nabídkou nemovitostí (Majetio).",
   ];
 
@@ -253,7 +253,7 @@ function buildActionPlan(
   ];
   const months3 = [
     "Dolaďte vlastní zdroje / rezervu na transakční náklady.",
-    "Nechte si nezávazně projít profil s licencovaným specialistou.",
+    "Nechte si nezávazně projít profil v individuální konzultaci.",
     answers.intent === "foreign_purchase"
       ? "Ověřte ownership a financování v cílové zemi (přehled země / laboratoř rozhodnutí)."
       : "Porovnejte 2–3 produktové rámce bank bez závazku.",

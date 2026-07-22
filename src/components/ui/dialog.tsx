@@ -10,11 +10,14 @@ export function Dialog({
   open,
   onOpenChange,
   title,
+  subtitle,
   children,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title?: string;
+  /** Optional; omit to avoid generic financing copy on unrelated dialogs. */
+  subtitle?: string;
   children: React.ReactNode;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
@@ -59,9 +62,9 @@ export function Dialog({
                 {title}
               </p>
             )}
-            <p className="text-sm text-muted-foreground mt-1">
-              Detail financování a praktický postup
-            </p>
+            {subtitle ? (
+              <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
+            ) : null}
           </div>
           <button
             ref={closeRef}

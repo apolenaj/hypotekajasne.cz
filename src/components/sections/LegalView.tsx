@@ -70,8 +70,18 @@ function OperatorBlock() {
         {formatOperatorAddress(op)}
       </p>
       <p className="mt-1 text-muted-foreground">
-        E-mail: {op.email} · Tel: {op.phone}
+        E-mail: {op.email}
+        {op.privacyEmail && op.privacyEmail !== op.email
+          ? ` · Ochrana údajů: ${op.privacyEmail}`
+          : null}
+        {" · "}
+        Tel: {op.phone}
       </p>
+      {op.dpoContact ? (
+        <p className="mt-1 text-muted-foreground">
+          Kontakt pověřence / DPO: {op.dpoContact}
+        </p>
+      ) : null}
       <dl className="mt-3 grid gap-1 text-xs sm:grid-cols-2">
         {op.ico ? (
           <div>
@@ -88,7 +98,7 @@ function OperatorBlock() {
         {op.publicRegisterUrl ? (
           <div className="sm:col-span-2">
             <dt className="font-bold uppercase text-muted-foreground">
-              Veřejný registr
+              {op.registryName ?? "Veřejný registr"}
             </dt>
             <dd>
               <a
@@ -105,11 +115,24 @@ function OperatorBlock() {
       </dl>
       {!op.isProductionReady ? (
         <p className="mt-3 text-xs text-muted-foreground">
-          Úplná obchodní identifikace (právní jméno, IČO) zatím není ve
-          veřejném configu. Kontaktní údaje výše slouží ke komunikaci;
-          placené služby zůstávají vypnuté, dokud není identita ověřena.
+          Úplná obchodní identifikace (právní jméno, IČO, registr) zatím není ve
+          veřejném configu. Kontaktní údaje výše slouží ke komunikaci; placené
+          služby a produkční sběr poptávek vyžadují doplnění ověřených údajů.
         </p>
       ) : null}
+      {op.lastLegalReviewDate && op.legalReviewedBy ? (
+        <p className="mt-2 text-xs text-muted-foreground">
+          Právní revize textů (evidovaný odborník): {op.lastLegalReviewDate} (
+          {op.legalReviewedBy}).
+        </p>
+      ) : (
+        <p className="mt-2 text-xs text-muted-foreground">
+          Tyto stránky prošly redakční kontrolou právních zdrojů. Nejde o
+          potvrzení finální právní revize kvalifikovaným právníkem — tu
+          zveřejníme odděleně, až bude evidován konkrétní odborník a datum
+          revize.
+        </p>
+      )}
     </div>
   );
 }
@@ -223,7 +246,7 @@ function GdprContent() {
         </h3>
         <p>
           Údaje předáme jen pokud zaškrtnete souhlas s předáním a jen v uvedeném
-          rozsahu (např. licencovaný hypoteční specialista, Majetio). Nejde o
+          rozsahu (např. ověřený hypoteční partner, Majetio). Nejde o
           plošné předání všem makléřům. Hypotéka Jasně není banka; konzultace je
           nezávazná. Stav zveřejnění identity partnera:{" "}
           <Link href={routes.partneri} className="text-deep-teal underline">
@@ -238,9 +261,9 @@ function GdprContent() {
         <h3 className="mb-3 text-xl font-bold text-gray-900">5. Doba uchování</h3>
         <p>
           Preference cookies ukládáme ve vašem prohlížeči do změny nebo smazání.
-          Doba uchování poptávek a marketingových souhlasů bude upřesněna po
-          finálním právním textu provozovatele. Do té doby můžete požádat o
-          výmaz na {op.email}.
+          Doba uchování poptávek a marketingových souhlasů bude upřesněna v
+          provozovatelově finálním textu. Do té doby můžete požádat o výmaz na{" "}
+          {op.privacyEmail}.
         </p>
       </section>
 
@@ -250,7 +273,8 @@ function GdprContent() {
           <li>Přístup, oprava, výmaz, omezení, námitka, přenositelnost.</li>
           <li>
             Odvolání souhlasu (marketing / předání partnerovi / cookies) na{" "}
-            {op.email} — bez vlivu na zákonnost zpracování před odvoláním.
+            {op.privacyEmail} — bez vlivu na zákonnost zpracování před
+            odvoláním.
           </li>
           <li>Stížnost u ÚOOÚ.</li>
         </ul>

@@ -13,6 +13,7 @@ export const DEMO_REFINANCE_PROFILE = emptyLoanProfile({
   ratePercent: 5.49,
   fixationEnd: fixationMonthsFromNow(8),
   monthlyPaymentCzk: 24_200,
+  propertyValueCzk: 5_200_000,
   remainingTermYears: 22,
   hasInsuranceBundle: true,
   refinancingFeesCzk: 28_000,

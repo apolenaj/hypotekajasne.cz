@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   useCallback,
   useEffect,
@@ -8,8 +9,8 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import Link from "next/link";
-import { ChevronDown, ExternalLink, Home, Menu, X } from "lucide-react";
+import { ChevronDown, ExternalLink, Menu, X } from "lucide-react";
+import { BrandWordmark } from "@/components/brand/BrandWordmark";
 import {
   desktopNav,
   mobileNavGroups,
@@ -160,21 +161,13 @@ function DesktopDropdown({
 
 function Logo({ onClick }: { onClick?: () => void }) {
   return (
-    <Link
+    <BrandWordmark
       href="/"
       onClick={onClick}
-      className="flex min-w-0 shrink items-center gap-2"
-      aria-label="HypotékaJasně.cz — domů"
-    >
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-deep-teal text-white">
-        <Home className="h-5 w-5" aria-hidden />
-      </div>
-      <span className="font-heading text-base font-bold text-deep-teal sm:text-lg">
-        <span className="sm:hidden">HJ</span>
-        <span className="hidden sm:inline">HypotékaJasně</span>
-        <span className="hidden md:inline">.cz</span>
-      </span>
-    </Link>
+      compact
+      showDomain={false}
+      className="text-base sm:text-lg"
+    />
   );
 }
 

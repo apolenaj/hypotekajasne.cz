@@ -4,9 +4,15 @@
  */
 
 import type { Metadata } from "next";
-import { routes, countrySlugs, getCountryGuidePath } from "@/lib/routes";
+import { routes, getCountryGuidePath } from "@/lib/routes";
 import { countryOrder } from "@/lib/calculators";
+import { getCountryDossier } from "@/lib/country-dossier";
 import { buildPageMetadata } from "@/lib/seo/metadata";
+import {
+  SEO_LANDING_HUB,
+  SEO_LANDINGS,
+  getLandingPath,
+} from "@/lib/seo/landings";
 
 export type StaticPageSeo = {
   path: string;
@@ -28,7 +34,7 @@ export type StaticPageSeo = {
 export const STATIC_PAGE_SEO: StaticPageSeo[] = [
   {
     path: "/",
-    title: "HypotékaJasně.cz | Co si můžete dovolit. Kde koupit. Jak financovat.",
+    title: "Hypotéka Jasně | Co si můžete dovolit. Kde koupit. Jak financovat.",
     description:
       "Informační platforma: živá hypoteční data ČR, srovnání trhů, kalkulačky a jasný další krok. Nejsme banka.",
     changeFrequency: "daily",
@@ -36,7 +42,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
   },
   {
     path: "/en",
-    title: "HypotekaJasne.cz — English overview",
+    title: "Hypotéka Jasně — English overview",
     description:
       "Czech mortgage and property decision platform. Human-edited English overview — no machine translations of the full site.",
     changeFrequency: "monthly",
@@ -197,9 +203,22 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     path: routes.clanky,
     title: "Magazín — články o hypotékách a investicích",
     description:
-      "Články o hypotékách a investicích s autorem, odbornou kontrolou, zdroji a datem ověření faktů.",
+      "Články o hypotékách a investicích s autorem, datem aktualizace, zdroji a případnou odbornou kontrolou — bez falešných ratingů.",
     priority: 0.85,
   },
+  {
+    path: SEO_LANDING_HUB.path,
+    title: SEO_LANDING_HUB.title,
+    description: SEO_LANDING_HUB.description,
+    priority: 0.88,
+  },
+  ...SEO_LANDINGS.map((l) => ({
+    path: getLandingPath(l.slug),
+    title: l.title,
+    description: l.description,
+    changeFrequency: "weekly" as const,
+    priority: 0.86,
+  })),
   {
     path: routes.pruvodceInvestora,
     title: "Průvodce investora — zahraniční trhy",
@@ -347,11 +366,11 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
 export function countryGuideSeoEntries(): StaticPageSeo[] {
   return countryOrder.map((id) => {
     const path = getCountryGuidePath(id);
-    const slug = countrySlugs[id];
+    const name = getCountryDossier(id).name;
     return {
       path,
-      title: `Investiční hub: ${slug.replace(/-/g, " ")}`,
-      description: `Financování, rizika a proces nákupu — ${slug}. Data a zdroje, ne marketingové absolutní výroky.`,
+      title: `Hypotéka a nákup nemovitosti: ${name}`,
+      description: `Financování, vlastnictví, daně a rizika — ${name}. Dossier se zdroji a statusem dat, ne marketingové absolutní výroky.`,
       changeFrequency: "weekly" as const,
       priority: 0.75,
     };

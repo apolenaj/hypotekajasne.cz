@@ -142,8 +142,9 @@ export const notebookViceItems: NavLinkItem[] = [
   ...desktopNav.vice.items,
 ];
 
+/** Jedno primary CTA webu — stejný verb jako homepage hero. */
 export const navCta = {
-  default: { href: routes.navrhNaMiru, label: "Hypoteční připravenost" },
+  default: { href: routes.mojeMoznosti, label: "Zjistit moje možnosti" },
   returning: { href: routes.dashboard, label: "Pokračovat" },
 } as const;
 

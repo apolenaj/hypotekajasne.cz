@@ -101,7 +101,7 @@ export function ReportDocumentView({ report, mode = "web" }: ReportDocumentViewP
                 {[wl.contactEmail, wl.contactPhone].filter(Boolean).join(" · ")}
               </p>
               <p className="mt-1 text-[10px] text-muted-foreground">
-                Metodika, zdroje a claim typy: HypotékaJasně.cz / Majetio — transparentně v
+                Metodika, zdroje a claim typy: HypotekaJasne.cz / Majetio — transparentně v
                 reportu.
               </p>
             </div>
@@ -162,7 +162,7 @@ export function ReportDocumentView({ report, mode = "web" }: ReportDocumentViewP
         <BlockSection block={report.nextSteps} />
 
         <p className="pt-4 text-center text-[11px] text-muted-foreground print:pt-2">
-          HypotékaJasně.cz — informační platforma. Ne banka, ne investiční poradce.
+          HypotekaJasne.cz — informační platforma. Ne banka, ne investiční poradce.
         </p>
       </div>
     </div>

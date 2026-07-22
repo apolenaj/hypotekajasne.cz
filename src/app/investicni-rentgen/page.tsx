@@ -1,6 +1,8 @@
 import { getStaticPageSeo } from "@/lib/seo/pages";
 import { JsonLdScript } from "@/components/seo/JsonLdScript";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { faqPageJsonLd } from "@/lib/seo/json-ld";
+import { crumbs } from "@/lib/seo/breadcrumbs";
 import {
   RentgenBottomCta,
   RentgenDemoReport,
@@ -17,6 +19,7 @@ import {
   RENTGEN_FAQ,
   withAnalysisPrice,
 } from "@/lib/property-rentgen";
+import { routes } from "@/lib/routes";
 
 export const metadata = getStaticPageSeo("/investicni-rentgen");
 
@@ -31,6 +34,14 @@ export default function InvesticniRentgenPage() {
   return (
     <div className="bg-white">
       <JsonLdScript data={faqSchema} />
+      <div className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
+        <Breadcrumbs
+          items={crumbs({
+            name: "Investiční rentgen",
+            path: routes.investicniRentgen,
+          })}
+        />
+      </div>
       <RentgenHero />
       <RentgenValueProp />
       <RentgenWhatWeAnalyze />

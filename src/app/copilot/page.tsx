@@ -8,7 +8,7 @@ import { routes } from "@/lib/routes";
 export const metadata: Metadata = buildPageMetadata({
   title: "Finanční AI průvodce",
   description:
-    "Finanční AI průvodce nad ověřenými daty a kalkulačkami HypotékaJasně — citace, audit log, bez příslibu schválení.",
+    "Finanční AI průvodce nad ověřenými daty a kalkulačkami Hypotéka Jasně — citace, audit log, bez příslibu schválení.",
   path: routes.copilot,
 });
 

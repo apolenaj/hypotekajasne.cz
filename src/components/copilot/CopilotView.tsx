@@ -6,9 +6,11 @@ import {
   appendAuditLog,
   buildSessionContext,
   CLAIM_KIND_HINT,
+  CLAIM_KIND_SHORT_CS,
   clearAuditLog,
   COPILOT_QUICK_ACTIONS,
   COPILOT_SYSTEM_DISCLAIMER,
+  EVIDENCE_KIND_LABEL_CS,
   loadAuditLog,
   loadCopilotProperties,
   orchestrateCopilot,
@@ -18,9 +20,11 @@ import {
   type CopilotMessage,
   type CopilotPropertyDraft,
   type CopilotQuickActionId,
+  type CopilotRateLayer,
+  type CopilotResponseMeta,
 } from "@/lib/copilot";
 import { categorizeCopilotPrompt, track } from "@/lib/analytics";
-import { useCurrentRates } from "@/lib/rates";
+import { useMortgageRateEngine } from "@/lib/rates";
 import { routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import { addPropertyWatch, removeWatchTarget } from "@/lib/watchlist";
@@ -81,7 +85,7 @@ function SimpleMarkdown({ text }: { text: string }) {
               key={i}
               className="border-l-2 border-muted-gold/60 pl-3 text-muted-foreground"
             >
-              {line.slice(2)}
+              {line.slice(2).replace(/\*\*(.+?)\*\*/g, "$1")}
             </p>
           );
         }
@@ -104,13 +108,109 @@ function SimpleMarkdown({ text }: { text: string }) {
   );
 }
 
+function ResponseMetaBar({ meta }: { meta: CopilotResponseMeta }) {
+  return (
+    <div className="mt-3 space-y-2 border-t border-border/70 pt-3">
+      <div className="flex flex-wrap gap-1.5">
+        {meta.summaryChips.map((chip) => (
+          <span
+            key={chip.id}
+            className={cn(
+              "inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold",
+              chip.id === "confidence" && meta.confidence === "HIGH"
+                ? "bg-emerald-100 text-emerald-900"
+                : chip.id === "confidence" && meta.confidence === "LOW"
+                  ? "bg-amber-100 text-amber-950"
+                  : chip.id === "rate"
+                    ? "bg-orange-100 text-orange-950"
+                    : "bg-white text-deep-teal ring-1 ring-deep-teal/20"
+            )}
+          >
+            {chip.label}
+          </span>
+        ))}
+      </div>
+      {meta.evidenceKinds.length > 0 ? (
+        <p className="text-[11px] text-muted-foreground">
+          Evidence:{" "}
+          {meta.evidenceKinds
+            .map((k) => EVIDENCE_KIND_LABEL_CS[k])
+            .join(" · ")}
+        </p>
+      ) : null}
+      {meta.modelAssumptions.length > 0 ? (
+        <details className="text-[11px] text-muted-foreground">
+          <summary className="cursor-pointer font-semibold text-text-dark">
+            Modelové předpoklady ({meta.modelAssumptions.length})
+          </summary>
+          <ul className="mt-1 list-disc space-y-0.5 pl-4">
+            {meta.modelAssumptions.map((a) => (
+              <li key={a}>{a}</li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
+      {meta.unknowns.length > 0 ? (
+        <details className="text-[11px] text-muted-foreground">
+          <summary className="cursor-pointer font-semibold text-text-dark">
+            Neznámé / chybějící ({meta.unknowns.length})
+          </summary>
+          <ul className="mt-1 list-disc space-y-0.5 pl-4">
+            {meta.unknowns.map((u) => (
+              <li key={u}>{u}</li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
+    </div>
+  );
+}
+
+function CitationChips({
+  citations,
+}: {
+  citations: NonNullable<CopilotMessage["citations"]>;
+}) {
+  return (
+    <div className="mt-2 flex flex-wrap gap-1.5">
+      {citations.map((c) => (
+        <Link
+          key={c.id}
+          href={c.href ?? routes.zdroje}
+          onClick={() =>
+            track("source_opened", {
+              tool_id: "ai_copilot",
+              source_id: c.id,
+            })
+          }
+          className="inline-flex max-w-full items-center gap-1 rounded-full border border-border bg-white px-2.5 py-1 text-[11px] font-semibold text-deep-teal hover:border-deep-teal/40"
+          title={CLAIM_KIND_HINT[c.claimKind]}
+        >
+          <span className="rounded bg-slate-100 px-1 py-0.5 text-[9px] uppercase tracking-wide text-slate-700">
+            {CLAIM_KIND_SHORT_CS[c.claimKind]}
+          </span>
+          <span className="truncate">{c.label}</span>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function layerFromResolved(uiKind: string): CopilotRateLayer {
+  if (uiKind === "LIVE") return "LIVE";
+  if (uiKind === "STALE" || uiKind === "OVĚŘENO") return "STALE";
+  return "MODEL";
+}
+
 const WELCOME: CopilotMessage = {
   id: "welcome",
   role: "assistant",
   content: [
     "## Finanční AI průvodce",
     "",
-    "Nejsem obecné ChatGPT. Odpovídám jen z **ověřených nástrojů a dat** HypotékaJasně — s citací Data / Modelový výpočet / Odhad.",
+    "Nejsem obecné ChatGPT. Odpovídám jen z **ověřených nástrojů a dat** Hypotéka Jasně.",
+    "",
+    "Každá odpověď interně rozlišuje **FACT / MODEL / ESTIMATE / UNKNOWN** a ukáže důvěru + čerstvost zdrojů.",
     "",
     "Zkuste rychlou akci níže, nebo se zeptejte např. na dostupnost, skóre, zátěžový test sazby nebo Praha vs Dubaj.",
     "",
@@ -121,9 +221,9 @@ const WELCOME: CopilotMessage = {
 };
 
 export function CopilotView() {
-  const { rates } = useCurrentRates();
-  const modelRate =
-    rates?.rateWithInsurance ?? rates?.rateWithoutInsurance ?? null;
+  const { rates, resolved } = useMortgageRateEngine(true);
+  const rateLayer = layerFromResolved(resolved.uiKind);
+  const modelRate = resolved.ratePercent;
 
   const [messages, setMessages] = useState<CopilotMessage[]>([WELCOME]);
   const [input, setInput] = useState("");
@@ -156,10 +256,19 @@ export function CopilotView() {
       setMessages((m) => [...m, userMsg]);
       setInput("");
 
+      const claimKind =
+        rateLayer === "LIVE"
+          ? ("DATA" as const)
+          : rateLayer === "STALE"
+            ? ("NEOVERENO" as const)
+            : ("MODEL" as const);
+
       const { context, answers } = buildSessionContext({
         modelRatePercent: modelRate,
-        modelRateUpdatedAt: rates?.updatedAt ?? null,
-        modelRateClaimKind: modelRate != null ? "DATA" : "MODEL",
+        modelRateUpdatedAt:
+          resolved.lastVerifiedAt ?? rates?.updatedAt ?? null,
+        modelRateClaimKind: claimKind,
+        rateLayer,
         properties,
       });
 
@@ -180,7 +289,14 @@ export function CopilotView() {
       });
       setBusy(false);
     },
-    [busy, modelRate, rates?.updatedAt, properties]
+    [
+      busy,
+      modelRate,
+      rateLayer,
+      resolved.lastVerifiedAt,
+      rates?.updatedAt,
+      properties,
+    ]
   );
 
   const addProperty = () => {
@@ -229,14 +345,18 @@ export function CopilotView() {
             Finanční AI průvodce
           </h1>
           <p className="mt-3 max-w-2xl text-base text-emerald-50/90 md:text-lg">
-            Inteligentní vrstva nad kalkulačkami a daty platformy — s citacemi,
-            historií odpovědí a bez příslibu schválení úvěru.
+            Inteligentní vrstva nad kalkulačkami a daty — s důvěrou odpovědi,
+            čerstvostí zdrojů a bez příslibu schválení úvěru.
+          </p>
+          <p className="mt-2 text-xs text-emerald-100/80">
+            Sazba ve výpočtech: {resolved.uiKind} ·{" "}
+            {modelRate.toFixed(2).replace(".", ",")} % p.a.
+            {resolved.isModelFallback ? " (modelový fallback)" : ""}
           </p>
         </div>
       </section>
 
       <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 py-8 lg:grid-cols-[280px_1fr_300px]">
-        {/* Left: profile + properties */}
         <aside className="space-y-4">
           <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
             <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
@@ -312,7 +432,6 @@ export function CopilotView() {
           </div>
         </aside>
 
-        {/* Center: chat */}
         <div className="flex min-h-[70vh] flex-col rounded-2xl border border-border bg-white shadow-sm">
           <div
             id="copilot-quick"
@@ -355,6 +474,12 @@ export function CopilotView() {
                       ) : null}
                     </div>
                     <SimpleMarkdown text={m.content} />
+                    {m.citations && m.citations.length > 0 ? (
+                      <CitationChips citations={m.citations} />
+                    ) : null}
+                    {m.responseMeta ? (
+                      <ResponseMetaBar meta={m.responseMeta} />
+                    ) : null}
                     {m.cta && m.cta.length > 0 ? (
                       <div className="mt-3 flex flex-wrap gap-2">
                         {m.cta.map((c) => (
@@ -405,13 +530,25 @@ export function CopilotView() {
           </form>
         </div>
 
-        {/* Right: provenance + audit */}
         <aside className="space-y-4">
           <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
             <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
               <ShieldAlert className="h-3.5 w-3.5" />
               Použité vstupy & zdroje
             </p>
+            {lastAssistant?.responseMeta ? (
+              <div className="mt-3 space-y-1 text-sm">
+                <p>
+                  Důvěra:{" "}
+                  <strong>{lastAssistant.responseMeta.confidenceLabelCs}</strong>
+                </p>
+                <p className="text-muted-foreground">
+                  Zdroje: {lastAssistant.responseMeta.sourcesUsed} · čerstvé:{" "}
+                  {lastAssistant.responseMeta.freshSources} · zastaralé:{" "}
+                  {lastAssistant.responseMeta.staleSources}
+                </p>
+              </div>
+            ) : null}
             {lastAssistant?.usedInputs && lastAssistant.usedInputs.length > 0 ? (
               <ul className="mt-3 space-y-2 text-sm">
                 {lastAssistant.usedInputs.map((u) => (
@@ -421,19 +558,7 @@ export function CopilotView() {
                       {u.display}
                     </span>
                     <span className="mt-1 inline-block rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide">
-                      {CLAIM_KIND_HINT[u.claimKind] ? (
-                        <>
-                          {u.claimKind === "DATA"
-                            ? "Data"
-                            : u.claimKind === "MODEL"
-                              ? "Model"
-                              : u.claimKind === "ODHAD"
-                                ? "Odhad"
-                                : "Neověřeno"}
-                        </>
-                      ) : (
-                        u.claimKind
-                      )}
+                      {CLAIM_KIND_SHORT_CS[u.claimKind]}
                     </span>
                   </li>
                 ))}
@@ -453,14 +578,8 @@ export function CopilotView() {
                       {c.updatedAt ? ` · ${c.updatedAt}` : ""}
                     </span>
                     <span className="text-[10px] font-bold uppercase text-deep-teal">
-                      {c.claimKind === "DATA"
-                        ? "Data"
-                        : c.claimKind === "MODEL"
-                          ? "Model"
-                          : c.claimKind === "ODHAD"
-                            ? "Odhad"
-                            : "Neověřeno"}{" "}
-                      — {CLAIM_KIND_HINT[c.claimKind]}
+                      {CLAIM_KIND_SHORT_CS[c.claimKind]} —{" "}
+                      {CLAIM_KIND_HINT[c.claimKind]}
                     </span>
                     {c.href ? (
                       <Link
@@ -515,7 +634,8 @@ export function CopilotView() {
                     </div>
                     <div className="mt-1 text-muted-foreground">
                       Nástroje: {a.tools.length || "—"} · Zdroje:{" "}
-                      {a.citationIds.length || "—"}
+                      {(a.sourcesUsed ?? a.citationIds.length) || "—"}
+                      {a.confidence ? ` · Důvěra: ${a.confidence}` : ""}
                       {a.guardrailFlags.length
                         ? ` · Ochrana: ${a.guardrailFlags.length}`
                         : ""}

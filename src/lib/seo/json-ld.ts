@@ -1,4 +1,4 @@
-import { absoluteUrl, SITE_NAME, SITE_NAME_SHORT } from "@/lib/seo/site";
+import { absoluteUrl, SITE_DOMAIN_LABEL, SITE_NAME_SHORT } from "@/lib/seo/site";
 import { getOperatorIdentity, formatOperatorAddress } from "@/lib/legal";
 
 export type JsonLd = Record<string, unknown>;
@@ -15,7 +15,7 @@ export function organizationJsonLd(): JsonLd {
     "@type": "Organization",
     "@id": absoluteUrl("/#organization"),
     name: SITE_NAME_SHORT,
-    alternateName: SITE_NAME,
+    alternateName: SITE_DOMAIN_LABEL,
     url: absoluteUrl("/"),
     email: op.email,
     telephone: op.phone,
@@ -27,8 +27,9 @@ export function organizationJsonLd(): JsonLd {
       addressCountry: "CZ",
     },
   };
-  if (op.legalName) org.legalName = op.legalName;
-  if (op.ico) {
+  // Publish legal identifiers only when identity is complete — never invent.
+  if (op.isProductionReady && op.legalName) org.legalName = op.legalName;
+  if (op.isProductionReady && op.ico) {
     org.identifier = {
       "@type": "PropertyValue",
       name: "IČO",
@@ -42,7 +43,8 @@ export function webSiteJsonLd(): JsonLd {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: SITE_NAME,
+    name: SITE_NAME_SHORT,
+    alternateName: SITE_DOMAIN_LABEL,
     url: absoluteUrl("/"),
     inLanguage: "cs-CZ",
     publisher: { "@id": absoluteUrl("/#organization") },
@@ -76,7 +78,13 @@ export function personJsonLd(input: {
     name: input.name,
     ...(input.jobTitle ? { jobTitle: input.jobTitle } : {}),
     ...(input.description ? { description: input.description } : {}),
-    ...(input.url ? { url: input.url } : {}),
+    ...(input.url
+      ? {
+          url: input.url.startsWith("http")
+            ? input.url
+            : absoluteUrl(input.url),
+        }
+      : {}),
   };
 }
 

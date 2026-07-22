@@ -7,7 +7,7 @@ import {
   sectionTitle,
   sourcesSection,
 } from "@/lib/country-dossier/build";
-import { LEGAL_REVIEW_AS_OF } from "@/lib/country-dossier/shared";
+import { LEGAL_REVIEW_AS_OF, dossierEditorialLegalReviewText } from "@/lib/country-dossier/shared";
 import type { CountryDossier } from "@/lib/country-dossier/types";
 
 const FREEHOLD_ZONES = reviewClaim(
@@ -155,8 +155,8 @@ export const dubaiDossier: CountryDossier = assemble(
     },
     sourcesSection(
       {
-        text: `Poslední právní review dossieru Dubaj: ${LEGAL_REVIEW_AS_OF}`,
-        source: "HypotékaJasně.cz (redakční review)",
+        text: dossierEditorialLegalReviewText("Dubaj"),
+        source: "HypotekaJasne.cz (redakční review)",
         sourceUrl: null,
         asOf: LEGAL_REVIEW_AS_OF,
         status: "ESTIMATE",

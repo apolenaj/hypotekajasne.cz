@@ -26,9 +26,9 @@ export default function JakVydelavamePage() {
         </h2>
         <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground">
           <li>
-            Pokud požádáte o konzultaci a dojde k realizaci přes našeho
-            licencovaného partnera, partner nám může vyplatit marketingovou /
-            zprostředkovatelskou odměnu.
+            Pokud požádáte o konzultaci a dojde k realizaci přes ověřeného
+            partnera (identita na /partneri), partner nám může vyplatit
+            marketingovou / zprostředkovatelskou odměnu.
           </li>
           <li>
             Organické skóre přiřazení trhů a připravenosti se za peníze

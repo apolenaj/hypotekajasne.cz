@@ -1,5 +1,6 @@
 /**
- * Rate engine resilience — LIVE → VERIFIED_RECENT → MODEL_FALLBACK.
+ * Rate engine resilience — LIVE → STALE → MODEL_FALLBACK (PROMPT 6).
+ * Never invent LIVE rates; MODEL is never a bank offer.
  */
 
 import assert from "node:assert/strict";
@@ -9,6 +10,7 @@ import {
   calculateMortgageDecision,
   type MortgageDecisionInput,
 } from "@/lib/mortgage-decision";
+import { applyRateFreshness } from "@/lib/rates/freshness-policy";
 import {
   MODEL_FALLBACK_EXPLANATION,
   MODEL_FALLBACK_RATE_PERCENT,
@@ -18,6 +20,10 @@ import {
   resolveMortgageRate,
   type CachedVerifiedRate,
 } from "@/lib/rates/resolve-engine";
+import {
+  LIVE_RATES_UNAVAILABLE_MESSAGE,
+  modelRateDisclaimer,
+} from "@/lib/rates/types";
 
 const NOW = Date.parse("2026-07-20T12:00:00.000Z");
 
@@ -60,8 +66,63 @@ describe("MODEL_FALLBACK SoT", () => {
   it("exposes explicit configured rate (not invented ad-hoc)", () => {
     assert.equal(MODEL_FALLBACK_RATE_PERCENT, 5);
     assert.equal(MODEL_FALLBACK_SOURCE_ID, "platform-model-fallback-v1");
-    assert.match(MODEL_FALLBACK_EXPLANATION, /modelovou sazbu 5 %/);
-    assert.match(MODEL_FALLBACK_EXPLANATION, /Nejde o nabídku banky/);
+    assert.match(MODEL_FALLBACK_EXPLANATION, /modelovou sazbu 5,00 %/);
+    assert.match(MODEL_FALLBACK_EXPLANATION, /Nejde o aktuální nabídku banky/);
+    assert.equal(
+      MODEL_FALLBACK_EXPLANATION,
+      modelRateDisclaimer(MODEL_FALLBACK_RATE_PERCENT)
+    );
+  });
+});
+
+describe("applyRateFreshness", () => {
+  it("LIVE within threshold stays LIVE", () => {
+    assert.equal(
+      applyRateFreshness({
+        rate: 4.7,
+        declaredStatus: "LIVE",
+        fetchedAt: hoursAgo(1),
+        nowMs: NOW,
+      }),
+      "LIVE"
+    );
+  });
+
+  it("LIVE older than LIVE limit becomes STALE", () => {
+    const ageH = FRESHNESS_THRESHOLD_MS.LIVE / (60 * 60 * 1000) + 1;
+    assert.equal(
+      applyRateFreshness({
+        rate: 4.7,
+        declaredStatus: "LIVE",
+        fetchedAt: hoursAgo(ageH),
+        nowMs: NOW,
+      }),
+      "STALE"
+    );
+  });
+
+  it("very old rate becomes UNAVAILABLE", () => {
+    assert.equal(
+      applyRateFreshness({
+        rate: 4.7,
+        declaredStatus: "LIVE",
+        fetchedAt: daysAgo(200),
+        nowMs: NOW,
+      }),
+      "UNAVAILABLE"
+    );
+  });
+
+  it("MODEL never promotes to LIVE", () => {
+    assert.equal(
+      applyRateFreshness({
+        rate: 5,
+        declaredStatus: "MODEL",
+        fetchedAt: hoursAgo(0),
+        nowMs: NOW,
+      }),
+      "MODEL"
+    );
   });
 });
 
@@ -76,13 +137,14 @@ describe("resolveMortgageRate — API / freshness scenarios", () => {
     });
     assert.equal(r.layer, "LIVE");
     assert.equal(r.uiKind, "LIVE");
+    assert.equal(r.recordStatus, "LIVE");
     assert.equal(r.ratePercent, 4.74);
     assert.equal(r.isModelFallback, false);
+    assert.equal(r.liveUnavailable, false);
     assert.ok(r.source);
-    assert.ok(!r.explanation.includes("STALE"));
   });
 
-  it("API returns empty data → MODEL_FALLBACK", () => {
+  it("API returns empty data → MODEL_FALLBACK with unavailable + model disclaimer", () => {
     const r = resolveMortgageRate({
       rateWithInsurance: null,
       rateWithoutInsurance: null,
@@ -92,13 +154,17 @@ describe("resolveMortgageRate — API / freshness scenarios", () => {
     });
     assert.equal(r.layer, "MODEL_FALLBACK");
     assert.equal(r.uiKind, "MODEL");
+    assert.equal(r.recordStatus, "MODEL");
     assert.equal(r.ratePercent, MODEL_FALLBACK_RATE_PERCENT);
     assert.equal(r.source, MODEL_FALLBACK_SOURCE_ID);
-    assert.equal(r.explanation, MODEL_FALLBACK_EXPLANATION);
+    assert.equal(r.isModelFallback, true);
+    assert.equal(r.liveUnavailable, true);
+    assert.match(r.explanation, new RegExp(LIVE_RATES_UNAVAILABLE_MESSAGE));
+    assert.match(r.explanation, /modelovou sazbu 5,00 %/);
+    assert.match(r.explanation, /Nejde o aktuální nabídku banky/);
   });
 
   it("API timeout / error (no payload) → MODEL_FALLBACK", () => {
-    // fetchCurrentRates maps timeout/error to EMPTY_RATES — engine must degrade.
     const r = resolveMortgageRate({
       rateWithInsurance: null,
       rateWithoutInsurance: null,
@@ -112,7 +178,7 @@ describe("resolveMortgageRate — API / freshness scenarios", () => {
     assert.equal(r.isModelFallback, true);
   });
 
-  it("stale DB data within VERIFIED window → OVĚŘENO (never STALE UI)", () => {
+  it("stale DB data within VERIFIED window → STALE (never LIVE UI)", () => {
     const ageH = FRESHNESS_THRESHOLD_MS.LIVE / (60 * 60 * 1000) + 24;
     const r = resolveMortgageRate({
       rateWithInsurance: 4.9,
@@ -121,10 +187,13 @@ describe("resolveMortgageRate — API / freshness scenarios", () => {
       hasInsurance: true,
       nowMs: NOW,
     });
-    assert.equal(r.layer, "VERIFIED_RECENT");
-    assert.equal(r.uiKind, "OVĚŘENO");
+    assert.equal(r.layer, "STALE");
+    assert.equal(r.uiKind, "STALE");
+    assert.equal(r.recordStatus, "STALE");
     assert.equal(r.ratePercent, 4.9);
-    assert.ok(!JSON.stringify(r).includes("STALE"));
+    assert.equal(r.liveUnavailable, true);
+    assert.match(r.explanation, new RegExp(LIVE_RATES_UNAVAILABLE_MESSAGE));
+    assert.match(r.explanation, /Nejde o aktuální nabídku banky/);
   });
 
   it("very old DB data → MODEL_FALLBACK without pretending LIVE", () => {
@@ -141,7 +210,7 @@ describe("resolveMortgageRate — API / freshness scenarios", () => {
     assert.equal(r.liveCandidate, 3.5);
   });
 
-  it("cache hit after empty API → VERIFIED_RECENT", () => {
+  it("cache hit after empty API → STALE (aged cache)", () => {
     const cached: CachedVerifiedRate = {
       rateWithInsurance: 4.85,
       rateWithoutInsurance: 5.15,
@@ -156,8 +225,8 @@ describe("resolveMortgageRate — API / freshness scenarios", () => {
       cachedVerified: cached,
       nowMs: NOW,
     });
-    assert.equal(r.layer, "VERIFIED_RECENT");
-    assert.equal(r.uiKind, "OVĚŘENO");
+    assert.equal(r.layer, "STALE");
+    assert.equal(r.uiKind, "STALE");
     assert.equal(r.ratePercent, 4.85);
     assert.equal(r.source, "local-verified-cache");
   });
@@ -180,7 +249,7 @@ describe("resolveMortgageRate — API / freshness scenarios", () => {
     assert.equal(r.layer, "MODEL_FALLBACK");
   });
 
-  it("rate without timestamp → OVĚŘENO (not LIVE)", () => {
+  it("rate without timestamp → STALE (not LIVE)", () => {
     const r = resolveMortgageRate({
       rateWithInsurance: 4.7,
       rateWithoutInsurance: null,
@@ -188,9 +257,10 @@ describe("resolveMortgageRate — API / freshness scenarios", () => {
       hasInsurance: true,
       nowMs: NOW,
     });
-    assert.equal(r.layer, "VERIFIED_RECENT");
-    assert.equal(r.uiKind, "OVĚŘENO");
+    assert.equal(r.layer, "STALE");
+    assert.equal(r.uiKind, "STALE");
     assert.equal(r.ratePercent, 4.7);
+    assert.equal(r.liveUnavailable, true);
   });
 
   it("invalid inputs (NaN / negative) → MODEL_FALLBACK", () => {
@@ -267,7 +337,7 @@ describe("calculator always produces useful output on model fallback", () => {
     const recommended = r.scenarios.find((s) => s.view === "recommended")!;
     const conservative = r.scenarios.find((s) => s.view === "conservative")!;
 
-    assert.equal(bankMax.label, "Modelový maximální rozpočet");
+    assert.equal(bankMax.label, "Orientační maximum");
     assert.match(bankMax.description, /Orientační horní hranice/);
     assert.ok(bankMax.loanAmount > 0);
     assert.ok(recommended.loanAmount > 0);
@@ -338,7 +408,7 @@ describe("fallback order documentation invariants", () => {
     assert.equal(r.ratePercent, 4.74);
   });
 
-  it("VERIFIED_RECENT beats MODEL when DB is soft-stale", () => {
+  it("STALE beats MODEL when DB is soft-stale", () => {
     const r = resolveMortgageRate({
       rateWithInsurance: 4.8,
       rateWithoutInsurance: 5.1,
@@ -346,7 +416,7 @@ describe("fallback order documentation invariants", () => {
       hasInsurance: true,
       nowMs: NOW,
     });
-    assert.equal(r.layer, "VERIFIED_RECENT");
+    assert.equal(r.layer, "STALE");
     assert.notEqual(r.ratePercent, MODEL_FALLBACK_RATE_PERCENT);
   });
 });

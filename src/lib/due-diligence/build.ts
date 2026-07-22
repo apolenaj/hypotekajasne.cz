@@ -103,7 +103,7 @@ export function buildExpertEscalation(
     (summary.verifiedCount === 0 && summary.unknownCount >= 3);
 
   let reason =
-    "Preventivní konzultace s licencovaným právníkem nebo specialistou.";
+    "Preventivní konzultace s právníkem nebo specialistou.";
   if (summary.materialIssueCount > 0) {
     reason = `${summary.materialIssueCount} položek označeno jako potenciálně zásadní — doporučujeme konzultaci se specialistou před nabídkou.`;
   } else if (summary.verifiedCount === 0 && summary.unknownCount >= 3) {

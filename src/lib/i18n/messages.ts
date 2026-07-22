@@ -28,10 +28,10 @@ export type MessageTree = {
 export const messages: Record<Locale, MessageTree> = {
   cs: {
     site: {
-      name: "HypotékaJasně.cz",
+      name: "Hypotéka Jasně",
       tagline: "Co si můžete dovolit. Kde koupit. Jak financovat.",
       description:
-        "Informační platforma: hypoteční data ČR, srovnání trhů, kalkulačky a handoff na licencovaného partnera — ne banka.",
+        "Informační platforma: hypoteční data ČR, srovnání trhů, kalkulačky a handoff na ověřeného partnera (pokud je zveřejněn) — ne banka.",
     },
     nav: {
       trust: "Centrum důvěry",
@@ -47,7 +47,7 @@ export const messages: Record<Locale, MessageTree> = {
   },
   en: {
     site: {
-      name: "HypotekaJasne.cz",
+      name: "Hypotéka Jasně",
       tagline: "What you can afford. Where to buy. How to finance.",
       description:
         "Czech information platform: mortgage data, market comparisons and calculators — not a bank. Licensed advice via partners.",

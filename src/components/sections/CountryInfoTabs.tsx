@@ -11,8 +11,10 @@ import {
   Shield,
 } from "lucide-react";
 import { getCountryInfoData } from "@/lib/country-info-data";
+import { getFactClaim } from "@/lib/sources/fact-claims";
 import { cn } from "@/lib/utils";
 import { ModelledDomainProvenance } from "@/components/trust/ModelledDomainProvenance";
+import { ClaimSourceBadge } from "@/components/trust/ClaimSourceBadge";
 
 type TabId = "overview" | "process" | "taxes" | "ownership" | "risks";
 
@@ -170,17 +172,30 @@ function TaxesTab({ country }: { country: string }) {
         <h3 className="font-bold">Daně a poplatky — {country}</h3>
       </div>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        {data.taxes.map((tax) => (
-          <div
-            key={tax.name}
-            className="rounded-lg border border-gray-100 bg-gray-50 p-4"
-          >
-            <div className="mb-1 font-bold text-gray-900">{tax.name}</div>
-            <div className="text-sm leading-relaxed text-gray-600">
-              {tax.value}
+        {data.taxes.map((tax) => {
+          const fact = tax.factClaimId
+            ? getFactClaim(tax.factClaimId)
+            : undefined;
+          return (
+            <div
+              key={tax.name}
+              className="rounded-lg border border-gray-100 bg-gray-50 p-4"
+            >
+              <div className="mb-1 font-bold text-gray-900">{tax.name}</div>
+              <div className="text-sm leading-relaxed text-gray-600">
+                {tax.value}
+              </div>
+              {fact ? (
+                <ClaimSourceBadge fact={fact} compact className="mt-3" />
+              ) : (
+                <p className="mt-2 text-[11px] text-muted-foreground">
+                  Zdroj a ověření: zatím bez navázaného FactClaim — berte jako
+                  orientační.
+                </p>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

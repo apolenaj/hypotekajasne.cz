@@ -1,5 +1,6 @@
 import { calculateAnnuityPayment } from "@/lib/calculators";
 import type { CurrentRates } from "@/lib/rates";
+import type { ResolvedMortgageRate } from "@/lib/rates/resolve-engine";
 import type { FinancialProfileAnswers } from "@/lib/financial-passport/types";
 import type {
   MarketRateReference,
@@ -7,6 +8,9 @@ import type {
   RefinanceLoanProfile,
   StayVsRefinanceComparison,
 } from "@/lib/refinance-radar/types";
+
+/** Doporučený lead time před koncem fixace (měsíce) */
+export const RECOMMENDED_START_MONTHS_BEFORE = 6 as const;
 
 export function monthsUntilFixation(
   fixationEnd: string,
@@ -18,7 +22,31 @@ export function monthsUntilFixation(
   return Math.max(0, Math.ceil(diff / (30.44 * 86_400_000)));
 }
 
-export function buildMarketReference(rates: CurrentRates | null): MarketRateReference {
+export function recommendedRefinanceStartDate(
+  fixationEnd: string,
+  leadMonths: number = RECOMMENDED_START_MONTHS_BEFORE
+): string | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(fixationEnd.trim());
+  if (!m) {
+    const t = Date.parse(fixationEnd);
+    if (!Number.isFinite(t)) return null;
+    const d = new Date(t);
+    d.setUTCMonth(d.getUTCMonth() - leadMonths);
+    return d.toISOString().slice(0, 10);
+  }
+  let year = Number(m[1]);
+  let monthIndex = Number(m[2]) - leadMonths; // 1–12 calendar month, then subtract
+  const day = Number(m[3]);
+  while (monthIndex <= 0) {
+    monthIndex += 12;
+    year -= 1;
+  }
+  return `${year}-${String(monthIndex).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+export function buildMarketReference(
+  rates: CurrentRates | null
+): MarketRateReference {
   const rate =
     rates?.rateWithInsurance ?? rates?.rateWithoutInsurance ?? null;
   if (rate == null || rates == null) {
@@ -26,18 +54,70 @@ export function buildMarketReference(rates: CurrentRates | null): MarketRateRefe
       ratePercent: null,
       label: "Tržní reference nedostupná",
       claimKind: "NEOVERENO",
-      note: "Bez dat z bank_rates nezobrazujeme orientační sazbu.",
+      rateStatus: "UNAVAILABLE",
+      note: "Aktuální živé sazby momentálně nejsou dostupné.",
       updatedAt: rates?.updatedAt ?? null,
     };
   }
   return {
     ratePercent: rate,
     label: rates.withoutInsuranceOrientational
-      ? "Orientační tržní reference (nejnižší sazba s pojištěním v DB)"
+      ? "Orientační tržní reference (DB)"
       : "Referenční sazba z bank_rates",
     claimKind: rates.withoutInsuranceOrientational ? "ODHAD" : "DATA",
-    note: "MODEL pro scénáře — ne individuální nabídka banky.",
+    rateStatus: "LIVE",
+    note: "LIVE / DB reference — ne individuální nabídka banky.",
     updatedAt: rates.updatedAt,
+  };
+}
+
+/**
+ * Preferovaný vstup z rate engine (LIVE → STALE → MODEL).
+ * MODEL se nikdy neprezentuje jako bankovní nabídka.
+ */
+export function buildMarketReferenceFromResolved(
+  resolved: ResolvedMortgageRate | null
+): MarketRateReference {
+  if (resolved == null) {
+    return {
+      ratePercent: null,
+      label: "Tržní reference nedostupná",
+      claimKind: "NEOVERENO",
+      rateStatus: "UNAVAILABLE",
+      note: "Aktuální živé sazby momentálně nejsou dostupné.",
+      updatedAt: null,
+    };
+  }
+
+  if (resolved.isModelFallback || resolved.layer === "MODEL_FALLBACK") {
+    return {
+      ratePercent: resolved.ratePercent,
+      label: "Modelová sazba (fallback)",
+      claimKind: "MODEL",
+      rateStatus: "MODEL",
+      note: resolved.explanation,
+      updatedAt: resolved.lastVerifiedAt,
+    };
+  }
+
+  if (resolved.layer === "STALE") {
+    return {
+      ratePercent: resolved.ratePercent,
+      label: "Neaktuální tržní reference",
+      claimKind: "ODHAD",
+      rateStatus: "STALE",
+      note: resolved.explanation,
+      updatedAt: resolved.lastVerifiedAt,
+    };
+  }
+
+  return {
+    ratePercent: resolved.ratePercent,
+    label: "Referenční sazba (LIVE)",
+    claimKind: "DATA",
+    rateStatus: "LIVE",
+    note: "Aktuální ověřená reference — ne individuální nabídka banky.",
+    updatedAt: resolved.lastVerifiedAt,
   };
 }
 
@@ -62,18 +142,23 @@ export function buildPaymentScenarios(
   }
 
   if (market.ratePercent != null && balance > 0) {
+    const marketIsModel = market.rateStatus === "MODEL";
     scenarios.push({
       id: "market",
-      label: "Orientační tržní reference",
+      label: marketIsModel
+        ? "Modelová referenční sazba"
+        : market.rateStatus === "STALE"
+          ? "Neaktuální tržní reference"
+          : "Orientační tržní reference (LIVE)",
       ratePercent: market.ratePercent,
       monthlyPaymentCzk: Math.round(
         calculateAnnuityPayment(balance, market.ratePercent, term)
       ),
-      claimKind: market.claimKind,
+      claimKind: marketIsModel ? "MODEL" : market.claimKind,
     });
     scenarios.push({
       id: "market_plus_1",
-      label: "Tržní +1 p.b. (buffer)",
+      label: "Reference +1 p.b. (buffer, MODEL)",
       ratePercent: market.ratePercent + 1,
       monthlyPaymentCzk: Math.round(
         calculateAnnuityPayment(balance, market.ratePercent + 1, term)
@@ -82,7 +167,7 @@ export function buildPaymentScenarios(
     });
     scenarios.push({
       id: "market_minus_1",
-      label: "Tržní −1 p.b. (optimistický MODEL)",
+      label: "Reference −1 p.b. (optimistický MODEL)",
       ratePercent: Math.max(0.1, market.ratePercent - 1),
       monthlyPaymentCzk: Math.round(
         calculateAnnuityPayment(

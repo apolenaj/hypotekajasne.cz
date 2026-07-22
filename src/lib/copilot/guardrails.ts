@@ -8,10 +8,20 @@ const FORBIDDEN_PATTERNS = [
   /schválím[ey]?\s+(vám\s+)?úvěr/i,
   /máte\s+jistotu\s+schválení/i,
   /banka\s+vám\s+(určitě\s+)?půjčí/i,
-  /garantovan(ý|á)\s+výnos/i,
+  /garantovan(ý|á|é)\s+výnos/i,
+  /garantujeme\s+hypoték/i,
   /zaručeně\s+dosáhnete/i,
   /právní\s+rada\s*:/i,
+  /toto\s+je\s+právní\s+rada/i,
   /obejděte\s+daň/i,
+  /aktuální\s+nabídka\s+banky\s+je\s+\d/i,
+  /živá\s+sazba\s+banky\s+je\s+\d/i,
+];
+
+/** Phrases that treat MODEL as if it were live bank data */
+const MODEL_AS_LIVE_PATTERNS = [
+  /aktuální\s+živá\s+sazba\s+je\s+\d/i,
+  /banka\s+vám\s+nabízí\s+\d+[,.]?\d*\s*%/i,
 ];
 
 export type GuardrailResult = {
@@ -29,7 +39,17 @@ export function applyGuardrails(text: string): GuardrailResult {
   for (const re of FORBIDDEN_PATTERNS) {
     if (re.test(out)) {
       flags.push(`blocked_pattern:${re.source}`);
-      out = out.replace(re, "[upraveno — bez příslibu schválení]");
+      out = out.replace(re, "[upraveno — bez příslibu schválení / právní rady]");
+    }
+  }
+
+  for (const re of MODEL_AS_LIVE_PATTERNS) {
+    if (re.test(out)) {
+      flags.push(`blocked_model_as_live:${re.source}`);
+      out = out.replace(
+        re,
+        "[upraveno — modelová sazba, ne živá nabídka banky]"
+      );
     }
   }
 
@@ -40,7 +60,10 @@ export function applyGuardrails(text: string): GuardrailResult {
     }
   }
 
-  if (!out.includes("Nejde o schválení úvěru") && !out.includes(COPILOT_SYSTEM_DISCLAIMER.slice(0, 40))) {
+  if (
+    !out.includes("Nejde o schválení úvěru") &&
+    !out.includes(COPILOT_SYSTEM_DISCLAIMER.slice(0, 40))
+  ) {
     out = `${out.trim()}\n\n—\n${COPILOT_SYSTEM_DISCLAIMER}`;
     flags.push("appended_system_disclaimer");
   }

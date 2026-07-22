@@ -27,10 +27,10 @@ export const PROCESSING_ROLES: ProcessingRole[] = [
   },
   {
     id: "licensed_specialist",
-    label: "Licencovaný hypoteční specialista / partner",
+    label: "Hypoteční partner (samostatný správce po předání)",
     gdprRole: "independent_controller",
     description:
-      "Po výslovném souhlasu s předáním se stává samostatným správcem údajů pro zprostředkování. Ověřená identifikace (právní jméno, IČO, registr) se zveřejňuje na /partneri — jen pokud je skutečně dostupná.",
+      "Po výslovném souhlasu s předáním se stává samostatným správcem údajů pro zprostředkování. Ověřená identifikace (právní jméno, IČO, registr) se zveřejňuje na /partneri — jen pokud je skutečně dostupná. Bez ověření nepředáváme kontakt třetí straně jako „licencovanému specialistovi“.",
   },
   {
     id: "bank",
@@ -63,9 +63,16 @@ export const REGULATED_BOUNDARIES = {
     "Neposkytuje spotřebitelský úvěr, nenabízí zprostředkování jako licencovaný subjekt a neschvaluje úvěry.",
     "Neposkytuje regulované investiční poradenství ani daňové poradenství.",
     "Modelové výpočty a skóre nejsou závaznou nabídkou banky ani investičním doporučením.",
-    "Individuální zprostředkování provádí výhradně licencovaný partner; schválení vždy banka.",
+    "Individuální zprostředkování provádí výhradně ověřený partner (po zveřejnění identity); schválení vždy banka.",
   ],
 } as const;
 
-export const LAWYER_REVIEW_NOTICE =
-  "Finální právní texty vyžadují review kvalifikovaným českým právníkem před produkčním spuštěním. Tento dokument je připraven jako technický / legal-readiness draft.";
+/**
+ * Interní poznámka pro vývojáře / checklist — NIKDY nerenderovat ve veřejném UI.
+ * Veřejné tvrzení „právně zkontrolováno“ jen přes isLegalTextReviewed() z config/legal.
+ */
+export const LEGAL_INTERNAL_REVIEW_NOTE =
+  "Internal: final legal texts need a qualified Czech lawyer review before claiming legal sign-off. Set LEGAL_REVIEWED_BY + LEGAL_LAST_REVIEW_DATE after review.";
+
+/** @deprecated Use LEGAL_INTERNAL_REVIEW_NOTE — do not show to end users. */
+export const LAWYER_REVIEW_NOTICE = LEGAL_INTERNAL_REVIEW_NOTE;

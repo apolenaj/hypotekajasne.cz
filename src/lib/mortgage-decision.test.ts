@@ -194,5 +194,22 @@ describe("calculateMortgageDecision", () => {
     const older = calculateMortgageDecision(baseInput({ age: 40 }));
     assert.equal(young.maxLtvPercent, 90);
     assert.equal(older.maxLtvPercent, 80);
+    assert.equal(young.regulation.youngLtvApplied, true);
+    assert.equal(older.regulation.youngLtvApplied, false);
+  });
+
+  it("unknown age does not auto-apply 90% LTV", () => {
+    const r = calculateMortgageDecision(baseInput({ age: null }));
+    assert.equal(r.maxLtvPercent, 80);
+    assert.equal(r.regulation.youngLtvApplied, false);
+    assert.match(r.agePurposeNotice, /věku a účelu/i);
+  });
+
+  it("investment purpose caps LTV at 70% even if young", () => {
+    const r = calculateMortgageDecision(
+      baseInput({ age: 28, purpose: "investment" })
+    );
+    assert.equal(r.maxLtvPercent, 70);
+    assert.equal(r.regulation.appliedBucket, "investment");
   });
 });

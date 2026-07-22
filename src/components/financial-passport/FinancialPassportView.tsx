@@ -3,28 +3,33 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
-  ArrowRight,
   History,
-  Sparkles,
+  Lock,
+  SlidersHorizontal,
   TrendingUp,
   Wallet,
 } from "lucide-react";
 import {
+  applyWhatIfToProfile,
   buildFinancialPassportDocument,
   formatTimelineHeadline,
+  isWhatIfActive,
   loadFinancialProfile,
   loadPassportTimeline,
   PASSPORT_CLAIM_NOTE,
-  runSimulation,
-  SIMULATIONS,
+  PASSPORT_LOCAL_DATA_NOTE,
+  runWhatIf,
   toMajetioHandoff,
+  whatIfFromProfile,
   type FinancialPassportDocument,
-  type SimulationId,
+  type FinancialWhatIfParams,
 } from "@/lib/financial-passport";
 import { buildAttribution, buildMajetioDiscoveryUrl } from "@/lib/majetio";
-import { scoreToBucket, track } from "@/lib/analytics";
+import { scoreToBucket, track, trackCanonical } from "@/lib/analytics";
 import { useCurrentRates } from "@/lib/rates";
 import { routes } from "@/lib/routes";
+import { CTA_CS, CTA_SECONDARY_CLASS } from "@/lib/ux/cta";
+import { WhatNextPanel } from "@/components/ux/WhatNextPanel";
 import { cn } from "@/lib/utils";
 
 function fmt(n: number | null | undefined): string {
@@ -39,12 +44,17 @@ function fmt(n: number | null | undefined): string {
 function Section({
   title,
   children,
+  id,
 }: {
   title: string;
   children: React.ReactNode;
+  id?: string;
 }) {
   return (
-    <section className="rounded-2xl border border-border bg-white p-5 shadow-sm">
+    <section
+      id={id}
+      className="rounded-2xl border border-border bg-white p-5 shadow-sm"
+    >
       <h2 className="font-heading text-lg font-bold text-text-dark">{title}</h2>
       <div className="mt-4">{children}</div>
     </section>
@@ -54,18 +64,25 @@ function Section({
 function DimensionBar({
   label,
   score,
+  weight,
   explanation,
 }: {
   label: string;
   score: number;
+  weight: number;
   explanation: string;
 }) {
   const clamped = Math.min(100, Math.max(0, score));
   return (
     <div className="space-y-1.5">
-      <div className="flex items-center justify-between text-sm">
+      <div className="flex items-center justify-between gap-2 text-sm">
         <span className="font-medium text-text-dark">{label}</span>
-        <span className="tabular-nums font-bold text-deep-teal">{score}/100</span>
+        <span className="tabular-nums font-bold text-deep-teal">
+          {score}/100
+          <span className="ml-2 text-xs font-normal text-muted-foreground">
+            váha {(weight * 100).toFixed(0)} %
+          </span>
+        </span>
       </div>
       <div
         className="h-2 overflow-hidden rounded-full bg-slate-100"
@@ -85,20 +102,187 @@ function DimensionBar({
   );
 }
 
-function PassportContent({ doc }: { doc: FinancialPassportDocument }) {
-  const [activeSim, setActiveSim] = useState<SimulationId | null>(null);
-  const profile = useMemo(() => loadFinancialProfile(), []);
+function LocalDataBanner() {
+  return (
+    <div className="flex gap-3 rounded-xl border border-emerald-200/80 bg-emerald-50/60 px-4 py-3 text-sm text-emerald-950">
+      <Lock className="mt-0.5 h-4 w-4 shrink-0 text-deep-teal" aria-hidden />
+      <p>{PASSPORT_LOCAL_DATA_NOTE}</p>
+    </div>
+  );
+}
+
+function WhatIfPanel({
+  whatIf,
+  baseRate,
+  hasTargetPrice,
+  onChange,
+  onReset,
+}: {
+  whatIf: FinancialWhatIfParams;
+  baseRate: number;
+  hasTargetPrice: boolean;
+  onChange: (next: FinancialWhatIfParams) => void;
+  onReset: () => void;
+}) {
+  const set = <K extends keyof FinancialWhatIfParams>(
+    key: K,
+    value: FinancialWhatIfParams[K]
+  ) => onChange({ ...whatIf, [key]: value });
+
+  return (
+    <div className="rounded-xl border border-border bg-[#f7f8f7] p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <SlidersHorizontal className="h-4 w-4 text-deep-teal" />
+          <h3 className="text-sm font-bold text-text-dark">
+            Co se stane, když…
+          </h3>
+        </div>
+        {isWhatIfActive(whatIf, baseRate) ? (
+          <button
+            type="button"
+            onClick={onReset}
+            className="text-xs font-semibold text-deep-teal underline"
+          >
+            Resetovat simulaci
+          </button>
+        ) : null}
+      </div>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Přepočet modelové připravenosti — neukládá se do banky ani na server.
+      </p>
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <label className="block text-xs">
+          <span className="font-semibold text-text-dark">
+            Zvýším příjem (+ Kč/měs.)
+          </span>
+          <input
+            type="range"
+            min={0}
+            max={30_000}
+            step={1_000}
+            value={whatIf.incomeDeltaCzk}
+            onChange={(e) =>
+              set("incomeDeltaCzk", Number(e.target.value))
+            }
+            className="mt-2 w-full accent-deep-teal"
+          />
+          <span className="tabular-nums text-deep-teal">
+            +{fmt(whatIf.incomeDeltaCzk)}
+          </span>
+        </label>
+        <label className="block text-xs">
+          <span className="font-semibold text-text-dark">
+            Snížím závazky (− Kč/měs.)
+          </span>
+          <input
+            type="range"
+            min={0}
+            max={20_000}
+            step={500}
+            value={Math.abs(whatIf.liabilitiesDeltaCzk)}
+            onChange={(e) =>
+              set("liabilitiesDeltaCzk", -Number(e.target.value))
+            }
+            className="mt-2 w-full accent-deep-teal"
+          />
+          <span className="tabular-nums text-deep-teal">
+            −{fmt(Math.abs(whatIf.liabilitiesDeltaCzk))}
+          </span>
+        </label>
+        <label className="block text-xs">
+          <span className="font-semibold text-text-dark">
+            Přidám vlastní kapitál (+ Kč)
+          </span>
+          <input
+            type="range"
+            min={0}
+            max={1_000_000}
+            step={50_000}
+            value={whatIf.capitalDeltaCzk}
+            onChange={(e) =>
+              set("capitalDeltaCzk", Number(e.target.value))
+            }
+            className="mt-2 w-full accent-deep-teal"
+          />
+          <span className="tabular-nums text-deep-teal">
+            +{fmt(whatIf.capitalDeltaCzk)}
+          </span>
+        </label>
+        <label className="block text-xs">
+          <span className="font-semibold text-text-dark">
+            Změním cenu nemovitosti (− Kč)
+          </span>
+          <input
+            type="range"
+            min={0}
+            max={1_500_000}
+            step={50_000}
+            disabled={!hasTargetPrice}
+            value={Math.abs(whatIf.targetPriceDeltaCzk)}
+            onChange={(e) =>
+              set("targetPriceDeltaCzk", -Number(e.target.value))
+            }
+            className="mt-2 w-full accent-deep-teal disabled:opacity-40"
+          />
+          <span className="tabular-nums text-deep-teal">
+            {hasTargetPrice
+              ? `−${fmt(Math.abs(whatIf.targetPriceDeltaCzk))}`
+              : "Doplňte cílovou cenu v profilu"}
+          </span>
+        </label>
+        <label className="block text-xs sm:col-span-2">
+          <span className="font-semibold text-text-dark">
+            Změní se modelová sazba ({whatIf.modelRatePercent.toFixed(2)} %)
+          </span>
+          <input
+            type="range"
+            min={2}
+            max={9}
+            step={0.25}
+            value={whatIf.modelRatePercent}
+            onChange={(e) =>
+              set("modelRatePercent", Number(e.target.value))
+            }
+            className="mt-2 w-full accent-deep-teal"
+          />
+          <span className="text-muted-foreground">
+            Základ z trhu: {baseRate.toFixed(2)} % · stress test +2 p.b.
+          </span>
+        </label>
+      </div>
+    </div>
+  );
+}
+
+function PassportContent({
+  baselineDoc,
+  profile,
+  baseRate,
+}: {
+  baselineDoc: FinancialPassportDocument;
+  profile: NonNullable<ReturnType<typeof loadFinancialProfile>>;
+  baseRate: number;
+}) {
   const timeline = useMemo(() => loadPassportTimeline(), []);
+  const [whatIf, setWhatIf] = useState<FinancialWhatIfParams>(() =>
+    whatIfFromProfile(profile, baseRate)
+  );
 
-  const simResult =
-    activeSim && profile
-      ? runSimulation(profile, activeSim, SIMULATIONS.find((s) => s.id === activeSim)?.defaultAmount ?? 0, doc.financing.modelRatePercent)
-      : null;
+  useEffect(() => {
+    setWhatIf((prev) => ({ ...prev, modelRatePercent: baseRate }));
+  }, [baseRate]);
 
-  const displayDoc = simResult?.simulated ?? doc;
+  const live = useMemo(
+    () => runWhatIf(profile, whatIf, baseRate),
+    [profile, whatIf, baseRate]
+  );
+
+  const doc = live.simulated;
+  const whatIfActive = isWhatIfActive(whatIf, baseRate);
 
   const majetioUrl = useMemo(() => {
-    const passport = toMajetioHandoff(displayDoc);
+    const passport = toMajetioHandoff(doc);
     const attr = buildAttribution({
       campaign: "financial_passport",
       medium: "referral",
@@ -107,39 +291,42 @@ function PassportContent({ doc }: { doc: FinancialPassportDocument }) {
       product: "financial_passport",
     });
     return buildMajetioDiscoveryUrl({ passport, attribution: attr });
-  }, [displayDoc]);
+  }, [doc]);
 
   return (
     <div className="space-y-6">
-      {/* Readiness — dimensional, not single black number */}
-      <Section title="Moje připravenost">
+      <LocalDataBanner />
+
+      <Section title="Modelová připravenost 0–100">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-              Celkové modelové skóre
+              Celkové skóre finanční připravenosti
             </p>
             <p className="mt-1 font-heading text-5xl font-black text-deep-teal tabular-nums">
-              {displayDoc.readiness.overall}
+              {doc.readiness.overall}
               <span className="text-2xl font-bold text-muted-foreground">/100</span>
             </p>
             <p className="mt-2 text-sm text-muted-foreground">
-              Pásmo: <strong>{displayDoc.readiness.band}</strong> ·{" "}
-              {displayDoc.readiness.financingStatus.replace(/_/g, " ")}
+              {doc.readiness.bandLabel} · {doc.readiness.financingStatusLabel}
             </p>
+            {whatIfActive ? (
+              <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900">
+                Simulace: {live.baseline.readiness.overall} → {doc.readiness.overall}{" "}
+                ({live.scoreDelta >= 0 ? "+" : ""}
+                {live.scoreDelta} b.) · modelová připravenost, ne schválení banky
+              </p>
+            ) : null}
           </div>
-          {simResult ? (
-            <p className="rounded-xl bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-900">
-              Simulace: {simResult.scoreDelta >= 0 ? "+" : ""}
-              {simResult.scoreDelta} bodů → {simResult.simulated.readiness.overall}/100
-            </p>
-          ) : null}
         </div>
+
         <div className="mt-6 space-y-4">
-          {displayDoc.readiness.dimensions.map((d) => (
+          {doc.readiness.dimensions.map((d) => (
             <DimensionBar
               key={d.id}
               label={d.label}
               score={d.score}
+              weight={d.weight}
               explanation={d.explanation}
             />
           ))}
@@ -147,32 +334,71 @@ function PassportContent({ doc }: { doc: FinancialPassportDocument }) {
         <p className="mt-4 text-xs text-muted-foreground">{PASSPORT_CLAIM_NOTE}</p>
       </Section>
 
+      <Section title="Co mám udělat dál?" id="next-actions">
+        {doc.readiness.nextActions.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Model nevidí rychlý krok — zkuste what-if simulaci nebo doplňte profil.
+          </p>
+        ) : (
+          <ul className="space-y-3">
+            {doc.readiness.nextActions.map((a) => (
+              <li
+                key={a.id}
+                className="rounded-xl border border-border bg-[#f7f8f7] px-4 py-3"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <p className="font-semibold text-text-dark">{a.title}</p>
+                  {a.estimatedGain != null && a.estimatedGain > 0 ? (
+                    <span className="rounded-full bg-deep-teal/10 px-3 py-1 text-xs font-bold text-deep-teal">
+                      +{a.estimatedGain} b. v modelu
+                    </span>
+                  ) : null}
+                </div>
+                <p className="mt-1 text-sm text-muted-foreground">{a.detail}</p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Section>
+
+      <Section title="What-if simulátor">
+        <WhatIfPanel
+          whatIf={whatIf}
+          baseRate={baseRate}
+          hasTargetPrice={
+            profile.targetPrice != null && profile.targetPrice > 0
+          }
+          onChange={setWhatIf}
+          onReset={() => setWhatIf(whatIfFromProfile(profile, baseRate))}
+        />
+      </Section>
+
       <div className="grid gap-6 lg:grid-cols-2">
         <Section title="Identita profilu">
           <dl className="grid gap-2 text-sm">
             <div className="flex justify-between gap-4">
               <dt className="text-muted-foreground">Domácnost</dt>
-              <dd className="font-medium">{doc.identity.householdType}</dd>
+              <dd className="font-medium">{baselineDoc.identity.householdType}</dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-muted-foreground">Věk</dt>
               <dd className="font-medium">
-                {doc.identity.ageRange}
-                {doc.identity.age ? ` (${doc.identity.age})` : ""}
+                {baselineDoc.identity.ageRange}
+                {baselineDoc.identity.age ? ` (${baselineDoc.identity.age})` : ""}
               </dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-muted-foreground">Rezidence</dt>
-              <dd className="font-medium">{doc.identity.residency}</dd>
+              <dd className="font-medium">{baselineDoc.identity.residency}</dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-muted-foreground">Země / trh</dt>
-              <dd className="font-medium">{doc.identity.country ?? "—"}</dd>
+              <dd className="font-medium">{baselineDoc.identity.country ?? "—"}</dd>
             </div>
           </dl>
-          {doc.identity.goals.length > 0 ? (
+          {baselineDoc.identity.goals.length > 0 ? (
             <ul className="mt-3 list-disc pl-5 text-sm text-text-dark">
-              {doc.identity.goals.map((g) => (
+              {baselineDoc.identity.goals.map((g) => (
                 <li key={g}>{g}</li>
               ))}
             </ul>
@@ -199,33 +425,36 @@ function PassportContent({ doc }: { doc: FinancialPassportDocument }) {
       <div className="grid gap-6 lg:grid-cols-3">
         <Section title="Příjmy">
           <ul className="space-y-2 text-sm">
-            <li>Typ: {doc.income.primaryType ?? "—"}</li>
-            <li>Čistý příjem: {fmt(doc.income.netIncome)}</li>
-            <li>Vedlejší: {fmt(doc.income.secondaryIncome)}</li>
-            <li>Celkem: {fmt(doc.income.totalNetIncome)}</li>
-            <li>Stabilita: {doc.income.stabilityLabel}</li>
+            <li>Typ: {baselineDoc.income.primaryType ?? "—"}</li>
+            <li>Čistý příjem: {fmt(baselineDoc.income.netIncome)}</li>
+            <li>Vedlejší: {fmt(baselineDoc.income.secondaryIncome)}</li>
+            <li>Celkem: {fmt(baselineDoc.income.totalNetIncome)}</li>
+            <li>Stabilita: {baselineDoc.income.stabilityLabel}</li>
           </ul>
         </Section>
         <Section title="Závazky (měsíčně)">
           <ul className="space-y-2 text-sm">
-            <li>Hypotéka: {fmt(doc.liabilities.mortgagePayment)}</li>
-            <li>Spotřebitelské: {fmt(doc.liabilities.consumerLoans)}</li>
-            <li>Kreditní limity: {fmt(doc.liabilities.creditCardLimits)}</li>
-            <li>Leasing: {fmt(doc.liabilities.leases)}</li>
-            <li>Ostatní: {fmt(doc.liabilities.other)}</li>
+            <li>Hypotéka: {fmt(baselineDoc.liabilities.mortgagePayment)}</li>
+            <li>Spotřebitelské: {fmt(baselineDoc.liabilities.consumerLoans)}</li>
+            <li>Kreditní limity: {fmt(baselineDoc.liabilities.creditCardLimits)}</li>
+            <li>Leasing: {fmt(baselineDoc.liabilities.leases)}</li>
+            <li>Ostatní: {fmt(baselineDoc.liabilities.other)}</li>
             <li className="border-t border-border pt-2 font-semibold">
-              Celkem: {fmt(doc.liabilities.totalMonthly)}
+              Celkem: {fmt(baselineDoc.liabilities.totalMonthly)}
             </li>
           </ul>
         </Section>
         <Section title="Aktiva">
           <ul className="space-y-2 text-sm">
-            <li>Hotovost: {fmt(doc.assets.cash)}</li>
-            <li>Investice: {fmt(doc.assets.investments)}</li>
-            <li>Vlastní kapitál v nemovitostech: {fmt(doc.assets.existingPropertyEquity)}</li>
-            <li>Zajištění (CZ): {fmt(doc.assets.availableCollateral)}</li>
+            <li>Hotovost: {fmt(baselineDoc.assets.cash)}</li>
+            <li>Investice: {fmt(baselineDoc.assets.investments)}</li>
+            <li>
+              Vlastní kapitál v nemovitostech:{" "}
+              {fmt(baselineDoc.assets.existingPropertyEquity)}
+            </li>
+            <li>Zajištění (CZ): {fmt(baselineDoc.assets.availableCollateral)}</li>
             <li className="border-t border-border pt-2 font-semibold">
-              Model vlastních zdrojů: {fmt(doc.assets.totalOwnFundsModel)}
+              Model vlastních zdrojů: {fmt(baselineDoc.assets.totalOwnFundsModel)}
             </li>
           </ul>
         </Section>
@@ -235,32 +464,34 @@ function PassportContent({ doc }: { doc: FinancialPassportDocument }) {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <div className="rounded-xl bg-slate-50 p-3 text-sm">
             <p className="text-muted-foreground">Odhad max. úvěru</p>
-            <p className="text-lg font-bold">{fmt(displayDoc.financing.estimatedMaximum)}</p>
+            <p className="text-lg font-bold">{fmt(doc.financing.estimatedMaximum)}</p>
           </div>
           <div className="rounded-xl bg-slate-50 p-3 text-sm">
             <p className="text-muted-foreground">Doporučené max.</p>
-            <p className="text-lg font-bold">{fmt(displayDoc.financing.recommendedMaximum)}</p>
+            <p className="text-lg font-bold">{fmt(doc.financing.recommendedMaximum)}</p>
           </div>
           <div className="rounded-xl bg-slate-50 p-3 text-sm">
             <p className="text-muted-foreground">Konzervativní max.</p>
-            <p className="text-lg font-bold">{fmt(displayDoc.financing.conservativeMaximum)}</p>
+            <p className="text-lg font-bold">{fmt(doc.financing.conservativeMaximum)}</p>
           </div>
           <div className="rounded-xl bg-slate-50 p-3 text-sm">
             <p className="text-muted-foreground">Bezpečná splátka</p>
-            <p className="text-lg font-bold">{fmt(displayDoc.financing.safeMonthlyPayment)}</p>
+            <p className="text-lg font-bold">{fmt(doc.financing.safeMonthlyPayment)}</p>
           </div>
           <div className="rounded-xl bg-slate-50 p-3 text-sm">
             <p className="text-muted-foreground">Potřeba vlastních zdrojů</p>
-            <p className="text-lg font-bold">{fmt(displayDoc.financing.ownFundsRequirement)}</p>
+            <p className="text-lg font-bold">{fmt(doc.financing.ownFundsRequirement)}</p>
           </div>
           <div className="rounded-xl bg-slate-50 p-3 text-sm">
             <p className="text-muted-foreground">Modelová sazba</p>
-            <p className="text-lg font-bold">{displayDoc.financing.modelRatePercent.toFixed(2)} %</p>
+            <p className="text-lg font-bold">
+              {doc.financing.modelRatePercent.toFixed(2)} %
+            </p>
           </div>
         </div>
       </Section>
 
-      <Section title="Riziko">
+      <Section title="Riziko (model)">
         <ul className="space-y-2 text-sm">
           <li>
             Likvidní rezerva:{" "}
@@ -292,14 +523,10 @@ function PassportContent({ doc }: { doc: FinancialPassportDocument }) {
         ) : null}
       </Section>
 
-      <Section title="Co zvýší moje skóre nejrychleji?">
-        {doc.readiness.topLevers.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            Model nevidí rychlou páku — zkuste simulace níže nebo doplňte profil.
-          </p>
-        ) : (
+      {baselineDoc.readiness.topLevers.length > 0 ? (
+        <Section title="Rychlé páky skóre">
           <ul className="space-y-3">
-            {doc.readiness.topLevers.map((l) => (
+            {baselineDoc.readiness.topLevers.map((l) => (
               <li
                 key={l.id}
                 className="flex flex-wrap items-start justify-between gap-2 rounded-xl border border-border bg-[#f7f8f7] px-4 py-3"
@@ -314,51 +541,16 @@ function PassportContent({ doc }: { doc: FinancialPassportDocument }) {
               </li>
             ))}
           </ul>
-        )}
-      </Section>
-
-      <Section title="Simulace — co kdyby…">
-        <p className="mb-3 text-sm text-muted-foreground">
-          Kliknutím přepočítáte model (neukládá se do banky).
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {SIMULATIONS.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() =>
-                setActiveSim(activeSim === s.id ? null : s.id)
-              }
-              className={cn(
-                "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
-                activeSim === s.id
-                  ? "border-deep-teal bg-deep-teal text-white"
-                  : "border-border bg-white hover:border-deep-teal/40"
-              )}
-            >
-              {s.label}
-            </button>
-          ))}
-        </div>
-        {activeSim && simResult ? (
-          <div className="mt-4 space-y-2 text-sm">
-            {simResult.dimensionDeltas
-              .filter((d) => d.delta !== 0)
-              .map((d) => (
-                <p key={d.id}>
-                  {d.label}: {d.delta > 0 ? "+" : ""}
-                  {d.delta}
-                </p>
-              ))}
-          </div>
-        ) : null}
-      </Section>
+        </Section>
+      ) : null}
 
       {timeline.length > 0 ? (
-        <Section title="Historie připravenosti">
+        <Section title="Historie modelové připravenosti">
           <div className="flex items-center gap-2 text-muted-gold">
             <History className="h-4 w-4" />
-            <span className="text-xs font-bold uppercase tracking-wide">Časová osa</span>
+            <span className="text-xs font-bold uppercase tracking-wide">
+              Historie modelové připravenosti
+            </span>
           </div>
           <ul className="mt-4 space-y-4">
             {timeline.slice(0, 8).map((e) => (
@@ -380,19 +572,36 @@ function PassportContent({ doc }: { doc: FinancialPassportDocument }) {
         </Section>
       ) : null}
 
-      <div className="flex flex-wrap gap-3">
-        <Link
-          href={routes.navrhNaMiru}
-          className="inline-flex items-center gap-2 rounded-full bg-deep-teal px-5 py-3 text-sm font-bold text-white"
-        >
-          Upravit profil
-          <ArrowRight className="h-4 w-4" />
-        </Link>
+      <WhatNextPanel
+        actions={[
+          {
+            id: "edit",
+            label: CTA_CS.editInputs,
+            description: "Upravte profil v Hypoteční připravenosti.",
+            href: routes.navrhNaMiru,
+            primary: true,
+          },
+          {
+            id: "moznosti",
+            label: CTA_CS.discoverOptions,
+            description: "Rozpočet a trhy v jednom přehledu.",
+            href: routes.mojeMoznosti,
+          },
+          {
+            id: "copilot",
+            label: "Zeptat se průvodce",
+            description: "Finanční AI průvodce s citacemi.",
+            href: routes.copilot,
+          },
+        ]}
+      />
+
+      <div className="mt-4 flex flex-wrap gap-3">
         <a
           href={majetioUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-full border-2 border-deep-teal px-5 py-3 text-sm font-bold text-deep-teal"
+          className={CTA_SECONDARY_CLASS}
           onClick={() =>
             track("passport_shared_intent", {
               tool_id: "financial_passport",
@@ -400,16 +609,9 @@ function PassportContent({ doc }: { doc: FinancialPassportDocument }) {
             })
           }
         >
-          Nemovitosti v rozpočtu (Majetio)
+          Nemovitosti v rozpočtu
           <Wallet className="h-4 w-4" />
         </a>
-        <Link
-          href={routes.copilot}
-          className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-3 text-sm font-semibold"
-        >
-          Zeptat se Finančního AI průvodce
-          <Sparkles className="h-4 w-4" />
-        </Link>
       </div>
     </div>
   );
@@ -429,7 +631,7 @@ export function FinancialPassportView() {
   useEffect(() => {
     track("passport_started", { tool_id: "financial_passport" });
     if (doc) {
-      track("passport_completed", {
+      trackCanonical("financial_passport_created", "passport_completed", {
         tool_id: "financial_passport",
         score_bucket: scoreToBucket(doc.readiness.overall),
       });
@@ -446,9 +648,10 @@ export function FinancialPassportView() {
           <Link href={routes.navrhNaMiru} className="font-semibold text-deep-teal underline">
             Hypoteční připravenost
           </Link>{" "}
-          — data zůstanou v prohlížeči a zde uvidíte dimenzionální skóre, rizika a
-          simulace.
+          — data zůstanou pouze v tomto prohlížeči a zde uvidíte modelovou
+          připravenost, rozpad skóre a what-if simulace.
         </p>
+        <p className="mt-3 text-xs text-muted-foreground">{PASSPORT_LOCAL_DATA_NOTE}</p>
       </div>
     );
   }
@@ -458,22 +661,27 @@ export function FinancialPassportView() {
       <div className="border-b border-border bg-deep-teal text-white">
         <div className="mx-auto max-w-5xl px-4 py-10">
           <p className="text-xs font-bold uppercase tracking-widest text-muted-gold">
-            Finanční pas
+            Finanční pas 2.0
           </p>
           <h1 className="mt-2 font-heading text-3xl font-black md:text-4xl">
-            Váš finančně-realitní profil
+            Akční dashboard modelové připravenosti
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-emerald-50/90">
-            Jedno místo pro dostupnost, rizika a připravenost — sdílené s Majetio
-            jen jako ne-PII rozpočet.
+            Skóre 0–100 z vašich vstupů — bez kreditních dat z banky. Co udělat
+            dál a co se stane při změně příjmu, závazků nebo sazby.
           </p>
           <p className="mt-2 text-xs text-emerald-100/80">
-            Aktualizováno: {new Date(doc.updatedAt).toLocaleString("cs-CZ")}
+            Aktualizováno: {new Date(doc.updatedAt).toLocaleString("cs-CZ")} · data
+            jen v prohlížeči
           </p>
         </div>
       </div>
       <div className="mx-auto max-w-5xl px-4 py-8">
-        <PassportContent doc={doc} />
+        <PassportContent
+          baselineDoc={doc}
+          profile={profile}
+          baseRate={modelRate}
+        />
       </div>
     </div>
   );

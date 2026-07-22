@@ -6,11 +6,14 @@ import {
   totalInterestRemaining,
   compareStayVsRefinance,
   importFromFinancialProfile,
+  recommendedRefinanceStartDate,
+  buildMarketReferenceFromResolved,
 } from "./calculate";
 import { buildTimelineMilestones, generateRefinanceAlerts } from "./alerts";
 import { buildRefinanceRadarDashboard } from "./build";
 import { emptyLoanProfile } from "./types";
 import type { CurrentRates } from "@/lib/rates";
+import type { ResolvedMortgageRate } from "@/lib/rates/resolve-engine";
 
 const NOW = new Date("2025-10-01T12:00:00Z");
 
@@ -47,17 +50,44 @@ describe("monthsUntilFixation", () => {
 
 describe("buildPaymentScenarios", () => {
   it("includes current rate scenario", () => {
-    const market = { ratePercent: 4.5, label: "test", claimKind: "ODHAD" as const, note: "", updatedAt: null };
+    const market = {
+      ratePercent: 4.5,
+      label: "test",
+      claimKind: "ODHAD" as const,
+      rateStatus: "LIVE" as const,
+      note: "",
+      updatedAt: null,
+    };
     const scenarios = buildPaymentScenarios(makeProfile(), market);
     assert.ok(scenarios.some((s) => s.id === "current"));
     assert.ok(scenarios.some((s) => s.id === "market"));
     assert.ok(scenarios.some((s) => s.id === "market_plus_1"));
   });
   it("returns only current when market is null", () => {
-    const market = { ratePercent: null, label: "", claimKind: "NEOVERENO" as const, note: "", updatedAt: null };
+    const market = {
+      ratePercent: null,
+      label: "",
+      claimKind: "NEOVERENO" as const,
+      rateStatus: "UNAVAILABLE" as const,
+      note: "",
+      updatedAt: null,
+    };
     const scenarios = buildPaymentScenarios(makeProfile(), market);
     assert.equal(scenarios.length, 1);
     assert.equal(scenarios[0].id, "current");
+  });
+  it("marks model market scenario as MODEL claim", () => {
+    const market = {
+      ratePercent: 5,
+      label: "model",
+      claimKind: "MODEL" as const,
+      rateStatus: "MODEL" as const,
+      note: "fallback",
+      updatedAt: null,
+    };
+    const scenarios = buildPaymentScenarios(makeProfile(), market);
+    const m = scenarios.find((s) => s.id === "market")!;
+    assert.equal(m.claimKind, "MODEL");
   });
 });
 
@@ -133,6 +163,35 @@ describe("generateRefinanceAlerts", () => {
   });
 });
 
+describe("recommendedRefinanceStartDate", () => {
+  it("is 6 months before fixation end", () => {
+    assert.equal(recommendedRefinanceStartDate("2026-07-01"), "2026-01-01");
+  });
+  it("returns null for invalid date", () => {
+    assert.equal(recommendedRefinanceStartDate("nope"), null);
+  });
+});
+
+describe("buildMarketReferenceFromResolved", () => {
+  it("maps MODEL fallback honestly", () => {
+    const resolved = {
+      ratePercent: 5,
+      layer: "MODEL_FALLBACK",
+      uiKind: "MODEL",
+      recordStatus: "MODEL",
+      lastVerifiedAt: null,
+      explanation: "model",
+      source: "x",
+      isModelFallback: true,
+      liveUnavailable: true,
+      liveCandidate: null,
+    } satisfies ResolvedMortgageRate;
+    const m = buildMarketReferenceFromResolved(resolved);
+    assert.equal(m.rateStatus, "MODEL");
+    assert.equal(m.claimKind, "MODEL");
+  });
+});
+
 describe("buildRefinanceRadarDashboard", () => {
   it("builds full dashboard model", () => {
     const rates = {
@@ -150,6 +209,8 @@ describe("buildRefinanceRadarDashboard", () => {
     assert.ok(dashboard.methodology.length > 0);
     assert.ok(dashboard.comparison.rows.length > 4);
     assert.equal(dashboard.timeline.length, 5);
+    assert.equal(dashboard.recommendedStartDate, "2026-01-01");
+    assert.equal(dashboard.marketReference.rateStatus, "LIVE");
   });
 });
 

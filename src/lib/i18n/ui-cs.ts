@@ -4,15 +4,15 @@
  * Anglické labely: viz `ui-en.ts` (budoucí /en — nesmíš míchat do CS produkce).
  */
 
-/** Statusy dat (DataStatus) — badge text */
+/** Statusy dat (DataStatus) — badge text (sjednoceno s Metodikou 2.0) */
 export const DATA_STATUS_LABELS_CS = {
-  LIVE: "Aktuální data",
-  VERIFIED: "Ověřeno",
-  MODEL: "Model",
-  ESTIMATE: "Odhad",
-  UNVERIFIED: "Neověřeno",
-  PARTNER_QUOTE: "Nabídka partnera",
-  STALE: "Údaj potřebuje aktualizaci",
+  LIVE: "LIVE",
+  VERIFIED: "VERIFIED",
+  MODEL: "MODEL",
+  ESTIMATE: "ESTIMATE",
+  UNVERIFIED: "UNVERIFIED",
+  PARTNER_QUOTE: "PARTNER OFFER",
+  STALE: "NEEDS UPDATE",
 } as const;
 
 /** Statusy funkcí (FeatureStatus) */
@@ -67,7 +67,7 @@ export const ACADEMY_UI_CS = {
   nextStep: "Další krok",
   simplySaid: "Jednoduše řečeno",
   realExample: "Reálný příklad",
-  howCalculated: "Jak se to počítá",
+  howCalculated: "Jak jsme to spočítali",
   bankOrInvestor: "Co na to banka / investor",
   commonMistake: "Nejčastější chyba",
   miniCalculator: "Interaktivní mini kalkulačka",
@@ -76,7 +76,7 @@ export const ACADEMY_UI_CS = {
   learningPaths: "Vzdělávací cesty",
   badges: "Odznaky",
   educationToTool: "Vzdělávání → nástroj → váš výsledek",
-  whatNext: "Co dál?",
+  whatNext: "Co mám udělat dál?",
   reusePipeline: "Další formáty obsahu",
   reusePipelineLead:
     "Stejné téma můžete najít i jako článek, video, audio nebo e-mailové shrnutí.",

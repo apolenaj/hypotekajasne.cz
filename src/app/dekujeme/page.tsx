@@ -6,11 +6,11 @@ import {
   LEAD_SOURCE_LABELS,
   type LeadSource,
 } from "@/lib/leads";
-import { isMortgagePartnerHandoffReady } from "@/lib/legal/partner-config";
+import { getPartnerClaimLabels } from "@/lib/partners/verification";
 import { routes } from "@/lib/routes";
 
 export const metadata = buildPageMetadata({
-  title: "Děkujeme | HypotékaJasně.cz",
+  title: "Děkujeme | Hypotéka Jasně",
   description: "Vaše poptávka byla odeslána. Ozveme se do 24 hodin.",
   path: "/dekujeme",
   noIndex: true,
@@ -25,7 +25,7 @@ export default async function DekujemePage({ searchParams }: PageProps) {
   const source: LeadSource | null =
     params.source && isLeadSource(params.source) ? params.source : null;
   const sourceLabel = source ? LEAD_SOURCE_LABELS[source] : null;
-  const handoffReady = isMortgagePartnerHandoffReady();
+  const thankYouHandoff = getPartnerClaimLabels().thankYouHandoff;
 
   return (
     <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center bg-gradient-to-b from-slate-50 to-white px-4 py-16">
@@ -40,9 +40,7 @@ export default async function DekujemePage({ searchParams }: PageProps) {
           {sourceLabel
             ? `Údaje z nástroje „${sourceLabel}“ jsme bezpečně přijali.`
             : "Vaše kontaktní údaje jsme bezpečně přijali."}{" "}
-          {handoffReady
-            ? "Licencovaný specialista (viz Partneři) se vám ozve ohledně nezávazné konzultace — obvykle do 24 hodin. Hypotéka Jasně není banka."
-            : "Ozveme se z platformy Hypotéka Jasně ohledně nezávazné konzultace — obvykle do 24 hodin. Hypotéka Jasně není banka; předání konkrétnímu specialistovi aktivujeme až po zveřejnění ověřené identity partnera."}
+          {thankYouHandoff}
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Link

@@ -1,6 +1,13 @@
 /**
  * PROMPT 17N — Automated QA & financial calculation test suite.
  * Golden values are hand-verified IEEE results of the documented formulas.
+ *
+ * Calculator inventory (UI → shared math):
+ * - CzMortgageDecisionTool → mortgage-decision + finance-math/core + regulation
+ * - ForeignFinancingTool → financing/*
+ * - AdvancedCalculator / MortgageCalculator / SmartCalculator → calculators.ts
+ * - InvestmentEnginePanel → investment-engine
+ * - buy-vs-rent, refinance-radar, readiness → calculateAnnuityPayment
  */
 
 import assert from "node:assert/strict";
@@ -30,10 +37,14 @@ import {
   maxLoanFromLtv,
 } from "@/lib/mortgage-decision";
 import { checkDTI } from "@/lib/banking";
+import { formatMoney, formatRate } from "@/lib/money";
 
 /** Absolute tolerance for money floats before rounding. */
 const EPS_MONEY = 0.02;
 const EPS_RATIO = 1e-9;
+/** Tolerance for known UX regression case (~19 755 Kč). */
+const EPS_UX_ANNUITY = 5;
+
 
 describe("FORMULA_REGISTRY", () => {
   it("documents core mortgage and investment formulas", () => {
@@ -176,6 +187,41 @@ describe("annuity boundaries", () => {
     assert.ok(Number.isFinite(pmt));
     const back = maxLoanFromPayment(pmt, 4.25, 20);
     assert.ok(Math.abs(back - 100_000.55) < 0.01);
+  });
+});
+
+describe("PROMPT 5 — UX golden annuity regression", () => {
+  it("3 680 000 Kč @ 5 % / 30 y ≈ 19 755 Kč/měs (±5 Kč)", () => {
+    const pmt = calculateAnnuityPayment(3_680_000, 5, 30);
+    assert.ok(
+      Math.abs(pmt - 19_755) < EPS_UX_ANNUITY,
+      `got ${pmt}, expected ~19755`
+    );
+    const rounded = roundMoney(pmt);
+    assert.ok(Math.abs(rounded - 19_755) <= EPS_UX_ANNUITY);
+  });
+
+  it("very short maturity and high rate stay finite and ordered", () => {
+    const short = calculateAnnuityPayment(100_000, 5, 1 / 12);
+    assert.ok(Number.isFinite(short) && short > 0);
+    const high = calculateAnnuityPayment(3_680_000, 25, 30);
+    assert.ok(high > calculateAnnuityPayment(3_680_000, 5, 30));
+  });
+
+  it("cs-CZ money and rate formatting uses Kč and comma decimals", () => {
+    const money = formatMoney(19_755, "CZK");
+    assert.match(money, /Kč/);
+    assert.match(money, /19/);
+    assert.ok(!money.includes("CZK"));
+    const rate = formatRate(5.5, { fractionDigits: 2 });
+    assert.match(rate, /5,50/);
+    assert.match(rate, /%/);
+  });
+
+  it("incomeSourceLabel never returns raw employee enum", async () => {
+    const { incomeSourceLabel } = await import("@/lib/banking");
+    assert.equal(incomeSourceLabel("employee"), "Zaměstnanec");
+    assert.ok(!incomeSourceLabel("employee").includes("employee"));
   });
 });
 

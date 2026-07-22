@@ -1,9 +1,14 @@
 /**
- * Produkční / CI ochrana partner + operator config.
- * Nespouští falešnou „právní compliance“ — jen detekuje placeholder a LIVE bez dat.
+ * Produkční / CI ochrana partner + operator + lead collection gate.
+ * Nespouští falešnou „právní compliance“ — detekuje placeholder a nekompletní identitu.
  */
 
-import { getOperatorIdentity } from "@/lib/legal/operator";
+import {
+  getLegalIdentityConfig,
+  isLegalIdentityComplete,
+  isLegalTextReviewed,
+  mustEnforceLegalIdentityForLeadCollection,
+} from "@/config/legal";
 import {
   auditPartnerConfig,
   isMortgagePartnerIdentityVerified,
@@ -25,26 +30,37 @@ export const PUBLIC_STAGING_PHRASES = [
   "odkaz na JERRS / ČNB registr zveřejníme",
   "registrační údaje doplníme",
   "Doplníme po ověření (zatím neuvedeno)",
+  "TODO config",
+  "TODO IČO",
+  "TODO legal operator",
+  "Legal review required",
 ] as const;
 
 export function collectLegalProductionIssues(options?: {
-  /** true = partner handoff musí být ready (CI / produkční gate) */
   requirePartnerHandoff?: boolean;
-  /** true = operator IČO musí být filled */
   requireOperatorIdentity?: boolean;
+  /** true = fail when collecting leads without complete operator identity */
+  requireIdentityForLeads?: boolean;
 }): LegalProductionIssue[] {
   const requirePartnerHandoff =
     options?.requirePartnerHandoff ??
     (process.env.LEGAL_STRICT_PRODUCTION === "true" ||
       process.env.LEGAL_REQUIRE_PARTNER_HANDOFF === "true");
+
+  const leadGate =
+    options?.requireIdentityForLeads ??
+    mustEnforceLegalIdentityForLeadCollection();
+
   const requireOperatorIdentity =
     options?.requireOperatorIdentity ??
     (process.env.LEGAL_STRICT_PRODUCTION === "true" ||
-      process.env.LEGAL_REQUIRE_OPERATOR_IDENTITY === "true");
+      process.env.LEGAL_REQUIRE_OPERATOR_IDENTITY === "true" ||
+      leadGate);
 
   const issues: LegalProductionIssue[] = [];
   const audit = auditPartnerConfig();
-  const op = getOperatorIdentity();
+  const legal = getLegalIdentityConfig();
+  const identityComplete = isLegalIdentityComplete(legal);
 
   for (const hit of audit.placeholderHits) {
     issues.push({
@@ -79,18 +95,29 @@ export function collectLegalProductionIssues(options?: {
     });
   }
 
-  if (requireOperatorIdentity && !op.isProductionReady) {
+  if (requireOperatorIdentity && !identityComplete) {
     issues.push({
-      code: "OPERATOR_IDENTITY_MISSING",
+      code: leadGate
+        ? "OPERATOR_IDENTITY_REQUIRED_FOR_LEADS"
+        : "OPERATOR_IDENTITY_MISSING",
       severity: "error",
-      message: `Chybí provozovatel: ${op.missingFields.join(", ")}`,
+      message: `Právní identita provozovatele není kompletní (sběr leadů v produkci vyžaduje ověřené údaje). Chybí: ${legal.missingRequiredFields.join(", ")}`,
     });
-  } else if (!op.isProductionReady) {
+  } else if (!identityComplete) {
     issues.push({
       code: "OPERATOR_IDENTITY_SOFT",
       severity: "warn",
       message:
-        "Úplná obchodní identifikace provozovatele (IČO / právní jméno) není v configu — placené služby zůstávají vypnuté.",
+        "Úplná obchodní identifikace provozovatele (IČO / právní jméno / registr) není v configu — produkční sběr leadů na Vercel production selže, dokud není doplněno.",
+    });
+  }
+
+  if (!isLegalTextReviewed(legal)) {
+    issues.push({
+      code: "LEGAL_TEXT_NOT_REVIEWED",
+      severity: "warn",
+      message:
+        "LEGAL_REVIEWED_BY + LEGAL_LAST_REVIEW_DATE nejsou vyplněné — neveřejňujte tvrzení „právně zkontrolováno“.",
     });
   }
 
@@ -116,13 +143,14 @@ export function assertNoPartnerPlaceholdersInLiveFields(
 }
 
 /**
- * Volitelné tvrdé selhání (CI): LEGAL_STRICT_PRODUCTION=true
- * nebo skript `npm run check:legal`.
+ * Tvrdé selhání (CI / Vercel production build):
+ * LEGAL_STRICT_PRODUCTION=true nebo VERCEL_ENV=production (lead gate).
  */
 export function assertLegalProductionGate(): void {
   const issues = collectLegalProductionIssues({
-    requirePartnerHandoff: true,
+    requirePartnerHandoff: process.env.LEGAL_STRICT_PRODUCTION === "true",
     requireOperatorIdentity: true,
+    requireIdentityForLeads: mustEnforceLegalIdentityForLeadCollection(),
   });
   const errors = issues.filter((i) => i.severity === "error");
   if (errors.length > 0) {
@@ -130,4 +158,10 @@ export function assertLegalProductionGate(): void {
       `Legal production gate failed:\n${errors.map((e) => `- ${e.code}: ${e.message}`).join("\n")}`
     );
   }
+}
+
+/** Runtime: smí API přijímat osobní leady? */
+export function canAcceptPersonalLeads(): boolean {
+  if (!mustEnforceLegalIdentityForLeadCollection()) return true;
+  return isLegalIdentityComplete();
 }

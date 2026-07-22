@@ -19,7 +19,12 @@ import {
   isPartnerHandoffLeadSource,
   requiresPartnerTransfer,
 } from "@/lib/consent/records";
-import { track } from "@/lib/analytics/track";
+import { track, trackCanonical } from "@/lib/analytics/track";
+import {
+  isLegalIdentityComplete,
+  mustEnforceLegalIdentityForLeadCollection,
+  LEGAL_LEAD_BLOCKED_PUBLIC_MESSAGE,
+} from "@/config/legal";
 import { cn } from "@/lib/utils";
 
 type LeadCaptureFormProps = {
@@ -69,6 +74,9 @@ export function LeadCaptureForm({
 
   const [formStarted, setFormStarted] = useState(false);
 
+  const leadsBlocked =
+    mustEnforceLegalIdentityForLeadCollection() && !isLegalIdentityComplete();
+
   const markFormStarted = () => {
     if (formStarted) return;
     setFormStarted(true);
@@ -81,6 +89,15 @@ export function LeadCaptureForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (leadsBlocked) {
+      setError(LEGAL_LEAD_BLOCKED_PUBLIC_MESSAGE);
+      track("lead_form_error", {
+        lead_source: source,
+        error_code: "legal_identity_incomplete",
+      });
+      return;
+    }
 
     const nextInvalid: typeof invalidFields = {};
     if (!name.trim()) nextInvalid.name = true;
@@ -136,13 +153,6 @@ export function LeadCaptureForm({
       return;
     }
 
-    track("lead_submitted", {
-      lead_source: source,
-      partner_scope: requiresPartnerTransfer(source)
-        ? consent.partnerTransferScope
-        : "none",
-      path: typeof window !== "undefined" ? window.location.pathname : undefined,
-    });
     track("lead_form_submitted_success", {
       lead_source: source,
       partner_scope: requiresPartnerTransfer(source)
@@ -150,8 +160,16 @@ export function LeadCaptureForm({
         : "none",
       funnel_id: "moje_moznosti_north_star",
     });
+    trackCanonical("lead_form_submitted", "lead_submitted", {
+      lead_source: source,
+      partner_scope: requiresPartnerTransfer(source)
+        ? consent.partnerTransferScope
+        : "none",
+      path: typeof window !== "undefined" ? window.location.pathname : undefined,
+      lead_qualified: Boolean(metadata?.qualified ?? metadata?.lead_qualified),
+    });
     if (requiresPartnerTransfer(source) && consent.partnerTransferAccepted) {
-      track("partner_handoff", {
+      trackCanonical("partner_handoff_requested", "partner_handoff", {
         lead_source: source,
         partner_scope: consent.partnerTransferScope,
       });
@@ -177,6 +195,14 @@ export function LeadCaptureForm({
       {subtitle && (
         <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
       )}
+      {leadsBlocked ? (
+        <p
+          role="alert"
+          className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950"
+        >
+          {LEGAL_LEAD_BLOCKED_PUBLIC_MESSAGE}
+        </p>
+      ) : null}
 
       <form onSubmit={handleSubmit} className="mt-4 space-y-3" noValidate>
         <div>
@@ -278,7 +304,7 @@ export function LeadCaptureForm({
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || leadsBlocked}
           className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-emerald-800 text-sm font-bold text-white transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 disabled:opacity-60"
         >
           {loading ? (

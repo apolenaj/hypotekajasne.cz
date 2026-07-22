@@ -71,7 +71,7 @@ describe("provenance validation", () => {
         internalStorageRef: "src/lib/data/static-regulatory.ts",
         provenance: {
           title: "fake",
-          organization: "HypotékaJasně",
+          organization: "Hypotéka Jasně",
           url: null,
           reference: null,
           jurisdiction: "cz",

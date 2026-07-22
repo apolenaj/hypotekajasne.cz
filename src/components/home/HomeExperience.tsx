@@ -3,15 +3,12 @@
 import { useCallback, useState, useSyncExternalStore } from "react";
 import { HomeDashboard } from "@/components/dashboard/HomeDashboard";
 import { CockpitHero } from "@/components/home/CockpitHero";
-import { HomeNeeds } from "@/components/home/HomeNeeds";
-import { HomePersonalSnapshot } from "@/components/home/HomePersonalSnapshot";
-import { HomeHowItWorks } from "@/components/home/HomeHowItWorks";
-import { LiveDataTrustBar } from "@/components/home/LiveDataTrustBar";
-import { AffordabilityWidget } from "@/components/home/AffordabilityWidget";
-import { DestinationDataGrid } from "@/components/home/DestinationDataGrid";
-import { HomeProductPreviews } from "@/components/home/HomeProductPreviews";
+import { HomeJourney } from "@/components/home/HomeJourney";
+import { HomeIntents } from "@/components/home/HomeIntents";
 import { HomeTrustBlock } from "@/components/home/HomeTrustBlock";
-import { HomeTeamStrip } from "@/components/home/HomeTeamStrip";
+import { HomeHowItWorks } from "@/components/home/HomeHowItWorks";
+import { HomeWhyDecision } from "@/components/home/HomeWhyDecision";
+import { LiveDataTrustBar } from "@/components/home/LiveDataTrustBar";
 import { HomeFinalCta } from "@/components/home/HomeFinalCta";
 import { resolveHomeMode, setHomeMode } from "@/lib/dashboard";
 import { loadFinancialProfile } from "@/lib/financial-passport";
@@ -43,22 +40,19 @@ function MarketingHome({ onEnterDashboard }: { onEnterDashboard: () => void }) {
         </div>
       ) : null}
       <CockpitHero />
-      <HomeNeeds />
-      <HomePersonalSnapshot />
-      <HomeHowItWorks />
-      <LiveDataTrustBar />
-      <AffordabilityWidget />
-      <DestinationDataGrid />
-      <HomeProductPreviews />
+      <HomeJourney />
+      <HomeIntents />
       <HomeTrustBlock />
-      <HomeTeamStrip />
+      <HomeHowItWorks />
+      <HomeWhyDecision />
+      <LiveDataTrustBar />
       <HomeFinalCta />
     </>
   );
 }
 
 /**
- * Progressive home: conversion marketing cockpit OR personalized dashboard.
+ * Progressive home: positioning cockpit OR personalized dashboard.
  */
 export function HomeExperience() {
   const ready = useIsClient();
@@ -84,7 +78,7 @@ export function HomeExperience() {
     return (
       <>
         <CockpitHero />
-        <HomeNeeds />
+        <HomeJourney />
       </>
     );
   }

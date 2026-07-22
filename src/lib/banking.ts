@@ -21,6 +21,13 @@ export const sourceOfIncomeOptions = [
   { value: "rent" as const, label: "Příjem z pronájmu" },
 ] as const;
 
+/** Veřejný český label — nikdy nevracet interní enum do UI. */
+export function incomeSourceLabel(source: IncomeSource): string {
+  return (
+    sourceOfIncomeOptions.find((o) => o.value === source)?.label ?? "Neuvedeno"
+  );
+}
+
 /** @deprecated Use sourceOfIncomeOptions */
 export const incomeSourceOptions = sourceOfIncomeOptions;
 

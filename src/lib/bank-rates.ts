@@ -6,6 +6,18 @@ import {
   type BankScraperId,
 } from "@/lib/scrape/bank-ids";
 import { supabase } from "@/lib/supabase";
+import {
+  RATE_FETCH_RETRIES,
+  RATE_FETCH_TIMEOUT_MS,
+  RATE_RETRY_DELAY_MS,
+  recordRateFetchFailure,
+  recordRateFetchSuccess,
+  sleep,
+  withTimeout,
+} from "@/lib/rates/pipeline";
+import { bankRateRowToMortgageRateRecord } from "@/lib/rates/normalize";
+import type { MortgageRateRecord } from "@/lib/rates/types";
+import { isUsableBankOfferStatus } from "@/lib/rates/freshness-policy";
 
 export type BankRateRow = {
   id: BankScraperId | string;
@@ -30,17 +42,21 @@ function toNumber(value: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-export async function fetchBankRates(): Promise<BankRateRow[]> {
-  const { data, error } = await supabase
-    .from("bank_rates")
-    .select(
-      "id, bank_name, rate, rpsn, rate_with_insurance, rate_without_insurance, rpsn_with_insurance, rpsn_without_insurance, american_rate_with_insurance, american_rate_without_insurance, american_rpsn_with_insurance, american_rpsn_without_insurance, american_source_url, source_url, updated_at"
-    )
-    .order("bank_name");
+async function fetchBankRatesOnce(): Promise<BankRateRow[]> {
+  const { data, error } = await withTimeout(
+    supabase
+      .from("bank_rates")
+      .select(
+        "id, bank_name, rate, rpsn, rate_with_insurance, rate_without_insurance, rpsn_with_insurance, rpsn_without_insurance, american_rate_with_insurance, american_rate_without_insurance, american_rpsn_with_insurance, american_rpsn_without_insurance, american_source_url, source_url, updated_at"
+      )
+      .order("bank_name")
+      .then((r) => r),
+    RATE_FETCH_TIMEOUT_MS,
+    "bank_rates_list"
+  );
 
   if (error) {
-    console.error("Nepodařilo se načíst bank_rates:", error.message);
-    return [];
+    throw new Error(error.message);
   }
 
   if (!data?.length) return [];
@@ -77,26 +93,83 @@ export async function fetchBankRates(): Promise<BankRateRow[]> {
     .filter((row): row is BankRateRow => row != null);
 }
 
-export function useBankRates() {
+export async function fetchBankRates(): Promise<BankRateRow[]> {
+  let lastError: string | null = null;
+  for (let attempt = 0; attempt <= RATE_FETCH_RETRIES; attempt++) {
+    try {
+      const rows = await fetchBankRatesOnce();
+      if (rows.length > 0) {
+        recordRateFetchSuccess({
+          attempt,
+          count: rows.length,
+          source: "bank_rates",
+        });
+      }
+      return rows;
+    } catch (err) {
+      lastError = err instanceof Error ? err.message : "bank_rates_fetch_failed";
+      recordRateFetchFailure(lastError, { attempt, source: "bank_rates" });
+      if (attempt < RATE_FETCH_RETRIES) {
+        await sleep(RATE_RETRY_DELAY_MS * (attempt + 1));
+      }
+    }
+  }
+  console.error("Nepodařilo se načíst bank_rates:", lastError);
+  return [];
+}
+
+export function useBankRates(): {
+  bankRates: BankRateRow[];
+  loading: boolean;
+  error: string | null;
+  unavailable: boolean;
+} {
   const [bankRates, setBankRates] = useState<BankRateRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
-    fetchBankRates().then((rows) => {
-      if (!cancelled) {
-        setBankRates(rows);
-        setLoading(false);
-      }
-    });
+    fetchBankRates()
+      .then((rows) => {
+        if (!cancelled) {
+          setBankRates(rows);
+          setError(rows.length === 0 ? "live_rates_unavailable" : null);
+          setLoading(false);
+        }
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setBankRates([]);
+          setError(err instanceof Error ? err.message : "bank_rates_failed");
+          setLoading(false);
+        }
+      });
 
     return () => {
       cancelled = true;
     };
   }, []);
 
-  return { bankRates, loading };
+  return {
+    bankRates,
+    loading,
+    error,
+    unavailable: !loading && (bankRates.length === 0 || error != null),
+  };
+}
+
+export function toOfferRecords(
+  rows: BankRateRow[],
+  hasInsurance: boolean,
+  nowMs?: number
+): MortgageRateRecord[] {
+  return rows
+    .map((r) =>
+      bankRateRowToMortgageRateRecord(r, { hasInsurance, nowMs })
+    )
+    .filter((r) => isUsableBankOfferStatus(r.status) && r.rate != null);
 }
 
 export function pickBankRate(
@@ -111,7 +184,6 @@ export function pickBankRate(
       rpsn: row.rpsnWithInsurance ?? row.rpsn,
     };
   }
-  // Bez pojištění — jen ověřená sazba, žádný fallback na sazbu s pojištěním
   if (row.rateWithoutInsurance == null) return null;
   return {
     rate: row.rateWithoutInsurance,

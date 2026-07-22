@@ -33,7 +33,7 @@ export function buildOfferTextDraft(input: {
     "",
     `děkuji za možnost projednat koupi nemovitosti ${input.propertyLabel}.`,
     "",
-    `Po prostudování dostupných informací a srovnání s trhem (MODEL HypotékaJasně, ne znalecký posudek) `,
+    `Po prostudování dostupných informací a srovnání s trhem (MODEL Hypotéka Jasně, ne znalecký posudek) `,
     `Vám předkládám nezávazný návrh kupní ceny ve výši ${formatOfferCzk(input.openingPriceCzk)}.`,
     "",
     `Můj cíl je dohodnout se na férové ceně blízké ${formatOfferCzk(input.targetPriceCzk)}, `,

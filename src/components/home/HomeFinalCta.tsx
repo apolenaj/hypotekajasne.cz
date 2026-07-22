@@ -22,11 +22,10 @@ export function HomeFinalCta() {
             id="home-final-cta-heading"
             className="mt-2 font-heading text-2xl font-bold sm:text-3xl"
           >
-            Zjistěte, co si můžete dovolit
+            Zjistěte, co si můžete dovolit. Kde koupit.
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-white/75">
-            Orientační výpočet za minutu. Nezávazné — nejsme banka a neschvalujeme
-            úvěry.
+            Začněte orientačním rozpočtem. Nejsme banka a neschvalujeme úvěry.
           </p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
@@ -40,13 +39,11 @@ export function HomeFinalCta() {
             <ArrowRight className="h-4 w-4" aria-hidden />
           </TrackedCtaLink>
           <TrackedCtaLink
-            href={routes.navrhNaMiru}
-            ctaId="final_pripravenost"
-            event="specialist_cta_clicked"
-            toolId="mortgage_readiness"
-            className="inline-flex h-11 items-center justify-center rounded-lg border border-white/25 px-5 text-sm font-medium text-white hover:bg-white/5"
+            href={routes.pruvodceInvestora}
+            ctaId="final_porovnat_trhy"
+            className="inline-flex h-11 min-h-11 items-center justify-center rounded-lg border border-white/25 px-5 text-sm font-medium text-white hover:bg-white/5"
           >
-            Hypoteční připravenost
+            Porovnat trhy
           </TrackedCtaLink>
         </div>
       </div>

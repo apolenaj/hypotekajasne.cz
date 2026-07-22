@@ -137,7 +137,7 @@ export function buildExecutiveSnapshot(
     fields.push({
       id: "regulation",
       label: "Regulatorní složitost",
-      value: bandLabel(profile.attributes.regulation, true),
+      value: bandLabel(profile.attributes.regulatory_complexity, true),
       status: profile.dataStatus === "VERIFIED" ? "VERIFIED" : "MODEL",
       note: "Vyšší = náročnější rámec pro cizince / strukturu.",
     });

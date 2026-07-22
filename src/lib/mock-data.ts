@@ -114,6 +114,7 @@ export const footerLinks = {
   company: [
     { href: routes.kontakt, label: "Kontakt" },
     { href: routes.faq, label: "Časté otázky" },
+    { href: routes.temata, label: "Témata hypoték" },
     { href: routes.dashboard, label: "Můj přehled" },
     { href: routes.financniPas, label: "Finanční pas" },
     { href: routes.copilot, label: "Finanční AI průvodce" },

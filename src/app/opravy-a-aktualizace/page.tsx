@@ -1,52 +1,25 @@
 import { getStaticPageSeo } from "@/lib/seo/pages";
 import Link from "next/link";
 import { TrustPageShell } from "@/components/trust/TrustPageShell";
+import { listPublicChangelog } from "@/lib/trust/public-changelog";
 import { routes } from "@/lib/routes";
 
 export const metadata = getStaticPageSeo("/opravy-a-aktualizace");
 
-
-/** Seed log — rozšiřujte chronologicky při každé veřejné opravě. */
-const CHANGELOG: {
-  date: string;
-  area: string;
-  summary: string;
-  href?: string;
-}[] = [
-  {
-    date: "2026-07-19",
-    area: "Centrum důvěry",
-    summary:
-      "Spouštění stránek Centra důvěry; odstranění nepodložených formulací ze stránky O nás.",
-    href: routes.duvera,
-  },
-  {
-    date: "2026-07-19",
-    area: "Magazín",
-    summary:
-      "YMYL články: autor, reviewer, sources; odstraněn claim „s.r.o. je záchrana“.",
-    href: routes.clanky,
-  },
-  {
-    date: "2026-07-19",
-    area: "Metodika",
-    summary: "Váhy přiřazení trhů a pravidlo sponzoringu publikovány.",
-    href: routes.metodika,
-  },
-];
-
 export default function OpravyPage() {
+  const changelog = listPublicChangelog();
+
   return (
     <TrustPageShell
       currentPath="/opravy-a-aktualizace"
       eyebrow="Centrum důvěry"
-      title="Opravy a aktualizace"
-      lead="Když opravíme chybu v datech nebo YMYL textu, zapíšeme to sem. Bez tichých přepisů historie."
+      title="Co jsme aktualizovali"
+      lead="Veřejný changelog reálných oprav a změn. Bez falešné historie — zapisujeme jen to, co se skutečně stalo."
     >
       <ol className="space-y-4">
-        {CHANGELOG.map((row) => (
+        {changelog.map((row) => (
           <li
-            key={`${row.date}-${row.area}`}
+            key={`${row.date}-${row.area}-${row.summary.slice(0, 24)}`}
             className="rounded-xl border border-border px-4 py-3"
           >
             <p className="text-xs font-bold uppercase tracking-wide text-deep-teal">

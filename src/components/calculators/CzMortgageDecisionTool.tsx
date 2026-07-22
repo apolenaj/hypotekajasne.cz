@@ -1,10 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import Link from "next/link";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
-  BadgeCheck,
   ChevronDown,
   Home,
   Shield,
@@ -28,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import {
   sourceOfIncomeOptions,
+  incomeSourceLabel,
   type IncomeSource,
   formatRatesUpdatedAt,
   getBankOfferSourceLabel,
@@ -38,7 +37,9 @@ import {
   useBankRates,
 } from "@/lib/bank-rates";
 import { formatCurrency, calculateAnnuityPayment } from "@/lib/calculators";
+import { formatRate } from "@/lib/money";
 import { formatNumber, parseFormattedNumber } from "@/lib/format";
+import type { DataStatus } from "@/lib/data/types";
 import { missingDataLabel } from "@/lib/data/display";
 import {
   calculateMortgageDecision,
@@ -48,11 +49,47 @@ import {
   MORTGAGE_PURPOSE_OPTIONS,
   type MortgagePurpose,
 } from "@/lib/cnb-limits";
-import { pickRpsn, useMortgageRateEngine } from "@/lib/rates";
+import {
+  AGE_PURPOSE_DEPENDENCY_NOTICE,
+  type RegulationRuleType,
+} from "@/lib/mortgage-regulation";
+import { bankRateRowToMortgageRateRecord } from "@/lib/rates/normalize";
+import {
+  LIVE_RATES_UNAVAILABLE_MESSAGE,
+  pickRpsn,
+  useMortgageRateEngine,
+} from "@/lib/rates";
+import type { MortgageRateStatus } from "@/lib/rates/types";
 import { useMortgageProducts } from "@/lib/mortgage-products";
 import { routes } from "@/lib/routes";
 import { DOMESTIC_BANKS } from "@/lib/banking";
+import { CTA_CS } from "@/lib/ux/cta";
+import { ExplainDisclosure } from "@/components/ux/ExplainDisclosure";
+import { WhatNextPanel } from "@/components/ux/WhatNextPanel";
 import { cn } from "@/lib/utils";
+import { trackCanonical } from "@/lib/analytics/track";
+
+function toBankOfferBadgeStatus(
+  status: MortgageRateStatus
+): DataStatus | null {
+  if (status === "LIVE") return "LIVE";
+  if (status === "VERIFIED") return "VERIFIED";
+  if (status === "STALE") return "STALE";
+  return null;
+}
+
+function regulationRuleTypeLabel(ruleType: RegulationRuleType): string {
+  switch (ruleType) {
+    case "CNB_RECOMMENDATION":
+      return "doporučení ČNB";
+    case "MODEL_FALLBACK":
+      return "modelový odhad";
+    case "UNSUPPORTED_JURISDICTION":
+      return "jurisdikce mimo SoT";
+    default:
+      return "orientační rámec";
+  }
+}
 
 function MoneyInput({
   id,
@@ -122,7 +159,11 @@ export function CzMortgageDecisionTool() {
   const [stepOpen, setStepOpen] = useState(false);
   const [purpose, setPurpose] =
     useState<MortgagePurpose>("owner_occupied");
-  const [age, setAge] = useState(35);
+  /** null = věk neznámý — bez young LTV 90 % */
+  const [age, setAge] = useState<number | null>(null);
+  const [ownedResidential, setOwnedResidential] = useState<number | null>(
+    null
+  );
   const [netIncome, setNetIncome] = useState(60_000);
   const [incomeSource, setIncomeSource] = useState<IncomeSource>("employee");
   const [adults, setAdults] = useState(2);
@@ -140,12 +181,16 @@ export function CzMortgageDecisionTool() {
 
   const { rates, resolved } =
     useMortgageRateEngine(hasInsurance);
-  const { bankRates, loading: bankRatesLoading } = useBankRates();
+  const {
+    bankRates,
+    loading: bankRatesLoading,
+    unavailable: bankRatesUnavailable,
+  } = useBankRates();
   const { products, loading: productsLoading } = useMortgageProducts();
 
   const rateWith = rates.rateWithInsurance;
   const rateWithout = rates.rateWithoutInsurance;
-  /** Vždy spočitatelná sazba — LIVE / OVĚŘENO / MODEL (nikdy null). */
+  /** Vždy spočitatelná sazba — LIVE / STALE / MODEL (nikdy null). */
   const nominalRate = resolved.ratePercent;
   const rpsn = pickRpsn(rates, hasInsurance);
 
@@ -154,6 +199,8 @@ export function CzMortgageDecisionTool() {
       calculateMortgageDecision({
         purpose,
         age,
+        numberOfOwnedResidentialProperties: ownedResidential,
+        investmentPurpose: purpose === "investment",
         netIncome,
         incomeSource,
         household: { adults, children },
@@ -174,6 +221,7 @@ export function CzMortgageDecisionTool() {
     [
       purpose,
       age,
+      ownedResidential,
       netIncome,
       incomeSource,
       adults,
@@ -193,15 +241,54 @@ export function CzMortgageDecisionTool() {
   );
 
   const active = decision.scenarios.find((s) => s.view === activeView)!;
+  const recommended = decision.scenarios.find((s) => s.view === "recommended")!;
+  const bankMax = decision.scenarios.find((s) => s.view === "bank_max")!;
+
+  const initialInputs = useRef({
+    price,
+    savings,
+    netIncome,
+    otherLiabilities,
+    termYears,
+  });
+  const completionSent = useRef(false);
+
+  useEffect(() => {
+    if (completionSent.current) return;
+    const baseline = initialInputs.current;
+    const adjusted =
+      price !== baseline.price ||
+      savings !== baseline.savings ||
+      netIncome !== baseline.netIncome ||
+      otherLiabilities !== baseline.otherLiabilities ||
+      termYears !== baseline.termYears;
+    if (!adjusted) return;
+    completionSent.current = true;
+    trackCanonical("calculator_completed", "result_viewed", {
+      tool_id: "mortgage_calculator",
+      country_id: "cz",
+    });
+  }, [price, savings, netIncome, otherLiabilities, termYears]);
 
   const fmt = (n: number | null | undefined) =>
     n == null || !Number.isFinite(n)
       ? missingDataLabel(null)
       : formatCurrency(n, "CZK");
 
+  const fmtPct = (n: number | null | undefined, digits = 2) =>
+    n == null || !Number.isFinite(n)
+      ? missingDataLabel(null)
+      : formatRate(n, { fractionDigits: digits });
+
   const comparisonBanks = useMemo(() => {
     return DOMESTIC_BANKS.map((bank) => {
       const row = findBankRate(bankRates, bank.name);
+      const record = row
+        ? bankRateRowToMortgageRateRecord(row, { hasInsurance })
+        : null;
+      const badgeStatus = record
+        ? toBankOfferBadgeStatus(record.status)
+        : null;
       const picked = row ? pickBankRate(row, hasInsurance) : null;
       const loan = active.loanAmount;
       const payment =
@@ -221,8 +308,9 @@ export function CzMortgageDecisionTool() {
         interest,
         updatedAt: row?.updatedAt ?? null,
         sourceUrl: row?.sourceUrl ?? null,
+        badgeStatus,
       };
-    }).filter((b) => b.rate != null);
+    }).filter((b) => b.rate != null && b.badgeStatus != null);
   }, [bankRates, hasInsurance, active.loanAmount, termYears]);
 
   const filteredProducts = products
@@ -278,6 +366,10 @@ export function CzMortgageDecisionTool() {
                 </button>
               ))}
             </div>
+            <p className="text-xs text-muted-foreground sm:col-span-2">
+              {AGE_PURPOSE_DEPENDENCY_NOTICE} Bez zadaného věku se nepoužije LTV
+              90&nbsp;%. Orientační regulační rámec — ne schválení bankou.
+            </p>
           </div>
 
           <MoneyInput
@@ -302,14 +394,19 @@ export function CzMortgageDecisionTool() {
             <Label className="text-sm font-medium">Typ příjmu</Label>
             <Select
               value={incomeSource}
-              onValueChange={(v) => setIncomeSource(v as IncomeSource)}
+              onValueChange={(v) => {
+                if (v) setIncomeSource(v as IncomeSource);
+              }}
+              items={[...sourceOfIncomeOptions]}
             >
-              <SelectTrigger className="h-11 bg-white">
-                <SelectValue />
+              <SelectTrigger className="h-11 w-full bg-white">
+                <SelectValue placeholder="Vyberte typ příjmu">
+                  {incomeSourceLabel(incomeSource)}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {sourceOfIncomeOptions.map((o) => (
-                  <SelectItem key={o.value} value={o.value}>
+                  <SelectItem key={o.value} value={o.value} label={o.label}>
                     {o.label}
                   </SelectItem>
                 ))}
@@ -323,12 +420,12 @@ export function CzMortgageDecisionTool() {
         <InsuranceRateCards
           hasInsurance={hasInsurance}
           onSelect={setHasInsurance}
-          rateWithInsurance={rateWith ?? resolved.ratePercent}
-          rateWithoutInsurance={rateWithout ?? resolved.ratePercent}
+          rateWithInsurance={rateWith}
+          rateWithoutInsurance={rateWithout}
           rpsnWithInsurance={rates.rpsnWithInsurance}
           rpsnWithoutInsurance={rates.rpsnWithoutInsurance}
           withoutRateOrientational={
-            rates.withoutInsuranceOrientational || resolved.isModelFallback
+            rates.withoutInsuranceOrientational || resolved.liveUnavailable
           }
           loading={false}
         />
@@ -353,18 +450,57 @@ export function CzMortgageDecisionTool() {
         {stepOpen && (
           <div className="grid gap-4 border-t border-border pt-5 sm:grid-cols-2 lg:grid-cols-3">
             <div className="space-y-1.5">
-              <Label htmlFor="cz-age">Věk žadatele</Label>
+              <Label htmlFor="cz-age">Věk žadatele (volitelné)</Label>
               <Input
                 id="cz-age"
                 type="number"
                 min={18}
                 max={75}
-                value={age}
-                onChange={(e) => setAge(Number(e.target.value) || 0)}
+                placeholder="Nevím / nevyplněno"
+                value={age ?? ""}
+                onChange={(e) => {
+                  const raw = e.target.value.trim();
+                  if (!raw) {
+                    setAge(null);
+                    return;
+                  }
+                  const n = Number(raw);
+                  setAge(Number.isFinite(n) && n > 0 ? n : null);
+                }}
                 className="h-11 bg-white"
               />
               <p className="text-xs text-muted-foreground">
-                Do 36 let model počítá s vyšším orientačním LTV (až 90 %).
+                Bez věku model nepoužije zvýhodněné LTV až 90 %.{" "}
+                {AGE_PURPOSE_DEPENDENCY_NOTICE}
+              </p>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="cz-owned">
+                Již vlastněné obytné nemovitosti
+              </Label>
+              <Input
+                id="cz-owned"
+                type="number"
+                min={0}
+                max={20}
+                placeholder="Nevím"
+                value={ownedResidential ?? ""}
+                onChange={(e) => {
+                  const raw = e.target.value.trim();
+                  if (!raw) {
+                    setOwnedResidential(null);
+                    return;
+                  }
+                  const n = Number(raw);
+                  setOwnedResidential(
+                    Number.isFinite(n) && n >= 0 ? Math.floor(n) : null
+                  );
+                }}
+                className="h-11 bg-white"
+              />
+              <p className="text-xs text-muted-foreground">
+                2 a více → model klasifikuje další koupi jako investiční bucket
+                (3.+ nemovitost).
               </p>
             </div>
             <div className="space-y-1.5">
@@ -446,7 +582,7 @@ export function CzMortgageDecisionTool() {
       {/* 3 views */}
       <section className="space-y-4">
         <h3 className="font-heading text-xl font-bold text-text-dark">
-          Tři pohledy na rozpočet
+          Pohledy na rozpočet
         </h3>
         <div className="grid gap-3 lg:grid-cols-3">
           {decision.scenarios.map((s) => (
@@ -475,15 +611,19 @@ export function CzMortgageDecisionTool() {
       </section>
 
       {/* Results */}
-      <section className="space-y-3">
+      <section className="space-y-4">
+        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+          {decision.agePurposeNotice} {decision.regulation.explanation}
+        </p>
+
         <div className="flex flex-wrap items-end justify-between gap-2">
           <h3 className="font-heading text-xl font-bold text-text-dark">
-            Výsledky — {active.label}
+            Výsledky
           </h3>
           {decision.rateUsed != null ? (
             <p className="text-xs text-muted-foreground">
-              Použitá sazba {decision.rateUsed.toFixed(2)} % · {resolved.uiKind}{" "}
-              · fixace {fixationYears} let
+              Použitá sazba {fmtPct(decision.rateUsed)} · {resolved.uiKind} ·
+              fixace {fixationYears} let
             </p>
           ) : null}
         </div>
@@ -495,96 +635,173 @@ export function CzMortgageDecisionTool() {
             <CalculationKindBadge kind="external" />
           ) : null}
         </div>
-        <p className="text-xs text-muted-foreground">
-          Splátka a LTV jsou přesná matematika ze vstupů. DSTI stropy scénářů a
-          životní náklady jsou model. Sazba / RPSN jen z ověřených dat.
-        </p>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <Metric label="1. Výše úvěru" value={fmt(active.loanAmount)} accent />
-          <Metric
-            label="2. LTV"
-            value={`${active.ltv} %`}
-            hint={`Orientační strop ČNB v modelu: ${decision.maxLtvPercent} %`}
-          />
-          <Metric
-            label="3. Orientační splátka"
-            value={fmt(active.monthlyPayment)}
-          />
-          <Metric label="4. Celkem zaplaceno" value={fmt(active.totalPaid)} />
-          <Metric label="5. Celkové úroky" value={fmt(active.totalInterest)} />
-          <Metric
-            label="6. Náklady pojištění / měs."
-            value={fmt(active.insuranceMonthly)}
-            hint="Jen pokud je sazba s pojištěním vyšší; jinak pojistné na vyžádání"
-          />
-          <Metric
-            label="7. RPSN"
-            value={
-              decision.rpsn != null
-                ? `${decision.rpsn.toFixed(2)} %`
-                : missingDataLabel(null)
-            }
-            hint="Jen reprezentativní RPSN ze zdroje — ne univerzální"
-          />
-          <Metric
-            label="9. Bezpečná rezerva domácnosti"
-            value={fmt(active.householdReserve)}
-            hint="Příjem − splátka − závazky − orientační životní náklady"
-            accent
-          />
-        </div>
-
-        {/* Stress */}
-        <div className="rounded-xl border border-border bg-white p-4 sm:p-5">
-          <h4 className="font-semibold text-text-dark">
-            8. Stres test sazby (+1 / +2 / +3 p.b.)
-          </h4>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Orientační splátka při růstu sazby po fixaci — na doporučeném úvěru.
+        {/* Simple: jeden hlavní výsledek */}
+        <div className="rounded-2xl border border-deep-teal/25 bg-[#f3f8f6] p-5 sm:p-6">
+          <p className="text-sm font-medium text-muted-foreground">
+            Doporučený rozpočet
           </p>
-          {decision.stressTests.length === 0 ? (
-            <p className="mt-3 text-sm text-muted-foreground">
-              {missingDataLabel(null)}
-            </p>
-          ) : (
-            <div className="mt-3 grid gap-2 sm:grid-cols-3">
-              {decision.stressTests.map((t) => (
-                <div
-                  key={t.rateBumpPp}
-                  className="rounded-lg border border-border bg-[#f7f8f7] px-3 py-3"
-                >
-                  <p className="text-xs text-muted-foreground">
-                    +{t.rateBumpPp} p.b. → {t.rate.toFixed(2)} %
-                  </p>
-                  <p className="mt-1 font-heading text-lg font-bold tabular-nums text-text-dark">
-                    {fmt(t.monthlyPayment)}
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
+          <p className="mt-1 font-heading text-3xl font-bold tabular-nums text-deep-teal sm:text-4xl">
+            {fmt(recommended.loanAmount)}
+          </p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Orientační měsíční splátka{" "}
+            <span className="font-semibold tabular-nums text-text-dark">
+              {fmt(recommended.monthlyPayment)}
+            </span>
+            . {recommended.description}
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <Metric
+              label="Orientační maximum"
+              value={fmt(bankMax.loanAmount)}
+              hint={bankMax.description}
+            />
+            <Metric
+              label="Vlastní zdroje"
+              value={fmt(savings)}
+              hint="Zadaná hotovost / akontace"
+            />
+          </div>
         </div>
 
-        {active.dstiRatio != null && active.dstiRatio >= 0.4 && (
+        {recommended.dstiRatio != null && recommended.dstiRatio >= 0.4 && (
           <div
             role="status"
             className="flex gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-950"
           >
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
             <p>
-              Orientační DSTI {(active.dstiRatio * 100).toFixed(0)} % — banky
-              často interně sledují zátěž kolem 40–45 %. Neznamená to automatické
-              zamítnutí ani schválení.
+              Orientační DSTI{" "}
+              {Math.round(recommended.dstiRatio * 100).toLocaleString("cs-CZ")}{" "}
+              % — banky často interně sledují zátěž kolem 40–45 %. Neznamená to
+              automatické zamítnutí ani schválení.
             </p>
           </div>
         )}
+
+        {/* Explain → Advanced */}
+        <ExplainDisclosure
+          summary={CTA_CS.howCalculated}
+          advanced={
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <Metric
+                label="Výše úvěru (aktivní pohled)"
+                value={fmt(active.loanAmount)}
+              />
+              <Metric
+                label="Celkem zaplaceno"
+                value={fmt(active.totalPaid)}
+              />
+              <Metric
+                label="Celkové úroky"
+                value={fmt(active.totalInterest)}
+              />
+              <Metric
+                label="Náklady pojištění / měs."
+                value={fmt(active.insuranceMonthly)}
+                hint="Jen pokud je sazba s pojištěním vyšší"
+              />
+              <Metric
+                label="RPSN"
+                value={
+                  decision.rpsn != null
+                    ? fmtPct(decision.rpsn)
+                    : missingDataLabel(null)
+                }
+                hint="Jen reprezentativní RPSN ze zdroje"
+              />
+              <Metric
+                label="DSTI (model)"
+                value={
+                  active.dstiRatio != null
+                    ? `${Math.round(active.dstiRatio * 100).toLocaleString("cs-CZ")} %`
+                    : missingDataLabel(null)
+                }
+              />
+              <Metric
+                label="Dostupná nemovitost (model)"
+                value={fmt(active.propertyAffordable)}
+              />
+            </div>
+          }
+        >
+          <p className="text-xs text-muted-foreground">
+            LTV, affordability model, zátěžový test, rezervu a předpoklady
+            ukazujeme až tady — aby první pohled zůstal čitelný.
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <Metric
+              label="LTV"
+              value={`${recommended.ltv.toLocaleString("cs-CZ")} %`}
+              hint={`Orientační strop v modelu: ${decision.maxLtvPercent} %`}
+            />
+            <Metric
+              label="Rezerva domácnosti"
+              value={fmt(recommended.householdReserve)}
+              hint="Příjem − splátka − závazky − orientační životní náklady"
+              accent
+            />
+            <Metric
+              label="Model affordability"
+              value={fmt(recommended.propertyAffordable)}
+              hint="Orientační cena nemovitosti při doporučeném úvěru"
+            />
+          </div>
+
+          <div className="rounded-xl border border-border bg-[#f7f8f7] p-4">
+            <h4 className="font-semibold text-text-dark">Zátěžový test</h4>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Orientační splátka při růstu sazby (+1 / +2 / +3 p.b.) na
+              doporučeném úvěru.
+            </p>
+            {decision.stressTests.length === 0 ? (
+              <p className="mt-3 text-sm text-muted-foreground">
+                {missingDataLabel(null)}
+              </p>
+            ) : (
+              <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                {decision.stressTests.map((t) => (
+                  <div
+                    key={t.rateBumpPp}
+                    className="rounded-lg border border-border bg-white px-3 py-3"
+                  >
+                    <p className="text-xs text-muted-foreground">
+                      +{t.rateBumpPp} p.b. → {fmtPct(t.rate)}
+                    </p>
+                    <p className="mt-1 font-heading text-lg font-bold tabular-nums text-text-dark">
+                      {fmt(t.monthlyPayment)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-xl border border-border bg-[#f7f8f7] px-4 py-3 text-sm text-text-dark">
+            <h4 className="font-semibold">Předpoklady</h4>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+              <li>{AGE_PURPOSE_DEPENDENCY_NOTICE}</li>
+              <li>
+                Regulační rámec:{" "}
+                {regulationRuleTypeLabel(decision.regulation.ruleType)} · LTV
+                strop {decision.maxLtvPercent}&nbsp;% · ověřeno{" "}
+                {decision.regulation.verifiedAt}
+              </li>
+              <li>
+                Účel:{" "}
+                {MORTGAGE_PURPOSE_OPTIONS.find((o) => o.value === purpose)?.label}{" "}
+                · typ příjmu: {incomeSourceLabel(incomeSource)}
+              </li>
+              <li>{decision.regulation.frameworkDisclaimer}</li>
+            </ul>
+          </div>
+        </ExplainDisclosure>
 
         <p className="text-xs leading-relaxed text-muted-foreground">
           {decision.disclaimer}
         </p>
       </section>
-
       {/* Bank comparison */}
       <section className="space-y-3">
         <h3 className="font-heading text-xl font-bold text-text-dark">
@@ -597,9 +814,9 @@ export function CzMortgageDecisionTool() {
 
         {bankRatesLoading ? (
           <p className="text-sm text-muted-foreground">Načítám sazby…</p>
-        ) : comparisonBanks.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            Živé sazby bank zatím nejsou k dispozici.
+        ) : bankRatesUnavailable || comparisonBanks.length === 0 ? (
+          <p className="text-sm text-amber-900" role="status">
+            {LIVE_RATES_UNAVAILABLE_MESSAGE}
           </p>
         ) : (
           <ul className="grid gap-3 sm:grid-cols-2">
@@ -615,14 +832,16 @@ export function CzMortgageDecisionTool() {
                       {getBankOfferSourceLabel(b.bankName)}
                     </p>
                   </div>
-                  <DataStatusBadge status="LIVE" />
+                  {b.badgeStatus ? (
+                    <DataStatusBadge status={b.badgeStatus} />
+                  ) : null}
                 </div>
                 <dl className="mt-3 grid grid-cols-2 gap-2 text-sm">
                   <div>
                     <dt className="text-xs text-muted-foreground">Sazba</dt>
                     <dd className="font-bold tabular-nums text-deep-teal">
                       {b.rate != null
-                        ? `${b.rate.toFixed(2)} %`
+                        ? fmtPct(b.rate)
                         : missingDataLabel(null)}
                     </dd>
                   </div>
@@ -630,7 +849,7 @@ export function CzMortgageDecisionTool() {
                     <dt className="text-xs text-muted-foreground">RPSN</dt>
                     <dd className="font-semibold tabular-nums">
                       {b.rpsn != null
-                        ? `${b.rpsn.toFixed(2)} %`
+                        ? fmtPct(b.rpsn)
                         : missingDataLabel(null)}
                     </dd>
                   </div>
@@ -651,7 +870,10 @@ export function CzMortgageDecisionTool() {
                   let
                 </p>
                 <div className="mt-2">
-                  <LastUpdated at={b.updatedAt} status="LIVE" />
+                  <LastUpdated
+                    at={b.updatedAt}
+                    status={b.badgeStatus ?? "STALE"}
+                  />
                 </div>
                 {b.sourceUrl && (
                   <a
@@ -677,31 +899,31 @@ export function CzMortgageDecisionTool() {
         )}
       </section>
 
-      {/* CTA */}
-      <section className="rounded-2xl border border-deep-teal/20 bg-deep-teal px-5 py-6 text-white sm:px-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="max-w-xl">
-            <p className="inline-flex items-center gap-2 text-sm font-semibold text-muted-gold">
-              <BadgeCheck className="h-4 w-4" />
-              Další krok
-            </p>
-            <h3 className="mt-1 font-heading text-xl font-bold sm:text-2xl">
-              Nechat výsledek ověřit licencovaným specialistou
-            </h3>
-            <p className="mt-2 text-sm text-white/80">
-              Model vám ukáže orientační rámec. Specialista ověří bonitu,
-              dokumenty a reálné nabídky bank — bez příslibu schválení z této
-              kalkulačky.
-            </p>
-          </div>
-          <Link
-            href={routes.navrhNaMiru}
-            className="inline-flex h-12 shrink-0 items-center justify-center rounded-lg bg-muted-gold px-6 text-sm font-semibold text-text-dark transition-colors hover:bg-muted-gold-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-          >
-            Ověřit výsledek →
-          </Link>
-        </div>
-      </section>
+      {/* Co dál — jedno primary CTA */}
+      <WhatNextPanel
+        actions={[
+          {
+            id: "readiness",
+            label: CTA_CS.readiness,
+            description:
+              "Ověřte připravenost a dokumenty — bez příslibu schválení z kalkulačky.",
+            href: routes.navrhNaMiru,
+            primary: true,
+          },
+          {
+            id: "moznosti",
+            label: CTA_CS.discoverOptions,
+            description: "Celková diagnostika rozpočtu a trhů.",
+            href: routes.mojeMoznosti,
+          },
+          {
+            id: "rentgen",
+            label: CTA_CS.analyzeProperty,
+            description: "Prověřte konkrétní nabídku.",
+            href: routes.investicniRentgen,
+          },
+        ]}
+      />
 
       <div className="flex items-start gap-2 text-xs text-muted-foreground">
         <Shield className="mt-0.5 h-3.5 w-3.5 shrink-0" />

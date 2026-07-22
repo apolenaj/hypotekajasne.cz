@@ -1,9 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Home, Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin, Phone } from "lucide-react";
+import { BrandWordmark } from "@/components/brand/BrandWordmark";
 import { useCookieConsent } from "@/components/consent/CookieConsentProvider";
+import { SITE_DOMAIN_LABEL } from "@/lib/brand";
 import { footerLinks, siteContact } from "@/lib/mock-data";
+import { getPartnerClaimLabels } from "@/lib/partners/verification";
 
 function CookieSettingsLink() {
   const { reopenPreferences } = useCookieConsent();
@@ -19,23 +22,16 @@ function CookieSettingsLink() {
 }
 
 export function Footer() {
+  const partnerCopy = getPartnerClaimLabels();
+
   return (
     <footer className="border-t border-border bg-white">
       <div className="container mx-auto px-4 py-12 lg:px-8 lg:py-16">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 lg:gap-12">
           <div className="space-y-4">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-deep-teal text-white">
-                <Home className="h-5 w-5" />
-              </div>
-              <span className="font-heading text-lg font-semibold text-deep-teal">
-                HypotékaJasně.cz
-              </span>
-            </Link>
+            <BrandWordmark href="/" showDomain className="text-lg font-semibold" />
             <p className="text-sm leading-relaxed text-muted-foreground">
-              Nezávislý informační portál a technologická platforma. Nejsme
-              poskytovatelé finančních služeb ani licencovaní poradci —
-              propojujeme vás s prověřenými experty.
+              {partnerCopy.connectBlurb}
             </p>
           </div>
 
@@ -107,8 +103,11 @@ export function Footer() {
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 sm:flex-row">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} HypotékaJasně.cz. Všechna práva
-            vyhrazena.
+            © {new Date().getFullYear()} Hypotéka Jasně ·{" "}
+            <span className="text-xs text-muted-foreground/80">
+              {SITE_DOMAIN_LABEL}
+            </span>
+            . Všechna práva vyhrazena.
           </p>
           <p className="max-w-md text-center text-xs text-muted-foreground sm:text-right">
             Informační platforma — nejsme banka ani licencovaný poradce. Před

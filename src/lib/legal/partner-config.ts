@@ -65,20 +65,38 @@ export function getMortgagePartners(): MortgagePartner[] {
     "LEGAL_PARTNER_JERRS_URL",
     "NEXT_PUBLIC_LEGAL_PARTNER_JERRS_URL"
   );
-  const licenceSummary =
-    envOrNull(
-      "LEGAL_PARTNER_LICENCE_SUMMARY",
-      "NEXT_PUBLIC_LEGAL_PARTNER_LICENCE_SUMMARY"
-    ) ??
-    "Poskytuje službu v rozsahu své registrace u dohledového orgánu. Hypotéka Jasně není touto osobou.";
-  const role =
-    envOrNull("LEGAL_PARTNER_ROLE", "NEXT_PUBLIC_LEGAL_PARTNER_ROLE") ??
-    "Zprostředkování spotřebitelských úvěrů / hypoték dle registrace";
+  const verified = Boolean(legalName && ico && jerrsVerificationUrl);
+  const statusOverride = envOrNull(
+    "LEGAL_PARTNER_JERRS_STATUS",
+    "NEXT_PUBLIC_LEGAL_PARTNER_JERRS_STATUS"
+  )?.toUpperCase();
+
+  let jerrsStatus: MortgagePartnerJerrsStatus = "UNPUBLISHED";
+  if (verified) {
+    jerrsStatus = "LIVE";
+  } else if (statusOverride === "COMING_SOON") {
+    jerrsStatus = "COMING_SOON";
+  } else if (statusOverride === "UNPUBLISHED" || statusOverride === "LIVE") {
+    // LIVE without full identity is ignored — never invent verification
+    jerrsStatus = "UNPUBLISHED";
+  }
+
+  const licenceSummary = verified
+    ? (envOrNull(
+        "LEGAL_PARTNER_LICENCE_SUMMARY",
+        "NEXT_PUBLIC_LEGAL_PARTNER_LICENCE_SUMMARY"
+      ) ??
+      "Poskytuje službu v rozsahu své registrace u dohledového orgánu. Hypotéka Jasně není touto osobou.")
+    : "Registrační údaje a rozsah licence zveřejníme až po ověření. Hypotéka Jasně není touto osobou.";
+  const role = verified
+    ? (envOrNull("LEGAL_PARTNER_ROLE", "NEXT_PUBLIC_LEGAL_PARTNER_ROLE") ??
+      "Zprostředkování spotřebitelských úvěrů / hypoték dle registrace")
+    : jerrsStatus === "COMING_SOON"
+      ? "Hypoteční partner — ověření probíhá"
+      : "Hypoteční partner — identifikace zatím nezveřejněna";
   const scope =
     envOrNull("LEGAL_PARTNER_SCOPE", "NEXT_PUBLIC_LEGAL_PARTNER_SCOPE") ??
     "Individuální konzultace, příprava podkladů, komunikace s bankami. Nezahrnuje závazné schválení úvěru.";
-
-  const verified = Boolean(legalName && ico && jerrsVerificationUrl);
 
   return [
     {
@@ -88,7 +106,7 @@ export function getMortgagePartners(): MortgagePartner[] {
       role,
       licenceSummary,
       jerrsVerificationUrl: verified ? jerrsVerificationUrl : null,
-      jerrsStatus: verified ? "LIVE" : "UNPUBLISHED",
+      jerrsStatus,
       scope,
       compensationDisclosure: COMPENSATION_DISCLOSURE,
     },
@@ -99,10 +117,13 @@ export function getPrimaryMortgagePartner(): MortgagePartner {
   return getMortgagePartners()[0]!;
 }
 
-/** Veřejný zobrazovaný název — nikdy falešná firma. */
+/** Veřejný zobrazovaný název — nikdy falešná firma ani silnější claim. */
 export function partnerPublicDisplayName(p: MortgagePartner): string {
   if (p.legalName && p.jerrsStatus === "LIVE") return p.legalName;
-  return "Licencovaný hypoteční specialista — identifikace zatím nezveřejněna";
+  if (p.jerrsStatus === "COMING_SOON") {
+    return "Partner — ověření probíhá";
+  }
+  return "Partner — identifikace zatím nezveřejněna";
 }
 
 export function isMortgagePartnerIdentityVerified(

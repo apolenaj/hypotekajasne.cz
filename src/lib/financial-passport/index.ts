@@ -12,3 +12,5 @@ export * from "@/lib/financial-passport/simulate";
 export * from "@/lib/financial-passport/timeline";
 export * from "@/lib/financial-passport/handoff";
 export * from "@/lib/financial-passport/storage";
+export * from "@/lib/financial-passport/next-actions";
+export * from "@/lib/financial-passport/what-if";

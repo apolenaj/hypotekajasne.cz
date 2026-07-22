@@ -39,6 +39,7 @@ export const routes = {
   reportEngine: "/reporty",
   b2bPortal: "/profesionalni-portal",
   opravyAAktualizace: "/opravy-a-aktualizace",
+  temata: "/temata",
   legal: {
     gdpr: "/pravni/gdpr",
     smlouvy: "/pravni/smlouvy",

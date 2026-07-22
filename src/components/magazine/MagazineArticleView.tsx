@@ -15,6 +15,7 @@ import { crumbs } from "@/lib/seo/breadcrumbs";
 import {
   articleJsonLd,
   personJsonLd,
+  type JsonLd,
 } from "@/lib/seo/json-ld";
 import { formatDate as formatDateLocale } from "@/lib/i18n/format";
 import { MAGAZINE_UI_CS } from "@/lib/i18n/ui-cs";
@@ -48,13 +49,44 @@ function PersonBox({
 
 export function MagazineArticleView({ article }: { article: MagazineArticle }) {
   const author = getPerson(article.authorId);
-  const reviewer = getPerson(article.reviewerId);
+  const reviewer = article.reviewerId
+    ? getPerson(article.reviewerId)
+    : null;
   const toc = article.body.filter(
     (b): b is Extract<typeof b, { type: "h2" }> => b.type === "h2"
   );
   const related = getRelatedArticles(article);
   const next = getNextArticle(article.slug);
   const path = getArticlePath(article.slug);
+
+  const jsonLd: JsonLd[] = [
+    articleJsonLd({
+      headline: article.title,
+      description: article.description,
+      path,
+      imageUrl: article.hero.src,
+      datePublished: article.publishedAt,
+      dateModified: article.updatedAt,
+      authorName: author.name,
+      ...(reviewer ? { reviewerName: reviewer.name } : {}),
+    }),
+    personJsonLd({
+      name: author.name,
+      jobTitle: author.role,
+      description: author.bio,
+      url: author.url,
+    }),
+  ];
+  if (reviewer) {
+    jsonLd.push(
+      personJsonLd({
+        name: reviewer.name,
+        jobTitle: reviewer.role,
+        description: reviewer.bio,
+        url: reviewer.url,
+      })
+    );
+  }
 
   return (
     <article className="bg-white">
@@ -68,30 +100,7 @@ export function MagazineArticleView({ article }: { article: MagazineArticle }) {
           />
         </div>
       </div>
-      <JsonLdScript
-        data={[
-          articleJsonLd({
-            headline: article.title,
-            description: article.description,
-            path,
-            imageUrl: article.hero.src,
-            datePublished: article.publishedAt,
-            dateModified: article.updatedAt,
-            authorName: author.name,
-            reviewerName: reviewer.name,
-          }),
-          personJsonLd({
-            name: author.name,
-            jobTitle: author.role,
-            description: author.bio,
-          }),
-          personJsonLd({
-            name: reviewer.name,
-            jobTitle: reviewer.role,
-            description: reviewer.bio,
-          }),
-        ]}
-      />
+      <JsonLdScript data={jsonLd} />
 
       <header className="border-b border-border">
         <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
@@ -105,8 +114,13 @@ export function MagazineArticleView({ article }: { article: MagazineArticle }) {
             {article.description}
           </p>
           <p className="mt-4 text-xs text-muted-foreground">
-            {MAGAZINE_UI_CS.author}: {author.name} ·{" "}
-            {MAGAZINE_UI_CS.expertReview}: {reviewer.name}
+            {MAGAZINE_UI_CS.author}: {author.name}
+            {reviewer ? (
+              <>
+                {" "}
+                · {MAGAZINE_UI_CS.expertReview}: {reviewer.name}
+              </>
+            ) : null}
             <br />
             {MAGAZINE_UI_CS.published} {formatDate(article.publishedAt)} ·{" "}
             {MAGAZINE_UI_CS.updated} {formatDate(article.updatedAt)} ·{" "}
@@ -211,10 +225,12 @@ export function MagazineArticleView({ article }: { article: MagazineArticle }) {
               title={MAGAZINE_UI_CS.author}
               personId={article.authorId}
             />
-            <PersonBox
-              title={MAGAZINE_UI_CS.expertReview}
-              personId={article.reviewerId}
-            />
+            {article.reviewerId ? (
+              <PersonBox
+                title={MAGAZINE_UI_CS.expertReview}
+                personId={article.reviewerId}
+              />
+            ) : null}
           </section>
 
           <section className="mt-10">

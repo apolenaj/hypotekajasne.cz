@@ -31,7 +31,7 @@ export function citationFromCatalog(
   return {
     id: `catalog:${entry.id}`,
     label: entry.label,
-    source: "Katalog dat HypotékaJasně",
+    source: "Katalog dat Hypotéka Jasně",
     updatedAt: null,
     claimKind: claimFromDataStatus(entry.defaultStatus),
     href: routes.zdroje,
@@ -42,7 +42,7 @@ export function citationFromCatalog(
 export function methodologyCitation(): CopilotCitation {
   return {
     id: "metodika",
-    label: "Metodika modelů HypotékaJasně",
+    label: "Metodika modelů Hypotéka Jasně",
     source: "Centrum důvěry / metodika",
     updatedAt: null,
     claimKind: "MODEL",
@@ -104,8 +104,15 @@ export function rateCitation(
 }
 
 export const CLAIM_KIND_HINT: Record<ClaimKind, string> = {
-  DATA: "Ověřená / aktuální data platformy",
-  MODEL: "Modelový výpočet s dokumentovanými předpoklady",
-  ODHAD: "Orientační odhad — ověřte u specialisty",
-  NEOVERENO: "Údaj není ověřen — nepoužíváme jako fakt",
+  DATA: "FACT — ověřená / aktuální data platformy",
+  MODEL: "MODEL — výpočet s dokumentovanými předpoklady",
+  ODHAD: "ESTIMATE — orientační odhad, ověřte u specialisty",
+  NEOVERENO: "UNKNOWN — údaj není ověřen, nepoužíváme jako fakt",
+};
+
+export const CLAIM_KIND_SHORT_CS: Record<ClaimKind, string> = {
+  DATA: "Fakt",
+  MODEL: "Model",
+  ODHAD: "Odhad",
+  NEOVERENO: "Neznámé",
 };

@@ -7,7 +7,7 @@ import { crumbs } from "@/lib/seo/breadcrumbs";
 import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "HypotekaJasne.cz — English overview",
+  title: "Hypotéka Jasně — English overview",
   description:
     "Czech mortgage and property decision platform. Human-edited English overview only — we do not publish machine translations of the full site.",
   path: "/en",

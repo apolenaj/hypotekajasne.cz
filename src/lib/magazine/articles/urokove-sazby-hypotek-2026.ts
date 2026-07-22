@@ -8,8 +8,8 @@ export const article: MagazineArticle = {
     "Co znamená normalizace sazeb FEDu a ECB pro ČNB, fixace a investory do nemovitostí v ČR — bez slibu dna.",
   category: "Makroekonomika",
   clusters: ["hypoteky", "cr", "investicni-analyza", "refinancovani"],
-  authorId: "analytička-hj",
-  reviewerId: "reviewer-compliance",
+  authorId: "josef-apolenar",
+  reviewerId: "michal-heinzke",
   publishedAt: "2026-07-12",
   updatedAt: "2026-07-12",
   factCheckedAt: "2026-07-12",
@@ -67,7 +67,7 @@ export const article: MagazineArticle = {
     },
   ],
   sources: [
-    { label: "Metodika sazeb HypotékaJasně", url: routes.metodika },
+    { label: "Metodika sazeb Hypotéka Jasně", url: routes.metodika },
     {
       label: "Veřejné sazby sledovaných bank (LIVE / STALE dle katalogu)",
       note: "Konkrétní číslo vždy ověřte u banky.",

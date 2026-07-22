@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { estimateAffordability } from "@/lib/affordability";
 import { formatCurrency } from "@/lib/calculators";
-import { useMortgageRateEngine } from "@/lib/rates";
+import { rateUiBadgeLabel, useMortgageRateEngine } from "@/lib/rates";
 import { routes } from "@/lib/routes";
 
 /**
@@ -56,7 +56,7 @@ export function HomePersonalSnapshot() {
     {
       label: "Financing fit",
       value: financingFit,
-      hint: `Sazba ${loading ? "…" : `${resolved.ratePercent.toFixed(2)} %`} · ${resolved.uiKind}`,
+      hint: `Sazba ${loading ? "…" : `${resolved.ratePercent.toFixed(2)} %`} · ${rateUiBadgeLabel(resolved.uiKind)}`,
     },
   ];
 

@@ -12,6 +12,7 @@ import { missingDataLabel } from "@/lib/data/display";
 import { toProvenanceFields } from "@/lib/data/provenance";
 import { resolveEffectiveStatus } from "@/lib/data/freshness";
 import type { DataStatus } from "@/lib/data/types";
+import { formatRate } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 export const RPSN_TOOLTIP =
@@ -63,7 +64,7 @@ export function RpsnDisplay({
     >
       <span className="min-w-0">
         {hasValue ? (
-          <>RPSN: {rpsn!.toFixed(2)}&nbsp;%</>
+          <>RPSN: {formatRate(rpsn!, { fractionDigits: 2 })}</>
         ) : (
           <>RPSN: {missingDataLabel(effectiveStatus)}</>
         )}

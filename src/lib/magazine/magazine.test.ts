@@ -6,14 +6,27 @@ import {
   TOPICAL_CLUSTERS,
   getArticle,
   getAllArticleSlugs,
+  getPerson,
+  MAGAZINE_PEOPLE,
 } from "@/lib/magazine";
 
+const FAKE_REVIEWER_IDS = ["reviewer-compliance", "analytička-hj"];
+
 describe("magazine YMYL + architecture", () => {
-  it("every article has slug, author, reviewer, dates, sources", () => {
+  it("every article has slug, author, dates, sources; reviewer only if real", () => {
     for (const a of ALL_ARTICLES) {
       assert.ok(a.slug.length > 2);
       assert.ok(a.authorId);
-      assert.ok(a.reviewerId);
+      assert.ok(MAGAZINE_PEOPLE[a.authorId], `unknown author ${a.authorId}`);
+      assert.ok(!FAKE_REVIEWER_IDS.includes(a.authorId));
+      if (a.reviewerId) {
+        assert.ok(
+          MAGAZINE_PEOPLE[a.reviewerId],
+          `unknown reviewer ${a.reviewerId}`
+        );
+        assert.ok(!FAKE_REVIEWER_IDS.includes(a.reviewerId));
+        assert.notEqual(a.reviewerId, a.authorId);
+      }
       assert.ok(a.publishedAt);
       assert.ok(a.updatedAt);
       assert.ok(a.factCheckedAt);
@@ -21,6 +34,8 @@ describe("magazine YMYL + architecture", () => {
       assert.ok(a.body.length >= 2);
       assert.ok(a.clusters.length >= 1);
       assert.ok(a.relatedTools.length >= 1);
+      // Person name resolves
+      assert.notEqual(getPerson(a.authorId).name, "Neuvedeno");
     }
   });
 

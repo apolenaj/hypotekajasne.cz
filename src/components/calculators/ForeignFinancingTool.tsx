@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { AlertTriangle, BadgeCheck, Landmark } from "lucide-react";
 import { CalculatorDisclaimer } from "@/components/calculators/CalculatorDisclaimer";
@@ -27,8 +27,11 @@ import {
   useBankRates,
 } from "@/lib/bank-rates";
 import { DOMESTIC_BANKS, formatRatesUpdatedAt } from "@/lib/banking";
+import { LIVE_RATES_UNAVAILABLE_MESSAGE } from "@/lib/rates/types";
 import { routes } from "@/lib/routes";
+import { getPartnerClaimLabels } from "@/lib/partners/verification";
 import { cn } from "@/lib/utils";
+import { trackCanonical } from "@/lib/analytics/track";
 
 type ForeignFinancingToolProps = {
   country: CountryId;
@@ -85,7 +88,8 @@ function ForeignFinancingToolInner({ country }: ForeignFinancingToolProps) {
   const [savings, setSavings] = useState(config.defaultSavings);
   const [termYears, setTermYears] = useState(config.defaultTerm);
 
-  const { bankRates, loading: bankRatesLoading } = useBankRates();
+  const { bankRates, loading: bankRatesLoading, unavailable: bankRatesUnavailable } =
+    useBankRates();
 
   const czechEquityRate = useMemo(() => {
     const rates = DOMESTIC_BANKS.map((bank) => {
@@ -110,6 +114,25 @@ function ForeignFinancingToolInner({ country }: ForeignFinancingToolProps) {
       }),
     [country, option, price, savings, termYears, czechEquityRate]
   );
+
+  const initialInputs = useRef({ price, savings, option, termYears });
+  const completionSent = useRef(false);
+
+  useEffect(() => {
+    if (completionSent.current) return;
+    const baseline = initialInputs.current;
+    const adjusted =
+      price !== baseline.price ||
+      savings !== baseline.savings ||
+      option !== baseline.option ||
+      termYears !== baseline.termYears;
+    if (!adjusted) return;
+    completionSent.current = true;
+    trackCanonical("calculator_completed", "result_viewed", {
+      tool_id: "mortgage_calculator",
+      country_id: country,
+    });
+  }, [country, price, savings, option, termYears]);
 
   const fmt = (n: number | null | undefined, currency = result.currency) =>
     n == null || !Number.isFinite(n)
@@ -354,10 +377,13 @@ function ForeignFinancingToolInner({ country }: ForeignFinancingToolProps) {
                   ? `${result.ratePercentPa.toFixed(2)} %`
                   : missingDataLabel(null)}
               </p>
-              {bankRatesLoading && (
+              {bankRatesLoading ? (
                 <p className="mt-1 text-xs text-muted-foreground">Načítám…</p>
-              )}
-            </div>
+              ) : bankRatesUnavailable || czechEquityRate == null ? (
+                <p className="mt-1 text-xs text-amber-800" role="status">
+                  {LIVE_RATES_UNAVAILABLE_MESSAGE}
+                </p>
+              ) : null}            </div>
           )}
           {result.calculable && result.totalPaid != null && (
             <div className="rounded-lg border border-border bg-white p-4">
@@ -445,7 +471,7 @@ function ForeignFinancingToolInner({ country }: ForeignFinancingToolProps) {
               Další krok
             </p>
             <h3 className="mt-1 font-heading text-xl font-bold sm:text-2xl">
-              Nechat výsledek ověřit licencovaným specialistou
+              {getPartnerClaimLabels().consultCta}
             </h3>
             <p className="mt-2 text-sm text-white/80">
               Lokální dostupnost a podmínky vždy závisí na bance / developerovi —

@@ -23,6 +23,13 @@ function walk(dir: string, out: string[] = []): string[] {
   return out;
 }
 
+/** Strip block/line comments so scanners ignore dev notes. */
+function stripComments(source: string): string {
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\/\/[^\n]*/g, "");
+}
+
 /** Public UI surfaces — components + pages + faq/nav/ui-cs strings */
 function publicUiFiles(): string[] {
   return walk(ROOT).filter((f) => {
@@ -72,7 +79,7 @@ describe("release audit scanners", () => {
   });
 
   it("analytics taxonomy is non-empty and stable count", () => {
-    assert.equal(ANALYTICS_EVENTS.length, 46);
+    assert.equal(ANALYTICS_EVENTS.length, 56);
     assert.equal(ANALYTICS_EVENTS.length, new Set(ANALYTICS_EVENTS).size);
   });
 
@@ -102,7 +109,7 @@ describe("release audit scanners", () => {
       "encrypted object storage",
     ];
     for (const f of publicUiFiles()) {
-      const text = readFileSync(f, "utf8");
+      const text = stripComments(readFileSync(f, "utf8"));
       for (const phrase of forbidden) {
         assert.ok(
           !text.includes(phrase),

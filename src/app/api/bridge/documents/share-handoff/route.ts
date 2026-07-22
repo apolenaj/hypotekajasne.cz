@@ -9,7 +9,7 @@ export async function GET() {
     version: 1,
     method: "POST",
     requiredConsent:
-      "Souhlasím se sdílením vybraných dokumentů s licencovaným specialistou za účelem posouzení hypotéky.",
+      "Souhlasím se sdílením vybraných dokumentů s ověřeným partnerem za účelem posouzení hypotéky.",
     body: {
       consentId: "string",
       handoffToken: "string",

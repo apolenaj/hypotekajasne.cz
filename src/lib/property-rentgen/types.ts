@@ -5,6 +5,27 @@
 
 export type ClaimKind = "DATA" | "MODEL" | "ODHAD" | "NEOVERENO";
 
+/** Jak vznikl obsah sekce — neplést s ClaimKind. */
+export type AnalysisMethod =
+  | "automated_calculation"
+  | "ai_analysis"
+  | "human_verification";
+
+export const ANALYSIS_METHOD_LABELS: Record<AnalysisMethod, string> = {
+  automated_calculation: "Automatizovaný výpočet",
+  ai_analysis: "AI analýza",
+  human_verification: "Lidská verifikace",
+};
+
+export const ANALYSIS_METHOD_DESCRIPTIONS: Record<AnalysisMethod, string> = {
+  automated_calculation:
+    "Deterministický model z vašich vstupů a katalogových referencí.",
+  ai_analysis:
+    "Text nebo syntéza generovaná AI — vždy s limitem kvality dat.",
+  human_verification:
+    "Kontrola specialistou — používáme jen pokud report skutečně prošel člověkem.",
+};
+
 export const CLAIM_KIND_LABELS: Record<ClaimKind, string> = {
   DATA: "Data",
   MODEL: "Modelový výpočet",
@@ -44,9 +65,93 @@ export type FreePreviewResult = {
   inputMode: RentgenInputMode;
   orientationalYieldPa: ClaimedValue<number | null>;
   pricePerM2: ClaimedValue<number | null>;
+  marketComparison: MarketComparisonSnapshot | null;
+  modelCashFlow: ModelCashFlowSnapshot | null;
   financingFit: ClaimedValue<string>;
-  redFlags: { text: string; kind: ClaimKind }[];
+  warningSignals: WarningSignal[];
+  /** @deprecated alias — use warningSignals */
+  redFlags: WarningSignal[];
+  dataQuality: DataQualityIndicator;
   limitations: string[];
+};
+
+export type MarketComparisonSnapshot = {
+  city: string;
+  hasMarketData: boolean;
+  propertyPricePerM2: ClaimedValue<number | null>;
+  marketReferencePerM2: ClaimedValue<number | null>;
+  deltaPercent: ClaimedValue<number | null>;
+  marketYieldPa: ClaimedValue<number | null>;
+  summary: string;
+  kind: ClaimKind;
+};
+
+export type ModelCashFlowSnapshot = {
+  monthlyRent: ClaimedValue<number | null>;
+  monthlyMortgageModel: ClaimedValue<number | null>;
+  monthlyOpsModel: ClaimedValue<number | null>;
+  netMonthlyModel: ClaimedValue<number | null>;
+  modelRatePercent: number;
+  note: string;
+};
+
+export type WarningSignal = {
+  id: string;
+  text: string;
+  kind: ClaimKind;
+  severity: "info" | "watch" | "alert";
+};
+
+export type DataQualityIndicator = {
+  score: number;
+  band: "high" | "medium" | "low" | "insufficient";
+  label: string;
+  filledFields: string[];
+  missingFields: string[];
+  note: string;
+};
+
+export const SAMPLE_REPORT_SECTION_IDS = [
+  "executive_summary",
+  "property_overview",
+  "market_comparison",
+  "price_analysis",
+  "rental_model",
+  "cash_flow_scenarios",
+  "financing_scenarios",
+  "stress_test",
+  "liquidity_risk",
+  "legal_document_checklist",
+  "red_flags",
+  "data_quality",
+  "final_decision_framework",
+] as const;
+
+export type SampleReportSectionId = (typeof SAMPLE_REPORT_SECTION_IDS)[number];
+
+export type SampleReportSection = {
+  id: SampleReportSectionId;
+  title: string;
+  method: AnalysisMethod;
+  methodNote: string;
+  tier: "free" | "premium";
+  claimKind: ClaimKind;
+  summary: string;
+  bullets: string[];
+  metrics?: DemoReportMetric[];
+};
+
+export type SampleReport = {
+  id: string;
+  title: string;
+  subtitle: string;
+  disclaimer: string;
+  isDemo: true;
+  sections: SampleReportSection[];
+  /** Flat metrics grid for compact demo view */
+  metrics: DemoReportMetric[];
+  warningSignals: WarningSignal[];
+  financingFit: ClaimedValue<string>;
 };
 
 export type DemoReportMetric = {
@@ -57,12 +162,4 @@ export type DemoReportMetric = {
   note?: string;
 };
 
-export type DemoReport = {
-  id: string;
-  title: string;
-  subtitle: string;
-  disclaimer: string;
-  metrics: DemoReportMetric[];
-  redFlags: { text: string; kind: ClaimKind }[];
-  financingFit: ClaimedValue<string>;
-};
+export type DemoReport = SampleReport;

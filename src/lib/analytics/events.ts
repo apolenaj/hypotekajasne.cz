@@ -9,8 +9,10 @@
 export const ANALYTICS_EVENTS = [
   // —— GLOBAL ——
   "page_view",
+  "homepage_view",
   "primary_cta_clicked",
   "homepage_intent_selected",
+  "intent_selected",
 
   // —— ONBOARDING (/moje-moznosti) ——
   "onboarding_started",
@@ -35,6 +37,7 @@ export const ANALYTICS_EVENTS = [
   // —— COUNTRIES ——
   "market_viewed",
   "market_compared",
+  "market_compare_started",
   "country_calculator_started",
   /** @deprecated prefer market_viewed */
   "country_viewed",
@@ -43,13 +46,17 @@ export const ANALYTICS_EVENTS = [
   "passport_started",
   "passport_completed",
   "passport_shared_intent",
+  "financial_passport_created",
   "investment_pass_started",
   "investment_pass_completed",
+  "investment_passport_completed",
 
   // —— INVESTMENT X-RAY (rentgen) ——
   "rentgen_started",
+  "property_xray_started",
   "property_input_completed",
   "free_result_viewed",
+  "property_xray_completed",
   "premium_viewed",
   "premium_cta_clicked",
   "analysis_started",
@@ -63,12 +70,17 @@ export const ANALYTICS_EVENTS = [
   // —— LEADS ——
   "lead_form_started",
   "lead_form_submitted_success",
+  "lead_form_submitted",
   "lead_form_error",
   /** @deprecated prefer lead_form_submitted_success */
   "lead_submitted",
   "partner_handoff",
+  "partner_handoff_requested",
   "conversion_confirmed",
   "majetio_clicked",
+
+  // —— REFINANCE ——
+  "refinance_radar_started",
 
   // —— OTHER TOOLS ——
   "document_vault_opened",
@@ -109,6 +121,15 @@ export type AnalyticsPayload = {
   /** Referrer hostname only (e.g. google.com) — never full URL with query */
   referrer_host?: string;
   funnel_id?: string;
+  /** First-touch UTM — only after analytics consent (sanitized) */
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  visitor_type?: "new" | "returning";
+  /** Anonymous session id — not lifecycle PII */
+  session_id?: string;
+  /** Partner-transfer consent path — qualified lead KPI */
+  lead_qualified?: boolean;
 };
 
 const FORBIDDEN_PAYLOAD_KEYS = [
@@ -132,6 +153,15 @@ const FORBIDDEN_PAYLOAD_KEYS = [
   "document_content",
   "extracted_amount",
   "document_category_detail",
+  "debt",
+  "debts",
+  "liability",
+  "liabilities",
+  "rodne",
+  "rodin",
+  "birth_number",
+  "financial_profile",
+  "profile_data",
   "iban",
   "account_number",
   "tax_id",
@@ -244,8 +274,20 @@ export const EVENT_DICTIONARY: EventDictionaryRow[] = [
   {
     event: "page_view",
     trigger: "Client route change (after analytics consent)",
-    properties: "path, referrer_host?",
+    properties: "path, referrer_host?, utm_*, visitor_type?",
     purpose: "Traffic baseline; attribution of landings",
+  },
+  {
+    event: "homepage_view",
+    trigger: "Home route (/) page view",
+    properties: "path=/, utm_*, visitor_type?",
+    purpose: "Homepage funnel entry (dashboard KPI)",
+  },
+  {
+    event: "intent_selected",
+    trigger: "Home intent chip / needs selection",
+    properties: "intent_id, utm_*?",
+    purpose: "Intent mix — canonical name for homepage_intent_selected",
   },
   {
     event: "primary_cta_clicked",
@@ -314,10 +356,16 @@ export const EVENT_DICTIONARY: EventDictionaryRow[] = [
     purpose: "Which markets get attention",
   },
   {
+    event: "market_compare_started",
+    trigger: "User selects ≥2 markets to compare",
+    properties: "tool_id, market_ids",
+    purpose: "Compare funnel start — KPI denominator",
+  },
+  {
     event: "market_compared",
-    trigger: "User compares ≥2 markets",
-    properties: "market_ids",
-    purpose: "Compare feature usage",
+    trigger: "Compare selection updated (≥2 markets)",
+    properties: "market_ids, tool_id?",
+    purpose: "Compare feature usage (legacy alias)",
   },
   {
     event: "country_calculator_started",
@@ -326,10 +374,46 @@ export const EVENT_DICTIONARY: EventDictionaryRow[] = [
     purpose: "Country → calc conversion",
   },
   {
-    event: "passport_started",
-    trigger: "Financial passport tool started",
-    properties: "tool_id",
-    purpose: "Passport funnel start",
+    event: "financial_passport_created",
+    trigger: "Financial passport score ready",
+    properties: "tool_id, score_bucket?, utm_*?",
+    purpose: "Financial passport completion — canonical",
+  },
+  {
+    event: "investment_passport_completed",
+    trigger: "Investment passport dashboard shown",
+    properties: "tool_id, score_bucket?",
+    purpose: "Investment passport completion — canonical",
+  },
+  {
+    event: "property_xray_started",
+    trigger: "Rentgen tool mounted",
+    properties: "tool_id, price_band, experiment_id?, variant_id?",
+    purpose: "X-ray funnel start — canonical",
+  },
+  {
+    event: "property_xray_completed",
+    trigger: "Free X-ray preview rendered",
+    properties: "tool_id, price_band, score_bucket?",
+    purpose: "X-ray completion KPI numerator",
+  },
+  {
+    event: "refinance_radar_started",
+    trigger: "Refinance radar view mounted with profile",
+    properties: "tool_id=refinance_radar",
+    purpose: "Refinancing activation KPI",
+  },
+  {
+    event: "lead_form_submitted",
+    trigger: "Lead API success",
+    properties: "lead_source, partner_scope?, lead_qualified?, utm_*?",
+    purpose: "Lead conversion — canonical",
+  },
+  {
+    event: "partner_handoff_requested",
+    trigger: "Explicit partner transfer consent path",
+    properties: "lead_source, partner_scope",
+    purpose: "Licensed handoff — canonical",
   },
   {
     event: "passport_completed",

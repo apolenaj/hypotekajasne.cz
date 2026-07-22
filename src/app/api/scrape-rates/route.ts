@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { scrapeAllBanks, type ScrapedBankRate } from "@/lib/scrape/bank-scrapers";
 import { isValidMortgagePair } from "@/lib/scrape/parse-rate";
+import {
+  recordRateFetchFailure,
+  recordRateFetchSuccess,
+  recordRatePipelineInfo,
+} from "@/lib/rates/pipeline";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -230,6 +235,13 @@ export async function GET(request: Request) {
       );
       if (aggregateError) {
         console.error("current_rates upsert warning:", aggregateError.message);
+      } else {
+        recordRateFetchSuccess({
+          source: "scrape-rates",
+          scrapedAt,
+          saved,
+          banks: validBanks.length,
+        });
       }
 
       // Mortgage products pipeline (staging / anomaly / history)
@@ -277,6 +289,9 @@ export async function GET(request: Request) {
       });
     }
 
+    recordRatePipelineInfo("scrape_empty", "No valid banks scraped", {
+      failures: allFailures.length,
+    });
     return NextResponse.json({
       success: true,
       scrapedAt,
@@ -287,9 +302,11 @@ export async function GET(request: Request) {
       pipeline: null,
     });
   } catch (error: unknown) {
+    const message = getErrorMessage(error);
     console.error("scrape-rates error:", error);
+    recordRateFetchFailure(message, { source: "scrape-rates" });
     return NextResponse.json(
-      { success: false, error: getErrorMessage(error) },
+      { success: false, error: message },
       { status: 500 }
     );
   }

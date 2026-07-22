@@ -42,6 +42,9 @@ export function applySimulation(
       }
       break;
     }
+    case "change_rate":
+      // Rate is applied at build time, not on profile
+      break;
   }
 
   return next;

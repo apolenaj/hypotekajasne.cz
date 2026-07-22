@@ -5,6 +5,7 @@
 
 import type { ClaimKind } from "@/lib/financial-passport/types";
 import type { MarketMatchResult } from "@/lib/market-matching/types";
+import type { RateUiKind } from "@/lib/rates/resolve-engine";
 
 export type MojeMoznostiNextAction = {
   id: string;
@@ -54,7 +55,7 @@ export type MojeMoznostiResult = {
   markets: MojeMoznostiMarketPanel;
   nextActions: MojeMoznostiNextAction[];
   ratePercentUsed: number;
-  rateUiKind: "LIVE" | "OVĚŘENO" | "MODEL";
+  rateUiKind: RateUiKind;
 };
 
 /** Volitelné preference jen pro market matching (nepersistují se do profilu). */

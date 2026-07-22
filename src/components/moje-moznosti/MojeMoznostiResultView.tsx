@@ -1,8 +1,6 @@
 "use client";
 
-import Link from "next/link";
 import {
-  ArrowRight,
   Pencil,
   RotateCcw,
   AlertTriangle,
@@ -10,7 +8,14 @@ import {
 import type { FinancialProfileAnswers } from "@/lib/financial-passport";
 import type { MojeMoznostiResult } from "@/lib/moje-moznosti";
 import { purposeLabel } from "@/lib/financial-passport";
-import { routes } from "@/lib/routes";
+import {
+  CTA_CS,
+  CTA_SECONDARY_CLASS,
+  CTA_TERTIARY_CLASS,
+} from "@/lib/ux/cta";
+import { ExplainDisclosure } from "@/components/ux/ExplainDisclosure";
+import { SimpleResultHero } from "@/components/ux/SimpleResultHero";
+import { WhatNextPanel } from "@/components/ux/WhatNextPanel";
 import { cn } from "@/lib/utils";
 
 function fmt(n: number | null | undefined): string {
@@ -57,6 +62,19 @@ export function MojeMoznostiResultView({
   onEdit: () => void;
   onReset: () => void;
 }) {
+  const headlineBudget =
+    result.finance.recommendedBudget ??
+    result.finance.saferBudget ??
+    result.finance.modelMaxBudget;
+
+  const whatNextActions = result.nextActions.map((a, i) => ({
+    id: a.id,
+    label: a.label,
+    description: a.description,
+    href: a.href,
+    primary: i === 0,
+  }));
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:py-12">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -77,81 +95,80 @@ export function MojeMoznostiResultView({
           <button
             type="button"
             onClick={onEdit}
-            className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-border bg-white px-3 text-sm font-semibold text-text-dark hover:border-deep-teal/40"
+            className={cn(CTA_SECONDARY_CLASS, "px-3")}
           >
             <Pencil className="h-4 w-4" aria-hidden />
-            Upravit vstupy
+            {CTA_CS.editInputs}
           </button>
           <button
             type="button"
             onClick={onReset}
-            className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-border bg-white px-3 text-sm font-semibold text-muted-foreground hover:border-deep-teal/40"
+            className={CTA_TERTIARY_CLASS}
           >
             <RotateCcw className="h-4 w-4" aria-hidden />
-            Resetovat profil
+            Resetovat
           </button>
-          <Link
-            href={routes.dashboard}
-            className="inline-flex h-10 items-center gap-1.5 rounded-lg bg-deep-teal px-4 text-sm font-semibold text-white hover:bg-deep-teal-light"
-          >
-            Otevřít dashboard
-            <ArrowRight className="h-4 w-4" aria-hidden />
-          </Link>
         </div>
       </div>
 
-      {/* A. Finance */}
-      <section
-        aria-labelledby="moznosti-finance"
-        className="mt-8 rounded-2xl border border-border bg-white p-5 sm:p-6"
-      >
-        <div className="flex flex-wrap items-center gap-2">
-          <h2
-            id="moznosti-finance"
-            className="font-heading text-xl font-bold text-text-dark"
-          >
-            A. Orientační finance
-          </h2>
-          <ClaimBadge kind={result.finance.claimKind} />
-        </div>
-        <ul className="mt-4 grid gap-3 sm:grid-cols-3">
-          <li className="rounded-xl bg-[#f7f8f7] p-4">
-            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
-              Modelový maximální budget
-            </p>
-            <p className="mt-1 font-heading text-xl font-bold tabular-nums text-deep-teal">
-              {fmt(result.finance.modelMaxBudget)}
-            </p>
-          </li>
-          <li className="rounded-xl bg-[#f7f8f7] p-4">
-            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
-              Bezpečnější budget
-            </p>
-            <p className="mt-1 font-heading text-xl font-bold tabular-nums text-text-dark">
-              {fmt(result.finance.saferBudget)}
-            </p>
-          </li>
-          <li className="rounded-xl bg-[#f7f8f7] p-4">
-            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
-              Vlastní prostředky (máte)
-            </p>
-            <p className="mt-1 font-heading text-xl font-bold tabular-nums text-text-dark">
-              {fmt(result.finance.ownFundsHave)}
-            </p>
-            {result.finance.ownFundsNeeded != null ? (
-              <p className="mt-1 text-xs text-muted-foreground">
-                Orientačně potřeba až {fmt(result.finance.ownFundsNeeded)}{" "}
-                (závisí na cíli / LTV).
-              </p>
-            ) : null}
-          </li>
-        </ul>
-        <p className="mt-3 text-xs text-muted-foreground">
-          {result.finance.claimNote}
-        </p>
-      </section>
+      {/* Simple */}
+      <div className="mt-8">
+        <SimpleResultHero
+          eyebrow="Finance"
+          label="Doporučený rozpočet"
+          value={fmt(headlineBudget)}
+          hint="Orientační model podle příjmu, vlastních zdrojů a sazby. Nejde o nabídku banky."
+          badge={<ClaimBadge kind={result.finance.claimKind} />}
+        />
+      </div>
 
-      {/* B. Readiness */}
+      {/* Explain */}
+      <div className="mt-4">
+        <ExplainDisclosure
+          summary={CTA_CS.howCalculated}
+          advanced={
+            <div className="space-y-3 text-sm text-muted-foreground">
+              <p>
+                Maximální úvěr (model): {fmt(result.finance.maxLoanModel)}.
+                Vlastní prostředky: {fmt(result.finance.ownFundsHave)}.
+                {result.finance.ownFundsNeeded != null
+                  ? ` Orientační potřeba vlastních zdrojů až ${fmt(result.finance.ownFundsNeeded)}.`
+                  : ""}
+              </p>
+              <p className="text-xs">{result.finance.claimNote}</p>
+            </div>
+          }
+        >
+          <ul className="grid gap-3 sm:grid-cols-3">
+            <li className="rounded-xl bg-[#f7f8f7] p-4">
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                Modelové maximum
+              </p>
+              <p className="mt-1 font-heading text-xl font-bold tabular-nums text-deep-teal">
+                {fmt(result.finance.modelMaxBudget)}
+              </p>
+            </li>
+            <li className="rounded-xl bg-[#f7f8f7] p-4">
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                Bezpečnější rozpočet
+              </p>
+              <p className="mt-1 font-heading text-xl font-bold tabular-nums text-text-dark">
+                {fmt(result.finance.saferBudget)}
+              </p>
+            </li>
+            <li className="rounded-xl bg-[#f7f8f7] p-4">
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                Vlastní prostředky
+              </p>
+              <p className="mt-1 font-heading text-xl font-bold tabular-nums text-text-dark">
+                {fmt(result.finance.ownFundsHave)}
+              </p>
+            </li>
+          </ul>
+        </ExplainDisclosure>
+      </div>
+
+      {/* Readiness — simple score, details in disclosure */}
       <section
         aria-labelledby="moznosti-readiness"
         className="mt-4 rounded-2xl border border-border bg-white p-5 sm:p-6"
@@ -161,7 +178,7 @@ export function MojeMoznostiResultView({
             id="moznosti-readiness"
             className="font-heading text-xl font-bold text-text-dark"
           >
-            B. Financing readiness
+            Připravenost na financování
           </h2>
           <ClaimBadge kind={result.readiness.claimKind} />
         </div>
@@ -176,36 +193,47 @@ export function MojeMoznostiResultView({
             {result.readiness.band}
           </p>
         </div>
-        {result.readiness.obstacles.length > 0 ? (
-          <div className="mt-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Hlavní překážky
+
+        <div className="mt-4">
+          <ExplainDisclosure summary="Proč toto skóre">
+            {result.readiness.obstacles.length > 0 ? (
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Hlavní překážky
+                </p>
+                <ul className="mt-2 space-y-1.5">
+                  {result.readiness.obstacles.map((o) => (
+                    <li
+                      key={o}
+                      className="flex gap-2 text-sm text-amber-950"
+                    >
+                      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
+                      {o}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Bez kritických překážek v modelu.
+              </p>
+            )}
+            {result.readiness.nextStep ? (
+              <p className="mt-3 text-sm text-muted-foreground">
+                <span className="font-semibold text-text-dark">
+                  {CTA_CS.nextStep}:{" "}
+                </span>
+                {result.readiness.nextStep}
+              </p>
+            ) : null}
+            <p className="mt-3 text-xs text-muted-foreground">
+              {result.readiness.disclaimer}
             </p>
-            <ul className="mt-2 space-y-1.5">
-              {result.readiness.obstacles.map((o) => (
-                <li
-                  key={o}
-                  className="flex gap-2 text-sm text-amber-950"
-                >
-                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
-                  {o}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
-        {result.readiness.nextStep ? (
-          <p className="mt-4 text-sm text-muted-foreground">
-            <span className="font-semibold text-text-dark">Další krok: </span>
-            {result.readiness.nextStep}
-          </p>
-        ) : null}
-        <p className="mt-3 text-xs text-muted-foreground">
-          {result.readiness.disclaimer}
-        </p>
+          </ExplainDisclosure>
+        </div>
       </section>
 
-      {/* C. Markets */}
+      {/* Markets */}
       <section
         aria-labelledby="moznosti-markets"
         className="mt-4 rounded-2xl border border-border bg-white p-5 sm:p-6"
@@ -215,7 +243,7 @@ export function MojeMoznostiResultView({
             id="moznosti-markets"
             className="font-heading text-xl font-bold text-text-dark"
           >
-            C. Market Match
+            Kde dává smysl hledat
           </h2>
           <ClaimBadge kind={result.markets.claimKind} />
         </div>
@@ -255,35 +283,9 @@ export function MojeMoznostiResultView({
         </p>
       </section>
 
-      {/* D. Next actions */}
-      <section
-        aria-labelledby="moznosti-actions"
-        className="mt-4 rounded-2xl border border-border bg-[#f7f8f7] p-5 sm:p-6"
-      >
-        <h2
-          id="moznosti-actions"
-          className="font-heading text-xl font-bold text-text-dark"
-        >
-          D. Next actions
-        </h2>
-        <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-          {result.nextActions.map((a) => (
-            <li key={a.id}>
-              <Link
-                href={a.href}
-                className={cn(
-                  "flex h-full flex-col rounded-xl border border-border bg-white p-4 transition-colors hover:border-deep-teal/40"
-                )}
-              >
-                <span className="font-semibold text-deep-teal">{a.label} →</span>
-                <span className="mt-1 text-xs text-muted-foreground">
-                  {a.description}
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <div className="mt-6">
+        <WhatNextPanel actions={whatNextActions} />
+      </div>
     </div>
   );
 }

@@ -15,12 +15,13 @@ import type {
   MojeMoznostiNextAction,
   MojeMoznostiResult,
 } from "@/lib/moje-moznosti/types";
+import type { RateUiKind } from "@/lib/rates/resolve-engine";
 import { routes } from "@/lib/routes";
 
 export function buildMojeMoznostiResult(
   profile: FinancialProfileAnswers,
   ratePercent: number,
-  rateUiKind: "LIVE" | "OVĚŘENO" | "MODEL",
+  rateUiKind: RateUiKind,
   matchingPrefs?: MatchingPreferences
 ): MojeMoznostiResult {
   const doc = buildFinancialPassportDocument(profile, ratePercent);
@@ -116,49 +117,62 @@ export function buildMojeMoznostiResult(
 function buildNextActions(
   profile: FinancialProfileAnswers
 ): MojeMoznostiNextAction[] {
-  const actions: MojeMoznostiNextAction[] = [
+  if (profile.intent === "refinance") {
+    return [
+      {
+        id: "refinance",
+        label: "Spočítat refinancování",
+        description:
+          "Čas do konce fixace a modelové scénáře splátek.",
+        href: routes.refinanceRadar,
+      },
+      {
+        id: "passport",
+        label: "Otevřít Finanční pas",
+        description: "Plný profil připravenosti — jen lokálně v prohlížeči.",
+        href: routes.financniPas,
+      },
+      {
+        id: "kalkulacka",
+        label: "Spočítat hypotéku",
+        description: "Splátka, LTV a zátěžový test podle sazeb.",
+        href: routes.kalkulacky.root,
+      },
+      {
+        id: "specialista",
+        label: "Nezávazná konzultace",
+        description: "Hypotéka Jasně není banka — schválení vždy dělá banka.",
+        href: routes.navrhNaMiru,
+      },
+    ];
+  }
+
+  return [
     {
       id: "kalkulacka",
-      label: "Spočítat konkrétní hypotéku",
-      description: "Splátka, LTV, stresové scénáře podle živých / modelových sazeb.",
+      label: "Spočítat hypotéku",
+      description: "Splátka, LTV a zátěžový test podle sazeb.",
       href: routes.kalkulacky.root,
     },
     {
       id: "trhy",
-      label: "Porovnat 3 trhy",
-      description: "Detail destinací — vlastnictví, financování, rizika.",
+      label: "Porovnat trhy",
+      description: "Destinace — vlastnictví, financování, rizika.",
       href: routes.pruvodceInvestora,
     },
     {
       id: "rentgen",
       label: "Analyzovat nemovitost",
-      description: "Investiční rentgen: výnos, cena/m², fit financování.",
+      description: "Výnos, cena/m² a fit financování.",
       href: routes.investicniRentgen,
     },
     {
       id: "passport",
-      label: "Uložit / upravit Finanční pas",
-      description: "Plný profil a dimenze připravenosti — jen lokálně v prohlížeči.",
+      label: "Otevřít Finanční pas",
+      description: "Plný profil připravenosti — jen lokálně v prohlížeči.",
       href: routes.financniPas,
     },
-    {
-      id: "specialista",
-      label: "Spojit se specialistou",
-      description: "Nezávazná konzultace — Hypotéka Jasně není banka.",
-      href: routes.navrhNaMiru,
-    },
   ];
-
-  if (profile.intent === "refinance") {
-    actions.unshift({
-      id: "refinance",
-      label: "Radar refinancování",
-      description: "Porovnání stávající splátky s aktuálními sazbami.",
-      href: routes.refinanceRadar,
-    });
-  }
-
-  return actions.slice(0, 5);
 }
 
 /** Minimální data pro první užitečný výsledek. */

@@ -21,7 +21,7 @@ export type ShareHandoffResult = {
 
 const CONSENT_VERSION = "v1";
 const CONSENT_TEXT_REQUIRED =
-  "Souhlasím se sdílením vybraných dokumentů s licencovaným specialistou za účelem posouzení hypotéky.";
+  "Souhlasím se sdílením vybraných dokumentů s ověřeným partnerem za účelem posouzení hypotéky.";
 
 export function validateShareConsent(input: ShareHandoffRequest): {
   valid: boolean;

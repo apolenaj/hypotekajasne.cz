@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { AmortizationChart } from "@/components/calculators/AmortizationChart";
 import { CalculatorDisclaimer } from "@/components/calculators/CalculatorDisclaimer";
 import { InsuranceRateCards } from "@/components/calculators/InsuranceRateCards";
+import { RateProvenanceBanner } from "@/components/calculators/RateProvenanceBanner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -38,8 +39,12 @@ export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
 
   const czechRate = resolved.ratePercent;
   const loanAmount = Math.max(0, price - capital);
-  const rateWith = rates.rateWithInsurance ?? resolved.ratePercent;
-  const rateWithout = rates.rateWithoutInsurance ?? resolved.ratePercent;
+  /** Live/DB sides for display cards — never substitute MODEL into „od X %“. */
+  const rateWithLive = rates.rateWithInsurance;
+  const rateWithoutLive = rates.rateWithoutInsurance;
+  /** Spočitatelná sazba pro anuitu (LIVE / STALE / MODEL). */
+  const rateWith = rateWithLive ?? czechRate;
+  const rateWithout = rateWithoutLive ?? czechRate;
 
   const paymentWithInsurance = useMemo(() => {
     return Math.round(calculateAnnuityPayment(loanAmount, rateWith, years));
@@ -143,16 +148,17 @@ export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
         </div>
 
         {isCzechMarket ? (
-          <div className="md:col-span-2">
+          <div className="md:col-span-2 space-y-3">
+            <RateProvenanceBanner resolved={resolved} />
             <InsuranceRateCards
               hasInsurance={hasInsurance}
               onSelect={setHasInsurance}
-              rateWithInsurance={rateWith}
-              rateWithoutInsurance={rateWithout}
+              rateWithInsurance={rateWithLive}
+              rateWithoutInsurance={rateWithoutLive}
               rpsnWithInsurance={rates.rpsnWithInsurance}
               rpsnWithoutInsurance={rates.rpsnWithoutInsurance}
               withoutRateOrientational={
-                rates.withoutInsuranceOrientational || resolved.isModelFallback
+                rates.withoutInsuranceOrientational || resolved.liveUnavailable
               }
               paymentWithInsurance={formatCurrency(
                 paymentWithInsurance,

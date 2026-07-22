@@ -4,6 +4,15 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { readVerifiedRateCache, writeVerifiedRateCache } from "@/lib/rates/cache";
 import {
+  RATE_FETCH_RETRIES,
+  RATE_FETCH_TIMEOUT_MS,
+  RATE_RETRY_DELAY_MS,
+  recordRateFetchFailure,
+  recordRateFetchSuccess,
+  sleep,
+  withTimeout,
+} from "@/lib/rates/pipeline";
+import {
   resolveMortgageRate,
   type ResolvedMortgageRate,
 } from "@/lib/rates/resolve-engine";
@@ -27,10 +36,6 @@ export const EMPTY_RATES: CurrentRates = {
   withoutInsuranceOrientational: false,
   updatedAt: null,
 };
-
-const FETCH_TIMEOUT_MS = 8_000;
-const FETCH_RETRIES = 2;
-const RETRY_DELAY_MS = 400;
 
 function toNumber(value: unknown): number | null {
   if (value == null || value === "") return null;
@@ -59,31 +64,6 @@ function detectOrientationalWithout(
   return Math.abs(withoutRate - withRate - 0.3) < 0.021;
 }
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-async function withTimeout<T>(
-  promise: PromiseLike<T>,
-  ms: number,
-  label: string
-): Promise<T> {
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  try {
-    return await Promise.race([
-      Promise.resolve(promise),
-      new Promise<T>((_, reject) => {
-        timer = setTimeout(
-          () => reject(new Error(`${label} timeout after ${ms}ms`)),
-          ms
-        );
-      }),
-    ]);
-  } finally {
-    if (timer) clearTimeout(timer);
-  }
-}
-
 /** Záloha: nejlevnější klasická sazba s pojištěním z bank_rates. */
 async function fetchRatesFromBankRates(): Promise<CurrentRates | null> {
   const { data, error } = await withTimeout(
@@ -94,14 +74,14 @@ async function fetchRatesFromBankRates(): Promise<CurrentRates | null> {
       )
       .order("rate_with_insurance", { ascending: true, nullsFirst: false })
       .then((r) => r),
-    FETCH_TIMEOUT_MS,
+    RATE_FETCH_TIMEOUT_MS,
     "bank_rates"
   );
 
   if (error || !data?.length) {
-    console.error(
-      "Záloha bank_rates selhala:",
-      error?.message ?? "prázdná tabulka"
+    recordRateFetchFailure(
+      error?.message ?? "bank_rates empty",
+      { step: "bank_rates_fallback" }
     );
     return null;
   }
@@ -142,7 +122,7 @@ async function fetchCurrentRatesOnce(): Promise<CurrentRates> {
         .eq("id", 1)
         .maybeSingle()
         .then((r) => r),
-      FETCH_TIMEOUT_MS,
+      RATE_FETCH_TIMEOUT_MS,
       "current_rates"
     );
 
@@ -164,7 +144,7 @@ async function fetchCurrentRatesOnce(): Promise<CurrentRates> {
         };
       }
     } else if (error) {
-      console.error("Nepodařilo se načíst current_rates:", error.message);
+      recordRateFetchFailure(error.message, { step: "current_rates" });
     }
 
     const fromBanks = await fetchRatesFromBankRates();
@@ -172,11 +152,18 @@ async function fetchCurrentRatesOnce(): Promise<CurrentRates> {
 
     return EMPTY_RATES;
   } catch (err) {
-    console.error("Chyba při načítání sazeb:", err);
+    recordRateFetchFailure(
+      err instanceof Error ? err.message : "rate_fetch_exception",
+      { step: "fetchCurrentRatesOnce" }
+    );
     try {
       const fromBanks = await fetchRatesFromBankRates();
       return fromBanks ?? EMPTY_RATES;
-    } catch {
+    } catch (err2) {
+      recordRateFetchFailure(
+        err2 instanceof Error ? err2.message : "bank_rates_exception",
+        { step: "bank_rates_catch" }
+      );
       return EMPTY_RATES;
     }
   }
@@ -184,16 +171,24 @@ async function fetchCurrentRatesOnce(): Promise<CurrentRates> {
 
 export async function fetchCurrentRates(): Promise<CurrentRates> {
   let last: CurrentRates = EMPTY_RATES;
-  for (let attempt = 0; attempt <= FETCH_RETRIES; attempt++) {
+  for (let attempt = 0; attempt <= RATE_FETCH_RETRIES; attempt++) {
     last = await fetchCurrentRatesOnce();
     if (last.rateWithInsurance != null || last.rateWithoutInsurance != null) {
       writeVerifiedRateCache(last);
+      recordRateFetchSuccess({
+        attempt,
+        updatedAt: last.updatedAt,
+        source: "current_or_bank_rates",
+      });
       return last;
     }
-    if (attempt < FETCH_RETRIES) {
-      await sleep(RETRY_DELAY_MS * (attempt + 1));
+    if (attempt < RATE_FETCH_RETRIES) {
+      await sleep(RATE_RETRY_DELAY_MS * (attempt + 1));
     }
   }
+  recordRateFetchFailure("all_retries_exhausted", {
+    attempts: RATE_FETCH_RETRIES + 1,
+  });
   return last;
 }
 
@@ -209,7 +204,9 @@ export function useCurrentRates() {
       .then((next) => {
         if (!cancelled) {
           setRates(next);
-          setError(null);
+          const empty =
+            next.rateWithInsurance == null && next.rateWithoutInsurance == null;
+          setError(empty ? "live_rates_unavailable" : null);
           setLoading(false);
         }
       })
@@ -230,7 +227,7 @@ export function useCurrentRates() {
 }
 
 /**
- * Hook pro hlavní kalkulačku — vždy vrátí spočitatelnou sazbu (LIVE / OVĚŘENO / MODEL).
+ * Hook pro hlavní kalkulačku — vždy vrátí spočitatelnou sazbu (LIVE / STALE / MODEL).
  */
 export function useMortgageRateEngine(hasInsurance: boolean): {
   rates: CurrentRates;
@@ -282,6 +279,8 @@ export function pickRpsn(
 
 export {
   resolveMortgageRate,
+  rateUiBadgeClass,
+  rateUiBadgeLabel,
   type ResolvedMortgageRate,
   type RateLayer,
   type RateUiKind,
@@ -290,3 +289,9 @@ export {
   MODEL_FALLBACK_RATE_PERCENT,
   MODEL_FALLBACK_EXPLANATION,
 } from "@/lib/rates/model-fallback";
+export {
+  LIVE_RATES_UNAVAILABLE_MESSAGE,
+  modelRateDisclaimer,
+  type MortgageRateRecord,
+  type MortgageRateStatus,
+} from "@/lib/rates/types";

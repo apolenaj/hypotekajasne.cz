@@ -88,5 +88,5 @@ export function recordScoreChange(input: {
 }
 
 export function formatTimelineHeadline(entry: TimelineEntry): string {
-  return `Vaše hypoteční připravenost se změnila ${entry.scoreFrom} → ${entry.scoreTo}.`;
+  return `Modelová připravenost se změnila ${entry.scoreFrom} → ${entry.scoreTo}.`;
 }

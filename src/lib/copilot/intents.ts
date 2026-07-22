@@ -127,11 +127,14 @@ export function detectIntent(
   const text = message.trim();
   if (!text) return { intent: "clarify", confidence: 0 };
 
-  // Out-of-scope: legal advice, tax optimization tricks, guarantee requests
+  // Out-of-scope: legal advice, tax tricks, approval/yield guarantees
   if (
-    /garance\s+schválení|slibte\s+že\s+(mi\s+)?schvál|obejít\s+(banku|daň)/i.test(
+    /garance\s+schválení|slibte\s+že\s+(mi\s+)?schvál|obejít\s+(banku|daň)|obejděte\s+daň/i.test(
       text
-    )
+    ) ||
+    /garant(ujte|ovat|ujeme)?\s+(mi\s+)?(hypoték|schválení|výnos)/i.test(text) ||
+    /právní\s+rad[au]/i.test(text) ||
+    /jistotu\s+schválení/i.test(text)
   ) {
     return { intent: "out_of_scope", confidence: 0.9 };
   }

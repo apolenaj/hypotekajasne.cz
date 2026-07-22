@@ -39,7 +39,7 @@ export const ECOSYSTEM_FEATURES: EcosystemFeature[] = [
     name: "Předání Finančního pasu",
     owner: "shared",
     status: "BETA",
-    description: "Bezpečný přenos rozpočtových parametrů HypotékaJasně → Majetio.",
+    description: "Bezpečný přenos rozpočtových parametrů Hypotéka Jasně → Majetio.",
   },
   {
     id: "majetio.discovery",
@@ -117,7 +117,7 @@ export const ECOSYSTEM_FEATURES: EcosystemFeature[] = [
     owner: "hypoteka-jasne",
     status: "BETA",
     description:
-      "6 typů reportů — web, tisk, HTML připravené pro PDF. Expirující odkaz, volitelné heslo, odvolání, výchozí maskování osobních údajů. Vlastní značka B2B s transparentní metodikou HypotékaJasně/Majetio.",
+      "6 typů reportů — web, tisk, HTML připravené pro PDF. Expirující odkaz, volitelné heslo, odvolání, výchozí maskování osobních údajů. Vlastní značka B2B s transparentní metodikou Hypotéka Jasně/Majetio.",
   },
   {
     id: "hj.alert_center",

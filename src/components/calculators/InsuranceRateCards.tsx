@@ -5,6 +5,7 @@ import { CALCULATOR_DISCLAIMER } from "@/components/calculators/CalculatorDiscla
 import { RpsnDisplay } from "@/components/calculators/RpsnDisplay";
 import { formatRateOrOnRequest } from "@/lib/format-rate";
 import { missingDataLabel } from "@/lib/data/display";
+import { LIVE_RATES_UNAVAILABLE_MESSAGE } from "@/lib/rates/types";
 import { cn } from "@/lib/utils";
 
 type InsuranceRateCardsProps = {
@@ -41,12 +42,15 @@ export function InsuranceRateCards({
         <p className="text-sm font-semibold text-text-dark">
           Pojištění schopnosti splácet
         </p>
-        {loading && (
+        {loading ? (
           <span className="text-xs text-muted-foreground animate-pulse">
             Načítám aktuální sazby…
           </span>
-        )}
-      </div>
+        ) : rateWithInsurance == null && rateWithoutInsurance == null ? (
+          <span className="text-xs text-amber-800">
+            {LIVE_RATES_UNAVAILABLE_MESSAGE}
+          </span>
+        ) : null}      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <button
@@ -76,7 +80,7 @@ export function InsuranceRateCards({
               </p>
               <p className="mt-1 text-xs text-emerald-800 font-medium">
                 {rateWithInsurance != null
-                  ? `aktuálně od ${formatRateOrOnRequest(rateWithInsurance)}`
+                  ? `od ${formatRateOrOnRequest(rateWithInsurance)}`
                   : missingDataLabel(null)}
               </p>
               <RpsnDisplay
@@ -126,7 +130,7 @@ export function InsuranceRateCards({
               </p>
               <p className="mt-1 text-xs text-deep-teal font-medium">
                 {rateWithoutInsurance != null
-                  ? `aktuálně od ${formatRateOrOnRequest(rateWithoutInsurance, {
+                  ? `od ${formatRateOrOnRequest(rateWithoutInsurance, {
                       orientational: withoutRateOrientational,
                     })}`
                   : missingDataLabel(null)}

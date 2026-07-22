@@ -1,5 +1,5 @@
 /**
- * Source of Truth — veřejné API datové vrstvy HypotékaJasně.cz.
+ * Source of Truth — veřejné API datové vrstvy HypotekaJasne.cz.
  *
  * Pravidla:
  * - Žádné vymyšlené hodnoty (value = null → UI „Na vyžádání“ / „Data ověřujeme“).

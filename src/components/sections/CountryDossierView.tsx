@@ -9,6 +9,7 @@ import {
   Scale,
 } from "lucide-react";
 import { DataStatusBadge } from "@/components/trust/DataStatusBadge";
+import { SourceEvidenceBadgeButton } from "@/components/trust/SourceEvidenceDrawer";
 import {
   countryConfigs,
   type CountryId,
@@ -34,10 +35,17 @@ import {
   type RateAvailability,
 } from "@/lib/financing";
 import { formatMoney, type MoneyCurrency } from "@/lib/money";
+import { legalClaimToSourceEvidence } from "@/lib/sources/source-evidence";
 import { routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
-function ClaimMeta({ claim }: { claim: LegalClaim }) {
+function ClaimMeta({
+  claim,
+  jurisdiction,
+}: {
+  claim: LegalClaim;
+  jurisdiction?: string;
+}) {
   const dateLabel = (() => {
     try {
       return formatCzechDate(claim.asOf);
@@ -45,30 +53,39 @@ function ClaimMeta({ claim }: { claim: LegalClaim }) {
       return claim.asOf;
     }
   })();
+  const evidence = legalClaimToSourceEvidence(
+    claim,
+    jurisdiction ?? "multi"
+  );
 
   return (
-    <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
-      <DataStatusBadge status={claim.status} />
-      <span>
-        Zdroj: {claim.source}
-        {claim.sourceUrl && (
-          <>
-            {" · "}
-            <a
-              href={claim.sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-0.5 font-medium text-deep-teal underline-offset-2 hover:underline"
-            >
-              odkaz <ExternalLink className="h-3 w-3" />
-            </a>
-          </>
+    <div className="mt-2">
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-deep-teal/80">
+        Zdroj a ověření
+      </p>
+      <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+        <SourceEvidenceBadgeButton evidence={evidence} />
+        <span>
+          {claim.source}
+          {claim.sourceUrl && (
+            <>
+              {" · "}
+              <a
+                href={claim.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-0.5 font-medium text-deep-teal underline-offset-2 hover:underline"
+              >
+                primární zdroj <ExternalLink className="h-3 w-3" />
+              </a>
+            </>
+          )}
+        </span>
+        <span>· Kontrola {dateLabel}</span>
+        {claim.notes && (
+          <span className="w-full text-muted-foreground/90">{claim.notes}</span>
         )}
-      </span>
-      <span>· Stav k {dateLabel}</span>
-      {claim.notes && (
-        <span className="w-full text-muted-foreground/90">{claim.notes}</span>
-      )}
+      </div>
     </div>
   );
 }
@@ -84,7 +101,14 @@ function rateAvailabilityLabel(a: RateAvailability): string {
   }
 }
 
-function SectionBody({ section }: { section: DossierSection }) {
+function SectionBody({
+  section,
+  countryId,
+}: {
+  section: DossierSection;
+  countryId: CountryId;
+}) {
+  const j = countryId;
   switch (section.kind) {
     case "narrative":
     case "ownership":
@@ -99,7 +123,7 @@ function SectionBody({ section }: { section: DossierSection }) {
             {section.bullets.map((b, i) => (
               <li key={i} className="border-l-2 border-deep-teal/20 pl-4">
                 <p className="text-sm leading-relaxed text-text-dark">{b.text}</p>
-                {b.claim && <ClaimMeta claim={b.claim} />}
+                {b.claim && <ClaimMeta claim={b.claim} jurisdiction={j} />}
               </li>
             ))}
           </ul>
@@ -131,7 +155,7 @@ function SectionBody({ section }: { section: DossierSection }) {
                   </li>
                 ))}
               </ul>
-              {lane.claim && <ClaimMeta claim={lane.claim} />}
+              {lane.claim && <ClaimMeta claim={lane.claim} jurisdiction={j} />}
             </div>
           ))}
         </div>
@@ -152,7 +176,9 @@ function SectionBody({ section }: { section: DossierSection }) {
                   <span className="break-words font-semibold tabular-nums text-text-dark">
                     {line.range}
                   </span>
-                  {line.claim && <ClaimMeta claim={line.claim} />}
+                  {line.claim && (
+                    <ClaimMeta claim={line.claim} jurisdiction={j} />
+                  )}
                 </dd>
               </div>
             ))}
@@ -176,7 +202,9 @@ function SectionBody({ section }: { section: DossierSection }) {
                 {step.durationHint && (
                   <p className="mt-1 text-xs text-deep-teal">{step.durationHint}</p>
                 )}
-                {step.claim && <ClaimMeta claim={step.claim} />}
+                {step.claim && (
+                  <ClaimMeta claim={step.claim} jurisdiction={j} />
+                )}
               </div>
             </li>
           ))}
@@ -201,7 +229,9 @@ function SectionBody({ section }: { section: DossierSection }) {
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
               <div className="min-w-0">
                 <p>{flag.text}</p>
-                {flag.claim && <ClaimMeta claim={flag.claim} />}
+                {flag.claim && (
+                  <ClaimMeta claim={flag.claim} jurisdiction={j} />
+                )}
               </div>
             </li>
           ))}
@@ -213,18 +243,21 @@ function SectionBody({ section }: { section: DossierSection }) {
           <div className="rounded-xl border border-deep-teal/20 bg-deep-teal/5 p-4">
             <p className="inline-flex items-center gap-2 text-sm font-semibold text-deep-teal">
               <Scale className="h-4 w-4" />
-              Poslední právní kontrola
+              Poslední redakční kontrola právních zdrojů
             </p>
             <p className="mt-2 text-sm text-text-dark">
               {section.lastLegalReview.text}
             </p>
-            <ClaimMeta claim={section.lastLegalReview} />
+            <ClaimMeta
+              claim={section.lastLegalReview}
+              jurisdiction={j}
+            />
           </div>
           <ul className="mt-4 space-y-3">
             {section.sources.map((s, i) => (
               <li key={i} className="rounded-lg border border-border p-3">
                 <p className="text-sm text-text-dark">{s.text}</p>
-                <ClaimMeta claim={s} />
+                <ClaimMeta claim={s} jurisdiction={j} />
               </li>
             ))}
           </ul>
@@ -511,7 +544,7 @@ function DeepResearchBlock({
                 {section.summary}
               </p>
             )}
-            <SectionBody section={section} />
+            <SectionBody section={section} countryId={countryId} />
           </div>
         ))}
 
@@ -812,7 +845,7 @@ export function CountryDossierView({
                           {section.summary}
                         </p>
                       )}
-                      <SectionBody section={section} />
+                      <SectionBody section={section} countryId={countryId} />
                     </div>
                   ))}
                 </div>

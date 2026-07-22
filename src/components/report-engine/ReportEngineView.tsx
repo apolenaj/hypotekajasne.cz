@@ -128,7 +128,7 @@ export function ReportEngineView() {
         <section className="rounded-2xl border border-dashed border-deep-teal/30 bg-white p-5">
           <h2 className="font-heading text-sm font-bold">Vlastní značka (B2B)</h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            Logo agenta, firma a kontakt — metodika a zdroje HypotékaJasně/Majetio zůstávají
+            Logo agenta, firma a kontakt — metodika a zdroje Hypotéka Jasně/Majetio zůstávají
             transparentní.
           </p>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">

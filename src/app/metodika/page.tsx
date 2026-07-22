@@ -8,31 +8,26 @@ import {
   PUBLIC_DOMAIN_SOURCE,
   PUBLIC_METHODOLOGY_BLURBS,
   PUBLIC_STATUS_MEANINGS,
+  PUBLIC_STATUS_ORDER,
   publicFreshnessHint,
 } from "@/lib/data/public-methodology";
-import type { DataStatus } from "@/lib/data/types";
+import { NUMBER_PIPELINE_STEPS } from "@/lib/trust/number-pipeline";
+import { listPublicChangelog } from "@/lib/trust/public-changelog";
+import { getOperatorIdentity } from "@/lib/legal/operator";
 import { routes } from "@/lib/routes";
 
 export const metadata = getStaticPageSeo("/metodika");
 
-
-const STATUS_ORDER: DataStatus[] = [
-  "LIVE",
-  "VERIFIED",
-  "MODEL",
-  "ESTIMATE",
-  "UNVERIFIED",
-  "PARTNER_QUOTE",
-  "STALE",
-];
-
 export default function MetodikaPage() {
+  const op = getOperatorIdentity();
+  const changelog = listPublicChangelog().slice(0, 5);
+
   return (
     <div className="bg-white">
       <TrustNav currentPath="/metodika" />
       <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-deep-teal">
-          Centrum důvěry · Metodika
+          Centrum důvěry · Metodika 2.0
         </p>
         <h1 className="mt-2 font-heading text-3xl font-bold tracking-tight text-text-dark sm:text-4xl">
           Metodika dat
@@ -44,6 +39,44 @@ export default function MetodikaPage() {
           </strong>
         </p>
 
+        <section className="mt-12 space-y-4" aria-labelledby="pipeline-heading">
+          <h2
+            id="pipeline-heading"
+            className="font-heading text-xl font-semibold text-text-dark"
+          >
+            Jak vzniká číslo, které vidíte
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {PUBLIC_METHODOLOGY_BLURBS.numberPipelineIntro}
+          </p>
+          <ol className="mt-4 space-y-0">
+            {NUMBER_PIPELINE_STEPS.map((step, i) => (
+              <li key={step.id} className="relative flex gap-4 pb-6 last:pb-0">
+                {i < NUMBER_PIPELINE_STEPS.length - 1 ? (
+                  <span
+                    className="absolute left-[1.15rem] top-10 bottom-0 w-px bg-border"
+                    aria-hidden
+                  />
+                ) : null}
+                <span className="relative z-[1] flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-deep-teal font-heading text-sm font-bold text-white">
+                  {i + 1}
+                </span>
+                <div className="min-w-0 pt-1">
+                  <p className="font-semibold text-text-dark">{step.title}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                    {step.text}
+                  </p>
+                  {i < NUMBER_PIPELINE_STEPS.length - 1 ? (
+                    <p className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-deep-teal/70">
+                      ↓
+                    </p>
+                  ) : null}
+                </div>
+              </li>
+            ))}
+          </ol>
+        </section>
+
         <section className="mt-12 space-y-4" aria-labelledby="abbrev-heading">
           <h2
             id="abbrev-heading"
@@ -52,7 +85,7 @@ export default function MetodikaPage() {
             Odborné zkratky
           </h2>
           <p className="text-sm text-muted-foreground">
-            Na webu používáme běžné finančních zkratky. Při prvním výskytu je
+            Na webu používáme běžné finanční zkratky. Při prvním výskytu je
             vysvětlujeme česky:
           </p>
           <ul className="space-y-2 text-sm text-text-dark">
@@ -83,8 +116,12 @@ export default function MetodikaPage() {
           >
             Co znamenají statusy
           </h2>
+          <p className="text-sm text-muted-foreground">
+            Sjednocená taxonomie: LIVE · VERIFIED · MODEL · ESTIMATE ·
+            UNVERIFIED · NEEDS UPDATE · PARTNER OFFER.
+          </p>
           <ul className="space-y-3">
-            {STATUS_ORDER.map((s) => (
+            {PUBLIC_STATUS_ORDER.map((s) => (
               <li
                 key={s}
                 className="flex items-start gap-3 rounded-xl border border-border px-4 py-3"
@@ -104,6 +141,37 @@ export default function MetodikaPage() {
               </li>
             ))}
           </ul>
+        </section>
+
+        <section className="mt-12 space-y-4" aria-labelledby="legal-review-heading">
+          <h2
+            id="legal-review-heading"
+            className="font-heading text-xl font-semibold text-text-dark"
+          >
+            Redakční kontrola vs. právní revize
+          </h2>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            {PUBLIC_METHODOLOGY_BLURBS.legal}
+          </p>
+          {op.lastLegalReviewDate && op.legalReviewedBy ? (
+            <div className="rounded-xl border border-deep-teal/20 bg-deep-teal/5 px-4 py-3 text-sm text-text-dark">
+              <p className="font-semibold text-deep-teal">
+                Evidovaná právní revize
+              </p>
+              <p className="mt-1 text-muted-foreground">
+                {op.lastLegalReviewDate} · {op.legalReviewedBy}
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-xl border border-border bg-[#f7f8f7] px-4 py-3 text-sm text-muted-foreground">
+              Aktuálně zveřejňujeme{" "}
+              <strong className="text-text-dark">
+                redakční kontrolu právních zdrojů
+              </strong>
+              . Oddělenou právní revizi kvalifikovaným odborníkem zobrazíme až po
+              evidenci jména a data.
+            </div>
+          )}
         </section>
 
         <section className="mt-12 space-y-4" aria-labelledby="sources-heading">
@@ -231,8 +299,40 @@ export default function MetodikaPage() {
           <p className="text-sm leading-relaxed text-muted-foreground">
             {PUBLIC_METHODOLOGY_BLURBS.predictions}
           </p>
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            {PUBLIC_METHODOLOGY_BLURBS.legal}
+        </section>
+
+        <section className="mt-12 space-y-4" aria-labelledby="changelog-heading">
+          <h2
+            id="changelog-heading"
+            className="font-heading text-xl font-semibold text-text-dark"
+          >
+            Co jsme aktualizovali
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Jen reálné změny — bez falešné historie.
+          </p>
+          <ol className="space-y-3">
+            {changelog.map((row) => (
+              <li
+                key={`${row.date}-${row.area}`}
+                className="rounded-xl border border-border px-4 py-3"
+              >
+                <p className="text-xs font-bold uppercase tracking-wide text-deep-teal">
+                  {row.date} · {row.area}
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {row.summary}
+                </p>
+              </li>
+            ))}
+          </ol>
+          <p className="text-sm">
+            <Link
+              href={routes.opravyAAktualizace}
+              className="font-semibold text-deep-teal underline-offset-2 hover:underline"
+            >
+              Celý přehled oprav a aktualizací →
+            </Link>
           </p>
         </section>
 
@@ -261,17 +361,17 @@ export default function MetodikaPage() {
 
         <p className="mt-10 text-sm text-muted-foreground">
           <Link
-            href={routes.home}
+            href={routes.duvera}
             className="font-medium text-deep-teal underline-offset-4 hover:underline"
           >
-            ← Zpět na homepage
+            ← Centrum důvěry
           </Link>
           {" · "}
           <Link
-            href={routes.kalkulacky.root}
+            href={routes.zdroje}
             className="font-medium text-deep-teal underline-offset-4 hover:underline"
           >
-            Kalkulačky
+            Zdroje
           </Link>
         </p>
       </div>

@@ -13,9 +13,9 @@ import {
 } from "@/lib/consent/records";
 import {
   CONSENT_POLICY_VERSION,
-  CONSENT_PURPOSES,
   buildConsentContextSummary,
   buildPartnerTransferCheckboxLabel,
+  buildPrivacyProcessingCheckboxLabel,
 } from "@/lib/legal/consent-versions";
 import {
   getMortgagePartners,
@@ -68,7 +68,7 @@ describe("partner / legal SoT", () => {
   });
 
   it("consent copy names controller, non-bank, non-binding purpose", () => {
-    const privacy = CONSENT_PURPOSES.privacy_processing.checkboxLabel;
+    const privacy = buildPrivacyProcessingCheckboxLabel();
     assert.match(privacy, /správce/i);
     assert.match(privacy, /Hypotéka Jasně není banka/i);
     assert.match(privacy, /nezávazné/i);
@@ -76,15 +76,16 @@ describe("partner / legal SoT", () => {
     const summary = buildConsentContextSummary();
     assert.match(summary, /Správce/);
     assert.match(summary, /není banka/);
-    assert.match(summary, /není produkčně aktivní|Partneři/);
+    assert.match(summary, /provozovatel webu|ověřenému partnerovi/i);
 
     const label = buildPartnerTransferCheckboxLabel("mortgage_specialist");
     assert.ok(!label.includes("viz /partneri"));
-    assert.match(label, /nezávazné konzultace|specialistovi/i);
+    assert.match(label, /nezávazn/i);
+    assert.ok(!/licencovan/i.test(label));
   });
 
   it("bumped consent policy version", () => {
-    assert.equal(CONSENT_POLICY_VERSION, "2026-07-20.1");
+    assert.equal(CONSENT_POLICY_VERSION, "2026-07-21.1");
   });
 });
 
@@ -123,29 +124,92 @@ describe("production guard", () => {
     const issues = collectLegalProductionIssues({
       requirePartnerHandoff: false,
       requireOperatorIdentity: false,
+      requireIdentityForLeads: false,
     });
     assert.ok(issues.some((i) => i.code === "PARTNER_HANDOFF_SOFT"));
     assert.ok(issues.some((i) => i.code === "OPERATOR_IDENTITY_SOFT"));
+    assert.ok(issues.some((i) => i.code === "LEGAL_TEXT_NOT_REVIEWED"));
     assert.ok(issues.every((i) => i.severity === "warn"));
+  });
+
+  it("errors when identity required for lead collection", () => {
+    const issues = collectLegalProductionIssues({
+      requirePartnerHandoff: false,
+      requireOperatorIdentity: true,
+      requireIdentityForLeads: true,
+    });
+    assert.ok(
+      issues.some(
+        (i) =>
+          i.code === "OPERATOR_IDENTITY_REQUIRED_FOR_LEADS" ||
+          i.code === "OPERATOR_IDENTITY_MISSING"
+      )
+    );
+    assert.ok(issues.some((i) => i.severity === "error"));
   });
 
   it("strict mode errors when partner handoff required", () => {
     const issues = collectLegalProductionIssues({
       requirePartnerHandoff: true,
       requireOperatorIdentity: false,
+      requireIdentityForLeads: false,
     });
     assert.ok(issues.some((i) => i.code === "PARTNER_HANDOFF_NOT_READY"));
   });
 });
 
+describe("central legal config", () => {
+  it("isLegalIdentityComplete is false without inventing data", async () => {
+    const { isLegalIdentityComplete, getLegalIdentityConfig } = await import(
+      "@/config/legal"
+    );
+    const cfg = getLegalIdentityConfig();
+    assert.equal(cfg.legalName, null);
+    assert.equal(cfg.companyId, null);
+    assert.equal(isLegalIdentityComplete(cfg), false);
+  });
+
+  it("isLegalTextReviewed requires reviewer and date", async () => {
+    const { isLegalTextReviewed, getLegalIdentityConfig } = await import(
+      "@/config/legal"
+    );
+    assert.equal(isLegalTextReviewed(getLegalIdentityConfig()), false);
+  });
+});
+
 describe("public UI forbids staging legal phrases", () => {
-  it("no doplníme / čeká na ověření in public surfaces", () => {
+  it("no doplníme / TODO legal / Legal review required in public surfaces", () => {
     for (const f of publicSurfaces()) {
       const text = readFileSync(f, "utf8");
       for (const phrase of PUBLIC_STAGING_PHRASES) {
         assert.ok(
           !text.includes(phrase),
           `Staging phrase "${phrase}" found in ${f}`
+        );
+      }
+    }
+  });
+});
+
+describe("public UI forbids unverified partner trust claims", () => {
+  const FORBIDDEN = [
+    "prověřenými experty",
+    "prověření experti",
+    "ověřenými experty",
+    "ověřený poradce",
+    "náš specialista",
+    "ověřeno ČNB",
+    "Licencovaný hypoteční specialista — identifikace",
+  ];
+
+  it("no over-strong partner claims when identity unpublished", () => {
+    assert.equal(isMortgagePartnerHandoffReady(), false);
+    for (const f of publicSurfaces()) {
+      const text = readFileSync(f, "utf8");
+      for (const phrase of FORBIDDEN) {
+        assert.ok(
+          !text.includes(phrase),
+          `Forbidden partner claim "${phrase}" found in ${f}`
         );
       }
     }

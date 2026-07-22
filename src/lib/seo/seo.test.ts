@@ -53,6 +53,14 @@ describe("site canonical strategy", () => {
   it("never treats vercel.app as required canonical host in helper", () => {
     assert.ok(!getSiteOrigin().includes("vercel.app"));
   });
+
+  it("isDisallowedCanonicalOrigin blocks preview hosts", async () => {
+    const { isDisallowedCanonicalOrigin } = await import("@/lib/seo/site");
+    assert.equal(
+      isDisallowedCanonicalOrigin("https://hypotekajasne-git-x.vercel.app"),
+      true
+    );
+  });
 });
 
 describe("unique titles & descriptions", () => {
@@ -312,6 +320,8 @@ describe("app pages must not inherit homepage-only raw metadata", () => {
       "/akademie/cesty",
       "/faq",
       "/kontakt",
+      "/temata",
+      "/temata/refinancovani",
     ]) {
       assert.ok(findStaticPageSeo(required), required);
     }

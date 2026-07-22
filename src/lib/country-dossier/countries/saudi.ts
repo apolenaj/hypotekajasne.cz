@@ -7,7 +7,7 @@ import {
   sectionTitle,
   sourcesSection,
 } from "@/lib/country-dossier/build";
-import { LEGAL_REVIEW_AS_OF } from "@/lib/country-dossier/shared";
+import { LEGAL_REVIEW_AS_OF, dossierEditorialLegalReviewText } from "@/lib/country-dossier/shared";
 import type { CountryDossier } from "@/lib/country-dossier/types";
 
 const REGA_LAW = reviewClaim(
@@ -206,8 +206,8 @@ export const saudiDossier: CountryDossier = assemble(
     },
     sourcesSection(
       {
-        text: `Poslední právní review dossieru KSA: ${LEGAL_REVIEW_AS_OF} (režim od 22. 1. 2026)`,
-        source: "HypotékaJasně.cz (redakční review)",
+        text: `${dossierEditorialLegalReviewText("KSA")} (režim od 22. 1. 2026)`,
+        source: "HypotekaJasne.cz (redakční review)",
         sourceUrl: null,
         asOf: LEGAL_REVIEW_AS_OF,
         status: "ESTIMATE",

@@ -1,5 +1,5 @@
 /**
- * Propojení HypotékaJasně ↔ Majetio — společné typy.
+ * Propojení Hypotéka Jasně ↔ Majetio — společné typy.
  */
 
 export type FeatureStatus = "LIVE" | "BETA" | "COMING_SOON";

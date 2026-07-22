@@ -2,7 +2,7 @@ import type { ReportBlock, ReportDocument, ReportKeyValue } from "@/lib/report-e
 import { REPORT_VERSION } from "@/lib/report-engine/types";
 
 export const PLATFORM_METHODOLOGY = [
-  "HypotékaJasně.cz — informační platforma, ne banka ani investiční poradce.",
+  "Hypotéka Jasně — informační platforma, ne banka ani investiční poradce.",
   "Každé číslo nese typ tvrzení: Data, Modelový výpočet, Odhad, nebo Neověřeno.",
   "Report neobsahuje individuální schválení úvěru ani právní due diligence.",
   "Propojení s Majetio (marketplace) je oddělené od organického skóre.",
@@ -10,7 +10,7 @@ export const PLATFORM_METHODOLOGY = [
 
 export const PLATFORM_DISCLAIMERS = [
   "Tento report je orientační model pro rozhodovací proces — ne smlouva ani nabídka produktu.",
-  "Finální posouzení provádí licencovaná banka / partner po individuální analýze.",
+  "Finální posouzení provádí banka / partner po individuální analýze.",
   "Minulá výkonnost a modelové scénáře nejsou zárukou budoucích výsledků.",
   "Sdílený report může skrývat citlivá data — ve výchozím nastavení bez osobních údajů a přesných příjmů.",
 ];
@@ -59,7 +59,7 @@ export function standardFreshness(generatedAt: string): ReportKeyValue[] {
 
 export function standardSources(extra: ReportKeyValue[] = []): ReportBlock {
   return block("sources", "Zdroje", [
-    kv("Katalog dat HypotékaJasně", "Stránka Zdroje", "DATA"),
+    kv("Katalog dat Hypotéka Jasně", "Stránka Zdroje", "DATA"),
     kv("Metodika platformy", "/metodika", "DATA"),
     ...extra,
   ]);

@@ -1,8 +1,24 @@
 [
   {
     "route": "/",
+    "viewport": "1280x720 @ zoom 200%",
+    "problem": "Horizontální scroll při zoom 200% (+76px)",
+    "severity": "P1",
+    "fix": "min-w-0 na flex children; vyhnout se pevným šířkám.",
+    "offenders": [
+      {
+        "tag": "a",
+        "cls": "inline-flex items-center gap-2 transition-colors hover:text-deep-teal",
+        "left": 1000,
+        "right": 1356,
+        "w": 356
+      }
+    ]
+  },
+  {
+    "route": "/",
     "viewport": "1280x720",
-    "problem": "Keyboard Tab OK (25/25)",
+    "problem": "Keyboard Tab OK (30/30 interaktivních)",
     "severity": "info",
     "fix": "—"
   }

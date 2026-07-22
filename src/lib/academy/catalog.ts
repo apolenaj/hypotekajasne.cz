@@ -71,7 +71,7 @@ export const ACADEMY_LESSONS: AcademyLesson[] = [
     ],
     sources: [
       {
-        label: "Metodika dat HypotékaJasně (LTV)",
+        label: "Metodika dat Hypotéka Jasně (LTV)",
         url: routes.metodika,
       },
       {

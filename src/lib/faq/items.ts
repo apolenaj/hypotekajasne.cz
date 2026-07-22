@@ -1,7 +1,7 @@
 export const FAQ_ITEMS = [
   {
     q: "Poskytujete přímo hypotéky nebo finanční poradenství?",
-    a: "Ne. Hypotéka Jasně je technologická a informační platforma — edukace, kalkulačky a modely. Nejsme banka. Individuální zprostředkování dělá licencovaný specialista; schválení úvěru vždy banka. Role jsou popsány v Centru důvěry (/duvera).",
+    a: "Ne. Hypotéka Jasně je technologická a informační platforma — edukace, kalkulačky a modely. Nejsme banka. Individuální zprostředkování provádí partner jen pokud je jeho identita ověřena a zveřejněna na /partneri; schválení úvěru vždy banka. Role jsou popsány v Centru důvěry (/duvera).",
   },
   {
     q: "Jsou vaše kalkulace a investiční skóre závazné?",

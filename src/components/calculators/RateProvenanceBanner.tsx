@@ -1,7 +1,11 @@
 "use client";
 
 import type { ResolvedMortgageRate } from "@/lib/rates/resolve-engine";
-import { rateUiBadgeClass } from "@/lib/rates/resolve-engine";
+import {
+  rateUiBadgeClass,
+  rateUiBadgeLabel,
+} from "@/lib/rates/resolve-engine";
+import { formatRate } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 export function RateProvenanceBanner({
@@ -23,7 +27,9 @@ export function RateProvenanceBanner({
           ? "border-amber-200 bg-amber-50 text-amber-950"
           : resolved.uiKind === "LIVE"
             ? "border-emerald-200 bg-emerald-50 text-emerald-950"
-            : "border-sky-200 bg-sky-50 text-sky-950",
+            : resolved.uiKind === "STALE"
+              ? "border-slate-300 bg-slate-50 text-slate-900"
+              : "border-sky-200 bg-sky-50 text-sky-950",
         className
       )}
       role="status"
@@ -35,14 +41,19 @@ export function RateProvenanceBanner({
             rateUiBadgeClass(resolved.uiKind)
           )}
         >
-          {resolved.uiKind === "LIVE"
-            ? "Aktuální data"
-            : resolved.uiKind === "OVĚŘENO"
-              ? "Ověřeno"
-              : "Modelový výpočet"}
+          {rateUiBadgeLabel(resolved.uiKind)}
         </span>
-        <span className="font-semibold tabular-nums">
-          {resolved.ratePercent.toFixed(2).replace(".", ",")} % p.a.
+        <span
+          className={cn(
+            "font-semibold tabular-nums",
+            resolved.isModelFallback && "text-amber-950"
+          )}
+        >
+          {formatRate(resolved.ratePercent, {
+            fractionDigits: 2,
+            perAnnum: true,
+          })}
+          {resolved.isModelFallback ? " (model)" : null}
         </span>
         {verifiedLabel && (
           <span className="text-xs opacity-80">
@@ -53,6 +64,11 @@ export function RateProvenanceBanner({
       <p className="mt-1.5 text-xs leading-relaxed opacity-90">
         {resolved.explanation}
       </p>
+      {resolved.isModelFallback ? (
+        <p className="mt-1 text-[11px] font-medium leading-snug">
+          Modelová sazba není bankovní nabídka a nesmí se tak prezentovat.
+        </p>
+      ) : null}
     </div>
   );
 }

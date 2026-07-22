@@ -8,17 +8,10 @@ import { DataStatusBadge } from "@/components/trust/DataStatusBadge";
 import { useFocusTrap } from "@/lib/a11y/focus-trap";
 import { METHODOLOGY_BLURBS, type MethodologyTopic } from "@/lib/data/provenance";
 import { statusBadgeLabel, statusDescription } from "@/lib/data/display";
+import { PUBLIC_STATUS_ORDER } from "@/lib/data/public-methodology";
 import type { DataStatus } from "@/lib/data/types";
 import { routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
-
-const STATUS_ORDER: DataStatus[] = [
-  "LIVE",
-  "VERIFIED",
-  "MODEL",
-  "PARTNER_QUOTE",
-  "STALE",
-];
 
 type MethodologyDrawerProps = {
   topic?: MethodologyTopic;
@@ -78,7 +71,7 @@ export function MethodologyDrawer({
                     Metodika dat
                   </p>
                   <p className="mt-0.5 text-xs text-muted-foreground">
-                    Model vs skutečná nabídka — transparentní platforma
+                    LIVE · VERIFIED · MODEL · NEEDS UPDATE · PARTNER OFFER
                   </p>
                 </div>
                 <button
@@ -96,7 +89,7 @@ export function MethodologyDrawer({
                 <section>
                   <h3 className="font-semibold text-text-dark">Statusy</h3>
                   <ul className="mt-3 space-y-2">
-                    {STATUS_ORDER.map((s) => (
+                    {PUBLIC_STATUS_ORDER.map((s: DataStatus) => (
                       <li key={s} className="flex items-start gap-2">
                         <DataStatusBadge status={s} className="mt-0.5 shrink-0" />
                         <span className="text-xs leading-relaxed text-muted-foreground">
@@ -124,10 +117,10 @@ export function MethodologyDrawer({
                     Model ≠ nabídka banky
                   </h3>
                   <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                    Čísla označená jako modelový výpočet jsou orientační.
-                    Individuální sazbu, RPSN a schválení určuje banka. Aktuální
-                    sazby bereme z veřejných bankovních zdrojů — stále nejde o
-                    závaznou smlouvu.
+                    Čísla označená jako MODEL jsou orientační. Individuální
+                    sazbu, RPSN a schválení určuje banka. LIVE sazby bereme z
+                    veřejných bankovních zdrojů — stále nejde o závaznou
+                    smlouvu.
                   </p>
                 </section>
               </div>

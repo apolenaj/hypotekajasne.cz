@@ -1,7 +1,7 @@
 import type { DataCatalogEntry } from "@/lib/data/types";
 
 /**
- * Katalog všech známých datových domén v HypotékaJasně.cz.
+ * Katalog všech známých datových domén v HypotekaJasne.cz.
  * Toto je mapa Source of Truth — hodnoty žijí v uvedených modulech / Supabase,
  * katalog drží metadata a zabraňuje tichému vzniku duplicit.
  */

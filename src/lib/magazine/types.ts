@@ -44,6 +44,8 @@ export type MagazinePerson = {
   role: string;
   bio: string;
   credentials?: string;
+  /** Public profile URL for Person schema (e.g. /o-nas#id) */
+  url?: string;
 };
 
 export type MagazineSource = {
@@ -70,7 +72,8 @@ export type MagazineArticleMeta = {
   category: MagazineCategory;
   clusters: TopicalCluster[];
   authorId: string;
-  reviewerId: string;
+  /** Only when a real named reviewer exists — never invent. */
+  reviewerId?: string;
   publishedAt: string;
   updatedAt: string;
   factCheckedAt: string;

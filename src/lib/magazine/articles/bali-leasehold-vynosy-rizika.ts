@@ -9,7 +9,6 @@ export const article: MagazineArticle = {
   category: "Zahraniční financování",
   clusters: ["bali", "zahranicni-financovani", "investicni-analyza"],
   authorId: "redakce-hj",
-  reviewerId: "reviewer-compliance",
   publishedAt: "2026-07-03",
   updatedAt: "2026-07-03",
   factCheckedAt: "2026-07-03",

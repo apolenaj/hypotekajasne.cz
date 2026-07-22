@@ -31,9 +31,23 @@ export const RENTGEN_METRICS_CATALOG: MetricCatalogItem[] = [
     typicalKind: "MODEL",
   },
   {
+    id: "market_compare",
+    label: "Porovnání trhu",
+    description: "Jen pokud existují katalogová data lokality — jinak sekce chybí.",
+    tier: "free",
+    typicalKind: "MODEL",
+  },
+  {
     id: "gross_yield",
     label: "Orientační hrubý výnos",
     description: "Z nájmu a ceny, nebo modelový výnos lokality.",
+    tier: "free",
+    typicalKind: "MODEL",
+  },
+  {
+    id: "cash_flow_free",
+    label: "Modelové cash flow (snapshot)",
+    description: "Nájem − modelová splátka − provoz — hrubý odhad v free vrstvě.",
     tier: "free",
     typicalKind: "MODEL",
   },
@@ -46,10 +60,17 @@ export const RENTGEN_METRICS_CATALOG: MetricCatalogItem[] = [
   },
   {
     id: "red_flags",
-    label: "Základní rizikové faktory",
+    label: "Warning signals / red flags",
     description: "Jen z dostupných vstupů; nic právního nevymýšlíme.",
     tier: "free",
     typicalKind: "ODHAD",
+  },
+  {
+    id: "data_quality",
+    label: "Data quality indicator",
+    description: "Completeness vstupů — ne kvalita nemovitosti.",
+    tier: "free",
+    typicalKind: "MODEL",
   },
   {
     id: "net_yield",

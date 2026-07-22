@@ -10,7 +10,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { token } = await params;
   return buildPageMetadata({
     title: "Sdílený report",
-    description: "Profesionální finančně-realitní report — HypotékaJasně.cz",
+    description: "Profesionální finančně-realitní report — HypotekaJasne.cz",
     path: `/reporty/sdilet/${token}`,
     noIndex: true,
   });

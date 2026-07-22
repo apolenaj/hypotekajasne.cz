@@ -1,6 +1,6 @@
 /**
  * API contract pro Majetio property detail.
- * Implementace na straně Majetio + tenké proxy/handoff na HypotékaJasně.
+ * Implementace na straně Majetio + tenké proxy/handoff na Hypotéka Jasně.
  */
 
 import type { FeatureStatus } from "@/lib/majetio/types";

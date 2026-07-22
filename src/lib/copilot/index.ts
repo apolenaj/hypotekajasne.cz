@@ -1,6 +1,7 @@
 export * from "@/lib/copilot/types";
 export * from "@/lib/copilot/intents";
 export * from "@/lib/copilot/citations";
+export * from "@/lib/copilot/response-meta";
 export * from "@/lib/copilot/context";
 export * from "@/lib/copilot/guardrails";
 export * from "@/lib/copilot/audit";

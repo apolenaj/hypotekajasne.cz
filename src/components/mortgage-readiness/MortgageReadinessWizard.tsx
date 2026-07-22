@@ -38,8 +38,12 @@ import {
 } from "@/lib/mortgage-readiness";
 import { useMortgageRateEngine } from "@/lib/rates";
 import { routes } from "@/lib/routes";
+import { getPartnerClaimLabels } from "@/lib/partners/verification";
+import { CTA_CS, CTA_PRIMARY_CLASS, CTA_SECONDARY_CLASS } from "@/lib/ux/cta";
+import { ExplainDisclosure } from "@/components/ux/ExplainDisclosure";
+import { WhatNextPanel } from "@/components/ux/WhatNextPanel";
 import { cn } from "@/lib/utils";
-import { track } from "@/lib/analytics/track";
+import { track, trackCanonical } from "@/lib/analytics/track";
 import { scoreToBucket } from "@/lib/analytics/events";
 import {
   fromReadinessAnswers,
@@ -386,13 +390,14 @@ export function MortgageReadinessWizard() {
         : res.error
     );
     if (res.ok) {
-      track("lead_submitted", {
+      trackCanonical("lead_form_submitted", "lead_submitted", {
         lead_source: "navrh_na_miru",
         tool_id: "mortgage_readiness",
         partner_scope: "mortgage_specialist",
         score_bucket: scoreToBucket(result.score),
+        lead_qualified: true,
       });
-      track("partner_handoff", {
+      trackCanonical("partner_handoff_requested", "partner_handoff", {
         lead_source: "navrh_na_miru",
         partner_scope: "mortgage_specialist",
       });
@@ -404,7 +409,10 @@ export function MortgageReadinessWizard() {
       <div className="border-b border-border bg-gradient-to-br from-[#0b3d3a] via-[#0f4c48] to-[#1a5c4a] text-white">
         <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-gold">
-            HypotékaJasně.cz
+            Hypotéka Jasně
+            <span className="ml-1.5 text-[0.85em] font-medium tracking-normal text-muted-gold/70 normal-case">
+              HypotekaJasne.cz
+            </span>
           </p>
           <h1 className="mt-2 font-heading text-3xl font-bold tracking-tight sm:text-4xl">
             Hypoteční připravenost
@@ -773,108 +781,130 @@ export function MortgageReadinessWizard() {
                 <p className="mt-3 text-xs leading-relaxed text-white/75">
                   {MODEL_DISCLAIMER}
                 </p>
-                <a
-                  href={routes.financniPas}
-                  className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white hover:bg-white/25"
-                >
-                  Otevřít Finanční pas (7 dimenzí + simulace)
-                  <ArrowRight className="h-4 w-4" />
-                </a>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <ResultList
-                  title="Silné stránky"
-                  items={result.strengths}
-                  tone="good"
-                />
-                <ResultList
-                  title="Potenciální překážky"
-                  items={result.obstacles}
-                  tone="warn"
-                />
-                <ResultList
-                  title="Co může výsledek zlepšit"
-                  items={result.improvements}
-                />
-                <ResultList
-                  title="Rizikové faktory"
-                  items={result.riskFactors}
-                  tone="warn"
-                />
-              </div>
-
-              <section className="rounded-xl border border-border bg-[#f7f8f7] p-5">
-                <h3 className="font-heading text-base font-bold text-text-dark">
-                  Orientační rozsah financování
-                </h3>
-                {result.financingRange ? (
-                  <p className="mt-2 text-lg font-semibold tabular-nums text-deep-teal">
-                    {formatCurrency(result.financingRange.low, "CZK")} –{" "}
-                    {formatCurrency(result.financingRange.high, "CZK")}
-                  </p>
-                ) : (
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Doplňte příjem a zdroje pro odhad rozsahu.
-                  </p>
-                )}
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Modelový interval podle DSTI/LTV rámce a sazby{" "}
-                  {modelRate != null ? `${modelRate.toFixed(2)} %` : "orientačně 5 %"}{" "}
-                  — nejde o nabídku ani příslib banky.
-                </p>
-              </section>
-
-              <section className="rounded-xl border border-border bg-white p-5">
-                <h3 className="font-heading text-base font-bold text-text-dark">
-                  Vlastní zdroje
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {result.ownFundsNote}
-                </p>
-              </section>
-
-              <ResultList
-                title="Doporučené další kroky"
-                items={result.nextSteps}
+              <WhatNextPanel
+                actions={[
+                  {
+                    id: "passport",
+                    label: CTA_CS.openPassport,
+                    description:
+                      "7 dimenzí a simulace — uloženo lokálně v prohlížeči.",
+                    href: routes.financniPas,
+                    primary: true,
+                  },
+                  {
+                    id: "moznosti",
+                    label: CTA_CS.discoverOptions,
+                    description: "Rozpočet + trhy v jednom přehledu.",
+                    href: routes.mojeMoznosti,
+                  },
+                  {
+                    id: "kalkulacka",
+                    label: "Spočítat hypotéku",
+                    description: "Splátka a zátěžový test.",
+                    href: routes.kalkulacky.root,
+                  },
+                ]}
               />
 
-              <section className="rounded-xl border border-deep-teal/20 bg-deep-teal/5 p-5">
-                <h3 className="font-heading text-base font-bold text-text-dark">
-                  Personalizovaný Action Plan
-                </h3>
-                <div className="mt-4 grid gap-4 sm:grid-cols-3">
-                  {(
-                    [
-                      ["30 dní", result.actionPlan.days30],
-                      ["3 měsíce", result.actionPlan.months3],
-                      ["6–12 měsíců", result.actionPlan.months6to12],
-                    ] as const
-                  ).map(([label, items]) => (
-                    <div key={label}>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-deep-teal">
-                        {label}
-                      </p>
-                      <ul className="mt-2 space-y-2">
-                        {items.map((item) => (
-                          <li
-                            key={item}
-                            className="text-xs leading-relaxed text-muted-foreground"
-                          >
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
+              <ExplainDisclosure summary="Silné stránky, překážky a plán">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <ResultList
+                    title="Silné stránky"
+                    items={result.strengths}
+                    tone="good"
+                  />
+                  <ResultList
+                    title="Potenciální překážky"
+                    items={result.obstacles}
+                    tone="warn"
+                  />
+                  <ResultList
+                    title="Co může výsledek zlepšit"
+                    items={result.improvements}
+                  />
+                  <ResultList
+                    title="Rizikové faktory"
+                    items={result.riskFactors}
+                    tone="warn"
+                  />
                 </div>
-              </section>
+
+                <section className="mt-4 rounded-xl border border-border bg-[#f7f8f7] p-5">
+                  <h3 className="font-heading text-base font-bold text-text-dark">
+                    Orientační rozsah financování
+                  </h3>
+                  {result.financingRange ? (
+                    <p className="mt-2 text-lg font-semibold tabular-nums text-deep-teal">
+                      {formatCurrency(result.financingRange.low, "CZK")} –{" "}
+                      {formatCurrency(result.financingRange.high, "CZK")}
+                    </p>
+                  ) : (
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Doplňte příjem a zdroje pro odhad rozsahu.
+                    </p>
+                  )}
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Modelový interval podle DSTI/LTV rámce a sazby{" "}
+                    {modelRate != null
+                      ? `${modelRate.toFixed(2)} %`
+                      : "orientačně 5 %"}{" "}
+                    — nejde o nabídku ani příslib banky.
+                  </p>
+                </section>
+
+                <section className="mt-4 rounded-xl border border-border bg-white p-5">
+                  <h3 className="font-heading text-base font-bold text-text-dark">
+                    Vlastní zdroje
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {result.ownFundsNote}
+                  </p>
+                </section>
+
+                <ResultList
+                  title="Doporučené další kroky"
+                  items={result.nextSteps}
+                />
+
+                <section className="mt-4 rounded-xl border border-deep-teal/20 bg-deep-teal/5 p-5">
+                  <h3 className="font-heading text-base font-bold text-text-dark">
+                    Orientační časový plán
+                  </h3>
+                  <div className="mt-4 grid gap-4 sm:grid-cols-3">
+                    {(
+                      [
+                        ["30 dní", result.actionPlan.days30],
+                        ["3 měsíce", result.actionPlan.months3],
+                        ["6–12 měsíců", result.actionPlan.months6to12],
+                      ] as const
+                    ).map(([label, items]) => (
+                      <div key={label}>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-deep-teal">
+                          {label}
+                        </p>
+                        <ul className="mt-2 space-y-2">
+                          {items.map((item) => (
+                            <li
+                              key={item}
+                              className="text-xs leading-relaxed text-muted-foreground"
+                            >
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </ExplainDisclosure>
 
               <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <button
                   type="button"
                   onClick={handleSave}
-                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-deep-teal px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-deep-teal/90"
+                  className={CTA_PRIMARY_CLASS}
                 >
                   {saveFlash ? (
                     <Check className="h-4 w-4" />
@@ -884,8 +914,8 @@ export function MortgageReadinessWizard() {
                   {saveFlash
                     ? "Uloženo"
                     : savedAt
-                      ? "Aktualizovat uložený výsledek"
-                      : "Uložit výsledek"}
+                      ? CTA_CS.updateResult
+                      : CTA_CS.saveResult}
                 </button>
                 <a
                   href={majetioUrl}
@@ -898,16 +928,16 @@ export function MortgageReadinessWizard() {
                       path: "/navrh-na-miru",
                     })
                   }
-                  className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-muted-gold bg-white px-4 py-2.5 text-sm font-semibold text-deep-teal transition hover:bg-muted-gold/10"
+                  className={CTA_SECONDARY_CLASS}
                 >
-                  Zobrazit nemovitosti, které odpovídají mému rozpočtu
+                  Nemovitosti v rozpočtu
                   <ExternalLink className="h-4 w-4" />
                 </a>
                 {savedAt ? (
                   <button
                     type="button"
                     onClick={handleClear}
-                    className="inline-flex items-center justify-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted"
+                    className="inline-flex h-11 min-h-11 items-center justify-center gap-2 rounded-lg border border-border px-4 text-sm font-medium text-muted-foreground hover:bg-muted"
                   >
                     <Trash2 className="h-4 w-4" />
                     Smazat uložené
@@ -922,7 +952,7 @@ export function MortgageReadinessWizard() {
 
               <section className="rounded-xl border border-border p-5">
                 <h3 className="font-heading text-base font-bold text-text-dark">
-                  Konzultace s licencovaným partnerem
+                  {getPartnerClaimLabels().consultCta}
                 </h3>
                 <p className="mt-1 text-xs text-muted-foreground">
                   Volitelné — pomůžeme s doložením, ne s příslibem schválení.

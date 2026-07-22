@@ -1,4 +1,4 @@
-import type { IncomeTypeId } from "@/lib/mortgage-readiness/types";
+import { calculateAnnuityPayment } from "@/lib/calculators";
 import {
   SCORE_DIMENSION_LABELS,
   SCORE_DIMENSION_WEIGHTS,
@@ -7,6 +7,8 @@ import {
   type FinancialProfileAnswers,
   type ScoreDimensionId,
 } from "@/lib/financial-passport/types";
+import type { IncomeTypeId } from "@/lib/mortgage-readiness/types";
+import { evaluateCzMortgageRegulation } from "@/lib/mortgage-regulation/engine";
 import { maxLoanFromPayment } from "@/lib/mortgage-readiness/score";
 
 function clamp(n: number, min = 0, max = 100): number {
@@ -53,6 +55,64 @@ function ownFundsModel(p: FinancialProfileAnswers): number {
     Math.max(0, p.existingPropertyEquity) +
     (p.hasCzCollateral ? Math.max(0, p.czCollateralEquity) : 0)
   );
+}
+
+function regulationPurpose(
+  intent: FinancialProfileAnswers["intent"]
+): "owner_occupied" | "investment" | "additional_residential" {
+  if (intent === "investment") return "investment";
+  return "owner_occupied";
+}
+
+function computeRegulatoryFit(
+  profile: FinancialProfileAnswers,
+  funds: number,
+  price: number
+): { score: number; explanation: string } {
+  if (profile.intent === "foreign_purchase") {
+    const score = profile.hasCzCollateral ? 52 : 34;
+    return {
+      score,
+      explanation: profile.hasCzCollateral
+        ? "Zahraniční koupě — český regulační rámec se na cílový trh nevztahuje; model sleduje dostupnost českého zajištění."
+        : "Zahraniční koupě bez českého zajištění — regulační fit v modelu je omezený; ověřte lokální pravidla cílové země.",
+    };
+  }
+
+  if (!profile.intent) {
+    return {
+      score: 18,
+      explanation:
+        "Bez zvoleného účelu financování nelze vyhodnotit regulační fit — doplňte profil.",
+    };
+  }
+
+  const reg = evaluateCzMortgageRegulation({
+    purpose: regulationPurpose(profile.intent),
+    age: profile.age,
+    numberOfOwnedResidentialProperties: null,
+    investmentPurpose: profile.intent === "investment" ? true : null,
+    applicantType: profile.coApplicant ? "joint" : "individual",
+  });
+
+  if (price <= 0) {
+    return {
+      score: 58,
+      explanation: `Bez cílové ceny model používá orientační LTV rámec ${reg.maxLtv} % (${reg.appliedBucket}). ${reg.explanation}`,
+    };
+  }
+
+  const loanNeeded = Math.max(0, price - funds);
+  const ltv = (loanNeeded / price) * 100;
+  const headroom = reg.maxLtv - ltv;
+  const score = clamp(50 + headroom * 2.5);
+
+  const explanation =
+    ltv <= reg.maxLtv
+      ? `Modelové LTV ${ltv.toFixed(0)} % je v rámci orientačního stropu ${reg.maxLtv} % (${reg.appliedBucket}).`
+      : `Modelové LTV ${ltv.toFixed(0)} % překračuje orientační strop ${reg.maxLtv} % — doplňte vlastní kapitál nebo snižte cíl.`;
+
+  return { score, explanation };
 }
 
 /**
@@ -102,7 +162,7 @@ export function computeDimensionScores(
         ? "Příjem je použitelný, ale dokumentace / historie může být náročnější."
         : "Stabilita příjmu je slabší stránka modelu — připravte delší historii.";
 
-  // --- liquidity ---
+  // --- liquidity (finanční rezerva) ---
   const monthlyBurn = Math.max(liabilities + income * 0.3, 1);
   const reserveMonths = funds > 0 ? funds / monthlyBurn : 0;
   const liquidity = clamp(
@@ -120,8 +180,8 @@ export function computeDimensionScores(
   );
   const liquidityExpl =
     reserveMonths >= 6
-      ? `Modelová likvidní rezerva ~${reserveMonths.toFixed(1)} měsíce nákladů.`
-      : "Likvidní rezerva je krátká — zvyšte cash / rezervu před větší transakcí.";
+      ? `Modelová finanční rezerva ~${reserveMonths.toFixed(1)} měsíce nákladů.`
+      : "Finanční rezerva je krátká — zvyšte cash / rezervu před větší transakcí.";
 
   // --- debt_load (higher score = better = lower burden) ---
   const burden = income > 0 ? liabilities / income : liabilities > 0 ? 1 : 0;
@@ -129,7 +189,7 @@ export function computeDimensionScores(
   const debtExpl =
     debtLoad >= 75
       ? "Stávající měsíční zátěž je v modelu zvládnutelná."
-      : "Dluhová zátěž ukrajuje kapacitu pro novou hypotéku.";
+      : "Dluhové zatížení ukrajuje kapacitu pro novou hypotéku.";
 
   // --- equity ---
   const price =
@@ -154,37 +214,51 @@ export function computeDimensionScores(
       ? "Vlastní kapitál / zajištění podporuje nižší modelové LTV."
       : "Doplňte akontaci nebo dozajištění — LTV rámec je napjatý.";
 
-  // --- affordability ---
+  // --- affordability_stress (DSTI + cíl + sazba) ---
   const capacityRatio =
     income > 0 ? Math.min(1, maxPayment / (income * dstiCap || 1)) : 0;
-  let affordability = clamp(capacityRatio * 100);
+  let affordStress = clamp(capacityRatio * 100);
   if (profile.targetPrice != null && high > 0) {
     const fit = (high + funds) / profile.targetPrice;
-    affordability = clamp(affordability * 0.55 + Math.min(1.2, fit) * 45);
+    affordStress = clamp(affordStress * 0.55 + Math.min(1.2, fit) * 45);
   }
-  const affordExpl =
-    affordability >= 70
-      ? "Modelová dostupnost vůči příjmu a cíli vypadá relativně komfortně."
-      : "Cílová cena / kapacita splátky je napjatá — zvažte levnější cíl nebo vyšší příjem.";
 
-  // --- resilience (rate + defaults + foreign FX) ---
-  let resilience = 70;
-  if (profile.noRecentDefaults === false) resilience -= 35;
-  else if (profile.noRecentDefaults === true) resilience += 8;
-  if (age > 55) resilience -= 10;
-  if (profile.intent === "foreign_purchase") {
-    resilience -= profile.hasCzCollateral ? 8 : 22;
+  let rateStressPenalty = 0;
+  if (maxPayment > 0) {
+    const r = rate / 100 / 12;
+    const n = termYears * 12;
+    const loan =
+      r > 0 ? maxPayment * ((1 - Math.pow(1 + r, -n)) / r) : maxPayment * n;
+    const stressed = calculateAnnuityPayment(loan, rate + 2, termYears);
+    const delta = stressed - maxPayment;
+    if (delta > 0 && income > 0) {
+      rateStressPenalty = Math.min(35, (delta / income) * 200);
+    }
   }
-  if (profile.intent === "investment") resilience -= 6;
-  if (burden > 0.25) resilience -= 8;
-  // rate sensitivity proxy: payment jump capacity
+
+  if (profile.noRecentDefaults === false) affordStress -= 20;
+  else if (profile.noRecentDefaults === true) affordStress += 4;
+  if (age > 55) affordStress -= 8;
+  if (profile.intent === "foreign_purchase") {
+    affordStress -= profile.hasCzCollateral ? 6 : 14;
+  }
+  if (profile.intent === "investment") affordStress -= 5;
+  if (burden > 0.25) affordStress -= 6;
+
   const stressRoom =
-    income > 0 ? Math.max(0, 1 - (liabilities + maxPayment * 1.15) / income) : 0;
-  resilience = clamp(resilience * 0.7 + stressRoom * 100 * 0.3);
-  const resilienceExpl =
-    resilience >= 70
-      ? "Model naznačuje slušný polštář vůči výkyvům sazby / výpadku."
-      : "Odolnost je slabší — zátěžový test sazby a rezervy stojí za pozornost.";
+    income > 0
+      ? Math.max(0, 1 - (liabilities + maxPayment * 1.15) / income)
+      : 0;
+  affordStress = clamp(
+    affordStress * 0.65 +
+      stressRoom * 100 * 0.2 -
+      rateStressPenalty * 0.15
+  );
+
+  const affordExpl =
+    affordStress >= 70
+      ? `Stress test: modelová splátka a +2 p.b. sazby (${rate.toFixed(1)} → ${(rate + 2).toFixed(1)} %) vypadají zvládnutelně.`
+      : "Affordability stress test je napjatý — zvažte nižší cíl, vyšší příjem nebo rezervu.";
 
   // --- documentation_readiness ---
   let docs = 40;
@@ -195,8 +269,7 @@ export function computeDimensionScores(
   if (profile.noRecentDefaults === true) docs += 10;
   if (profile.intent) docs += 8;
   if (profile.ownFunds > 0 || funds > 0) docs += 5;
-  if (profile.intent === "refinance" && profile.currentBalance)
-    docs += 5;
+  if (profile.intent === "refinance" && profile.currentBalance) docs += 5;
   if (profile.intent === "foreign_purchase" && profile.targetCountry)
     docs += 5;
   docs = clamp(docs);
@@ -205,15 +278,23 @@ export function computeDimensionScores(
       ? "Základ dokumentace je v modelu připravený k doplnění složky."
       : "Doplňte chybějící údaje a doklady — skóre dokumentace poroste nejrychleji.";
 
+  const regulatory = computeRegulatoryFit(profile, funds, price);
+
   const raw: Record<ScoreDimensionId, { score: number; explanation: string }> =
     {
       income_stability: { score: clamp(incomeStab), explanation: incomeExpl },
       liquidity: { score: liquidity, explanation: liquidityExpl },
       debt_load: { score: debtLoad, explanation: debtExpl },
       equity: { score: equity, explanation: equityExpl },
-      affordability: { score: affordability, explanation: affordExpl },
-      resilience: { score: resilience, explanation: resilienceExpl },
+      affordability_stress: {
+        score: affordStress,
+        explanation: affordExpl,
+      },
       documentation_readiness: { score: docs, explanation: docsExpl },
+      regulatory_fit: {
+        score: regulatory.score,
+        explanation: regulatory.explanation,
+      },
     };
 
   return SCORE_DIMENSIONS.map((id) => {
@@ -234,4 +315,51 @@ export function computeDimensionScores(
 export function overallFromDimensions(dimensions: DimensionScore[]): number {
   const sum = dimensions.reduce((acc, d) => acc + d.score * d.weight, 0);
   return clamp(sum);
+}
+
+/** Pomocné metriky pro akční návody a what-if. */
+export function profileMetrics(
+  profile: FinancialProfileAnswers,
+  modelRatePercent: number | null = 5
+) {
+  const rate =
+    modelRatePercent != null && modelRatePercent > 0 ? modelRatePercent : 5;
+  const income = totalIncome(profile);
+  const liabilities = totalMonthlyLiabilities(profile);
+  const funds = ownFundsModel(profile);
+  const monthlyBurn = Math.max(liabilities + income * 0.3, 1);
+  const reserveMonths = funds > 0 ? funds / monthlyBurn : 0;
+  const burden = income > 0 ? liabilities / income : 0;
+  const age = profile.age ?? 40;
+  const termYears = Math.min(30, Math.max(5, 65 - age));
+  const dstiCap =
+    profile.intent === "investment" || profile.intent === "foreign_purchase"
+      ? 0.35
+      : 0.45;
+  const maxPayment = Math.max(0, income * dstiCap - liabilities);
+  const price = profile.targetPrice ?? 0;
+
+  let rateSensitivityDelta: number | null = null;
+  if (maxPayment > 0) {
+    const r = rate / 100 / 12;
+    const n = termYears * 12;
+    const loan =
+      r > 0 ? maxPayment * ((1 - Math.pow(1 + r, -n)) / r) : maxPayment * n;
+    rateSensitivityDelta = Math.round(
+      calculateAnnuityPayment(loan, rate + 2, termYears) - maxPayment
+    );
+  }
+
+  return {
+    income,
+    liabilities,
+    funds,
+    reserveMonths,
+    monthlyBurn,
+    burden,
+    maxPayment,
+    price,
+    rate,
+    rateSensitivityDelta,
+  };
 }

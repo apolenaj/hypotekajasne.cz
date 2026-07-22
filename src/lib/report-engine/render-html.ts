@@ -202,7 +202,7 @@ function renderWhiteLabel(wl: WhiteLabelConfig | null): string {
         <strong>${esc(wl.companyName)}</strong>
         ${contact ? `<div class="meta">${esc(contact)}</div>` : ""}
         <div class="attribution">
-          Metodika, zdroje a claim typy: HypotékaJasně.cz / Majetio — transparentně uvedeny v reportu.
+          Metodika, zdroje a claim typy: HypotekaJasne.cz / Majetio — transparentně uvedeny v reportu.
         </div>
       </div>
     </div>`;
@@ -243,7 +243,7 @@ export function renderReportHtml(
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>${esc(doc.title)} — HypotékaJasně</title>
+  <title>${esc(doc.title)} — Hypotéka Jasně</title>
   <style>${reportStyles(mode)}</style>
 </head>
 <body>
@@ -261,7 +261,7 @@ export function renderReportHtml(
     </header>
     ${sections}
     <p class="footer-note">
-      HypotékaJasně.cz — informační platforma. Report engine ${esc(REPORT_VERSION)}.
+      HypotekaJasne.cz — informační platforma. Report engine ${esc(REPORT_VERSION)}.
       ${mode === "pdf" ? "HTML připravené pro PDF — tisk do PDF přes prohlížeč." : ""}
     </p>
   </div>
