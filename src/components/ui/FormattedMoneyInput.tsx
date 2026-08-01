@@ -81,7 +81,7 @@ export function FormattedMoneyInput({
         }}
         className={cn(
           minHeightClass,
-          "w-full min-w-0 tabular-nums",
+          "w-full min-w-0 tabular-nums text-text-dark placeholder:text-gray-400",
           suffix && "pr-12",
           className
         )}

@@ -35,7 +35,7 @@ function MoneyField({
         value={value}
         onChange={onChange}
         suffix="Kč"
-        className="rounded-lg border-border bg-white text-base"
+        className="rounded-lg border-border bg-white text-base text-text-dark placeholder:text-gray-400"
       />
     </div>
   );
@@ -71,7 +71,7 @@ export function MiniMortgageCalculator() {
   return (
     <article
       className={cn(
-        "box-border w-full min-w-0 max-w-full rounded-2xl border border-white/20 bg-white p-4 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.45)]",
+        "box-border w-full min-w-0 max-w-full rounded-2xl border border-white/20 bg-white p-4 text-text-dark shadow-[0_20px_50px_-20px_rgba(0,0,0,0.45)]",
         "ring-1 ring-black/5 sm:p-6 md:max-w-md"
       )}
       aria-labelledby="mini-mortgage-heading"
@@ -106,7 +106,7 @@ export function MiniMortgageCalculator() {
               id="mini-mortgage-term"
               value={termYears}
               onChange={(e) => setTermYears(Number(e.target.value))}
-              className="h-11 min-h-11 w-full min-w-0 rounded-md border border-border bg-white px-2.5 text-base font-semibold text-text-dark outline-none focus:border-deep-teal focus:ring-2 focus:ring-deep-teal/20 sm:w-auto"
+              className="h-11 min-h-11 w-full min-w-0 rounded-md border border-border bg-white px-2.5 text-base font-semibold text-text-dark outline-none focus:border-deep-teal focus:ring-2 focus:ring-deep-teal/20 sm:w-auto [color-scheme:light]"
             >
               {MINI_MORTGAGE_TERM_OPTIONS.map((y) => (
                 <option key={y} value={y}>
