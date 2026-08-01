@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -19,6 +20,7 @@ import {
   type DossierSection,
   type LegalClaim,
 } from "@/lib/country-dossier";
+import { getCountryHeroImage } from "@/lib/country-dossier/hero-images";
 import { buildExecutiveSnapshot } from "@/lib/country-dossier/market-snapshot";
 import {
   COUNTRY_PAGE_NAV,
@@ -405,7 +407,7 @@ function ExecutiveSnapshotBlock({ countryId }: { countryId: CountryId }) {
   const snap = useMemo(() => buildExecutiveSnapshot(countryId), [countryId]);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-8">
       <div className="flex flex-wrap items-center gap-2">
         <DataStatusBadge status={snap.dataStatus} />
         <p className="text-xs text-muted-foreground">
@@ -413,56 +415,56 @@ function ExecutiveSnapshotBlock({ countryId }: { countryId: CountryId }) {
         </p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-3">
-        {snap.forWhom && (
-          <div className="rounded-xl border border-border bg-[#f7f8f7] p-4 sm:col-span-1">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+      <div className="grid auto-rows-fr gap-4 sm:grid-cols-3 sm:gap-5">
+        {snap.forWhom ? (
+          <div className="flex h-full flex-col rounded-xl border border-slate-200/80 bg-slate-50 p-5">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
               Komu dává smysl
             </p>
-            <p className="mt-2 text-sm leading-relaxed text-text-dark">
+            <p className="mt-3 flex-1 text-sm leading-relaxed text-text-dark">
               {snap.forWhom}
             </p>
           </div>
-        )}
-        {snap.mainAdvantage && (
-          <div className="rounded-xl border border-border bg-[#f7f8f7] p-4 sm:col-span-1">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+        ) : null}
+        {snap.mainAdvantage ? (
+          <div className="flex h-full flex-col rounded-xl border border-emerald-100 bg-emerald-50 p-5">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-800/70">
               Hlavní výhoda
             </p>
-            <p className="mt-2 text-sm leading-relaxed text-text-dark">
+            <p className="mt-3 flex-1 text-sm leading-relaxed text-emerald-950">
               {snap.mainAdvantage}
             </p>
           </div>
-        )}
-        {snap.mainRisk && (
-          <div className="rounded-xl border border-amber-200 bg-amber-50/80 p-4 sm:col-span-1">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-amber-900/70">
+        ) : null}
+        {snap.mainRisk ? (
+          <div className="flex h-full flex-col rounded-xl border border-red-100 bg-red-50 p-5">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-red-800/70">
               Hlavní riziko
             </p>
-            <p className="mt-2 text-sm leading-relaxed text-amber-950">
+            <p className="mt-3 flex-1 text-sm leading-relaxed text-red-950">
               {snap.mainRisk}
             </p>
           </div>
-        )}
+        ) : null}
       </div>
 
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5">
         {snap.fields.map((f) => (
           <div
             key={f.id}
-            className="min-w-0 rounded-xl border border-border bg-white p-3"
+            className="min-w-0 rounded-lg bg-gray-50 px-4 py-4"
           >
-            <div className="flex flex-wrap items-center gap-1">
+            <div className="flex flex-wrap items-center gap-1.5">
               <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                 {f.label}
               </p>
               {f.status ? <DataStatusBadge status={f.status} /> : null}
             </div>
-            <p className="mt-1 break-words text-sm font-semibold text-text-dark">
+            <p className="mt-2 break-words text-base font-bold leading-snug text-text-dark">
               {f.value}
             </p>
             {f.note ? (
-              <p className="mt-1 text-[10px] leading-snug text-muted-foreground">
+              <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground">
                 {f.note}
               </p>
             ) : null}
@@ -675,20 +677,34 @@ export function CountryDossierView({
       .filter(Boolean) as DossierSection[];
   }, [byId]);
 
+  const hero = getCountryHeroImage(countryId);
+
   return (
     <div id="country-dossier" className="scroll-mt-28 min-w-0 bg-[#f4f5f4]">
-      <header className="border-b border-border bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-8 sm:py-12">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-deep-teal">
+      <header className="relative isolate min-h-[18rem] overflow-hidden text-white sm:min-h-[22rem]">
+        <Image
+          src={hero.src}
+          alt={hero.alt}
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+        <div
+          className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/65 to-black/40"
+          aria-hidden
+        />
+        <div className="relative z-10 mx-auto flex max-w-6xl flex-col justify-end px-4 py-10 sm:px-6 sm:py-14 lg:py-16">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/85">
             Průvodce investora
           </p>
-          <h1 className="mt-2 font-heading text-3xl font-bold text-text-dark sm:text-4xl lg:text-5xl">
+          <h1 className="mt-3 max-w-3xl font-heading text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
             {dossier.name}
           </h1>
-          <p className="mt-3 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/90 sm:text-lg">
             {dossier.tagline}
           </p>
-          <p className="mt-3 max-w-2xl text-xs text-muted-foreground">
+          <p className="mt-3 max-w-2xl text-xs leading-relaxed text-white/70">
             Nejdřív přehled do 30 sekund. Detaily, právo a kalkulačky níže —
             bez marketingových slibů výnosu.
           </p>
@@ -760,15 +776,15 @@ export function CountryDossierView({
                 <section
                   key={nav.id}
                   id="snapshot"
-                  className="scroll-mt-28 rounded-2xl border border-border bg-white px-4 py-5 sm:px-7 sm:py-7"
+                  className="scroll-mt-28 rounded-2xl border border-border bg-white px-5 py-7 sm:px-8 sm:py-9 lg:px-10 lg:py-10"
                 >
                   <h2 className="font-heading text-lg font-bold text-text-dark sm:text-xl">
                     Orientační přehled trhu
                   </h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
+                  <p className="mt-2 text-sm text-muted-foreground">
                     Co potřebujete vědět do 30 sekund, než půjdete do detailu.
                   </p>
-                  <div className="mt-5">
+                  <div className="mt-7">
                     <ExecutiveSnapshotBlock countryId={countryId} />
                   </div>
                 </section>
