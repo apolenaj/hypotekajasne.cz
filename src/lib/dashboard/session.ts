@@ -1,6 +1,6 @@
 /**
- * Soft “signed-in” preference — no account yet.
- * User chooses personalized home vs marketing cockpit.
+ * Legacy preference key — homepage already always shows marketing.
+ * Kept for backward compatibility with older localStorage values.
  */
 
 const PREF_KEY = "hj-home-mode-v1";
@@ -18,14 +18,16 @@ export function loadHomeMode(): HomeMode | null {
   return null;
 }
 
+/** @deprecated Homepage is always marketing; dashboard lives at /dashboard. */
 export function setHomeMode(mode: HomeMode) {
   if (typeof window === "undefined") return;
   localStorage.setItem(PREF_KEY, mode);
 }
 
-/** Auto-enter dashboard when profile exists and preference unset. */
-export function resolveHomeMode(hasProfile: boolean): HomeMode {
-  const stored = loadHomeMode();
-  if (stored) return stored;
-  return hasProfile ? "dashboard" : "marketing";
+/**
+ * @deprecated Do not gate `/` with this — use routes.dashboard for the app shell.
+ * Kept so older callers compile; always returns marketing for homepage safety.
+ */
+export function resolveHomeMode(_hasProfile: boolean): HomeMode {
+  return "marketing";
 }

@@ -72,6 +72,30 @@ describe("navigation structure", () => {
     assert.ok(navCta.default.label.includes("možnosti"));
     assert.ok(navCta.returning.href.includes("dashboard"));
   });
+
+  it("keeps marketing home at / and dashboard at /dashboard", () => {
+    const homePage = readFileSync(
+      join(process.cwd(), "src/app/page.tsx"),
+      "utf8"
+    );
+    const dashPage = readFileSync(
+      join(process.cwd(), "src/app/dashboard/page.tsx"),
+      "utf8"
+    );
+    const homeExp = readFileSync(
+      join(process.cwd(), "src/components/home/HomeExperience.tsx"),
+      "utf8"
+    );
+    assert.ok(homePage.includes("HomeExperience"));
+    assert.ok(!homePage.includes("HomeDashboard"));
+    assert.ok(dashPage.includes("HomeDashboard"));
+    assert.ok(dashPage.includes("routes.dashboard"));
+    assert.ok(homeExp.includes("CockpitHero"));
+    assert.ok(!homeExp.includes("HomeDashboard"));
+    assert.ok(homeExp.includes("routes.dashboard"));
+    assert.equal(desktopNav.overview.href, "/dashboard");
+    assert.equal(desktopNav.overview.label, "Můj přehled");
+  });
 });
 
 describe("navbar overflow guards (static source)", () => {

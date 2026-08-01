@@ -17,7 +17,6 @@ import {
 import {
   buildDashboardModel,
   loadWatchlist,
-  setHomeMode,
   type DashboardModel,
   type DashboardWidgetId,
 } from "@/lib/dashboard";
@@ -482,11 +481,7 @@ function WidgetSlot({
   }
 }
 
-export function HomeDashboard({
-  onShowMarketing,
-}: {
-  onShowMarketing?: () => void;
-}) {
+export function HomeDashboard() {
   const ready = useIsClient();
   const { rates } = useCurrentRates();
   const [tick, setTick] = useState(0);
@@ -580,17 +575,12 @@ export function HomeDashboard({
               <Sparkles className="h-3.5 w-3.5" />
               {PRODUCT_NAMES_CS.aiCopilot}
             </Link>
-            <button
-              type="button"
-              onClick={() => {
-                setHomeMode("marketing");
-                onShowMarketing?.();
-                setTick((t) => t + 1);
-              }}
+            <Link
+              href={routes.home}
               className="rounded-full border border-white/30 px-3 py-2 text-xs font-semibold"
             >
               Marketingová homepage
-            </button>
+            </Link>
           </div>
         </div>
       </header>

@@ -19,6 +19,7 @@ import {
 } from "@/lib/navigation";
 import { useFocusTrap } from "@/lib/a11y/focus-trap";
 import { loadReadiness } from "@/lib/mortgage-readiness/storage";
+import { routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
 const ctaClassName = cn(
@@ -162,7 +163,7 @@ function DesktopDropdown({
 function Logo({ onClick }: { onClick?: () => void }) {
   return (
     <BrandWordmark
-      href="/"
+      href={routes.home}
       onClick={onClick}
       compact
       showDomain={false}

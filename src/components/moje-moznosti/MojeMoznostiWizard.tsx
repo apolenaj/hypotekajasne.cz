@@ -29,7 +29,6 @@ import {
   INCOME_TYPE_OPTIONS,
   type MortgageIntent,
 } from "@/lib/mortgage-readiness/types";
-import { setHomeMode } from "@/lib/dashboard";
 import { useMortgageRateEngine } from "@/lib/rates";
 import { track } from "@/lib/analytics/track";
 import { scoreToBucket } from "@/lib/analytics/events";
@@ -135,7 +134,6 @@ export function MojeMoznostiWizard() {
 
   const persistAndShow = (nextProfile: FinancialProfileAnswers) => {
     saveFinancialProfile(nextProfile, resolved.ratePercent);
-    setHomeMode("dashboard");
     const built = buildMojeMoznostiResult(
       nextProfile,
       resolved.ratePercent,
@@ -262,7 +260,6 @@ export function MojeMoznostiWizard() {
   const resetAll = () => {
     clearReadiness();
     clearPassportTimeline();
-    setHomeMode("marketing");
     setProfile({ ...EMPTY_PROFILE });
     setPrefs({ ...EMPTY_MATCHING_PREFS });
     setIncomeCzk(0);
