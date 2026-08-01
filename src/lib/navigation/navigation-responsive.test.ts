@@ -92,7 +92,7 @@ describe("navigation structure", () => {
     assert.ok(dashPage.includes("routes.dashboard"));
     assert.ok(homeExp.includes("CockpitHero"));
     assert.ok(!homeExp.includes("HomeDashboard"));
-    assert.ok(homeExp.includes("routes.dashboard"));
+    assert.ok(!homeExp.includes("Finanční pas"));
     assert.equal(desktopNav.overview.href, "/dashboard");
     assert.equal(desktopNav.overview.label, "Můj přehled");
   });
