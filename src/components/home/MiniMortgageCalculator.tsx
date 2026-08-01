@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { TrackedCtaLink } from "@/components/analytics/TrackedCtaLink";
-import { Input } from "@/components/ui/input";
+import { FormattedMoneyInput } from "@/components/ui/FormattedMoneyInput";
 import { Label } from "@/components/ui/label";
 import { formatCurrency } from "@/lib/calculators";
-import { formatNumber, parseFormattedNumber } from "@/lib/format";
 import {
   computeMiniMortgage,
   MINI_MORTGAGE_DEFAULTS,
@@ -26,47 +25,18 @@ function MoneyField({
   value: number;
   onChange: (next: number) => void;
 }) {
-  const [focused, setFocused] = useState(false);
-  const [draft, setDraft] = useState(() => formatNumber(value));
-
-  useEffect(() => {
-    if (!focused) {
-      setDraft(formatNumber(value));
-    }
-  }, [value, focused]);
-
   return (
     <div className="min-w-0 space-y-1.5">
       <Label htmlFor={id} className="text-xs font-semibold text-text-dark">
         {label}
       </Label>
-      <div className="relative min-w-0">
-        <Input
-          id={id}
-          type="text"
-          inputMode="numeric"
-          value={focused ? draft : formatNumber(value)}
-          onFocus={() => {
-            setFocused(true);
-            setDraft(formatNumber(value) || "");
-          }}
-          onChange={(e) => {
-            const nextText = e.target.value;
-            setDraft(nextText);
-            onChange(parseFormattedNumber(nextText));
-          }}
-          onBlur={() => {
-            setFocused(false);
-            const parsed = parseFormattedNumber(draft);
-            onChange(parsed);
-            setDraft(formatNumber(parsed));
-          }}
-          className="h-11 min-h-11 w-full min-w-0 rounded-lg border-border bg-white pr-14 text-base tabular-nums text-text-dark"
-        />
-        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-muted-foreground">
-          Kč
-        </span>
-      </div>
+      <FormattedMoneyInput
+        id={id}
+        value={value}
+        onChange={onChange}
+        suffix="Kč"
+        className="rounded-lg border-border bg-white text-base"
+      />
     </div>
   );
 }

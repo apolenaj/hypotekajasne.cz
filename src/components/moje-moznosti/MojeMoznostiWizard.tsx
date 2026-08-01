@@ -34,6 +34,7 @@ import { useMortgageRateEngine } from "@/lib/rates";
 import { track } from "@/lib/analytics/track";
 import { scoreToBucket } from "@/lib/analytics/events";
 import { routes } from "@/lib/routes";
+import { FormattedMoneyInput } from "@/components/ui/FormattedMoneyInput";
 import { cn } from "@/lib/utils";
 import { MojeMoznostiResultView } from "@/components/moje-moznosti/MojeMoznostiResultView";
 
@@ -47,16 +48,6 @@ const STEPS: { id: StepId; label: string }[] = [
   { id: "result", label: "Výsledek" },
 ];
 
-function parseMoney(raw: string): number {
-  const n = Number(raw.replace(/\s/g, "").replace(",", "."));
-  return Number.isFinite(n) && n >= 0 ? n : 0;
-}
-
-function formatMoneyInput(n: number): string {
-  if (!n) return "";
-  return new Intl.NumberFormat("cs-CZ").format(n);
-}
-
 /**
  * Sjednocený onboarding „Zjistit moje možnosti“.
  * Persistuje FinancialProfileAnswers (stejný SoT jako Finanční pas).
@@ -69,17 +60,9 @@ export function MojeMoznostiWizard() {
   const [prefs, setPrefs] = useState<MatchingPreferences>({
     ...EMPTY_MATCHING_PREFS,
   });
-  const [incomeStr, setIncomeStr] = useState(() =>
-    profile.netIncome ? formatMoneyInput(profile.netIncome) : ""
-  );
-  const [fundsStr, setFundsStr] = useState(() =>
-    profile.ownFunds ? formatMoneyInput(profile.ownFunds) : ""
-  );
-  const [liabStr, setLiabStr] = useState(() =>
-    profile.otherLiabilities
-      ? formatMoneyInput(profile.otherLiabilities)
-      : ""
-  );
+  const [incomeCzk, setIncomeCzk] = useState(() => profile.netIncome || 0);
+  const [fundsCzk, setFundsCzk] = useState(() => profile.ownFunds || 0);
+  const [liabCzk, setLiabCzk] = useState(() => profile.otherLiabilities || 0);
   const [result, setResult] = useState<MojeMoznostiResult | null>(null);
   const [stepIndex, setStepIndex] = useState(0);
   const [started, setStarted] = useState(false);
@@ -92,17 +75,9 @@ export function MojeMoznostiWizard() {
     const existing = loadFinancialProfile();
     if (existing && canComputeFirstResult(existing)) {
       setProfile(existing);
-      setIncomeStr(
-        existing.netIncome ? formatMoneyInput(existing.netIncome) : ""
-      );
-      setFundsStr(
-        existing.ownFunds ? formatMoneyInput(existing.ownFunds) : ""
-      );
-      setLiabStr(
-        existing.otherLiabilities
-          ? formatMoneyInput(existing.otherLiabilities)
-          : ""
-      );
+      setIncomeCzk(existing.netIncome || 0);
+      setFundsCzk(existing.ownFunds || 0);
+      setLiabCzk(existing.otherLiabilities || 0);
       setResult(
         buildMojeMoznostiResult(
           existing,
@@ -152,9 +127,9 @@ export function MojeMoznostiWizard() {
 
   const syncMoneyFields = () => {
     patch({
-      netIncome: parseMoney(incomeStr),
-      ownFunds: parseMoney(fundsStr),
-      otherLiabilities: parseMoney(liabStr),
+      netIncome: incomeCzk,
+      ownFunds: fundsCzk,
+      otherLiabilities: liabCzk,
     });
   };
 
@@ -211,9 +186,9 @@ export function MojeMoznostiWizard() {
       syncMoneyFields();
       const next = {
         ...profile,
-        netIncome: parseMoney(incomeStr),
-        ownFunds: parseMoney(fundsStr),
-        otherLiabilities: parseMoney(liabStr),
+        netIncome: incomeCzk,
+        ownFunds: fundsCzk,
+        otherLiabilities: liabCzk,
       };
       setProfile(next);
       if (!canComputeFirstResult(next)) return;
@@ -242,9 +217,9 @@ export function MojeMoznostiWizard() {
       syncMoneyFields();
       const next = {
         ...profile,
-        netIncome: parseMoney(incomeStr),
-        ownFunds: parseMoney(fundsStr),
-        otherLiabilities: parseMoney(liabStr),
+        netIncome: incomeCzk,
+        ownFunds: fundsCzk,
+        otherLiabilities: liabCzk,
       };
       setProfile(next);
       track("moznosti_step", { tool_id: "moje_moznosti", step: 4 });
@@ -271,9 +246,9 @@ export function MojeMoznostiWizard() {
     syncMoneyFields();
     const next = {
       ...profile,
-      netIncome: parseMoney(incomeStr),
-      ownFunds: parseMoney(fundsStr),
-      otherLiabilities: parseMoney(liabStr),
+      netIncome: incomeCzk,
+      ownFunds: fundsCzk,
+      otherLiabilities: liabCzk,
     };
     setProfile(next);
     persistAndShow(next);
@@ -290,9 +265,9 @@ export function MojeMoznostiWizard() {
     setHomeMode("marketing");
     setProfile({ ...EMPTY_PROFILE });
     setPrefs({ ...EMPTY_MATCHING_PREFS });
-    setIncomeStr("");
-    setFundsStr("");
-    setLiabStr("");
+    setIncomeCzk(0);
+    setFundsCzk(0);
+    setLiabCzk(0);
     setResult(null);
     setStepIndex(0);
     track("moznosti_reset", { tool_id: "moje_moznosti" });
@@ -306,10 +281,10 @@ export function MojeMoznostiWizard() {
   const canProceed = useMemo(() => {
     if (step === "intent") return profile.intent != null;
     if (step === "finance") {
-      return parseMoney(incomeStr) > 0 && parseMoney(fundsStr) >= 0;
+      return incomeCzk > 0 && fundsCzk >= 0;
     }
     return true;
-  }, [step, profile.intent, incomeStr, fundsStr]);
+  }, [step, profile.intent, incomeCzk, fundsCzk]);
 
   if (step === "result" && result) {
     return (
@@ -407,12 +382,12 @@ export function MojeMoznostiWizard() {
               <span className="font-medium text-text-dark">
                 Čistý příjem domácnosti / měs.
               </span>
-              <input
-                type="text"
-                inputMode="decimal"
-                value={incomeStr}
-                onChange={(e) => setIncomeStr(e.target.value)}
-                className="mt-1.5 h-11 w-full rounded-lg border border-border px-3 tabular-nums outline-none focus-visible:ring-2 focus-visible:ring-deep-teal"
+              <FormattedMoneyInput
+                id="moznosti-income"
+                value={incomeCzk}
+                onChange={setIncomeCzk}
+                suffix="Kč"
+                className="mt-1.5 rounded-lg border-border"
                 placeholder="např. 60 000"
               />
             </label>
@@ -420,12 +395,12 @@ export function MojeMoznostiWizard() {
               <span className="font-medium text-text-dark">
                 Vlastní prostředky (hotovost / spoření)
               </span>
-              <input
-                type="text"
-                inputMode="decimal"
-                value={fundsStr}
-                onChange={(e) => setFundsStr(e.target.value)}
-                className="mt-1.5 h-11 w-full rounded-lg border border-border px-3 tabular-nums outline-none focus-visible:ring-2 focus-visible:ring-deep-teal"
+              <FormattedMoneyInput
+                id="moznosti-funds"
+                value={fundsCzk}
+                onChange={setFundsCzk}
+                suffix="Kč"
+                className="mt-1.5 rounded-lg border-border"
                 placeholder="např. 800 000"
               />
             </label>
@@ -433,12 +408,13 @@ export function MojeMoznostiWizard() {
               <span className="font-medium text-text-dark">
                 Pravidelné splátky úvěrů / měs. (volitelné)
               </span>
-              <input
-                type="text"
-                inputMode="decimal"
-                value={liabStr}
-                onChange={(e) => setLiabStr(e.target.value)}
-                className="mt-1.5 h-11 w-full rounded-lg border border-border px-3 tabular-nums outline-none focus-visible:ring-2 focus-visible:ring-deep-teal"
+              <FormattedMoneyInput
+                id="moznosti-liab"
+                value={liabCzk}
+                onChange={setLiabCzk}
+                showZero
+                suffix="Kč"
+                className="mt-1.5 rounded-lg border-border"
                 placeholder="0"
               />
             </label>
@@ -503,16 +479,12 @@ export function MojeMoznostiWizard() {
                 <span className="font-medium text-text-dark">
                   Existující nemovitost — odhad equity (Kč)
                 </span>
-                <input
-                  type="number"
-                  min={0}
-                  value={profile.existingPropertyEquity || ""}
-                  onChange={(e) =>
-                    patch({
-                      existingPropertyEquity: Number(e.target.value) || 0,
-                    })
-                  }
-                  className="mt-1.5 h-11 w-full rounded-lg border border-border px-3 outline-none focus-visible:ring-2 focus-visible:ring-deep-teal"
+                <FormattedMoneyInput
+                  id="moznosti-equity"
+                  value={profile.existingPropertyEquity || 0}
+                  onChange={(n) => patch({ existingPropertyEquity: n })}
+                  suffix="Kč"
+                  className="mt-1.5 rounded-lg border-border"
                 />
               </label>
             )}

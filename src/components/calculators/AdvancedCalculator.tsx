@@ -5,6 +5,7 @@ import { AmortizationChart } from "@/components/calculators/AmortizationChart";
 import { CalculatorDisclaimer } from "@/components/calculators/CalculatorDisclaimer";
 import { InsuranceRateCards } from "@/components/calculators/InsuranceRateCards";
 import { RateProvenanceBanner } from "@/components/calculators/RateProvenanceBanner";
+import { FormattedMoneyInput } from "@/components/ui/FormattedMoneyInput";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -124,12 +125,10 @@ export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
           <Label htmlFor={`price-${country}`} className="mb-2 block">
             Cena nemovitosti ({currency})
           </Label>
-          <Input
+          <FormattedMoneyInput
             id={`price-${country}`}
-            type="number"
-            min={0}
             value={price}
-            onChange={(e) => setPrice(Number(e.target.value) || 0)}
+            onChange={setPrice}
             className="rounded-lg"
           />
         </div>
@@ -137,12 +136,10 @@ export function AdvancedCalculator({ country }: AdvancedCalculatorProps) {
           <Label htmlFor={`capital-${country}`} className="mb-2 block">
             Vlastní kapitál ({currency})
           </Label>
-          <Input
+          <FormattedMoneyInput
             id={`capital-${country}`}
-            type="number"
-            min={0}
             value={capital}
-            onChange={(e) => setCapital(Number(e.target.value) || 0)}
+            onChange={setCapital}
             className="rounded-lg"
           />
         </div>

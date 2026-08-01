@@ -7,17 +7,29 @@ import type { BankRateRow } from "@/lib/bank-rates";
 import { makeDataRecord, missingDataRecord } from "@/lib/data/records";
 import type { DataRecord, DataStatus } from "@/lib/data/types";
 import {
+  KB_INSURANCE_PACKAGE_SURCHARGE_PP,
   KB_INSIDER_RATES,
   ORIENTATIONAL_WITHOUT_SURCHARGE,
 } from "@/lib/scrape/rate-policy";
 
-function rateStatus(opts: {
-  estimated?: boolean;
-  bankId?: string;
-}): DataStatus {
+function rateStatus(opts: { estimated?: boolean }): DataStatus {
   if (opts.estimated) return "MODEL";
-  if (opts.bankId === "komercni-banka") return "PARTNER_QUOTE";
   return "LIVE";
+}
+
+/** KB / ostatní: odvozená sazba bez pojištění (spread +0,20 / +0,30). */
+function isEstimatedClassicWithout(
+  bankId: string,
+  withRate: number | null | undefined,
+  withoutRate: number | null | undefined
+): boolean {
+  if (withRate == null || withoutRate == null) return false;
+  if (bankId === "unicredit-bank") return false;
+  const spread = withoutRate - withRate;
+  if (bankId === "komercni-banka") {
+    return Math.abs(spread - KB_INSURANCE_PACKAGE_SURCHARGE_PP) < 0.021;
+  }
+  return Math.abs(spread - ORIENTATIONAL_WITHOUT_SURCHARGE) < 0.021;
 }
 
 export function marketAggregateToRecords(
@@ -102,24 +114,38 @@ export function bankRateRowToRecords(row: BankRateRow): {
 } {
   const bankId = String(row.id);
   const isKb = bankId === "komercni-banka";
-  const isUni = bankId === "unicredit-bank";
-  const withoutEstimated = !isKb && !isUni;
+  const withRate = row.rateWithInsurance ?? row.rate;
+  const withoutEstimated = isEstimatedClassicWithout(
+    bankId,
+    withRate,
+    row.rateWithoutInsurance
+  );
+  const withoutModelPp = isKb
+    ? KB_INSURANCE_PACKAGE_SURCHARGE_PP
+    : ORIENTATIONAL_WITHOUT_SURCHARGE;
+  const usedKbFallback =
+    isKb &&
+    withRate != null &&
+    Math.abs(withRate - KB_INSIDER_RATES.rateWithInsurance) < 0.001 &&
+    (!row.sourceUrl || !row.sourceUrl.includes("kb.cz"));
 
   return {
     withInsurance: makeDataRecord({
       id: `rate.cz.bank.${bankId}.with_insurance`,
-      value: row.rateWithInsurance ?? row.rate,
+      value: withRate,
       unit: "percent_pa",
       country: "cz",
-      source: isKb
-        ? `KB insider ${KB_INSIDER_RATES.rateWithInsurance} %`
+      source: usedKbFallback
+        ? `KB fallback ${KB_INSIDER_RATES.rateWithInsurance} %`
         : row.sourceUrl ?? "bank_rates",
       sourceUrl: row.sourceUrl,
-      sourceType: isKb ? "insider" : "official_bank",
-      status: rateStatus({ bankId }),
+      sourceType: usedKbFallback ? "insider" : "official_bank",
+      status: usedKbFallback ? "PARTNER_QUOTE" : rateStatus({}),
       confidence: isKb ? 0.9 : 0.85,
       lastFetchedAt: row.updatedAt,
-      notes: null,
+      notes: usedKbFallback
+        ? "Fallback při selhání scrapu — ověřit na kb.cz."
+        : null,
     }),
     withoutInsurance: makeDataRecord({
       id: `rate.cz.bank.${bankId}.without_insurance`,
@@ -127,16 +153,14 @@ export function bankRateRowToRecords(row: BankRateRow): {
       unit: "percent_pa",
       country: "cz",
       source: withoutEstimated
-        ? `Model +${ORIENTATIONAL_WITHOUT_SURCHARGE} p.b.`
-        : isKb
-          ? "KB insider"
-          : row.sourceUrl ?? "bank_rates",
+        ? `Model +${withoutModelPp} p.b.`
+        : row.sourceUrl ?? "bank_rates",
       sourceUrl: row.sourceUrl,
-      sourceType: withoutEstimated ? "model" : isKb ? "insider" : "official_bank",
+      sourceType: withoutEstimated ? "model" : "official_bank",
       status:
         row.rateWithoutInsurance == null
           ? "STALE"
-          : rateStatus({ estimated: withoutEstimated, bankId }),
+          : rateStatus({ estimated: withoutEstimated }),
       confidence: withoutEstimated ? 0.45 : 0.9,
       lastFetchedAt: row.updatedAt,
       notes: withoutEstimated

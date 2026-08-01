@@ -11,6 +11,7 @@ export const LEAD_SOURCES = [
   "mortgage_calculator",
   "property_analysis",
   "lead_gen",
+  "expert_request",
   "contact",
   "country_hub",
   "newsletter",
@@ -24,14 +25,21 @@ export const LEAD_SOURCE_LABELS: Record<LeadSource, string> = {
   mortgage_calculator: "Hypoteční kalkulačka",
   property_analysis: "Detailní analýza nemovitosti",
   lead_gen: "Konzultace s expertem",
+  expert_request: "Přesný výpočet od experta",
   contact: "Kontaktní formulář",
   country_hub: "Zájem o zemi (hub)",
   newsletter: "Newsletter (články)",
 };
 
+/** Zdroje, kde stačí telefon a e-mail je volitelný. */
+export function isPhonePrimaryLeadSource(source: LeadSource): boolean {
+  return source === "expert_request";
+}
+
 export type LeadPayload = {
   name: string;
-  email: string;
+  /** Povinné u většiny zdrojů; u expert_request volitelné. */
+  email?: string;
   phone?: string;
   source: LeadSource;
   /** Země / trh zájmu (volitelné) */

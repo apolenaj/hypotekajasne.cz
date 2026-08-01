@@ -1,6 +1,8 @@
 /**
  * Konfigurace scraperů českých bank (klasická + americká hypotéka).
- * KB: insider sazby. Ostatní: chybějící „bez pojištění“ = orientačně +0.3 p.b.
+ * KB: scrapovaná „od“ sazba (s pojištěním); fallback KB_INSIDER_RATES;
+ *     bez pojištění = scrap, jinak +KB_INSURANCE_PACKAGE_SURCHARGE_PP.
+ * Ostatní: chybějící „bez pojištění“ = orientačně +0.3 p.b.
  */
 
 import {
@@ -24,12 +26,17 @@ import {
 } from "@/lib/scrape/parse-rate";
 import {
   KB_INSIDER_RATES,
+  KB_INSURANCE_PACKAGE_SURCHARGE_PP,
   ORIENTATIONAL_WITHOUT_SURCHARGE,
 } from "@/lib/scrape/rate-policy";
 
 export type { BankScraperId };
 export { BANK_NAME_TO_SCRAPER_ID };
-export { KB_INSIDER_RATES, ORIENTATIONAL_WITHOUT_SURCHARGE };
+export {
+  KB_INSIDER_RATES,
+  KB_INSURANCE_PACKAGE_SURCHARGE_PP,
+  ORIENTATIONAL_WITHOUT_SURCHARGE,
+};
 
 export type BankScraperConfig = {
   id: BankScraperId;
@@ -53,7 +60,7 @@ export type ScrapedBankRate = {
   rpsnWithInsurance: number | null;
   rateWithoutInsurance: number | null;
   rpsnWithoutInsurance: number | null;
-  /** true = bez pojištění doplněno orientačně (+0.3 p.b.) */
+  /** true = bez pojištění doplněno modelem (KB +0.2 / ostatní +0.3 p.b.) */
   withoutInsuranceEstimated: boolean;
   sourceUrl: string;
   /** Americká hypotéka — null pokud se nepodařilo scrapovat. */
@@ -188,12 +195,33 @@ function fillOrientationalWithout(
   };
 }
 
-/** Insider přepis KB klasické hypotéky. */
-function applyKbInsiderRates(
-  scraped: ExtractedMortgageRates
-): ExtractedMortgageRates {
-  const rateWith = KB_INSIDER_RATES.rateWithInsurance;
-  const rateWithout = KB_INSIDER_RATES.rateWithoutInsurance;
+/**
+ * KB: preferuj scrapovanou inzerovanou „od“ sazbu (s pojištěním).
+ * Fallback = KB_INSIDER_RATES. Bez pojištění: scrapovaná hodnota, jinak +0,20 p.b.
+ */
+function resolveKbClassicRates(scraped: ExtractedMortgageRates): {
+  extracted: ExtractedMortgageRates;
+  withoutEstimated: boolean;
+} {
+  const rateWith =
+    scraped.rateWithInsurance != null &&
+    isValidMortgageRate(scraped.rateWithInsurance)
+      ? scraped.rateWithInsurance
+      : KB_INSIDER_RATES.rateWithInsurance;
+
+  let rateWithout: number;
+  let withoutEstimated: boolean;
+  if (
+    scraped.rateWithoutInsurance != null &&
+    isValidMortgageRate(scraped.rateWithoutInsurance) &&
+    scraped.rateWithoutInsurance + 0.001 >= rateWith
+  ) {
+    rateWithout = scraped.rateWithoutInsurance;
+    withoutEstimated = false;
+  } else {
+    rateWithout = roundRate(rateWith + KB_INSURANCE_PACKAGE_SURCHARGE_PP);
+    withoutEstimated = true;
+  }
 
   const spread =
     scraped.rateWithInsurance != null && scraped.rpsnWithInsurance != null
@@ -202,16 +230,21 @@ function applyKbInsiderRates(
   const safeSpread =
     spread != null && spread >= 0 && spread <= 1.5 ? spread : null;
 
-  return buildExtractedRates({
-    rateWithInsurance: rateWith,
-    rpsnWithInsurance:
-      safeSpread != null ? roundRate(rateWith + safeSpread) : scraped.rpsnWithInsurance,
-    rateWithoutInsurance: rateWithout,
-    rpsnWithoutInsurance:
-      safeSpread != null
-        ? roundRate(rateWithout + safeSpread)
-        : scraped.rpsnWithoutInsurance,
-  });
+  return {
+    extracted: buildExtractedRates({
+      rateWithInsurance: rateWith,
+      rpsnWithInsurance:
+        safeSpread != null
+          ? roundRate(rateWith + safeSpread)
+          : scraped.rpsnWithInsurance,
+      rateWithoutInsurance: rateWithout,
+      rpsnWithoutInsurance:
+        safeSpread != null
+          ? roundRate(rateWithout + safeSpread)
+          : scraped.rpsnWithoutInsurance,
+    }),
+    withoutEstimated,
+  };
 }
 
 function toScrapedBankRate(
@@ -723,14 +756,15 @@ export async function scrapeBank(
 
   const american = await scrapeAmericanRates(config, penizeHtmlCache);
 
-  // 1) KB insider přepis klasické hypotéky
+  // 1) KB: scrapovaná „od“ sazba (s pojištěním), fallback insider 5,14 / 5,34
+  let withoutEstimated = false;
   if (config.id === "komercni-banka") {
-    extracted = applyKbInsiderRates(extracted);
+    const kb = resolveKbClassicRates(extracted);
+    extracted = kb.extracted;
+    withoutEstimated = kb.withoutEstimated;
   }
 
-  // 2) Orientační +0.3 % tam, kde chybí sazba bez pojištění
-  //    (ne u KB — už má insider data; UniCredit má reálné PCE, pokud přišlo)
-  let withoutEstimated = false;
+  // 2) Orientační +0.3 % tam, kde chybí sazba bez pojištění (ostatní banky)
   if (config.id !== "komercni-banka") {
     const filled = fillOrientationalWithout(
       extracted.rateWithInsurance,
@@ -738,7 +772,6 @@ export async function scrapeBank(
       extracted.rateWithoutInsurance,
       extracted.rpsnWithoutInsurance
     );
-    // UniCredit: doplň jen pokud scraper opravdu vrátil null
     if (filled.estimated) {
       extracted = buildExtractedRates({
         ...extracted,

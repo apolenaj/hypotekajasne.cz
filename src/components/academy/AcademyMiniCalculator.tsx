@@ -1,41 +1,36 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { FormattedMoneyInput } from "@/components/ui/FormattedMoneyInput";
+import { formatNumber } from "@/lib/format";
 import type { AcademyCalculatorKind } from "@/lib/academy/types";
 
-function num(raw: string): number {
-  const n = Number(String(raw).replace(/\s/g, "").replace(",", "."));
-  return Number.isFinite(n) && n >= 0 ? n : 0;
-}
-
 function LtvCalc() {
-  const [price, setPrice] = useState("5000000");
-  const [loan, setLoan] = useState("4000000");
+  const [price, setPrice] = useState(5_000_000);
+  const [loan, setLoan] = useState(4_000_000);
   const ltv = useMemo(() => {
-    const p = num(price);
-    const l = num(loan);
-    if (p <= 0) return null;
-    return Math.round((l / p) * 1000) / 10;
+    if (price <= 0) return null;
+    return Math.round((loan / price) * 1000) / 10;
   }, [price, loan]);
 
   return (
     <div className="space-y-3">
       <label className="block text-sm">
         <span className="font-medium">Odhadní / kupní hodnota (Kč)</span>
-        <input
-          className="mt-1 w-full rounded-lg border border-border px-3 py-2"
+        <FormattedMoneyInput
+          className="mt-1 rounded-lg border-border"
           value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          inputMode="numeric"
+          onChange={setPrice}
+          suffix="Kč"
         />
       </label>
       <label className="block text-sm">
         <span className="font-medium">Úvěr (Kč)</span>
-        <input
-          className="mt-1 w-full rounded-lg border border-border px-3 py-2"
+        <FormattedMoneyInput
+          className="mt-1 rounded-lg border-border"
           value={loan}
-          onChange={(e) => setLoan(e.target.value)}
-          inputMode="numeric"
+          onChange={setLoan}
+          suffix="Kč"
         />
       </label>
       <p className="text-lg font-bold tabular-nums text-deep-teal">
@@ -46,33 +41,31 @@ function LtvCalc() {
 }
 
 function DstiCalc() {
-  const [income, setIncome] = useState("50000");
-  const [payments, setPayments] = useState("20000");
+  const [income, setIncome] = useState(50_000);
+  const [payments, setPayments] = useState(20_000);
   const dsti = useMemo(() => {
-    const i = num(income);
-    const p = num(payments);
-    if (i <= 0) return null;
-    return Math.round((p / i) * 1000) / 10;
+    if (income <= 0) return null;
+    return Math.round((payments / income) * 1000) / 10;
   }, [income, payments]);
 
   return (
     <div className="space-y-3">
       <label className="block text-sm">
         <span className="font-medium">Čistý příjem / měs. (Kč)</span>
-        <input
-          className="mt-1 w-full rounded-lg border border-border px-3 py-2"
+        <FormattedMoneyInput
+          className="mt-1 rounded-lg border-border"
           value={income}
-          onChange={(e) => setIncome(e.target.value)}
-          inputMode="numeric"
+          onChange={setIncome}
+          suffix="Kč"
         />
       </label>
       <label className="block text-sm">
         <span className="font-medium">Splátky celkem / měs. (Kč)</span>
-        <input
-          className="mt-1 w-full rounded-lg border border-border px-3 py-2"
+        <FormattedMoneyInput
+          className="mt-1 rounded-lg border-border"
           value={payments}
-          onChange={(e) => setPayments(e.target.value)}
-          inputMode="numeric"
+          onChange={setPayments}
+          suffix="Kč"
         />
       </label>
       <p className="text-lg font-bold tabular-nums text-deep-teal">
@@ -83,33 +76,31 @@ function DstiCalc() {
 }
 
 function DtiCalc() {
-  const [annual, setAnnual] = useState("600000");
-  const [debt, setDebt] = useState("3600000");
+  const [annual, setAnnual] = useState(600_000);
+  const [debt, setDebt] = useState(3_600_000);
   const dti = useMemo(() => {
-    const a = num(annual);
-    const d = num(debt);
-    if (a <= 0) return null;
-    return Math.round((d / a) * 100) / 100;
+    if (annual <= 0) return null;
+    return Math.round((debt / annual) * 100) / 100;
   }, [annual, debt]);
 
   return (
     <div className="space-y-3">
       <label className="block text-sm">
         <span className="font-medium">Roční čistý příjem (Kč)</span>
-        <input
-          className="mt-1 w-full rounded-lg border border-border px-3 py-2"
+        <FormattedMoneyInput
+          className="mt-1 rounded-lg border-border"
           value={annual}
-          onChange={(e) => setAnnual(e.target.value)}
-          inputMode="numeric"
+          onChange={setAnnual}
+          suffix="Kč"
         />
       </label>
       <label className="block text-sm">
         <span className="font-medium">Celkové dluhy (Kč)</span>
-        <input
-          className="mt-1 w-full rounded-lg border border-border px-3 py-2"
+        <FormattedMoneyInput
+          className="mt-1 rounded-lg border-border"
           value={debt}
-          onChange={(e) => setDebt(e.target.value)}
-          inputMode="numeric"
+          onChange={setDebt}
+          suffix="Kč"
         />
       </label>
       <p className="text-lg font-bold tabular-nums text-deep-teal">
@@ -120,11 +111,11 @@ function DtiCalc() {
 }
 
 function CashFlowCalc() {
-  const [rent, setRent] = useState("20000");
-  const [payment, setPayment] = useState("15000");
-  const [costs, setCosts] = useState("2000");
+  const [rent, setRent] = useState(20_000);
+  const [payment, setPayment] = useState(15_000);
+  const [costs, setCosts] = useState(2_000);
   const cf = useMemo(
-    () => num(rent) - num(payment) - num(costs),
+    () => rent - payment - costs,
     [rent, payment, costs]
   );
 
@@ -132,33 +123,33 @@ function CashFlowCalc() {
     <div className="space-y-3">
       <label className="block text-sm">
         <span className="font-medium">Nájem / měs. (Kč)</span>
-        <input
-          className="mt-1 w-full rounded-lg border border-border px-3 py-2"
+        <FormattedMoneyInput
+          className="mt-1 rounded-lg border-border"
           value={rent}
-          onChange={(e) => setRent(e.target.value)}
-          inputMode="numeric"
+          onChange={setRent}
+          suffix="Kč"
         />
       </label>
       <label className="block text-sm">
         <span className="font-medium">Splátka / měs. (Kč)</span>
-        <input
-          className="mt-1 w-full rounded-lg border border-border px-3 py-2"
+        <FormattedMoneyInput
+          className="mt-1 rounded-lg border-border"
           value={payment}
-          onChange={(e) => setPayment(e.target.value)}
-          inputMode="numeric"
+          onChange={setPayment}
+          suffix="Kč"
         />
       </label>
       <label className="block text-sm">
         <span className="font-medium">Provoz + rezerva / měs. (Kč)</span>
-        <input
-          className="mt-1 w-full rounded-lg border border-border px-3 py-2"
+        <FormattedMoneyInput
+          className="mt-1 rounded-lg border-border"
           value={costs}
-          onChange={(e) => setCosts(e.target.value)}
-          inputMode="numeric"
+          onChange={setCosts}
+          suffix="Kč"
         />
       </label>
       <p className="text-lg font-bold tabular-nums text-deep-teal">
-        CF: {cf.toLocaleString("cs-CZ")} Kč / měs.
+        CF: {formatNumber(cf, { emptyZero: false })} Kč / měs.
       </p>
     </div>
   );

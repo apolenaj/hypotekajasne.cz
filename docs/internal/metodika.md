@@ -10,8 +10,8 @@ Tento dokument **nesmí** být renderován ve veřejném UI. Veřejná metodika 
 | Doména | Kanonický modul / úložiště |
 |--------|----------------------------|
 | CZ sazby | `supabase:bank_rates` + `src/lib/scrape/bank-scrapers.ts` |
-| Sazba bez pojištění (orientační) | `bank_rates` + offset +0,3 p.b. (MODELLED) |
-| KB insider | `src/lib/scrape/rate-policy.ts#KB_INSIDER_RATES` |
+| Sazba bez pojištění (orientační) | `bank_rates` + offset +0,3 p.b. (MODELLED); KB +0,2 p.b. |
+| KB fallback „od“ sazba | `src/lib/scrape/rate-policy.ts#KB_INSIDER_RATES` (scrape preferován) |
 | RPSN | `supabase:current_rates` / `bank_rates` |
 | Americká hypotéka | `bank_rates.american_*` |
 | LTV / DTI / DSTI limity | `src/lib/data/static-regulatory.ts` |

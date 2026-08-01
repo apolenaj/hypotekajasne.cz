@@ -13,6 +13,11 @@ import {
   CTA_SECONDARY_CLASS,
   CTA_TERTIARY_CLASS,
 } from "@/lib/ux/cta";
+import {
+  dataStatusTextLabel,
+  readinessBandLabel,
+  rateUiKindLabel,
+} from "@/lib/i18n/system-labels";
 import { ExplainDisclosure } from "@/components/ux/ExplainDisclosure";
 import { SimpleResultHero } from "@/components/ux/SimpleResultHero";
 import { WhatNextPanel } from "@/components/ux/WhatNextPanel";
@@ -87,8 +92,8 @@ export function MojeMoznostiResultView({
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Cíl: {purposeLabel(profile.intent)}. Sazba{" "}
-            {result.ratePercentUsed.toFixed(2)} % ({result.rateUiKind}). Nejde o
-            schválení banky.
+            {result.ratePercentUsed.toFixed(2).replace(".", ",")} %{" "}
+            ({rateUiKindLabel(result.rateUiKind)}). Nejde o schválení banky.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -190,7 +195,8 @@ export function MojeMoznostiResultView({
             </span>
           </p>
           <p className="text-sm font-medium text-text-dark">
-            {result.readiness.band}
+            {result.readiness.bandLabel ||
+              readinessBandLabel(result.readiness.band)}
           </p>
         </div>
 
@@ -263,7 +269,7 @@ export function MojeMoznostiResultView({
                 </span>
               </div>
               <p className="mt-1 text-[10px] font-bold uppercase text-muted-foreground">
-                {m.dataStatus}
+                {dataStatusTextLabel(m.dataStatus)}
               </p>
               {m.whyMatch[0] ? (
                 <p className="mt-2 text-xs text-muted-foreground">

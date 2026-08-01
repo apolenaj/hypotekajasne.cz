@@ -38,5 +38,16 @@ describe("progressive disclosure primitives exist", () => {
     assert.ok(next.includes("Co mám udělat dál") || next.includes("CTA_CS.whatNext"));
     assert.ok(explain.includes("aria-expanded"));
     assert.ok(next.includes("what-next-heading"));
+    assert.ok(next.includes("ExpertContactCta"));
+  });
+});
+
+describe("expert contact CTA", () => {
+  it("exposes copy + dialog lead source expert_request", () => {
+    assert.ok(CTA_CS.expertContact.includes("experta"));
+    const dialog = read("components/forms/ExpertContactDialog.tsx");
+    assert.ok(dialog.includes("expert_request"));
+    assert.ok(dialog.includes("volitelné"));
+    assert.ok(dialog.includes("Toast"));
   });
 });

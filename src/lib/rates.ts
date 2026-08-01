@@ -43,23 +43,18 @@ function toNumber(value: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-/** KB insider 4.74/4.94; jinak mezera 0.3 = orientační doplnění. */
+/**
+ * Detekce orientačního „bez pojištění“.
+ * KB pár 5,14 / 5,34 (+0,20 za balíček pojištění) není +0,30 tržní doplněk.
+ */
 function detectOrientationalWithout(
   withRate: number | null,
   withoutRate: number | null
 ): boolean {
   if (withRate == null || withoutRate == null) return false;
-  if (
-    Math.abs(withRate - 4.74) < 0.001 &&
-    Math.abs(withoutRate - 4.94) < 0.001
-  ) {
-    return false;
-  }
-  if (
-    Math.abs(withRate - 5.09) < 0.001 &&
-    Math.abs(withoutRate - 5.39) < 0.001
-  ) {
-    return false;
+  // KB: +0,20 p.b. (životní + nemovitost) — označ jako orientační, pokud odvozeno
+  if (Math.abs(withoutRate - withRate - 0.2) < 0.021) {
+    return true;
   }
   return Math.abs(withoutRate - withRate - 0.3) < 0.021;
 }

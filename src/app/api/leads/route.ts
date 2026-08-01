@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { validateFormConsent } from "@/lib/consent/records";
 import {
   isLeadSource,
+  isPhonePrimaryLeadSource,
   LEAD_SOURCE_LABELS,
   type LeadPayload,
 } from "@/lib/leads";
@@ -64,23 +65,45 @@ function normalizePayload(
       ? (data.metadata as Record<string, unknown>)
       : undefined;
 
-  if (!name || !email || !email.includes("@")) {
-    return {
-      error:
-        "Chybí jméno nebo platný e-mail. Vyplňte obě pole — e-mail ve tvaru jmeno@domena.cz.",
-    };
-  }
   if (!isLeadSource(source)) {
     return {
       error:
         "Neplatný zdroj formuláře. Obnovte stránku a odešlete formulář znovu.",
     };
   }
-  if (source !== "newsletter" && phone.length < 6) {
-    return {
-      error:
-        "Telefon chybí nebo je příliš krátký. Zadejte číslo včetně předvolby (min. 6 znaků).",
-    };
+
+  if (!name) {
+    return { error: "Chybí jméno. Vyplňte jméno a příjmení." };
+  }
+
+  const phonePrimary = isPhonePrimaryLeadSource(source);
+
+  if (phonePrimary) {
+    if (phone.length < 6) {
+      return {
+        error:
+          "Telefon je povinný. Zadejte číslo včetně předvolby (min. 6 znaků).",
+      };
+    }
+    if (email && !email.includes("@")) {
+      return {
+        error:
+          "E-mail není platný. Použijte tvar jmeno@domena.cz, nebo pole nechte prázdné.",
+      };
+    }
+  } else {
+    if (!email || !email.includes("@")) {
+      return {
+        error:
+          "Chybí platný e-mail. Vyplňte adresu ve tvaru jmeno@domena.cz.",
+      };
+    }
+    if (source !== "newsletter" && phone.length < 6) {
+      return {
+        error:
+          "Telefon chybí nebo je příliš krátký. Zadejte číslo včetně předvolby (min. 6 znaků).",
+      };
+    }
   }
 
   const consentCheck = validateFormConsent(source, parseConsent(data.consent));
@@ -91,7 +114,8 @@ function normalizePayload(
   return {
     payload: {
       name: source === "newsletter" && name === "—" ? "Newsletter" : name,
-      email,
+      // DB sloupec email je NOT NULL — bez e-mailu uložíme značku
+      email: email || (phonePrimary ? "—" : email),
       phone: phone || undefined,
       source,
       country,

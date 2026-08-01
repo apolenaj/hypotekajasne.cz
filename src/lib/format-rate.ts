@@ -25,10 +25,7 @@ export function formatPaymentOrIndividual(
 }
 
 /** Banky s reálnou (neorientační) sazbou bez pojištění u klasické hypotéky. */
-const REAL_CLASSIC_WITHOUT_BANK_IDS = new Set([
-  "komercni-banka",
-  "unicredit-bank",
-]);
+const REAL_CLASSIC_WITHOUT_BANK_IDS = new Set(["unicredit-bank"]);
 
 export function isClassicWithoutOrientational(bankId: string): boolean {
   return !REAL_CLASSIC_WITHOUT_BANK_IDS.has(bankId);

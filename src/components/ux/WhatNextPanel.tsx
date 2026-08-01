@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { ExpertContactCta } from "@/components/forms/ExpertContactCta";
 import {
   CTA_CS,
   CTA_PRIMARY_CLASS,
@@ -20,26 +21,33 @@ export type WhatNextAction = {
 
 /**
  * Jednotný panel „Co mám udělat dál?“ po dokončení nástroje.
- * Jedno jasné primary CTA + max 3 sekundární.
+ * Jedno jasné primary CTA + max 3 sekundární + kontakt na experta.
  */
 export function WhatNextPanel({
   title = CTA_CS.whatNext,
   lead = "Jeden doporučený krok — zbytek můžete přeskočit.",
   actions,
+  showExpertContact = true,
+  expertContextNote,
   className,
 }: {
   title?: string;
   lead?: string;
   actions: WhatNextAction[];
+  /** Výrazný CTA na dialog s poptávkou experta. */
+  showExpertContact?: boolean;
+  expertContextNote?: string;
   className?: string;
 }) {
-  if (actions.length === 0) return null;
+  if (actions.length === 0 && !showExpertContact) return null;
 
   const primary =
-    actions.find((a) => a.primary) ?? actions[0];
-  const secondary = actions
-    .filter((a) => a.id !== primary.id)
-    .slice(0, 3);
+    actions.length > 0
+      ? (actions.find((a) => a.primary) ?? actions[0])
+      : null;
+  const secondary = primary
+    ? actions.filter((a) => a.id !== primary.id).slice(0, 3)
+    : [];
 
   return (
     <section
@@ -64,20 +72,35 @@ export function WhatNextPanel({
         </p>
       ) : null}
 
-      <div className="mt-5">
-        <Link
-          href={primary.href}
-          className={cn(CTA_PRIMARY_CLASS, "w-full sm:w-auto")}
-        >
-          {primary.label}
-          <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
-        </Link>
-        {primary.description ? (
-          <p className="mt-2 max-w-lg text-xs text-muted-foreground">
-            {primary.description}
-          </p>
-        ) : null}
-      </div>
+      {showExpertContact ? (
+        <div className="mt-5">
+          <ExpertContactCta
+            variant="card"
+            contextNote={
+              expertContextNote ??
+              "Poptávka z panelu „Co mám udělat dál?“."
+            }
+            metadata={{ surface: "what_next_panel" }}
+          />
+        </div>
+      ) : null}
+
+      {primary ? (
+        <div className={cn(showExpertContact ? "mt-4" : "mt-5")}>
+          <Link
+            href={primary.href}
+            className={cn(CTA_PRIMARY_CLASS, "w-full sm:w-auto")}
+          >
+            {primary.label}
+            <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+          </Link>
+          {primary.description ? (
+            <p className="mt-2 max-w-lg text-xs text-muted-foreground">
+              {primary.description}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
 
       {secondary.length > 0 ? (
         <ul className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">

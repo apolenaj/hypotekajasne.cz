@@ -3,28 +3,24 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { RateProvenanceBanner } from "@/components/calculators/RateProvenanceBanner";
+import { FormattedMoneyInput } from "@/components/ui/FormattedMoneyInput";
 import { estimateAffordability } from "@/lib/affordability";
 import { formatCurrency } from "@/lib/calculators";
 import { missingDataLabel } from "@/lib/data/display";
 import { useMortgageRateEngine } from "@/lib/rates";
 import { routes } from "@/lib/routes";
 
-function parseAmount(raw: string): number {
-  const n = Number(raw.replace(/\s/g, "").replace(",", "."));
-  return Number.isFinite(n) && n >= 0 ? n : 0;
-}
-
 export function AffordabilityWidget() {
   const { resolved, loading } = useMortgageRateEngine(true);
-  const [income, setIncome] = useState("60 000");
-  const [cash, setCash] = useState("800 000");
-  const [liabilities, setLiabilities] = useState("0");
+  const [income, setIncome] = useState(60_000);
+  const [cash, setCash] = useState(800_000);
+  const [liabilities, setLiabilities] = useState(0);
 
   const result = useMemo(() => {
     return estimateAffordability({
-      monthlyIncome: parseAmount(income),
-      monthlyLiabilities: parseAmount(liabilities),
-      cash: parseAmount(cash),
+      monthlyIncome: income,
+      monthlyLiabilities: liabilities,
+      cash,
       ratePercent: resolved.ratePercent,
       termYears: 30,
     });
@@ -77,12 +73,12 @@ export function AffordabilityWidget() {
                 <span className="font-medium text-text-dark">
                   Čistý příjem / měs.
                 </span>
-                <input
-                  type="text"
-                  inputMode="decimal"
+                <FormattedMoneyInput
+                  id="afford-income"
                   value={income}
-                  onChange={(e) => setIncome(e.target.value)}
-                  className="mt-1.5 h-11 w-full rounded-lg border border-border bg-white px-3 tabular-nums text-text-dark outline-none focus-visible:ring-2 focus-visible:ring-deep-teal"
+                  onChange={setIncome}
+                  suffix="Kč"
+                  className="mt-1.5 rounded-lg border-border bg-white"
                   aria-describedby="afford-income-hint"
                 />
                 <span id="afford-income-hint" className="sr-only">
@@ -93,24 +89,25 @@ export function AffordabilityWidget() {
                 <span className="font-medium text-text-dark">
                   Vlastní zdroje
                 </span>
-                <input
-                  type="text"
-                  inputMode="decimal"
+                <FormattedMoneyInput
+                  id="afford-cash"
                   value={cash}
-                  onChange={(e) => setCash(e.target.value)}
-                  className="mt-1.5 h-11 w-full rounded-lg border border-border bg-white px-3 tabular-nums text-text-dark outline-none focus-visible:ring-2 focus-visible:ring-deep-teal"
+                  onChange={setCash}
+                  suffix="Kč"
+                  className="mt-1.5 rounded-lg border-border bg-white"
                 />
               </label>
               <label className="block text-sm">
                 <span className="font-medium text-text-dark">
                   Splátky úvěrů
                 </span>
-                <input
-                  type="text"
-                  inputMode="decimal"
+                <FormattedMoneyInput
+                  id="afford-liabilities"
                   value={liabilities}
-                  onChange={(e) => setLiabilities(e.target.value)}
-                  className="mt-1.5 h-11 w-full rounded-lg border border-border bg-white px-3 tabular-nums text-text-dark outline-none focus-visible:ring-2 focus-visible:ring-deep-teal"
+                  onChange={setLiabilities}
+                  showZero
+                  suffix="Kč"
+                  className="mt-1.5 rounded-lg border-border bg-white"
                 />
               </label>
             </div>
@@ -148,9 +145,9 @@ export function AffordabilityWidget() {
 
             <Link
               href={routes.mojeMoznosti}
-              className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-lg bg-deep-teal px-5 text-sm font-semibold text-white transition-colors hover:bg-deep-teal-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal focus-visible:ring-offset-2 sm:w-auto"
+              className="mt-5 inline-flex h-11 min-h-11 items-center justify-center rounded-lg bg-deep-teal px-5 text-sm font-semibold text-white transition-colors hover:bg-deep-teal-light"
             >
-              Zjistit moje možnosti →
+              Pokračovat v průvodci
             </Link>
           </form>
         </div>

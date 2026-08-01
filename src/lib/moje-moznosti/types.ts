@@ -27,7 +27,10 @@ export type MojeMoznostiFinancePanel = {
 
 export type MojeMoznostiReadinessPanel = {
   score: number;
+  /** Interní kód (analytics) — do UI použij bandLabel. */
   band: string;
+  /** České UI znění pásma připravenosti. */
+  bandLabel: string;
   obstacles: string[];
   strengths: string[];
   nextStep: string | null;

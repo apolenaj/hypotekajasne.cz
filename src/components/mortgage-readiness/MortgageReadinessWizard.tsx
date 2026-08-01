@@ -40,6 +40,7 @@ import { useMortgageRateEngine } from "@/lib/rates";
 import { routes } from "@/lib/routes";
 import { getPartnerClaimLabels } from "@/lib/partners/verification";
 import { CTA_CS, CTA_PRIMARY_CLASS, CTA_SECONDARY_CLASS } from "@/lib/ux/cta";
+import { FormattedMoneyInput } from "@/components/ui/FormattedMoneyInput";
 import { ExplainDisclosure } from "@/components/ux/ExplainDisclosure";
 import { WhatNextPanel } from "@/components/ux/WhatNextPanel";
 import { cn } from "@/lib/utils";
@@ -67,9 +68,53 @@ const BASE_STEPS: { id: StepId; label: string }[] = [
   { id: "result", label: "Výsledek" },
 ];
 
+/** Desetinná čísla (sazby, roky) — ne money. */
 function parseNum(raw: string): number {
-  const n = Number(String(raw).replace(/\s/g, "").replace(",", "."));
+  const n = Number(
+    String(raw)
+      .replace(/[\s\u00a0\u202f]/g, "")
+      .replace(",", ".")
+  );
   return Number.isFinite(n) && n >= 0 ? n : 0;
+}
+
+function MoneyFormField({
+  label,
+  hint,
+  value,
+  onChange,
+  placeholder,
+  allowEmpty = false,
+  showZero = false,
+}: {
+  label: string;
+  hint?: string;
+  value: number | null | undefined;
+  onChange: (n: number | null) => void;
+  placeholder?: string;
+  allowEmpty?: boolean;
+  showZero?: boolean;
+}) {
+  const id = useId();
+  return (
+    <div>
+      <FieldLabel htmlFor={id} hint={hint}>
+        {label}
+      </FieldLabel>
+      <FormattedMoneyInput
+        id={id}
+        value={value ?? 0}
+        onChange={(n) => {
+          if (allowEmpty && n === 0) onChange(null);
+          else onChange(n);
+        }}
+        showZero={showZero || (!allowEmpty && value === 0)}
+        placeholder={placeholder}
+        suffix="Kč"
+        className="mt-1.5 rounded-lg border-border bg-white"
+      />
+    </div>
+  );
 }
 
 function OptionButton({
@@ -550,11 +595,11 @@ export function MortgageReadinessWizard() {
                   ))}
                 </div>
               </div>
-              <FormField
+              <MoneyFormField
                 label="Čistý měsíční příjem (Kč)"
-                value={answers.netIncome ? String(answers.netIncome) : ""}
-                onChange={(v) => patch("netIncome", parseNum(v))}
-                placeholder="např. 65000"
+                value={answers.netIncome}
+                onChange={(n) => patch("netIncome", n ?? 0)}
+                placeholder="např. 65 000"
               />
               <FormField
                 label="Měsíce kontinuity příjmu"
@@ -580,25 +625,19 @@ export function MortgageReadinessWizard() {
               <h2 className="font-heading text-xl font-bold text-text-dark">
                 Závazky a historie
               </h2>
-              <FormField
+              <MoneyFormField
                 label="Měsíční splátky úvěrů (Kč)"
-                value={
-                  answers.otherLiabilities
-                    ? String(answers.otherLiabilities)
-                    : ""
-                }
-                onChange={(v) => patch("otherLiabilities", parseNum(v))}
+                value={answers.otherLiabilities}
+                onChange={(n) => patch("otherLiabilities", n ?? 0)}
+                showZero
                 placeholder="0"
               />
-              <FormField
+              <MoneyFormField
                 label="Splátky / limity karet (Kč / měs.)"
                 hint="Orientační měsíční zátěž z limitů"
-                value={
-                  answers.creditLimitPayments
-                    ? String(answers.creditLimitPayments)
-                    : ""
-                }
-                onChange={(v) => patch("creditLimitPayments", parseNum(v))}
+                value={answers.creditLimitPayments}
+                onChange={(n) => patch("creditLimitPayments", n ?? 0)}
+                showZero
                 placeholder="0"
               />
               <div>
@@ -655,17 +694,12 @@ export function MortgageReadinessWizard() {
 
               {answers.intent === "refinance" && (
                 <>
-                  <FormField
+                  <MoneyFormField
                     label="Zůstatek úvěru (Kč)"
-                    value={
-                      answers.currentBalance != null
-                        ? String(answers.currentBalance)
-                        : ""
-                    }
-                    onChange={(v) =>
-                      patch("currentBalance", v === "" ? null : parseNum(v))
-                    }
-                    placeholder="např. 2800000"
+                    value={answers.currentBalance}
+                    onChange={(n) => patch("currentBalance", n)}
+                    allowEmpty
+                    placeholder="např. 2 800 000"
                   />
                   <div className="grid gap-4 sm:grid-cols-2">
                     <FormField
@@ -699,28 +733,23 @@ export function MortgageReadinessWizard() {
                 </>
               )}
 
-              <FormField
+              <MoneyFormField
                 label="Vlastní hotovost / akontace (Kč)"
-                value={answers.ownFunds ? String(answers.ownFunds) : ""}
-                onChange={(v) => patch("ownFunds", parseNum(v))}
-                placeholder="např. 800000"
+                value={answers.ownFunds}
+                onChange={(n) => patch("ownFunds", n ?? 0)}
+                placeholder="např. 800 000"
               />
 
               {(answers.intent === "owner_occupied" ||
                 answers.intent === "investment" ||
                 answers.intent === "foreign_purchase") && (
-                <FormField
+                <MoneyFormField
                   label="Orientační cílová cena (Kč)"
                   hint="Volitelné — pomáhá modelu LTV"
-                  value={
-                    answers.targetPrice != null
-                      ? String(answers.targetPrice)
-                      : ""
-                  }
-                  onChange={(v) =>
-                    patch("targetPrice", v === "" ? null : parseNum(v))
-                  }
-                  placeholder="např. 5500000"
+                  value={answers.targetPrice}
+                  onChange={(n) => patch("targetPrice", n)}
+                  allowEmpty
+                  placeholder="např. 5 500 000"
                 />
               )}
 

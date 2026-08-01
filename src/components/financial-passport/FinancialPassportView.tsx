@@ -29,6 +29,7 @@ import { scoreToBucket, track, trackCanonical } from "@/lib/analytics";
 import { useCurrentRates } from "@/lib/rates";
 import { routes } from "@/lib/routes";
 import { CTA_CS, CTA_SECONDARY_CLASS } from "@/lib/ux/cta";
+import { ExpertContactCta } from "@/components/forms/ExpertContactCta";
 import { WhatNextPanel } from "@/components/ux/WhatNextPanel";
 import { cn } from "@/lib/utils";
 
@@ -335,6 +336,15 @@ function PassportContent({
       </Section>
 
       <Section title="Co mám udělat dál?" id="next-actions">
+        <ExpertContactCta
+          variant="card"
+          className="mb-4"
+          contextNote="Poptávka z Finančního pasu — sekce Co mám udělat dál."
+          metadata={{
+            surface: "financial_passport_next_actions",
+            readiness_score: doc.readiness.overall,
+          }}
+        />
         {doc.readiness.nextActions.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             Model nevidí rychlý krok — zkuste what-if simulaci nebo doplňte profil.
@@ -573,6 +583,8 @@ function PassportContent({
       ) : null}
 
       <WhatNextPanel
+        showExpertContact={false}
+        expertContextNote="Poptávka z Finančního pasu — WhatNext panel."
         actions={[
           {
             id: "edit",

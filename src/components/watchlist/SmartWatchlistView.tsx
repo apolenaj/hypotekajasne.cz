@@ -32,6 +32,11 @@ import {
   buildFinancialPassportDocument,
   loadFinancialProfile,
 } from "@/lib/financial-passport";
+import {
+  claimKindLabel,
+  severityLabel,
+  watchAlertKindLabel,
+} from "@/lib/i18n/system-labels";
 import { useCurrentRates } from "@/lib/rates";
 import { routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
@@ -373,7 +378,9 @@ export function SmartWatchlistView() {
                         <p className="font-semibold text-text-dark">{a.title}</p>
                         <p className="mt-1 text-muted-foreground">{a.body}</p>
                         <p className="mt-2 text-[10px] font-bold uppercase text-deep-teal">
-                          {a.claimKind} · {a.kind} · {a.severity}
+                          {claimKindLabel(a.claimKind)} ·{" "}
+                          {watchAlertKindLabel(a.kind)} ·{" "}
+                          {severityLabel(a.severity)}
                         </p>
                         {a.href ? (
                           <Link

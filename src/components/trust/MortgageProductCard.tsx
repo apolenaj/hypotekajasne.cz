@@ -67,7 +67,24 @@ export function MortgageProductCard({
             {product.lender}
           </p>
           <h3 className="mt-0.5 font-heading text-base font-semibold text-text-dark">
-            {product.productName}
+            {product.productName.includes("(s pojištěním)") ||
+            product.productName.includes("(bez pojištění)") ? (
+              <>
+                {product.productName.replace(
+                  /\s*\((s pojištěním|bez pojištění)\)\s*$/,
+                  ""
+                )}{" "}
+                <span className="font-semibold text-deep-teal">
+                  (
+                  {product.productName.includes("bez pojištění")
+                    ? "bez pojištění"
+                    : "s pojištěním"}
+                  )
+                </span>
+              </>
+            ) : (
+              product.productName
+            )}
           </h3>
         </div>
         <DataStatusBadge status={effectiveStatus} />
@@ -94,7 +111,7 @@ export function MortgageProductCard({
         </div>
         <div>
           <dt className="text-xs text-muted-foreground">Pojištění</dt>
-          <dd className="mt-0.5 font-medium text-text-dark">
+          <dd className="mt-0.5 font-semibold text-text-dark">
             {product.requiredInsurance === true
               ? "Vyžadováno / v sazbě"
               : product.requiredInsurance === false

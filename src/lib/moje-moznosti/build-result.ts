@@ -89,9 +89,10 @@ export function buildMojeMoznostiResult(
     readiness: {
       score: doc.readiness.overall,
       band: doc.readiness.band,
+      bandLabel: doc.readiness.bandLabel,
       obstacles: doc.obstacles.slice(0, 4),
       strengths: doc.strengths.slice(0, 3),
-      nextStep: doc.improvements[0] ?? doc.readiness.band,
+      nextStep: doc.improvements[0] ?? doc.readiness.bandLabel,
       claimKind: "MODEL",
       disclaimer: MODEL_DISCLAIMER,
     },

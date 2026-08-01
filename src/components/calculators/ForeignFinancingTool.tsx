@@ -11,7 +11,7 @@ import {
   formatCurrency,
   type CountryId,
 } from "@/lib/calculators";
-import { formatNumber, parseFormattedNumber } from "@/lib/format";
+import { FormattedMoneyInput } from "@/components/ui/FormattedMoneyInput";
 import { missingDataLabel } from "@/lib/data/display";
 import {
   calculateFinancing,
@@ -55,19 +55,13 @@ function MoneyField({
       <Label htmlFor={id} className="text-sm font-medium text-text-dark">
         {label}
       </Label>
-      <div className="relative">
-        <Input
-          id={id}
-          type="text"
-          inputMode="numeric"
-          value={formatNumber(value)}
-          onChange={(e) => onChange(parseFormattedNumber(e.target.value))}
-          className="h-11 pr-14 rounded-lg bg-white border-border tabular-nums"
-        />
-        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">
-          {suffix}
-        </span>
-      </div>
+      <FormattedMoneyInput
+        id={id}
+        value={value}
+        onChange={onChange}
+        suffix={suffix}
+        className="rounded-lg border-border bg-white"
+      />
     </div>
   );
 }

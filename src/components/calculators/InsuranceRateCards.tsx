@@ -76,7 +76,10 @@ export function InsuranceRateCards({
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold text-gray-900 leading-snug">
-                Měsíční splátka s pojištěním
+                Měsíční splátka{" "}
+                <span className="font-semibold text-emerald-900">
+                  s pojištěním
+                </span>
               </p>
               <p className="mt-1 text-xs text-emerald-800 font-medium">
                 {rateWithInsurance != null
@@ -126,7 +129,10 @@ export function InsuranceRateCards({
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold text-gray-900 leading-snug">
-                Měsíční splátka bez pojištění
+                Měsíční splátka{" "}
+                <span className="font-semibold text-deep-teal">
+                  bez pojištění
+                </span>
               </p>
               <p className="mt-1 text-xs text-deep-teal font-medium">
                 {rateWithoutInsurance != null

@@ -38,7 +38,8 @@ import {
 } from "@/lib/bank-rates";
 import { formatCurrency, calculateAnnuityPayment } from "@/lib/calculators";
 import { formatRate } from "@/lib/money";
-import { formatNumber, parseFormattedNumber } from "@/lib/format";
+import { FormattedMoneyInput } from "@/components/ui/FormattedMoneyInput";
+import { rateUiKindLabel } from "@/lib/i18n/system-labels";
 import type { DataStatus } from "@/lib/data/types";
 import { missingDataLabel } from "@/lib/data/display";
 import {
@@ -107,19 +108,13 @@ function MoneyInput({
       <Label htmlFor={id} className="text-sm font-medium text-text-dark">
         {label}
       </Label>
-      <div className="relative">
-        <Input
-          id={id}
-          type="text"
-          inputMode="numeric"
-          value={formatNumber(value)}
-          onChange={(e) => onChange(parseFormattedNumber(e.target.value))}
-          className="h-11 pr-12 rounded-lg bg-white border-border tabular-nums"
-        />
-        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">
-          Kč
-        </span>
-      </div>
+      <FormattedMoneyInput
+        id={id}
+        value={value}
+        onChange={onChange}
+        suffix="Kč"
+        className="rounded-lg border-border bg-white"
+      />
     </div>
   );
 }
@@ -622,7 +617,8 @@ export function CzMortgageDecisionTool() {
           </h3>
           {decision.rateUsed != null ? (
             <p className="text-xs text-muted-foreground">
-              Použitá sazba {fmtPct(decision.rateUsed)} · {resolved.uiKind} ·
+              Použitá sazba {fmtPct(decision.rateUsed)} ·{" "}
+              {rateUiKindLabel(resolved.uiKind)} ·
               fixace {fixationYears} let
             </p>
           ) : null}
@@ -865,9 +861,12 @@ export function CzMortgageDecisionTool() {
                   </div>
                 </dl>
                 <p className="mt-2 text-xs text-muted-foreground">
-                  Podmínky: {hasInsurance ? "s pojištěním" : "bez pojištění"} ·
-                  splatnost {termYears} let · fixace v modelu {fixationYears}{" "}
-                  let
+                  Podmínky:{" "}
+                  <span className="font-semibold text-text-dark">
+                    {hasInsurance ? "s pojištěním" : "bez pojištění"}
+                  </span>{" "}
+                  · splatnost {termYears} let · fixace v modelu{" "}
+                  {fixationYears} let
                 </p>
                 <div className="mt-2">
                   <LastUpdated

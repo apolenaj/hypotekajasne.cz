@@ -25,6 +25,10 @@ export const CTA_CS = {
   hideAdvanced: "Skrýt podrobnosti",
   whatNext: "Co mám udělat dál?",
   nextStep: "Další krok",
+  expertContact: "Získat přesný výpočet od experta",
+  expertContactAlt: "Chci nabídku na míru",
+  expertContactLead:
+    "Orientační čísla už znáte. Spojte se s naším expertem pro přesnou kalkulaci a neveřejné slevy z bank.",
 } as const;
 
 export type CtaLabelKey = keyof typeof CTA_CS;

@@ -128,12 +128,11 @@ export function normalizeScrapedBank(
     );
   }
 
-  // Bez pojištění: jen reálná sazba (ne inventura). Orientační +0.3 = MODEL.
+  // Bez pojištění: reálná sazba, nebo odhad (KB +0,20 / ostatní +0,30) = MODEL.
   if (scraped.rateWithoutInsurance != null) {
     const withoutEstimated =
       scraped.withoutInsuranceEstimated === true &&
-      scraped.id !== "unicredit-bank" &&
-      scraped.id !== "komercni-banka";
+      scraped.id !== "unicredit-bank";
 
     const withoutExample =
       scraped.rpsnWithoutInsurance != null &&

@@ -33,7 +33,7 @@ export const DATA_CATALOG: DataCatalogEntry[] = [
     ],
     canonicalModule: "supabase:bank_rates (+ ORIENTATIONAL_WITHOUT_SURCHARGE)",
     legacyOrigin:
-      "LIVE u UniCredit PCE / KB insider; jinak MODEL +0.3 p.b.",
+      "LIVE u UniCredit PCE; KB model +0.2; jinak MODEL +0.3 p.b.",
     defaultStatus: "MODEL",
     unit: "percent_pa",
     country: "cz",
@@ -41,7 +41,7 @@ export const DATA_CATALOG: DataCatalogEntry[] = [
   {
     id: "rate.cz.kb.insider",
     domain: "rates",
-    label: "KB insider 4.74 % / 4.94 %",
+    label: "KB fallback 5.14 % / 5.34 % (od sazba s pojištěním)",
     usedIn: ["src/lib/scrape/bank-scrapers.ts"],
     canonicalModule: "src/lib/scrape/rate-policy.ts#KB_INSIDER_RATES",
     legacyOrigin: "Manuální tržní údaj od provozovatele",

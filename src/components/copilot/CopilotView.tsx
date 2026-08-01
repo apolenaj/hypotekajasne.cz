@@ -24,6 +24,7 @@ import {
   type CopilotResponseMeta,
 } from "@/lib/copilot";
 import { categorizeCopilotPrompt, track } from "@/lib/analytics";
+import { rateUiKindLabel } from "@/lib/i18n/system-labels";
 import { useMortgageRateEngine } from "@/lib/rates";
 import { routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
@@ -349,9 +350,9 @@ export function CopilotView() {
             čerstvostí zdrojů a bez příslibu schválení úvěru.
           </p>
           <p className="mt-2 text-xs text-emerald-100/80">
-            Sazba ve výpočtech: {resolved.uiKind} ·{" "}
+            Sazba ve výpočtech: {rateUiKindLabel(resolved.uiKind)} ·{" "}
             {modelRate.toFixed(2).replace(".", ",")} % p.a.
-            {resolved.isModelFallback ? " (modelový fallback)" : ""}
+            {resolved.isModelFallback ? " (modelový výpočet)" : ""}
           </p>
         </div>
       </section>

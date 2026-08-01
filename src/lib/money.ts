@@ -57,7 +57,9 @@ export function formatMoney(
     style: "decimal",
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
-  }).format(digits === 0 ? Math.round(amount) : amount);
+  })
+    .format(digits === 0 ? Math.round(amount) : amount)
+    .replace(/[\u00a0\u202f\u2009\u2007\s]/g, "\u00a0");
 
   return `${formatted}\u00a0${meta.suffix}`;
 }

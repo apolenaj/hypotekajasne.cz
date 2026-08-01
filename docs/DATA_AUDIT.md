@@ -13,7 +13,7 @@ Jednotný Source of Truth (SoT) pro dynamická data. Cíl: žádná tiše konfli
 | Live rates | `src/lib/data/live-rates.ts` | Supabase řádky → `DataRecord` |
 | Regulatory | `src/lib/data/static-regulatory.ts` | ČNB LTV/DTI + UX DSTI prahy |
 | Market defaults | `src/lib/data/static-market.ts` | Obal `countryConfigs` jako MODELLED |
-| Rate policy | `src/lib/scrape/rate-policy.ts` | KB insider + orientační +0.3 (bez cheerio) |
+| Rate policy | `src/lib/scrape/rate-policy.ts` | KB fallback 5.14/5.34 + KB +0.2 / ostatní +0.3 |
 | Public API | `src/lib/data/index.ts` | Re-exporty |
 
 **Status hodnoty:** `LIVE` \| `VERIFIED` \| `MODELLED` \| `PARTNER_QUOTE` \| `STALE`
@@ -27,8 +27,8 @@ Jednotný Source of Truth (SoT) pro dynamická data. Cíl: žádná tiše konfli
 | Údaj | Původ | Status | Kde se ukládá | Kde se používá | Manuální ověření |
 |------|--------|--------|---------------|----------------|------------------|
 | Klasická s pojištěním (6 bank) | Scraper oficiálních webů / agregátorů | LIVE | Supabase `bank_rates` | `bank-rates.ts`, `MortgageCalculator`, `banking.ts` nabídek | Cron `/api/scrape-rates`; spot-check banky |
-| Klasická bez pojištění | UniCredit PCE reálná; KB insider; ostatní `+0.3` | LIVE / PARTNER_QUOTE / MODELLED | `bank_rates.rate_without_*` | `InsuranceRateCards`, srovnání | KB insider v `rate-policy.ts`; UniCredit CPI=No |
-| KB insider 4.74 / 4.94 | Provozovatel | PARTNER_QUOTE | Hardcoded `KB_INSIDER_RATES` | Scraper KB override | Aktualizovat při změně nabídky KB |
+| Klasická bez pojištění | UniCredit PCE reálná; KB odhad `+0.2`; ostatní `+0.3` | LIVE / MODELLED | `bank_rates.rate_without_*` | `InsuranceRateCards`, srovnání | KB `KB_INSURANCE_PACKAGE_SURCHARGE_PP`; UniCredit CPI=No |
+| KB fallback 5.14 / 5.34 | Scrape kb.cz „od“; fallback `KB_INSIDER_RATES` | LIVE / PARTNER_QUOTE | `rate-policy.ts` + scraper | Scraper KB preferuje scrapovanou „od“ sazbu | Spot-check https://www.kb.cz/cs/obcane/pujcky/hypoteky/hypoteka |
 | Agregát kalkulačky | Prefer UniCredit → KB → first z scrape | LIVE | `current_rates` (+ fallback min `bank_rates`) | `rates.ts`, kalkulačky, onboarding | Po scrape zkontrolovat `current_rates` |
 | Americká s pojištěním | Scraper / Peníze.cz | LIVE (nullable) | `bank_rates.american_*` | Americká nabídka | Null → „Na vyžádání“ |
 | Americká bez pojištění | Typicky `+0.3` | MODELLED | `bank_rates` | UI `*orientačně` | — |
@@ -107,7 +107,7 @@ UI: `HistoricalTrendsView.tsx`.
 
 ```
 LIVE ────────── CZ sazby/RPSN ze scrapu → Supabase
-PARTNER_QUOTE ─ KB insider (rate-policy)
+PARTNER_QUOTE ─ KB fallback při selhání scrapu (rate-policy)
 MODELLED ────── +0.3 bez pojištění, countryConfigs, historie, výnosy měst, DSTI UI prahy
 VERIFIED ────── ČNB limity, editorial tax/legal (po kontrole člověkem)
 STALE ───────── Null/chybějící live → UI „Data ověřujeme“
@@ -116,7 +116,7 @@ STALE ───────── Null/chybějící live → UI „Data ověřuj
 ### Co ověřovat manuálně (checklist)
 
 1. Po každém cron scrape: 6 řádků `bank_rates`, RPSN null jen pokud zdroj opravdu nemá.
-2. KB insider vs aktuální nabídka KB (aktualizace `rate-policy.ts`).
+2. KB scrapovaná „od“ sazba vs fallback v `rate-policy.ts` (aktuálně 5,14 %).
 3. UniCredit PCE `CPI=B` / `CPI=No` stále vrací reálné páry.
 4. ČNB LTV/DTI texty v `cnb-limits.ts` po změně makroobezřetnostních doporučení.
 5. Daňové a právní texty při změně legislativy.

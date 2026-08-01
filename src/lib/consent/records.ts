@@ -40,6 +40,7 @@ export const COOKIE_STORAGE_KEY = "hj_cookie_consent_v1";
 export function isPartnerHandoffLeadSource(source: LeadSource): boolean {
   return (
     source === "lead_gen" ||
+    source === "expert_request" ||
     source === "navrh_na_miru" ||
     source === "investment_passport" ||
     source === "mortgage_calculator" ||
@@ -70,6 +71,7 @@ export function defaultPartnerScope(
   if (source === "property_analysis") return "majetio";
   if (
     source === "lead_gen" ||
+    source === "expert_request" ||
     source === "navrh_na_miru" ||
     source === "investment_passport" ||
     source === "mortgage_calculator" ||

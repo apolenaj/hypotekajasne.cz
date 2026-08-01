@@ -28,7 +28,7 @@ export function bankRateRowToMortgageRateRecord(
   });
 
   const conditions: string[] = [
-    hasInsurance ? "s pojištěním schopnosti splácet" : "bez pojištění",
+    hasInsurance ? "s pojištěním" : "bez pojištění",
   ];
   if (status === "STALE") {
     conditions.push("údaj starší než LIVE limit — neprezentovat jako aktuální lístek");
