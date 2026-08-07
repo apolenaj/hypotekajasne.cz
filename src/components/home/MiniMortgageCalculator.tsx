@@ -7,12 +7,16 @@ import { Label } from "@/components/ui/label";
 import { formatCurrency } from "@/lib/calculators";
 import {
   computeMiniMortgage,
+  matchMiniTeaserOffers,
+  miniMortgageCtaLabel,
   MINI_MORTGAGE_DEFAULTS,
   MINI_MORTGAGE_TERM_OPTIONS,
 } from "@/lib/mini-mortgage-calculator";
-import { MODEL_FALLBACK_RATE_PERCENT } from "@/lib/rates/model-fallback";
 import { routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
+
+const controlClassName =
+  "h-11 min-h-11 w-full min-w-0 rounded-md border border-border bg-white px-2.5 text-base font-semibold text-text-dark outline-none focus:border-deep-teal focus:ring-2 focus:ring-deep-teal/20 sm:w-auto [color-scheme:light]";
 
 function MoneyField({
   id,
@@ -41,6 +45,14 @@ function MoneyField({
   );
 }
 
+function parseInterestRate(raw: string): number | null {
+  const normalized = raw.trim().replace(/\s/g, "").replace(",", ".");
+  if (!normalized) return null;
+  const value = Number(normalized);
+  if (!Number.isFinite(value)) return null;
+  return Math.min(25, Math.max(0, value));
+}
+
 export function MiniMortgageCalculator() {
   const [propertyPrice, setPropertyPrice] = useState<number>(
     MINI_MORTGAGE_DEFAULTS.propertyPriceCzk
@@ -51,8 +63,12 @@ export function MiniMortgageCalculator() {
   const [termYears, setTermYears] = useState<number>(
     MINI_MORTGAGE_DEFAULTS.termYears
   );
-
-  const modelRate = MODEL_FALLBACK_RATE_PERCENT;
+  const [interestRate, setInterestRate] = useState<number>(
+    MINI_MORTGAGE_DEFAULTS.annualRatePercent
+  );
+  const [rateDraft, setRateDraft] = useState(
+    () => String(MINI_MORTGAGE_DEFAULTS.annualRatePercent).replace(".", ",")
+  );
 
   const result = useMemo(
     () =>
@@ -60,12 +76,18 @@ export function MiniMortgageCalculator() {
         propertyPriceCzk: propertyPrice,
         ownFundsCzk: ownFunds,
         termYears,
-        annualRatePercent: modelRate,
+        annualRatePercent: interestRate,
       }),
-    [propertyPrice, ownFunds, termYears, modelRate]
+    [propertyPrice, ownFunds, termYears, interestRate]
   );
 
-  const rateLabel = `${modelRate.toFixed(2).replace(".", ",")} % MODEL`;
+  const teaserMatch = useMemo(
+    () => matchMiniTeaserOffers(interestRate),
+    [interestRate]
+  );
+  const ctaLabel = miniMortgageCtaLabel(teaserMatch);
+
+  const rateDisplay = interestRate.toFixed(2).replace(".", ",");
   const ltvHigh = result.ltvPct > 80;
 
   return (
@@ -97,7 +119,7 @@ export function MiniMortgageCalculator() {
           onChange={setOwnFunds}
         />
 
-        <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 rounded-lg border border-border/80 bg-[#f7f9f8] px-3 py-2.5">
+        <div className="flex min-w-0 flex-wrap items-center gap-3 rounded-lg border border-border/80 bg-[#f7f9f8] px-3 py-2.5">
           <div className="min-w-0 flex-1 sm:flex-none">
             <Label htmlFor="mini-mortgage-term" className="sr-only">
               Doba splácení
@@ -106,7 +128,7 @@ export function MiniMortgageCalculator() {
               id="mini-mortgage-term"
               value={termYears}
               onChange={(e) => setTermYears(Number(e.target.value))}
-              className="h-11 min-h-11 w-full min-w-0 rounded-md border border-border bg-white px-2.5 text-base font-semibold text-text-dark outline-none focus:border-deep-teal focus:ring-2 focus:ring-deep-teal/20 sm:w-auto [color-scheme:light]"
+              className={controlClassName}
             >
               {MINI_MORTGAGE_TERM_OPTIONS.map((y) => (
                 <option key={y} value={y}>
@@ -115,13 +137,46 @@ export function MiniMortgageCalculator() {
               ))}
             </select>
           </div>
-          <p
-            className="shrink-0 text-sm font-semibold tabular-nums text-deep-teal"
-            title="Modelová sazba — nejde o aktuální nabídku banky"
-          >
-            {rateLabel}
-          </p>
+
+          <div className="relative min-w-0 flex-1 sm:w-[7.5rem] sm:flex-none">
+            <Label htmlFor="mini-mortgage-rate" className="sr-only">
+              Úroková sazba
+            </Label>
+            <input
+              id="mini-mortgage-rate"
+              type="text"
+              inputMode="decimal"
+              autoComplete="off"
+              value={rateDraft}
+              onChange={(e) => {
+                const next = e.target.value;
+                setRateDraft(next);
+                const parsed = parseInterestRate(next);
+                if (parsed != null) setInterestRate(parsed);
+              }}
+              onBlur={() => {
+                const parsed = parseInterestRate(rateDraft);
+                const next =
+                  parsed ?? MINI_MORTGAGE_DEFAULTS.annualRatePercent;
+                setInterestRate(next);
+                setRateDraft(next.toFixed(2).replace(".", ","));
+              }}
+              aria-describedby="mini-mortgage-rate-hint"
+              className={cn(controlClassName, "pr-8 tabular-nums")}
+              title="Modelová sazba — nejde o aktuální nabídku banky"
+            />
+            <span
+              className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground"
+              aria-hidden
+            >
+              %
+            </span>
+          </div>
         </div>
+        <p id="mini-mortgage-rate-hint" className="sr-only">
+          Modelová úroková sazba v procentech ročně. Nejde o aktuální nabídku
+          banky.
+        </p>
       </div>
 
       <hr className="my-5 border-border/80" />
@@ -164,13 +219,14 @@ export function MiniMortgageCalculator() {
         href={routes.mojeMoznosti}
         ctaId="hero_mini_calc_moje_moznosti"
         toolId="moje_moznosti"
-        className="mt-6 flex h-11 min-h-11 w-full items-center justify-center rounded-lg bg-muted-gold text-sm font-semibold text-text-dark transition-colors hover:bg-muted-gold-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal focus-visible:ring-offset-2"
+        className="mt-6 flex h-11 min-h-11 w-full items-center justify-center rounded-lg bg-muted-gold px-3 text-center text-sm font-semibold text-text-dark transition-colors hover:bg-muted-gold-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal focus-visible:ring-offset-2"
       >
-        Zjistit moje možnosti
+        {ctaLabel}
       </TrackedCtaLink>
 
       <p className="mt-3 text-center text-[10px] leading-snug text-muted-foreground">
-        Orientační model — sazba {rateLabel.toLowerCase()}, ne bankovní nabídka.
+        Orientační model — sazba {rateDisplay}&nbsp;% (model). Počty nabídek v
+        tlačítku jsou ilustrativní, ne aktuální lístek bank.
       </p>
     </article>
   );
