@@ -1,13 +1,12 @@
 import Link from "next/link";
 import { Scale } from "lucide-react";
+import { LegalOperatorIdentity } from "@/components/legal/LegalOperatorIdentity";
 import {
   CONSENT_POLICY_VERSION,
   COOKIE_POLICY_VERSION,
   CONSENT_PURPOSES,
-  formatOperatorAddress,
   getOperatorIdentity,
   getPaidAnalysisTerms,
-  operatorDisplayName,
   PROCESSING_ROLES,
   REGULATED_BOUNDARIES,
   TERMS_VERSION,
@@ -60,80 +59,12 @@ const GDPR_ROLE_CS: Record<string, string> = {
   not_processor: "nezpracovává osobní údaje pro nás",
 };
 
-function OperatorBlock() {
-  const op = getOperatorIdentity();
+function OperatorBlock({ heading }: { heading?: string }) {
   return (
-    <div className="rounded-xl border border-border bg-slate-50 px-4 py-3 text-sm">
-      <p className="font-semibold text-text-dark">Provozovatel / správce</p>
-      <p className="mt-1 text-muted-foreground">{operatorDisplayName(op)}</p>
-      <p className="mt-1 text-muted-foreground">
-        {formatOperatorAddress(op)}
-      </p>
-      <p className="mt-1 text-muted-foreground">
-        E-mail: {op.email}
-        {op.privacyEmail && op.privacyEmail !== op.email
-          ? ` · Ochrana údajů: ${op.privacyEmail}`
-          : null}
-        {" · "}
-        Tel: {op.phone}
-      </p>
-      {op.dpoContact ? (
-        <p className="mt-1 text-muted-foreground">
-          Kontakt pověřence / DPO: {op.dpoContact}
-        </p>
-      ) : null}
-      <dl className="mt-3 grid gap-1 text-xs sm:grid-cols-2">
-        {op.ico ? (
-          <div>
-            <dt className="font-bold uppercase text-muted-foreground">IČO</dt>
-            <dd>{op.ico}</dd>
-          </div>
-        ) : null}
-        {op.dic ? (
-          <div>
-            <dt className="font-bold uppercase text-muted-foreground">DIČ</dt>
-            <dd>{op.dic}</dd>
-          </div>
-        ) : null}
-        {op.publicRegisterUrl ? (
-          <div className="sm:col-span-2">
-            <dt className="font-bold uppercase text-muted-foreground">
-              {op.registryName ?? "Veřejný registr"}
-            </dt>
-            <dd>
-              <a
-                href={op.publicRegisterUrl}
-                className="text-deep-teal underline"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Otevřít výpis
-              </a>
-            </dd>
-          </div>
-        ) : null}
-      </dl>
-      {!op.isProductionReady ? (
-        <p className="mt-3 text-xs text-muted-foreground">
-          Úplná obchodní identifikace (právní jméno, IČO, registr) zatím není ve
-          veřejném configu. Kontaktní údaje výše slouží ke komunikaci; placené
-          služby a produkční sběr poptávek vyžadují doplnění ověřených údajů.
-        </p>
-      ) : null}
-      {op.lastLegalReviewDate && op.legalReviewedBy ? (
-        <p className="mt-2 text-xs text-muted-foreground">
-          Právní revize textů (evidovaný odborník): {op.lastLegalReviewDate} (
-          {op.legalReviewedBy}).
-        </p>
-      ) : (
-        <p className="mt-2 text-xs text-muted-foreground">
-          Tyto stránky prošly redakční kontrolou právních zdrojů. Nejde o
-          potvrzení finální právní revize kvalifikovaným právníkem — tu
-          zveřejníme odděleně, až bude evidován konkrétní odborník a datum
-          revize.
-        </p>
-      )}
-    </div>
+    <LegalOperatorIdentity
+      variant="full"
+      heading={heading ?? "Provozovatel / správce"}
+    />
   );
 }
 
@@ -161,7 +92,12 @@ function GdprContent() {
   const op = getOperatorIdentity();
   return (
     <div className="space-y-8 text-gray-700 leading-relaxed">
-      <OperatorBlock />
+      <section>
+        <h2 className="mb-3 text-xl font-bold text-gray-900">
+          Správce osobních údajů
+        </h2>
+        <OperatorBlock heading="Správce osobních údajů" />
+      </section>
       <RegulatedBoundariesBox />
 
       <section>
@@ -252,8 +188,7 @@ function GdprContent() {
           <Link href={routes.partneri} className="text-deep-teal underline">
             Partneři
           </Link>
-          . Pokud identifikace partnera není zveřejněna, formuláře přijímá
-          provozovatel webu (správce) bez produkčního partner handoff.
+          . Poptávky přijímá správce — {op.dataControllerName}.
         </p>
       </section>
 
@@ -261,8 +196,7 @@ function GdprContent() {
         <h3 className="mb-3 text-xl font-bold text-gray-900">5. Doba uchování</h3>
         <p>
           Preference cookies ukládáme ve vašem prohlížeči do změny nebo smazání.
-          Doba uchování poptávek a marketingových souhlasů bude upřesněna v
-          provozovatelově finálním textu. Do té doby můžete požádat o výmaz na{" "}
+          O výmaz nebo upřesnění doby uchování můžete požádat na{" "}
           {op.privacyEmail}.
         </p>
       </section>

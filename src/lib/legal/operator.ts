@@ -1,13 +1,16 @@
 /**
  * Identita provozovatele — tenký adapter nad `src/config/legal.ts`.
- * NEVYMÝŠLET údaje. Null = nezveřejňovat.
+ *
+ * INTERNAL: Before final commercial launch, verify the exact current
+ * regulatory relationship between HEINZKE & partneři s.r.o. and INSIA in
+ * the ČNB register.
  */
 
 import {
+  formatCommercialRegisterLine,
   getContactAddressLine,
   getLegalIdentityConfig,
-  isLegalIdentityComplete,
-  LEGAL_CONTACT_FALLBACK,
+  legalOperator,
   type LegalIdentityConfig,
 } from "@/config/legal";
 
@@ -16,11 +19,13 @@ export type OperatorIdentity = {
   ico: string | null;
   dic: string | null;
   street: string | null;
+  district: string | null;
   city: string | null;
   zip: string | null;
   country: string;
   email: string;
-  phone: string;
+  /** null = neveřejňovat jako telefon provozovatele */
+  phone: string | null;
   publicRegisterUrl: string | null;
   registryName: string | null;
   privacyEmail: string;
@@ -29,12 +34,12 @@ export type OperatorIdentity = {
   lastLegalReviewDate: string | null;
   legalReviewedBy: string | null;
   registeredOffice: string | null;
-  /**
-   * true = provozovatel je vyplněn dostatečně pro produkční zveřejnění IČO.
-   * false = IČO a registr ve veřejném UI neuvádíme (žádné TODO texty).
-   */
+  court: string | null;
+  registerSection: string | null;
+  registerInsert: string | null;
+  representative: string | null;
+  brand: string;
   isProductionReady: boolean;
-  /** Interní — názvy chybějících env (ne renderovat klientovi) */
   missingFields: string[];
 };
 
@@ -47,24 +52,15 @@ function envOrNull(...keys: string[]): string | null {
 }
 
 function toOperator(config: LegalIdentityConfig): OperatorIdentity {
-  const street =
-    envOrNull("LEGAL_OPERATOR_STREET", "NEXT_PUBLIC_LEGAL_OPERATOR_STREET") ??
-    (config.registeredOffice ? null : LEGAL_CONTACT_FALLBACK.street);
-  const city =
-    envOrNull("LEGAL_OPERATOR_CITY", "NEXT_PUBLIC_LEGAL_OPERATOR_CITY") ??
-    (config.registeredOffice ? null : LEGAL_CONTACT_FALLBACK.city);
-  const zip =
-    envOrNull("LEGAL_OPERATOR_ZIP", "NEXT_PUBLIC_LEGAL_OPERATOR_ZIP") ??
-    (config.registeredOffice ? null : LEGAL_CONTACT_FALLBACK.zip);
-
   return {
     legalName: config.legalName,
     ico: config.companyId,
     dic: envOrNull("LEGAL_OPERATOR_DIC", "NEXT_PUBLIC_LEGAL_OPERATOR_DIC"),
-    street: street ?? LEGAL_CONTACT_FALLBACK.street,
-    city: city ?? LEGAL_CONTACT_FALLBACK.city,
-    zip: zip ?? LEGAL_CONTACT_FALLBACK.zip,
-    country: LEGAL_CONTACT_FALLBACK.country,
+    street: config.street,
+    district: config.district,
+    city: config.city,
+    zip: config.zip,
+    country: config.country,
     email: config.contactEmail,
     phone: config.phone,
     publicRegisterUrl: config.registryUrl,
@@ -75,7 +71,18 @@ function toOperator(config: LegalIdentityConfig): OperatorIdentity {
     lastLegalReviewDate: config.lastLegalReviewDate,
     legalReviewedBy: config.legalReviewedBy,
     registeredOffice: config.registeredOffice,
-    isProductionReady: isLegalIdentityComplete(config),
+    court: config.court,
+    registerSection: config.registerSection,
+    registerInsert: config.registerInsert,
+    representative: config.representative,
+    brand: config.brand,
+    isProductionReady: Boolean(
+      config.legalName &&
+        config.companyId &&
+        config.registeredOffice &&
+        config.registryUrl &&
+        config.missingRequiredFields.length === 0
+    ),
     missingFields: config.missingRequiredFields,
   };
 }
@@ -89,8 +96,17 @@ export function formatOperatorAddress(op: OperatorIdentity): string {
   return getContactAddressLine();
 }
 
+export function formatOperatorRegisterLine(op: OperatorIdentity): string | null {
+  if (!op.court || !op.registerSection || !op.registerInsert) return null;
+  return formatCommercialRegisterLine({
+    court: op.court,
+    registerSection: op.registerSection,
+    registerInsert: op.registerInsert,
+  });
+}
+
 export function operatorDisplayName(op: OperatorIdentity): string {
-  return op.dataControllerName;
+  return op.dataControllerName || legalOperator.companyName;
 }
 
 /** Placená analýza ke koupi — jen když je provozovatel i checkout připraven. */

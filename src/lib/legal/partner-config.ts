@@ -87,13 +87,11 @@ export function getMortgagePartners(): MortgagePartner[] {
         "NEXT_PUBLIC_LEGAL_PARTNER_LICENCE_SUMMARY"
       ) ??
       "Poskytuje službu v rozsahu své registrace u dohledového orgánu. Hypotéka Jasně není touto osobou.")
-    : "Registrační údaje a rozsah licence zveřejníme až po ověření. Hypotéka Jasně není touto osobou.";
+    : "Přesné ČNB označení vztahu HEINZKE & partneři s.r.o. / INSIA zveřejníme až po ověření. Zprostředkování hypotečních a souvisejících finančních služeb zajišťuje HEINZKE & partneři s.r.o. ve spolupráci se společností INSIA.";
   const role = verified
     ? (envOrNull("LEGAL_PARTNER_ROLE", "NEXT_PUBLIC_LEGAL_PARTNER_ROLE") ??
       "Zprostředkování spotřebitelských úvěrů / hypoték dle registrace")
-    : jerrsStatus === "COMING_SOON"
-      ? "Hypoteční partner — ověření probíhá"
-      : "Hypoteční partner — identifikace zatím nezveřejněna";
+    : "HEINZKE & partneři s.r.o. — provozovatel platformy (spolupráce s INSIA)";
   const scope =
     envOrNull("LEGAL_PARTNER_SCOPE", "NEXT_PUBLIC_LEGAL_PARTNER_SCOPE") ??
     "Individuální konzultace, příprava podkladů, komunikace s bankami. Nezahrnuje závazné schválení úvěru.";
@@ -117,13 +115,13 @@ export function getPrimaryMortgagePartner(): MortgagePartner {
   return getMortgagePartners()[0]!;
 }
 
-/** Veřejný zobrazovaný název — nikdy falešná firma ani silnější claim. */
+/** Veřejný zobrazovaný název — nikdy falešná ČNB licence. */
 export function partnerPublicDisplayName(p: MortgagePartner): string {
   if (p.legalName && p.jerrsStatus === "LIVE") return p.legalName;
   if (p.jerrsStatus === "COMING_SOON") {
-    return "Partner — ověření probíhá";
+    return "HEINZKE & partneři s.r.o. (ověření ČNB vztahu probíhá)";
   }
-  return "Partner — identifikace zatím nezveřejněna";
+  return "HEINZKE & partneři s.r.o. (ve spolupráci s INSIA)";
 }
 
 export function isMortgagePartnerIdentityVerified(
@@ -138,8 +136,8 @@ export function isMortgagePartnerIdentityVerified(
 }
 
 /**
- * Kritický lead handoff na partnera — jen s ověřenou identitou.
- * Jinak formuláře berou údaje pouze pro provozovatele (nezávazná konzultace).
+ * Kritický lead handoff na odděleného partnera — jen s ověřenou ČNB/JERRS identitou.
+ * Jinak formuláře berou údaje pro provozovatele (HEINZKE & partneři s.r.o.).
  */
 export function isMortgagePartnerHandoffReady(): boolean {
   return isMortgagePartnerIdentityVerified();
@@ -150,7 +148,7 @@ export function partnerJerrsPublicLabel(
 ): string {
   if (status === "LIVE") return "Ověřeno ve veřejném registru";
   if (status === "COMING_SOON") return "Připravujeme zveřejnění";
-  return "Identita nezveřejněna";
+  return "ČNB vztah k INSIA zatím neověřen veřejně";
 }
 
 export type PartnerConfigAudit = {

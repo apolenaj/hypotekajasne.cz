@@ -15,7 +15,7 @@ import {
 } from "@/lib/partners/verification";
 import { getLegalIdentityConfig } from "@/config/legal";
 
-export const CONSENT_POLICY_VERSION = "2026-07-21.1" as const;
+export const CONSENT_POLICY_VERSION = "2026-08-07.1" as const;
 export const COOKIE_POLICY_VERSION = "2026-07-20.1" as const;
 export const TERMS_VERSION = "2026-07-20.1" as const;
 export const PAID_ANALYSIS_TERMS_VERSION = "2026-07-20.1" as const;
@@ -49,9 +49,9 @@ export const CONSENT_PURPOSES: Record<ConsentPurposeId, ConsentPurposeCopy> = {
     id: "privacy_processing",
     version: CONSENT_POLICY_VERSION,
     checkboxLabel:
-      "Souhlasím se zpracováním údajů provozovatelem webu Hypotéka Jasně (správce) za účelem vyřízení mé nezávazné poptávky / konzultace (viz Zásady ochrany osobních údajů). Hypotéka Jasně není banka.",
+      "Souhlasím se zpracováním údajů správcem (HEINZKE & partneři s.r.o., provozovatel platformy Hypotéka Jasně) za účelem vyřízení mé nezávazné poptávky / konzultace (viz Zásady ochrany osobních údajů). Hypotéka Jasně není banka.",
     description:
-      "Zpracování kontaktních a kontextových údajů správcem (provozovatel Hypotéka Jasně) pro odpověď a vyřízení formuláře. Nejde o univerzální marketingový souhlas ani o nabídku banky.",
+      "Zpracování kontaktních a kontextových údajů správcem HEINZKE & partneři s.r.o. (provozovatel platformy Hypotéka Jasně) pro odpověď a vyřízení formuláře. Nejde o univerzální marketingový souhlas ani o nabídku banky.",
     required: true,
   },
   partner_transfer: {
@@ -141,7 +141,7 @@ export function buildPartnerTransferCheckboxLabel(
   }
 
   if (scope === "mortgage_specialist") {
-    return `Souhlasím se zpracováním údajů provozovatelem webu pro nezávaznou konzultaci. Předání třetímu partnerovi zatím není aktivní. Rozsah: ${scopeLabel}.`;
+    return `Souhlasím se zpracováním údajů provozovatelem platformy (HEINZKE & partneři s.r.o.) pro nezávaznou konzultaci. Předání třetímu partnerovi zatím není aktivní. Rozsah: ${scopeLabel}.`;
   }
 
   return `Souhlasím s předáním údajů partnerovi (samostatný správce) v uvedeném rozsahu. Rozsah: ${scopeLabel}.`;

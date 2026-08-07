@@ -2,9 +2,16 @@
  * Trust Center — kdo jsme, kdo poskytuje službu, jak vyděláváme.
  */
 
+import {
+  financialPartner,
+  legalOperator,
+  projectFounder,
+} from "@/config/legal";
+
 export type EcosystemActorId =
   | "hypoteka_jasne"
-  | "licensed_specialist"
+  | "operator"
+  | "insia"
   | "bank"
   | "majetio"
   | "broker_developer";
@@ -21,32 +28,42 @@ export type EcosystemActor = {
 export const ECOSYSTEM_ACTORS: EcosystemActor[] = [
   {
     id: "hypoteka_jasne",
-    name: "Hypotéka Jasně",
-    shortRole: "Informační a technologická platforma",
+    name: legalOperator.brand,
+    shortRole: "Digitální platforma",
     whatTheyDo:
-      "Edukace, kalkulačky, Hypoteční připravenost, přiřazení trhů, magazín. Předává poptávku partnerovi jen se souhlasem a jen pokud je jeho identita ověřena a zveřejněna.",
+      "Edukace, kalkulačky, Hypoteční připravenost, přiřazení trhů, magazín a modelové nástroje.",
     whatTheyDont:
-      "Neposkytuje hypoteční úvěr, neschvaluje žádosti, není banka ani náhradou za individuální poradenství.",
+      "Není banka, neschvaluje úvěry a není náhradou za individuální posouzení bankou.",
     dataYouGive:
-      "Údaje z formulářů (příjem, záměr, kontakt) — pro výpočet modelu a volitelné předání partnerovi.",
+      "Údaje z formulářů (příjem, záměr, kontakt) — pro výpočet modelu a vyřízení poptávky provozovatelem.",
   },
   {
-    id: "licensed_specialist",
-    name: "Hypoteční partner",
-    shortRole: "Zprostředkování po ověření identity",
-    whatTheyDo:
-      "Individuální posouzení a komunikace s bankami v rozsahu své registrace — teprve když je na /partneri zveřejněna ověřená identifikace.",
+    id: "operator",
+    name: legalOperator.companyName,
+    shortRole: "Provozovatel platformy a odborná hypoteční část",
+    whatTheyDo: financialPartner.cooperationWording,
     whatTheyDont:
-      "Není totéž co Hypotéka Jasně web. Schválení úvěru neprovádí — to dělá banka. Bez zveřejněné identity neuvádíme „licencovaný“ / „ověřený“.",
+      "Neschvaluje úvěr — to vždy provádí banka. Neuvádíme konkrétní ČNB označení vztahu k INSIA, dokud není ověřeno.",
     dataYouGive:
-      "Kompletní úvěrová dokumentace podle požadavků banky a partnera.",
+      "Kontaktní a kontextové údaje pro nezávaznou konzultaci (se souhlasem dle GDPR).",
+  },
+  {
+    id: "insia",
+    name: financialPartner.network,
+    shortRole: "Síť / partner pro související finanční distribuci",
+    whatTheyDo:
+      "Prostřednictvím spolupráce s INSIA je zajišťována související finanční distribuce (neutrální popis — bez konkrétního ČNB statusu).",
+    whatTheyDont:
+      "Není totéž co značka Hypotéka Jasně ani banka schvalující úvěr.",
+    dataYouGive:
+      "Údaje jen v rozsahu potřebném pro související služby — dle souhlasů a smluvních vztahů.",
   },
   {
     id: "bank",
     name: "Banka",
     shortRole: "Poskytovatel úvěru",
     whatTheyDo:
-      "Finální scoring, schválení nebo zamítnutí, sazba, zástava, smlouva.",
+      "Finální scoring, schválení nebo zamítnutí, sazba, zástava, smlouva. Vždy provádí vlastní posouzení.",
     whatTheyDont:
       "Web Hypotéka Jasně není její pobočka ani závazná nabídka.",
     dataYouGive:
@@ -81,6 +98,8 @@ export type TeamMember = {
   name: string;
   initials: string;
   role: string;
+  /** Krátký popis role (volitelný odstavec pod rolí) */
+  summary?: string;
   responsibilities: string[];
   experience: string[];
   education: string[];
@@ -88,23 +107,27 @@ export type TeamMember = {
   linkedInUrl: string | null;
   /** null = zobrazit placeholder */
   photoUrl: string | null;
+  /** Intrinsic size for Next.js Image (layout shift prevention). */
+  photoWidth?: number;
+  photoHeight?: number;
   photoAlt: string;
 };
 
 export const TEAM_MEMBERS: TeamMember[] = [
   {
     id: "josef-apolenar",
-    name: "Bc. Josef Apolenář BSc., MBA",
+    name: projectFounder.displayName,
     initials: "JA",
-    role: "Zakladatel & CEO — produkt a technologie",
+    role: projectFounder.role,
+    summary: projectFounder.description,
     responsibilities: [
-      "Produktová vize Hypotéka Jasně",
-      "Datový a technologický ekosystém",
-      "Srozumitelnost modelů pro uživatele",
+      "Koncept a produktová vize platformy",
+      "Vývoj digitálních nástrojů a kalkulaček",
+      "Uživatelská zkušenost a rozvoj projektu Hypotéka Jasně",
     ],
     experience: [
       "Vedení produktu a vývoje platformy Hypotéka Jasně",
-      "Propojení edukace, kalkulaček a předání ověřenému partnerovi (pokud je zveřejněn)",
+      "Propojení edukace, modelů a digitálních nástrojů",
     ],
     education: [
       "Computing Technologies — University of Roehampton (Londýn)",
@@ -112,36 +135,38 @@ export const TEAM_MEMBERS: TeamMember[] = [
       "Studium psychologie pro manažery",
     ],
     contentResponsibility:
-      "Odpovídá za produktové znění nástrojů a za to, že modelové výstupy nejsou vydávány za závazné nabídky bank.",
+      "Odpovídá za produktové znění nástrojů a za to, že modelové výstupy nejsou vydávány za závazné nabídky bank. Neposkytuje regulované hypoteční zprostředkování.",
     linkedInUrl: null,
-    photoUrl: null,
-    photoAlt: "Josef Apolenář",
+    photoUrl: "/images/team/josef-apolenar.webp",
+    photoWidth: 800,
+    photoHeight: 800,
+    photoAlt: "Josef Apolenář – zakladatel Hypotéka Jasně",
   },
   {
     id: "michal-heinzke",
-    name: "Michal Heinzke",
+    name: financialPartner.representative,
     initials: "MH",
-    role: "Hypoteční specialista — praxe a metodiky bank",
+    role: `${financialPartner.representativeRole} · ${financialPartner.specialistTitle}`,
+    summary: financialPartner.michalDescription,
     responsibilities: [
+      "Odborná část hypotečního financování",
+      "Individuální řešení klientských případů",
       "Kontrola, že webové modely odpovídají běžné bankovní praxi",
-      "Vysvětlení limitů LTV/DSTI a nestandardních příjmů",
-      "Předání kvalifikované poptávky partnerovi po ověření identity",
     ],
     experience: [
-      "11 let praxe v oblasti hypoték, úvěrů a pojištění (uváděno jako praxe na trhu — veřejná registrační identifikace partnera jen pokud je zveřejněna)",
+      "11 let praxe v oblasti hypoték, úvěrů a pojištění (uváděno jako praxe na trhu)",
       "Zkušenost s metodikami českých bank a dokládáním příjmů",
     ],
-    education: [
-      "Odborná praxe ve finančních službách",
-    ],
+    education: ["Odborná praxe ve finančních službách"],
     contentResponsibility:
       "Spoluodpovídá za věcnou správnost hypotečních vysvětlení na webu. Nejde o slib schválení konkrétní žádosti.",
     linkedInUrl: null,
-    photoUrl: null,
-    photoAlt: "Michal Heinzke",
+    photoUrl: "/images/team/michal-heinzke.webp",
+    photoWidth: 200,
+    photoHeight: 200,
+    photoAlt: "Michal Heinzke – hypoteční specialista",
   },
 ];
-
 /** Re-export SoT — jediný zdroj partner identity: `src/lib/legal/partner-config.ts`. */
 export {
   getMortgagePartners,

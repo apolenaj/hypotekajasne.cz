@@ -1,11 +1,64 @@
 /**
- * Centrální právní konfigurace provozovatele (PROMPT 1).
+ * Centrální právní konfigurace provozovatele.
  *
- * NEVYMÝŠLET: právní jméno, IČO, sídlo, registraci, review.
- * Doplňte ověřené hodnoty přes env (viz docs/legal-production-checklist.md).
- * Null / chybějící = ve veřejném UI neuvádět a netvrdit kompletnost.
+ * Dočasný provozovatel: HEINZKE & partneři s.r.o.
+ * Env `LEGAL_OPERATOR_*` může hodnoty přepsat (např. produkční override).
+ *
+ * INTERNAL (never render to users):
+ * Before final commercial launch, verify the exact current regulatory
+ * relationship between HEINZKE & partneři s.r.o. and INSIA in the ČNB
+ * register and replace neutral cooperation wording with the exact legally
+ * correct designation if appropriate.
  */
 
+/** Strukturovaná identifikace provozovatele (zdroj pravdy pro UI). */
+export const legalOperator = {
+  brand: "Hypotéka Jasně",
+  companyName: "HEINZKE & partneři s.r.o.",
+  ico: "10880097",
+  street: "Pavlovova 3048/40",
+  district: "Zábřeh",
+  city: "Ostrava",
+  zip: "700 30",
+  country: "Česká republika",
+  court: "Krajský soud v Ostravě",
+  registerSection: "C",
+  registerInsert: "85937",
+  representative: "Michal Heinzke",
+  email: "info@hypotekajasne.cz",
+  /** Veřejný výpis OR podle IČO (justice.cz) — bez vymyšlené ČNB licence. */
+  registryUrl: "https://or.justice.cz/ias/ui/rejstrik-$firma?ico=10880097",
+  registryName: "Obchodní rejstřík",
+} as const;
+
+export const projectFounder = {
+  name: "Josef Apolenář",
+  displayName: "Bc. Josef Apolenář BSc., MBA",
+  role: "Zakladatel projektu Hypotéka Jasně",
+  roleProduct: "Zakladatel a produktový tvůrce Hypotéka Jasně",
+  description:
+    "Josef stojí za konceptem, produktem a vývojem platformy Hypotéka Jasně. Zaměřuje se na digitální nástroje, kalkulačky, uživatelskou zkušenost a rozvoj platformy.",
+} as const;
+
+export const financialPartner = {
+  company: "HEINZKE & partneři s.r.o.",
+  representative: "Michal Heinzke",
+  representativeRole: "Jednatel HEINZKE & partneři s.r.o.",
+  specialistTitle: "Hypoteční specialista",
+  network: "INSIA",
+  /**
+   * Neutrální zákaznické znění — bez konkrétního ČNB statusu,
+   * dokud není ověřen (viz INTERNAL poznámka výše).
+   */
+  cooperationWording:
+    "Zprostředkování hypotečních a souvisejících finančních služeb zajišťuje HEINZKE & partneři s.r.o. ve spolupráci se společností INSIA.",
+  platformWording:
+    "Platformu Hypotéka Jasně provozuje HEINZKE & partneři s.r.o. Zprostředkování hypotečních a souvisejících finančních služeb je zajišťováno ve spolupráci se společností INSIA.",
+  michalDescription:
+    "Michal zajišťuje odbornou část související s hypotečním financováním a individuálním řešením klientských případů prostřednictvím HEINZKE & partneři s.r.o., která spolupracuje se sítí INSIA.",
+} as const;
+
+/** @deprecated Prefer legalOperator — retained for adapters. */
 export type LegalIdentityConfig = {
   legalName: string | null;
   companyId: string | null;
@@ -18,20 +71,21 @@ export type LegalIdentityConfig = {
   dpoContact: string | null;
   lastLegalReviewDate: string | null;
   legalReviewedBy: string | null;
-  phone: string;
+  /** null = neveřejňovat jako telefon provozovatele (neinventujeme číslo firmy). */
+  phone: string | null;
+  court: string | null;
+  registerSection: string | null;
+  registerInsert: string | null;
+  representative: string | null;
+  brand: string;
+  street: string | null;
+  district: string | null;
+  city: string | null;
+  zip: string | null;
+  country: string;
   /** Interní — názvy chybějících povinných polí (ne renderovat uživateli). */
   missingRequiredFields: string[];
 };
-
-/** Kontaktní fallback jen pro komunikaci — NENÍ náhradou za právní identifikaci. */
-const CONTACT_FALLBACK = {
-  email: "info@hypotekajasne.cz",
-  phone: "+420 727 814 810",
-  street: "Soukenická 6",
-  city: "Krnov",
-  zip: "79401",
-  country: "Česká republika",
-} as const;
 
 function envOrNull(...keys: string[]): string | null {
   for (const key of keys) {
@@ -46,81 +100,122 @@ function looksLikePlaceholder(value: string | null): boolean {
   return /TODO|TBD|PLACEHOLDER|doplníme|čeká na ověření|pending/i.test(value);
 }
 
-/**
- * Sestaví registrované sídlo jen z explicitních env (ne z kontaktního fallbacku).
- * Fallback adresa slouží ke komunikaci, ale nepočítá se do „kompletní identity“.
- */
-function buildRegisteredOfficeFromEnv(): string | null {
-  const single = envOrNull(
-    "LEGAL_OPERATOR_REGISTERED_OFFICE",
-    "NEXT_PUBLIC_LEGAL_OPERATOR_REGISTERED_OFFICE"
-  );
-  if (single && !looksLikePlaceholder(single)) return single;
-
-  const street = envOrNull(
-    "LEGAL_OPERATOR_STREET",
-    "NEXT_PUBLIC_LEGAL_OPERATOR_STREET"
-  );
-  const city = envOrNull(
-    "LEGAL_OPERATOR_CITY",
-    "NEXT_PUBLIC_LEGAL_OPERATOR_CITY"
-  );
-  const zip = envOrNull(
-    "LEGAL_OPERATOR_ZIP",
-    "NEXT_PUBLIC_LEGAL_OPERATOR_ZIP"
-  );
-  if (!street || !city || !zip) return null;
-  if (
-    looksLikePlaceholder(street) ||
-    looksLikePlaceholder(city) ||
-    looksLikePlaceholder(zip)
-  ) {
-    return null;
-  }
-  return [street, zip, city, CONTACT_FALLBACK.country].join(", ");
+function cleanEnvOrDefault(
+  envKeys: string[],
+  fallback: string
+): string {
+  const fromEnv = envOrNull(...envKeys);
+  if (fromEnv && !looksLikePlaceholder(fromEnv)) return fromEnv;
+  return fallback;
 }
 
-/** Komunikační adresa — smí použít kontaktní fallback. */
+function formatRegisteredOffice(parts: {
+  street: string;
+  district?: string;
+  zip: string;
+  city: string;
+  country: string;
+}): string {
+  const locality = parts.district
+    ? `${parts.district}, ${parts.zip} ${parts.city}`
+    : `${parts.zip} ${parts.city}`;
+  return `${parts.street}, ${locality}, ${parts.country}`;
+}
+
+/** Komunikační / sídlení adresa z centrální konfigurace. */
 export function getContactAddressLine(): string {
-  const office = buildRegisteredOfficeFromEnv();
-  if (office) return office;
-  return [
-    CONTACT_FALLBACK.street,
-    CONTACT_FALLBACK.zip,
-    CONTACT_FALLBACK.city,
-    CONTACT_FALLBACK.country,
-  ].join(", ");
+  const cfg = getLegalIdentityConfig();
+  if (cfg.registeredOffice) return cfg.registeredOffice;
+  return formatRegisteredOffice({
+    street: legalOperator.street,
+    district: legalOperator.district,
+    zip: legalOperator.zip,
+    city: legalOperator.city,
+    country: legalOperator.country,
+  });
+}
+
+export function formatCommercialRegisterLine(cfg: {
+  court: string;
+  registerSection: string;
+  registerInsert: string;
+}): string {
+  return `Společnost je zapsaná v obchodním rejstříku vedeném ${cfg.court}, oddíl ${cfg.registerSection}, vložka ${cfg.registerInsert}.`;
 }
 
 export function getLegalIdentityConfig(): LegalIdentityConfig {
-  const legalName = envOrNull(
-    "LEGAL_OPERATOR_LEGAL_NAME",
-    "NEXT_PUBLIC_LEGAL_OPERATOR_LEGAL_NAME"
+  const legalName = cleanEnvOrDefault(
+    ["LEGAL_OPERATOR_LEGAL_NAME", "NEXT_PUBLIC_LEGAL_OPERATOR_LEGAL_NAME"],
+    legalOperator.companyName
   );
-  const companyId = envOrNull(
-    "LEGAL_OPERATOR_ICO",
-    "NEXT_PUBLIC_LEGAL_OPERATOR_ICO"
+  const companyId = cleanEnvOrDefault(
+    ["LEGAL_OPERATOR_ICO", "NEXT_PUBLIC_LEGAL_OPERATOR_ICO"],
+    legalOperator.ico
   );
-  const registeredOffice = buildRegisteredOfficeFromEnv();
-  const registryName = envOrNull(
-    "LEGAL_OPERATOR_REGISTRY_NAME",
-    "NEXT_PUBLIC_LEGAL_OPERATOR_REGISTRY_NAME"
+  const street = cleanEnvOrDefault(
+    ["LEGAL_OPERATOR_STREET", "NEXT_PUBLIC_LEGAL_OPERATOR_STREET"],
+    legalOperator.street
   );
-  const registryUrl = envOrNull(
-    "LEGAL_OPERATOR_REGISTER_URL",
-    "NEXT_PUBLIC_LEGAL_OPERATOR_REGISTER_URL"
+  const city = cleanEnvOrDefault(
+    ["LEGAL_OPERATOR_CITY", "NEXT_PUBLIC_LEGAL_OPERATOR_CITY"],
+    legalOperator.city
   );
-  const contactEmail =
-    envOrNull("LEGAL_OPERATOR_EMAIL", "NEXT_PUBLIC_LEGAL_OPERATOR_EMAIL") ??
-    CONTACT_FALLBACK.email;
+  const zip = cleanEnvOrDefault(
+    ["LEGAL_OPERATOR_ZIP", "NEXT_PUBLIC_LEGAL_OPERATOR_ZIP"],
+    legalOperator.zip
+  );
+  const district =
+    envOrNull(
+      "LEGAL_OPERATOR_DISTRICT",
+      "NEXT_PUBLIC_LEGAL_OPERATOR_DISTRICT"
+    ) ?? legalOperator.district;
+  const country =
+    envOrNull(
+      "LEGAL_OPERATOR_COUNTRY",
+      "NEXT_PUBLIC_LEGAL_OPERATOR_COUNTRY"
+    ) ?? legalOperator.country;
+
+  const registeredOfficeFromEnv = envOrNull(
+    "LEGAL_OPERATOR_REGISTERED_OFFICE",
+    "NEXT_PUBLIC_LEGAL_OPERATOR_REGISTERED_OFFICE"
+  );
+  const registeredOffice =
+    registeredOfficeFromEnv && !looksLikePlaceholder(registeredOfficeFromEnv)
+      ? registeredOfficeFromEnv
+      : formatRegisteredOffice({
+          street,
+          district: district ?? undefined,
+          zip,
+          city,
+          country,
+        });
+
+  const registryName = cleanEnvOrDefault(
+    ["LEGAL_OPERATOR_REGISTRY_NAME", "NEXT_PUBLIC_LEGAL_OPERATOR_REGISTRY_NAME"],
+    legalOperator.registryName
+  );
+  const registryUrl = cleanEnvOrDefault(
+    ["LEGAL_OPERATOR_REGISTER_URL", "NEXT_PUBLIC_LEGAL_OPERATOR_REGISTER_URL"],
+    legalOperator.registryUrl
+  );
+  const contactEmail = cleanEnvOrDefault(
+    ["LEGAL_OPERATOR_EMAIL", "NEXT_PUBLIC_LEGAL_OPERATOR_EMAIL"],
+    legalOperator.email
+  );
   const privacyEmail =
     envOrNull(
       "LEGAL_OPERATOR_PRIVACY_EMAIL",
       "NEXT_PUBLIC_LEGAL_OPERATOR_PRIVACY_EMAIL"
     ) ?? contactEmail;
+
+  // Telefon firmy neuvádíme, dokud není explicitně nastaven v env.
+  const phoneRaw = envOrNull(
+    "LEGAL_OPERATOR_PHONE",
+    "NEXT_PUBLIC_LEGAL_OPERATOR_PHONE"
+  );
   const phone =
-    envOrNull("LEGAL_OPERATOR_PHONE", "NEXT_PUBLIC_LEGAL_OPERATOR_PHONE") ??
-    CONTACT_FALLBACK.phone;
+    phoneRaw && !looksLikePlaceholder(phoneRaw) ? phoneRaw : null;
+
   const dpoContact = envOrNull(
     "LEGAL_OPERATOR_DPO_CONTACT",
     "NEXT_PUBLIC_LEGAL_OPERATOR_DPO_CONTACT"
@@ -132,6 +227,32 @@ export function getLegalIdentityConfig(): LegalIdentityConfig {
   const legalReviewedBy = envOrNull(
     "LEGAL_REVIEWED_BY",
     "NEXT_PUBLIC_LEGAL_REVIEWED_BY"
+  );
+
+  const court = cleanEnvOrDefault(
+    ["LEGAL_OPERATOR_COURT", "NEXT_PUBLIC_LEGAL_OPERATOR_COURT"],
+    legalOperator.court
+  );
+  const registerSection = cleanEnvOrDefault(
+    [
+      "LEGAL_OPERATOR_REGISTER_SECTION",
+      "NEXT_PUBLIC_LEGAL_OPERATOR_REGISTER_SECTION",
+    ],
+    legalOperator.registerSection
+  );
+  const registerInsert = cleanEnvOrDefault(
+    [
+      "LEGAL_OPERATOR_REGISTER_INSERT",
+      "NEXT_PUBLIC_LEGAL_OPERATOR_REGISTER_INSERT",
+    ],
+    legalOperator.registerInsert
+  );
+  const representative = cleanEnvOrDefault(
+    [
+      "LEGAL_OPERATOR_REPRESENTATIVE",
+      "NEXT_PUBLIC_LEGAL_OPERATOR_REPRESENTATIVE",
+    ],
+    legalOperator.representative
   );
 
   const missingRequiredFields: string[] = [];
@@ -153,24 +274,15 @@ export function getLegalIdentityConfig(): LegalIdentityConfig {
     missingRequiredFields.push("LEGAL_OPERATOR_EMAIL");
   }
 
-  const cleanName =
-    legalName && !looksLikePlaceholder(legalName) ? legalName : null;
-  const cleanId =
-    companyId && !looksLikePlaceholder(companyId) ? companyId : null;
-  const cleanRegistryUrl =
-    registryUrl && !looksLikePlaceholder(registryUrl) ? registryUrl : null;
-  const cleanRegistryName =
-    registryName && !looksLikePlaceholder(registryName) ? registryName : null;
-
   return {
-    legalName: cleanName,
-    companyId: cleanId,
+    legalName,
+    companyId,
     registeredOffice,
-    registryName: cleanRegistryName,
-    registryUrl: cleanRegistryUrl,
+    registryName,
+    registryUrl,
     contactEmail,
     privacyEmail,
-    dataControllerName: cleanName ?? "Provozovatel platformy Hypotéka Jasně",
+    dataControllerName: legalName,
     dpoContact:
       dpoContact && !looksLikePlaceholder(dpoContact) ? dpoContact : null,
     lastLegalReviewDate:
@@ -182,6 +294,16 @@ export function getLegalIdentityConfig(): LegalIdentityConfig {
         ? legalReviewedBy
         : null,
     phone,
+    court,
+    registerSection,
+    registerInsert,
+    representative,
+    brand: legalOperator.brand,
+    street,
+    district,
+    city,
+    zip,
+    country,
     missingRequiredFields,
   };
 }
@@ -234,10 +356,10 @@ export function mustEnforceLegalIdentityForLeadCollection(): boolean {
 
 /** Veřejná bezpečná zpráva — bez TODO / interních poznámek. */
 export const LEGAL_IDENTITY_INCOMPLETE_PUBLIC_MESSAGE =
-  "Úplná obchodní identifikace provozovatele zatím není ve veřejném configu. Kontaktní údaje slouží ke komunikaci; sběr poptávek v produkci vyžaduje doplnění ověřených údajů provozovatelem.";
+  "Kontaktní údaje slouží ke komunikaci. Pro úplnou obchodní identifikaci provozovatele viz právní stránky.";
 
 export const LEGAL_LEAD_BLOCKED_PUBLIC_MESSAGE =
-  "Omlouváme se — příjem poptávek je dočasně pozastaven, dokud provozovatel nedoplní ověřené právní údaje. Můžete nás kontaktovat e-mailem.";
+  "Omlouváme se — příjem poptávek je dočasně pozastaven. Můžete nás kontaktovat e-mailem.";
 
 /** Jen development — nikdy neukazovat uživateli v production UI. */
 export function getLegalDevIncompleteNotice(
@@ -248,4 +370,12 @@ export function getLegalDevIncompleteNotice(
   return `[DEV] Legal identity incomplete: ${config.missingRequiredFields.join(", ") || "(unknown)"}. Set LEGAL_OPERATOR_* — see docs/legal-production-checklist.md.`;
 }
 
-export { CONTACT_FALLBACK as LEGAL_CONTACT_FALLBACK };
+/** Komunikační fallback — adresa/e-mail provozovatele (bez telefonu firmy). */
+export const LEGAL_CONTACT_FALLBACK = {
+  email: legalOperator.email,
+  street: legalOperator.street,
+  district: legalOperator.district,
+  city: legalOperator.city,
+  zip: legalOperator.zip,
+  country: legalOperator.country,
+} as const;

@@ -1,5 +1,6 @@
 import type { MagazinePerson } from "@/lib/magazine/types";
 import { routes } from "@/lib/routes";
+import { financialPartner, projectFounder } from "@/config/legal";
 
 /**
  * Centrální registr autorů / odborné kontroly (YMYL).
@@ -9,17 +10,17 @@ import { routes } from "@/lib/routes";
 export const MAGAZINE_PEOPLE: Record<string, MagazinePerson> = {
   "josef-apolenar": {
     id: "josef-apolenar",
-    name: "Bc. Josef Apolenář BSc., MBA",
-    role: "Zakladatel & CEO — produkt a data",
-    bio: "Odpovídá za produktové znění nástrojů a za to, že modelové výstupy nejsou vydávány za závazné nabídky bank.",
+    name: projectFounder.displayName,
+    role: projectFounder.role,
+    bio: projectFounder.description,
     credentials: "Computing Technologies · MBA · Hypotéka Jasně",
     url: `${routes.oNas}#josef-apolenar`,
   },
   "michal-heinzke": {
     id: "michal-heinzke",
-    name: "Michal Heinzke",
-    role: "Hypoteční specialista — praxe a metodiky bank",
-    bio: "Spoluodpovídá za věcnou správnost hypotečních vysvětlení. Nejde o slib schválení konkrétní žádosti.",
+    name: financialPartner.representative,
+    role: `${financialPartner.representativeRole} · ${financialPartner.specialistTitle}`,
+    bio: financialPartner.michalDescription,
     credentials: "11 let praxe v oblasti hypoték, úvěrů a pojištění (uváděno jako praxe na trhu)",
     url: `${routes.oNas}#michal-heinzke`,
   },

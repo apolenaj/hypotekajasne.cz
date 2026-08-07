@@ -1,9 +1,10 @@
+import Image from "next/image";
 import Link from "next/link";
 import { TEAM_MEMBERS } from "@/lib/trust";
 import { routes } from "@/lib/routes";
 
 /**
- * Tým — jen reálná jména ze SoT; bez falešných fotek / LinkedIn.
+ * Tým — jen reálná jména ze SoT; fotky jen když jsou v SoT dodané.
  */
 export function HomeTeamStrip() {
   return (
@@ -42,12 +43,22 @@ export function HomeTeamStrip() {
               key={m.id}
               className="flex gap-4 rounded-xl border border-border bg-white p-4 sm:p-5"
             >
-              <span
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-deep-teal/10 font-heading text-sm font-bold text-deep-teal"
-                aria-hidden
-              >
-                {m.initials}
-              </span>
+              {m.photoUrl ? (
+                <Image
+                  src={m.photoUrl}
+                  alt={m.photoAlt}
+                  width={m.photoWidth ?? 48}
+                  height={m.photoHeight ?? 48}
+                  className="h-12 w-12 shrink-0 rounded-full object-cover"
+                />
+              ) : (
+                <span
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-deep-teal/10 font-heading text-sm font-bold text-deep-teal"
+                  aria-hidden
+                >
+                  {m.initials}
+                </span>
+              )}
               <div className="min-w-0">
                 <p className="font-heading text-lg font-semibold text-text-dark">
                   {m.name}

@@ -1,126 +1,92 @@
 import { getStaticPageSeo } from "@/lib/seo/pages";
 import Link from "next/link";
 import { TrustPageShell } from "@/components/trust/TrustPageShell";
-import { PartnerVerificationBadge } from "@/components/partners/PartnerVerificationBadge";
+import { LegalOperatorIdentity } from "@/components/legal/LegalOperatorIdentity";
 import {
-  COMPENSATION_DISCLOSURE,
-  getMortgagePartners,
-  isMortgagePartnerHandoffReady,
-  partnerJerrsPublicLabel,
-  partnerPublicDisplayName,
-} from "@/lib/legal/partner-config";
-import {
-  getPartnerClaimLabels,
-  toPartnerVerification,
-} from "@/lib/partners/verification";
+  financialPartner,
+  legalOperator,
+  projectFounder,
+} from "@/config/legal";
+import { COMPENSATION_DISCLOSURE } from "@/lib/legal/partner-config";
 import { routes } from "@/lib/routes";
 
 export const metadata = getStaticPageSeo("/partneri");
 
-export default function PartneriPage() {
-  const partners = getMortgagePartners();
-  const handoffReady = isMortgagePartnerHandoffReady();
-  const labels = getPartnerClaimLabels();
+const ROLE_BLOCKS = [
+  {
+    title: legalOperator.brand,
+    body: "Digitální platforma — edukace, kalkulačky a modelové nástroje.",
+  },
+  {
+    title: legalOperator.companyName,
+    body: "Provozovatel platformy a subjekt zajišťující odbornou hypoteční část.",
+  },
+  {
+    title: financialPartner.representative,
+    body: "Jednatel společnosti a hypoteční specialista.",
+  },
+  {
+    title: financialPartner.network,
+    body: "Síť / partner, prostřednictvím které je zajišťována související finanční distribuce.",
+  },
+  {
+    title: "Banka",
+    body: "Poskytovatel úvěru — vždy provádí vlastní posouzení a rozhoduje o schválení.",
+  },
+] as const;
 
+export default function PartneriPage() {
   return (
     <TrustPageShell
       currentPath="/partneri"
       eyebrow="Centrum důvěry"
-      title="Partneři"
-      lead="Hypotéka Jasně je informační platforma — není banka. Individuální zprostředkování provádí partner pouze po ověření a zveřejnění jeho identity. Neověřené údaje a silná tvrzení o licenci neuvádíme."
+      title="Partneři a role"
+      lead="Hypotéka Jasně je digitální platforma. Provozovatelem je HEINZKE & partneři s.r.o. Schválení úvěru vždy provádí banka."
     >
       <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
         {COMPENSATION_DISCLOSURE}
       </p>
 
-      {!handoffReady ? (
-        <p
-          role="status"
-          className="rounded-xl border border-border bg-slate-50 px-4 py-3 text-sm text-text-dark"
-        >
-          {labels.leadIntakeDisclosure}
+      <section className="rounded-2xl border border-border p-5 sm:p-6">
+        <h2 className="font-heading text-lg font-bold text-text-dark">
+          Provozovatel
+        </h2>
+        <div className="mt-4">
+          <LegalOperatorIdentity variant="compact" showBrandNote showContact />
+        </div>
+        <p className="mt-4 text-sm text-muted-foreground">
+          Jednatel: {financialPartner.representative} ·{" "}
+          {financialPartner.specialistTitle}
         </p>
-      ) : null}
+        <p className="mt-3 text-sm leading-relaxed text-text-dark">
+          {financialPartner.cooperationWording}
+        </p>
+      </section>
 
-      <ul className="space-y-6">
-        {partners.map((p) => {
-          const verification = toPartnerVerification(p);
-          return (
+      <section>
+        <h2 className="font-heading text-lg font-bold text-text-dark">
+          Kdo co dělá
+        </h2>
+        <ul className="mt-4 space-y-3">
+          {ROLE_BLOCKS.map((block) => (
             <li
-              key={p.id}
-              className="rounded-2xl border border-border p-5 sm:p-6"
+              key={block.title}
+              className="rounded-xl border border-border px-4 py-3"
             >
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <h2 className="font-heading text-lg font-bold text-text-dark">
-                  {partnerPublicDisplayName(p)}
-                </h2>
-                <PartnerVerificationBadge
-                  verification={verification}
-                  className="sm:max-w-xs"
-                />
-              </div>
-              <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-                <div>
-                  <dt className="text-xs font-bold uppercase text-muted-foreground">
-                    IČO
-                  </dt>
-                  <dd className="mt-0.5 text-text-dark">
-                    {verification.registrationNumber ??
-                      "Neuvedeno — nezveřejňujeme neověřené údaje"}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-xs font-bold uppercase text-muted-foreground">
-                    Role
-                  </dt>
-                  <dd className="mt-0.5 text-text-dark">{p.role}</dd>
-                </div>
-                <div className="sm:col-span-2">
-                  <dt className="text-xs font-bold uppercase text-muted-foreground">
-                    Licence / registrace — shrnutí
-                  </dt>
-                  <dd className="mt-0.5 text-muted-foreground">
-                    {p.licenceSummary}
-                  </dd>
-                </div>
-                <div className="sm:col-span-2">
-                  <dt className="text-xs font-bold uppercase text-muted-foreground">
-                    Veřejný registr (např. JERRS / ČNB)
-                  </dt>
-                  <dd className="mt-0.5">
-                    <span className="mr-2 rounded border border-stone-300 bg-stone-100 px-1.5 py-0.5 text-[10px] font-bold">
-                      {partnerJerrsPublicLabel(p.jerrsStatus)}
-                    </span>
-                    {verification.registryUrl ? (
-                      <a
-                        href={verification.registryUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-deep-teal underline"
-                      >
-                        Ověřit v registru
-                      </a>
-                    ) : (
-                      <span className="text-muted-foreground">
-                        Odkaz na veřejný registr zatím není zveřejněn.
-                      </span>
-                    )}
-                  </dd>
-                </div>
-                <div className="sm:col-span-2">
-                  <dt className="text-xs font-bold uppercase text-muted-foreground">
-                    Scope
-                  </dt>
-                  <dd className="mt-0.5 text-muted-foreground">{p.scope}</dd>
-                </div>
-              </dl>
-              <p className="mt-4 text-xs text-muted-foreground">
-                Odměna: {p.compensationDisclosure}
-              </p>
+              <p className="font-semibold text-text-dark">{block.title}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{block.body}</p>
             </li>
-          );
-        })}
-      </ul>
+          ))}
+        </ul>
+      </section>
+
+      <section className="rounded-xl border border-border bg-slate-50 px-4 py-4 text-sm text-muted-foreground">
+        <p>
+          <strong className="text-text-dark">{projectFounder.name}</strong> —{" "}
+          {projectFounder.role}. Stojí za konceptem a vývojem digitální
+          platformy; není provozovatelem ani správcem osobních údajů.
+        </p>
+      </section>
 
       <p className="text-sm text-muted-foreground">
         Role v ekosystému:{" "}

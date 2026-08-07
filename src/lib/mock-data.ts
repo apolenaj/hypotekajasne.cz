@@ -124,10 +124,11 @@ export const footerLinks = {
 
 export const siteContact = {
   email: "info@hypotekajasne.cz",
+  /** Kontakt projektu (značka) — ne telefon firmy HEINZKE, dokud není explicitně ověřen. */
   phone: "+420 727 814 810",
   phoneHref: "tel:+420727814810",
   emailHref: "mailto:info@hypotekajasne.cz",
-  address: "Soukenická 6, Krnov, 79401 Česká Republika",
+  address: "Pavlovova 3048/40, Zábřeh, 700 30 Ostrava, Česká republika",
 } as const;
 
 export type FinancingEligibility = {

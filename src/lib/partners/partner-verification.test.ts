@@ -81,11 +81,11 @@ describe("claim labels strength", () => {
     for (const re of STRONG_PARTNER_CLAIM_PATTERNS) {
       assert.ok(!re.test(blob), `matched ${re}`);
     }
-    assert.match(labels.leadIntakeDisclosure, /provozovatel webu/i);
+    assert.match(labels.leadIntakeDisclosure, /provozovatel platformy|HEINZKE/i);
     assert.ok(!/licencovan/i.test(labels.badgeLabel));
   });
 
-  it("PENDING uses ověření probíhá, not Ověřený partner", () => {
+  it("PENDING uses konzultace přes provozovatele, not Ověřený partner", () => {
     const labels = getPartnerClaimLabels({
       name: null,
       legalEntity: null,
@@ -95,7 +95,7 @@ describe("claim labels strength", () => {
       verifiedAt: null,
       verificationStatus: "PENDING",
     });
-    assert.match(labels.badgeLabel, /probíhá/i);
+    assert.match(labels.badgeLabel, /provozovatel/i);
     assert.ok(!/^Ověřený partner$/i.test(labels.badgeLabel));
   });
 

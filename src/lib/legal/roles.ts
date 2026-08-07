@@ -1,7 +1,13 @@
 /**
  * Role v zpracování osobních údajů (GDPR).
- * Hypotéka Jasně ≠ licencovaný zprostředkovatel ≠ banka.
+ * Značka Hypotéka Jasně ≠ banka; provozovatel zajišťuje zprostředkování ve spolupráci s INSIA.
+ *
+ * INTERNAL: Before final commercial launch, verify the exact current
+ * regulatory relationship between HEINZKE & partneři s.r.o. and INSIA in
+ * the ČNB register.
  */
+
+import { financialPartner, legalOperator } from "@/config/legal";
 
 export type ProcessingRole = {
   id: string;
@@ -13,31 +19,30 @@ export type ProcessingRole = {
 export const PROCESSING_ROLES: ProcessingRole[] = [
   {
     id: "hypoteka_jasne",
-    label: "Hypotéka Jasně (provozovatel webu)",
+    label: `${legalOperator.companyName} (provozovatel platformy ${legalOperator.brand})`,
     gdprRole: "controller",
     description:
-      "Správce údajů z formulářů a technických logů webu. Poskytuje edukaci a modelové nástroje. Nepředstavuje se jako banka ani licencovaný zprostředkovatel.",
+      "Správce údajů z formulářů a technických logů webu. Poskytuje digitální platformu (edukace, modelové nástroje). Nejde o banku.",
   },
   {
     id: "hosting_processors",
     label: "Hosting / infrastruktura (např. Vercel, Supabase)",
     gdprRole: "processor",
     description:
-      "Zpracovatelé podle smlouvy o zpracování — provoz aplikace a databáze. Konkrétní seznam subjektů zveřejní provozovatel po uzavření smluv.",
+      "Zpracovatelé podle smlouvy o zpracování — provoz aplikace a databáze.",
   },
   {
     id: "licensed_specialist",
-    label: "Hypoteční partner (samostatný správce po předání)",
+    label: `Odborná hypoteční část (${legalOperator.companyName} / ${financialPartner.network})`,
     gdprRole: "independent_controller",
-    description:
-      "Po výslovném souhlasu s předáním se stává samostatným správcem údajů pro zprostředkování. Ověřená identifikace (právní jméno, IČO, registr) se zveřejňuje na /partneri — jen pokud je skutečně dostupná. Bez ověření nepředáváme kontakt třetí straně jako „licencovanému specialistovi“.",
+    description: `${financialPartner.cooperationWording} Po výslovném souhlasu s předáním se údaje zpracovávají pro účely nezávazné konzultace. Konkrétní ČNB označení vztahu k INSIA zveřejníme až po ověření.`,
   },
   {
     id: "bank",
     label: "Banka",
     gdprRole: "independent_controller",
     description:
-      "Samostatný správce při žádosti o úvěr. Web Hypotéka Jasně není pobočkou banky.",
+      "Samostatný správce při žádosti o úvěr. Web Hypotéka Jasně není pobočkou banky. Schválení úvěru vždy provádí banka.",
   },
   {
     id: "majetio",
@@ -55,15 +60,15 @@ export const PROCESSING_ROLES: ProcessingRole[] = [
   },
 ];
 
-/** Regulované hranice — jasné označení co HJ není. */
+/** Regulované hranice — jasné označení co značka / kdo zajišťuje odbornou část. */
 export const REGULATED_BOUNDARIES = {
   title: "Regulované hranice",
   statements: [
-    "Hypotéka Jasně nevykonává činnost podle zákona č. 257/2016 Sb., o spotřebitelském úvěru.",
-    "Neposkytuje spotřebitelský úvěr, nenabízí zprostředkování jako licencovaný subjekt a neschvaluje úvěry.",
-    "Neposkytuje regulované investiční poradenství ani daňové poradenství.",
-    "Modelové výpočty a skóre nejsou závaznou nabídkou banky ani investičním doporučením.",
-    "Individuální zprostředkování provádí výhradně ověřený partner (po zveřejnění identity); schválení vždy banka.",
+    "Hypotéka Jasně je obchodní značka digitální platformy provozované společností HEINZKE & partneři s.r.o.",
+    "Digitální nástroje a modelové výpočty nejsou závaznou nabídkou banky ani investičním doporučením.",
+    financialPartner.cooperationWording,
+    "Neposkytujeme regulované investiční poradenství ani daňové poradenství.",
+    "Schválení úvěru vždy provádí banka po vlastním posouzení.",
   ],
 } as const;
 
@@ -72,7 +77,7 @@ export const REGULATED_BOUNDARIES = {
  * Veřejné tvrzení „právně zkontrolováno“ jen přes isLegalTextReviewed() z config/legal.
  */
 export const LEGAL_INTERNAL_REVIEW_NOTE =
-  "Internal: final legal texts need a qualified Czech lawyer review before claiming legal sign-off. Set LEGAL_REVIEWED_BY + LEGAL_LAST_REVIEW_DATE after review.";
+  "Internal: final legal texts need a qualified Czech lawyer review before claiming legal sign-off. Set LEGAL_REVIEWED_BY + LEGAL_LAST_REVIEW_DATE after review. Before final commercial launch, verify the exact current regulatory relationship between HEINZKE & partneři s.r.o. and INSIA in the ČNB register and replace neutral cooperation wording with the exact legally correct designation if appropriate.";
 
 /** @deprecated Use LEGAL_INTERNAL_REVIEW_NOTE — do not show to end users. */
 export const LAWYER_REVIEW_NOTICE = LEGAL_INTERNAL_REVIEW_NOTE;

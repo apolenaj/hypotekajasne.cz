@@ -1,6 +1,7 @@
 export {
   getOperatorIdentity,
   formatOperatorAddress,
+  formatOperatorRegisterLine,
   operatorDisplayName,
   isPaidAnalysisCommerciallyAvailable,
   type OperatorIdentity,
@@ -13,6 +14,10 @@ export {
   LEGAL_IDENTITY_INCOMPLETE_PUBLIC_MESSAGE,
   LEGAL_LEAD_BLOCKED_PUBLIC_MESSAGE,
   getLegalDevIncompleteNotice,
+  legalOperator,
+  projectFounder,
+  financialPartner,
+  formatCommercialRegisterLine,
 } from "@/config/legal";
 export {
   PROCESSING_ROLES,

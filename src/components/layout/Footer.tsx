@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { Mail, MapPin, Phone } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
 import { BrandWordmark } from "@/components/brand/BrandWordmark";
+import { LegalOperatorIdentity } from "@/components/legal/LegalOperatorIdentity";
 import { useCookieConsent } from "@/components/consent/CookieConsentProvider";
 import { SITE_DOMAIN_LABEL } from "@/lib/brand";
+import { financialPartner } from "@/config/legal";
 import { footerLinks, siteContact } from "@/lib/mock-data";
-import { getPartnerClaimLabels } from "@/lib/partners/verification";
 
 function CookieSettingsLink() {
   const { reopenPreferences } = useCookieConsent();
@@ -22,16 +23,20 @@ function CookieSettingsLink() {
 }
 
 export function Footer() {
-  const partnerCopy = getPartnerClaimLabels();
-
   return (
     <footer className="border-t border-border bg-white">
       <div className="container mx-auto px-4 py-12 lg:px-8 lg:py-16">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 lg:gap-12">
           <div className="space-y-4">
             <BrandWordmark href="/" showDomain className="text-lg font-semibold" />
-            <p className="text-sm leading-relaxed text-muted-foreground">
-              {partnerCopy.connectBlurb}
+            <LegalOperatorIdentity
+              variant="compact"
+              showContact={false}
+              showRegister
+              className="text-xs leading-relaxed"
+            />
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              {financialPartner.cooperationWording}
             </p>
           </div>
 
@@ -84,19 +89,20 @@ export function Footer() {
                   {siteContact.email}
                 </a>
               </li>
-              <li>
-                <a
-                  href={siteContact.phoneHref}
-                  className="inline-flex items-center gap-2 transition-colors hover:text-deep-teal"
-                >
-                  <Phone className="h-4 w-4 shrink-0" />
-                  {siteContact.phone}
-                </a>
-              </li>
-              <li className="inline-flex items-start gap-2">
-                <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
-                <span>{siteContact.address}</span>
-              </li>
+              {siteContact.phone ? (
+                <li>
+                  <a
+                    href={siteContact.phoneHref}
+                    className="inline-flex items-center gap-2 transition-colors hover:text-deep-teal"
+                  >
+                    <Phone className="h-4 w-4 shrink-0" />
+                    {siteContact.phone}
+                  </a>
+                  <p className="mt-1 pl-6 text-[11px] text-muted-foreground/80">
+                    Kontakt projektu Hypotéka Jasně
+                  </p>
+                </li>
+              ) : null}
             </ul>
           </div>
         </div>
@@ -110,8 +116,8 @@ export function Footer() {
             . Všechna práva vyhrazena.
           </p>
           <p className="max-w-md text-center text-xs text-muted-foreground sm:text-right">
-            Informační platforma — nejsme banka ani licencovaný poradce. Před
-            rozhodnutím si ověřte aktuální podmínky u odborníka.
+            Informační platforma — nejsme banka. Schválení úvěru vždy provádí
+            banka.
           </p>
         </div>
       </div>

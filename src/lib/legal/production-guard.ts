@@ -91,7 +91,7 @@ export function collectLegalProductionIssues(options?: {
       code: "PARTNER_HANDOFF_SOFT",
       severity: "warn",
       message:
-        "Partner handoff je v režimu provozovatel-only (identita partnera nezveřejněna). Pro produkční předání vyplňte LEGAL_PARTNER_*.",
+        "Partner handoff zůstává vypnutý, dokud není ověřen přesný ČNB vztah HEINZKE & partneři s.r.o. / INSIA (LEGAL_PARTNER_JERRS_URL). Poptávky přijímá provozovatel platformy.",
     });
   }
 

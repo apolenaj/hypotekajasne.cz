@@ -141,27 +141,27 @@ export function getPartnerClaimLabels(
     }
     case "PENDING":
       return {
-        badgeLabel: "Ověření partnera probíhá",
-        roleLabel: "Partner (ověření probíhá)",
+        badgeLabel: "Konzultace přes provozovatele",
+        roleLabel: "HEINZKE & partneři s.r.o. (ve spolupráci s INSIA)",
         consultCta: "Nezávazná konzultace",
         connectBlurb:
-          "Nejsme banka ani licencovaný zprostředkovatel. Ověření partnera probíhá — do zveřejnění identity přijímá poptávky provozovatel webu.",
+          "Platformu Hypotéka Jasně provozuje HEINZKE & partneři s.r.o. Zprostředkování hypotečních a souvisejících finančních služeb je zajišťováno ve spolupráci se společností INSIA. Nejsme banka.",
         leadIntakeDisclosure:
-          "Vaše údaje přijme provozovatel webu Hypotéka Jasně pro nezávaznou konzultaci. Předání konkrétnímu partnerovi zatím není aktivní — ověření partnera probíhá. Hypotéka Jasně není banka.",
+          "Vaše údaje přijme provozovatel platformy HEINZKE & partneři s.r.o. pro nezávaznou konzultaci. Hypotéka Jasně není banka.",
         thankYouHandoff:
-          "Ozveme se vám ohledně nezávazné konzultace — obvykle do 24 hodin. Předání konkrétnímu partnerovi zatím není aktivní. Hypotéka Jasně není banka.",
+          "Ozveme se vám ohledně nezávazné konzultace — obvykle do 24 hodin. Hypotéka Jasně není banka.",
       };
     default:
       return {
-        badgeLabel: "Identita partnera nezveřejněna",
-        roleLabel: "Partner (identita nezveřejněna)",
+        badgeLabel: "Provozovatel platformy",
+        roleLabel: "HEINZKE & partneři s.r.o. (ve spolupráci s INSIA)",
         consultCta: "Nezávazná konzultace",
         connectBlurb:
-          "Nejsme banka ani licencovaný zprostředkovatel. Poptávky přijímá provozovatel webu; předání partnerovi až po zveřejnění ověřené identity (viz Partneři).",
+          "Platformu Hypotéka Jasně provozuje HEINZKE & partneři s.r.o. Zprostředkování hypotečních a souvisejících finančních služeb je zajišťováno ve spolupráci se společností INSIA. Nejsme banka.",
         leadIntakeDisclosure:
-          "Vaše údaje přijme provozovatel webu Hypotéka Jasně pro nezávaznou konzultaci. Předání třetímu partnerovi není produkčně aktivní, dokud není zveřejněna ověřená identifikace. Hypotéka Jasně není banka.",
+          "Vaše údaje přijme provozovatel platformy HEINZKE & partneři s.r.o. pro nezávaznou konzultaci. Hypotéka Jasně není banka.",
         thankYouHandoff:
-          "Ozveme se vám ohledně nezávazné konzultace — obvykle do 24 hodin. Hypotéka Jasně není banka a nepředává kontakt neověřenému partnerovi.",
+          "Ozveme se vám ohledně nezávazné konzultace — obvykle do 24 hodin. Hypotéka Jasně není banka.",
       };
   }
 }

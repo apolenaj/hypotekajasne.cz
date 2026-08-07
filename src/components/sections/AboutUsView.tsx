@@ -15,11 +15,7 @@ import {
   TEAM_MEMBERS,
   type TeamMember,
 } from "@/lib/trust";
-import { getPartnerClaimLabels } from "@/lib/partners/verification";
 import { routes } from "@/lib/routes";
-
-const partnerLabels = getPartnerClaimLabels();
-
 const pillars = [
   {
     icon: BarChart3,
@@ -36,7 +32,8 @@ const pillars = [
   {
     icon: ClipboardList,
     title: "Konkrétní proces předání",
-    description: `1) Vyplníte záměr a model. 2) Pokud chcete a partner je ověřen, předáme poptávku partnerovi. 3) Schválení vždy provádí banka. 4) Majetio slouží k nemovitostem — odděleně. Stav: ${partnerLabels.badgeLabel}.`,
+    description:
+      "1) Vyplníte záměr a model. 2) Provozovatel HEINZKE & partneři s.r.o. přijme poptávku pro nezávaznou konzultaci. 3) Schválení vždy provádí banka. 4) Majetio slouží k nemovitostem — odděleně.",
   },
 ];
 
@@ -53,13 +50,16 @@ function ProfilePhoto({
   accent: string;
 }) {
   if (member.photoUrl) {
+    const w = member.photoWidth ?? 400;
+    const h = member.photoHeight ?? 500;
     return (
-      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-slate-100">
+      <div className="relative flex aspect-[4/5] w-full items-center justify-center overflow-hidden rounded-2xl bg-slate-100">
         <Image
           src={member.photoUrl}
           alt={member.photoAlt}
-          fill
-          className="object-cover"
+          width={w}
+          height={h}
+          className="h-auto max-h-full w-full object-contain"
           sizes="(max-width: 640px) 100vw, 13rem"
         />
       </div>
@@ -103,10 +103,10 @@ export function AboutUsView() {
             Lidé a role za Hypotéka Jasně
           </h1>
           <p className="mx-auto max-w-3xl text-lg leading-relaxed font-light text-emerald-50/90 md:text-xl">
-            Jsme technologická platforma. Nejsme banka. Individuální
-            zprostředkování provádí partner — jen se souhlasem a jen pokud je
-            jeho identita ověřena a zveřejněna ({partnerLabels.badgeLabel}).
-            Úvěr schvaluje banka. Do 30 sekund víte, komu dáváte data — detail v{" "}
+            Jsme digitální platforma provozovaná společností HEINZKE &amp;
+            partneři s.r.o. Nejsme banka. Zprostředkování hypotečních a
+            souvisejících finančních služeb zajišťujeme ve spolupráci se
+            společností INSIA. Úvěr schvaluje banka. Detail rolí v{" "}
             <Link href={routes.duvera} className="underline decoration-white/40">
               Centru důvěry
             </Link>
@@ -122,7 +122,7 @@ export function AboutUsView() {
             Kdo co dělá
           </h2>
           <p className="mx-auto mt-2 max-w-2xl text-center text-sm text-muted-foreground">
-            Hypotéka Jasně ≠ specialista ≠ banka ≠ Majetio ≠ makléř.
+            Hypotéka Jasně ≠ provozovatel ≠ INSIA ≠ banka ≠ Majetio ≠ makléř.
           </p>
           <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {ECOSYSTEM_ACTORS.map((a) => (
@@ -185,6 +185,11 @@ export function AboutUsView() {
                     <p className="mt-1 text-sm font-semibold text-deep-teal">
                       {member.role}
                     </p>
+                    {member.summary ? (
+                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                        {member.summary}
+                      </p>
+                    ) : null}
                     {member.linkedInUrl ? (
                       <a
                         href={member.linkedInUrl}
@@ -291,13 +296,15 @@ export function AboutUsView() {
             <span className="text-sm font-medium text-gray-500">
               (HypotekaJasne.cz)
             </span>{" "}
-            edukuje a modeluje.{" "}
-            <strong className="font-semibold text-gray-900">Majetio</strong>{" "}
-            pomáhá s nemovitostmi.{" "}
-            {partnerLabels.roleLabel} zprostředkovává individuální konzultaci,
-            pokud je ověřen. Banka schvaluje. Makléř/developer prodává.{" "}
+            je digitální platforma.{" "}
+            <strong className="font-semibold text-gray-900">
+              HEINZKE &amp; partneři s.r.o.
+            </strong>{" "}
+            je provozovatel a zajišťuje odbornou hypoteční část ve spolupráci s{" "}
+            <strong className="font-semibold text-gray-900">INSIA</strong>. Banka
+            schvaluje. Makléř/developer prodává.{" "}
             <Link href={routes.partneri} className="text-deep-teal underline">
-              Partneři a ověření
+              Partneři a role
             </Link>
             .
           </p>

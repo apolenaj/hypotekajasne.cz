@@ -57,26 +57,27 @@ function publicSurfaces(): string[] {
 }
 
 describe("partner / legal SoT", () => {
-  it("does not invent partner identity without env", () => {
+  it("does not invent ČNB / JERRS partner handoff without env", () => {
     const p = getMortgagePartners()[0]!;
     assert.equal(p.legalName, null);
     assert.equal(p.ico, null);
     assert.equal(p.jerrsVerificationUrl, null);
     assert.equal(p.jerrsStatus, "UNPUBLISHED");
     assert.equal(isMortgagePartnerHandoffReady(), false);
-    assert.match(partnerPublicDisplayName(p), /nezveřejněna/i);
+    assert.match(partnerPublicDisplayName(p), /HEINZKE/i);
   });
 
   it("consent copy names controller, non-bank, non-binding purpose", () => {
     const privacy = buildPrivacyProcessingCheckboxLabel();
     assert.match(privacy, /správce/i);
+    assert.match(privacy, /HEINZKE/i);
     assert.match(privacy, /Hypotéka Jasně není banka/i);
     assert.match(privacy, /nezávazné/i);
 
     const summary = buildConsentContextSummary();
     assert.match(summary, /Správce/);
     assert.match(summary, /není banka/);
-    assert.match(summary, /provozovatel webu|ověřenému partnerovi/i);
+    assert.match(summary, /HEINZKE|provozovatel/i);
 
     const label = buildPartnerTransferCheckboxLabel("mortgage_specialist");
     assert.ok(!label.includes("viz /partneri"));
@@ -85,7 +86,7 @@ describe("partner / legal SoT", () => {
   });
 
   it("bumped consent policy version", () => {
-    assert.equal(CONSENT_POLICY_VERSION, "2026-07-21.1");
+    assert.equal(CONSENT_POLICY_VERSION, "2026-08-07.1");
   });
 });
 
@@ -120,32 +121,31 @@ describe("production guard", () => {
     );
   });
 
-  it("soft-warns when handoff / operator incomplete (default)", () => {
+  it("soft-warns when handoff incomplete / legal text not reviewed (default)", () => {
     const issues = collectLegalProductionIssues({
       requirePartnerHandoff: false,
       requireOperatorIdentity: false,
       requireIdentityForLeads: false,
     });
     assert.ok(issues.some((i) => i.code === "PARTNER_HANDOFF_SOFT"));
-    assert.ok(issues.some((i) => i.code === "OPERATOR_IDENTITY_SOFT"));
+    assert.ok(!issues.some((i) => i.code === "OPERATOR_IDENTITY_SOFT"));
     assert.ok(issues.some((i) => i.code === "LEGAL_TEXT_NOT_REVIEWED"));
     assert.ok(issues.every((i) => i.severity === "warn"));
   });
 
-  it("errors when identity required for lead collection", () => {
+  it("passes operator identity when required for lead collection", () => {
     const issues = collectLegalProductionIssues({
       requirePartnerHandoff: false,
       requireOperatorIdentity: true,
       requireIdentityForLeads: true,
     });
     assert.ok(
-      issues.some(
+      !issues.some(
         (i) =>
           i.code === "OPERATOR_IDENTITY_REQUIRED_FOR_LEADS" ||
           i.code === "OPERATOR_IDENTITY_MISSING"
       )
     );
-    assert.ok(issues.some((i) => i.severity === "error"));
   });
 
   it("strict mode errors when partner handoff required", () => {
@@ -159,14 +159,13 @@ describe("production guard", () => {
 });
 
 describe("central legal config", () => {
-  it("isLegalIdentityComplete is false without inventing data", async () => {
-    const { isLegalIdentityComplete, getLegalIdentityConfig } = await import(
-      "@/config/legal"
-    );
+  it("isLegalIdentityComplete with HEINZKE operator defaults", async () => {
+    const { isLegalIdentityComplete, getLegalIdentityConfig, legalOperator } =
+      await import("@/config/legal");
     const cfg = getLegalIdentityConfig();
-    assert.equal(cfg.legalName, null);
-    assert.equal(cfg.companyId, null);
-    assert.equal(isLegalIdentityComplete(cfg), false);
+    assert.equal(cfg.legalName, legalOperator.companyName);
+    assert.equal(cfg.companyId, legalOperator.ico);
+    assert.equal(isLegalIdentityComplete(cfg), true);
   });
 
   it("isLegalTextReviewed requires reviewer and date", async () => {

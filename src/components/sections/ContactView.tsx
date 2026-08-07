@@ -8,9 +8,14 @@ import {
   emptyFormConsentState,
   toConsentRecord,
 } from "@/components/consent/FormConsentFields";
+import { LegalOperatorIdentity } from "@/components/legal/LegalOperatorIdentity";
+import {
+  financialPartner,
+  legalOperator,
+  projectFounder,
+} from "@/config/legal";
 import { siteContact } from "@/lib/mock-data";
 import { buildThankYouPath, submitLead } from "@/lib/leads";
-import { getPartnerClaimLabels } from "@/lib/partners/verification";
 
 const inputClass =
   "mt-1.5 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20";
@@ -76,15 +81,27 @@ export function ContactView() {
           <div className="space-y-8">
             <div>
               <p className="text-sm font-bold uppercase tracking-wide text-gray-500">
-                Telefon
+                Značka
               </p>
-              <a
-                href={siteContact.phoneHref}
-                className="mt-2 block font-heading text-3xl font-black text-deep-teal hover:underline sm:text-4xl"
-              >
-                {siteContact.phone}
-              </a>
+              <p className="mt-2 font-heading text-2xl font-bold text-gray-900">
+                {legalOperator.brand}
+              </p>
             </div>
+
+            <div>
+              <p className="text-sm font-bold uppercase tracking-wide text-gray-500">
+                Provozovatel
+              </p>
+              <div className="mt-2">
+                <LegalOperatorIdentity
+                  variant="compact"
+                  showBrandNote={false}
+                  showContact={false}
+                  className="rounded-2xl border border-gray-200 bg-white p-4 text-sm"
+                />
+              </div>
+            </div>
+
             <div>
               <p className="text-sm font-bold uppercase tracking-wide text-gray-500">
                 E-mail
@@ -97,17 +114,39 @@ export function ContactView() {
                 {siteContact.email}
               </a>
             </div>
+
             <div>
               <p className="text-sm font-bold uppercase tracking-wide text-gray-500">
-                Adresa
+                Sídlo provozovatele
               </p>
               <p className="mt-2 flex items-start gap-2 text-lg text-gray-800">
                 <MapPin className="mt-1 h-5 w-5 shrink-0 text-deep-teal" />
                 {siteContact.address}
               </p>
             </div>
+
+            <div className="space-y-3 rounded-2xl border border-gray-200 bg-white p-5 text-sm">
+              <div>
+                <p className="font-semibold text-gray-900">
+                  {projectFounder.displayName}
+                </p>
+                <p className="text-deep-teal">{projectFounder.role}</p>
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900">
+                  {financialPartner.representative}
+                </p>
+                <p className="text-deep-teal">
+                  {financialPartner.representativeRole}
+                </p>
+                <p className="text-muted-foreground">
+                  {financialPartner.specialistTitle}
+                </p>
+              </div>
+            </div>
+
             <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm leading-relaxed text-amber-950">
-              {getPartnerClaimLabels().connectBlurb}
+              {financialPartner.platformWording}
             </div>
           </div>
 

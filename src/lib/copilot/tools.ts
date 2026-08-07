@@ -911,14 +911,14 @@ export function toolContactSpecialist(): ToolBundle {
     markdown: [
       "## Kontaktovat specialistu",
       "",
-      "Předání kontaktu partnerovi probíhá **jen se souhlasem** (oddělený od marketingu) a jen pokud je identita partnera ověřena.",
+      "Předání kontaktu probíhá **jen se souhlasem** (oddělený od marketingu). Poptávky přijímá provozovatel HEINZKE & partneři s.r.o.",
       "",
       "1. Dokončete / zkontrolujte [Hypoteční připravenost](" +
         routes.navrhNaMiru +
         ") — odeslání leadu je na konci s checkboxy.",
-      "2. Stav partnera a role: [/partneri](" +
+      "2. Role provozovatele a partnerů: [/partneri](" +
         routes.partneri +
-        ") — předání specialistovi jen se souhlasem a jen pokud je identita partnera zveřejněna.",
+        ").",
       "3. My nejsme banka a neschvalujeme úvěr. Konzultace je nezávazná.",
     ].join("\n"),
     tools: [

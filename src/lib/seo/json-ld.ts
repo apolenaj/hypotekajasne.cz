@@ -18,7 +18,6 @@ export function organizationJsonLd(): JsonLd {
     alternateName: SITE_DOMAIN_LABEL,
     url: absoluteUrl("/"),
     email: op.email,
-    telephone: op.phone,
     address: {
       "@type": "PostalAddress",
       streetAddress: op.street ?? undefined,
@@ -27,6 +26,7 @@ export function organizationJsonLd(): JsonLd {
       addressCountry: "CZ",
     },
   };
+  if (op.phone) org.telephone = op.phone;
   // Publish legal identifiers only when identity is complete — never invent.
   if (op.isProductionReady && op.legalName) org.legalName = op.legalName;
   if (op.isProductionReady && op.ico) {

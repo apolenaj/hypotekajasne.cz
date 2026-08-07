@@ -1,11 +1,11 @@
 export const FAQ_ITEMS = [
   {
     q: "Poskytujete přímo hypotéky nebo finanční poradenství?",
-    a: "Ne. Hypotéka Jasně je technologická a informační platforma — edukace, kalkulačky a modely. Nejsme banka. Individuální zprostředkování provádí partner jen pokud je jeho identita ověřena a zveřejněna na /partneri; schválení úvěru vždy banka. Role jsou popsány v Centru důvěry (/duvera).",
+    a: "Hypotéka Jasně je digitální platforma provozovaná společností HEINZKE & partneři s.r.o. Nejsme banka. Zprostředkování hypotečních a souvisejících finančních služeb zajišťuje HEINZKE & partneři s.r.o. ve spolupráci se společností INSIA. Schválení úvěru vždy provádí banka. Role jsou popsány v Centru důvěry (/duvera) a na /partneri.",
   },
   {
     q: "Jsou vaše kalkulace a investiční skóre závazné?",
-    a: "Ne. Výpočty na webu jsou modelové a orientační. Skutečné sazby, poplatky a výnosy se liší. Závaznou nabídku vydává banka (případně po práci se specialistou).",
+    a: "Ne. Výpočty na webu jsou modelové a orientační. Skutečné sazby, poplatky a výnosy se liší. Závaznou nabídku vydává banka.",
   },
   {
     q: "Platím něco za využívání kalkulaček?",
@@ -13,6 +13,6 @@ export const FAQ_ITEMS = [
   },
   {
     q: "Komu předáváte mé kontakty?",
-    a: "Jen pokud o předání specialistovi výslovně souhlasíte a jen když je na /partneri zveřejněna ověřená identifikace partnera. Do té doby údaje přijímá provozovatel webu pro nezávaznou konzultaci. Majetio, makléř nebo developer jsou oddělené role. Hypotéka Jasně není banka.",
+    a: "Údaje přijímá provozovatel platformy HEINZKE & partneři s.r.o. (správce) pro nezávaznou konzultaci. Předání dalším subjektům jen se souhlasem dle GDPR. Majetio, makléř nebo developer jsou oddělené role. Hypotéka Jasně není banka.",
   },
 ] as const;
