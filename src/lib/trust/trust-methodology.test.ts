@@ -65,9 +65,10 @@ describe("PROMPT 13 — number pipeline + changelog", () => {
 });
 
 describe("PROMPT 13 — legal wording", () => {
-  it("dossier uses editorial legal sources wording without právní review", () => {
+  it("dossier uses clean legal-sources update wording", () => {
     const text = dossierEditorialLegalReviewText("ČR");
-    assert.match(text, /redakční kontrola právních zdrojů/i);
+    assert.match(text, /Poslední aktualizace právních zdrojů/i);
+    assert.ok(!/redakční kontrola/i.test(text));
     assert.ok(!/právní review/i.test(text));
   });
 

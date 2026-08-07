@@ -177,7 +177,7 @@ function euBase(
     sourcesSection(
       {
         text: dossierEditorialLegalReviewText("EU trhy"),
-        source: "HypotekaJasne.cz (redakční review)",
+        source: "HypotekaJasne.cz",
         sourceUrl: null,
         asOf: LEGAL_REVIEW_AS_OF,
         status: "ESTIMATE",

@@ -27,7 +27,7 @@ export default function DuveraPage() {
       currentPath="/duvera"
       eyebrow="Důvěryhodnost"
       title="Centrum důvěry"
-      lead={`Do 30 sekund: Hypotéka Jasně je digitální platforma provozovaná společností HEINZKE & partneři s.r.o. Úvěr schvaluje banka. Zprostředkování hypotečních služeb probíhá ve spolupráci s INSIA. Majetio slouží k nemovitostem.`}
+      lead={`Do 30 sekund: Hypotéka Jasně je digitální platforma provozovaná společností HEINZKE & partneři s.r.o. Schválení úvěru vždy provádí banka po vlastním posouzení. Zprostředkování hypotečních služeb probíhá ve spolupráci s INSIA. Majetio slouží k nemovitostem.`}
     >
       <section>
         <h2 className="font-heading text-xl font-semibold text-text-dark">
@@ -119,23 +119,16 @@ export default function DuveraPage() {
         </p>
       </section>
 
-      <section>
-        <h2 className="font-heading text-xl font-semibold text-text-dark">
-          Redakční kontrola právních zdrojů
-        </h2>
-        {op.lastLegalReviewDate && op.legalReviewedBy ? (
+      {op.lastLegalReviewDate && op.legalReviewedBy ? (
+        <section>
+          <h2 className="font-heading text-xl font-semibold text-text-dark">
+            Právní revize textů
+          </h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Evidovaná právní revize: {op.lastLegalReviewDate} (
-            {op.legalReviewedBy}).
+            {op.lastLegalReviewDate} ({op.legalReviewedBy}).
           </p>
-        ) : (
-          <p className="mt-2 text-sm text-muted-foreground">
-            Právní a daňové přehledy procházejí redakční kontrolou právních
-            zdrojů. Oddělenou právní revizi kvalifikovaným odborníkem
-            zveřejníme, až bude evidována.
-          </p>
-        )}
-      </section>
+        </section>
+      ) : null}
 
       <section>
         <h2 className="font-heading text-xl font-semibold text-text-dark">

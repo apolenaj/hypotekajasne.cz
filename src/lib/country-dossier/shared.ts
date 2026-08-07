@@ -43,7 +43,7 @@ export const CNB_INVESTMENT_CLAIM = (() => {
 export const NOT_LEGAL_ADVICE = makeClaim(
   "Obsah je orientační přehled, nikoli individuální právní, daňová ani investiční rada.",
   {
-    source: "HypotekaJasne.cz — redakční upozornění",
+    source: "HypotekaJasne.cz",
     asOf: LEGAL_REVIEW_AS_OF,
     status: "MODEL",
   }

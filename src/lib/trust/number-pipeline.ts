@@ -31,10 +31,10 @@ export const NUMBER_PIPELINE_STEPS = [
 ] as const;
 
 export const EDITORIAL_LEGAL_SOURCES_LABEL =
-  "redakční kontrola právních zdrojů";
+  "aktualizace právních zdrojů";
 
 /**
- * Text u dossieru, když není evidován odborník (legalReviewedBy).
+ * Datum poslední kontroly právních zdrojů u dossieru (veřejná verze info).
  */
 export function editorialLegalSourcesReviewText(
   scope: string,

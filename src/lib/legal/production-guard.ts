@@ -34,6 +34,21 @@ export const PUBLIC_STAGING_PHRASES = [
   "TODO IČO",
   "TODO legal operator",
   "Legal review required",
+  "finální právní revize kvalifikovaným",
+  "zveřejníme odděleně",
+  "evidován konkrétní odborník",
+  "Oddělenou právní revizi",
+  "redakční kontrolou právních zdrojů",
+  "redakční kontrola právních zdrojů",
+  "Redakční kontrola vs. právní revize",
+  "Aktuálně zveřejňujeme",
+  "Fotografie zatím není dodána",
+  "LinkedIn profil zatím není zveřejněn",
+  "zveřejníme až po ověření",
+  "zveřejníme až po dokončení ověření",
+  "ověření ČNB vztahu probíhá",
+  "zatím neověřen veřejně",
+  "dokud není ověřeno",
 ] as const;
 
 export function collectLegalProductionIssues(options?: {

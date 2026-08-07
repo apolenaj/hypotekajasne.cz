@@ -1,7 +1,9 @@
-import { formatCommercialRegisterLine, legalOperator } from "@/config/legal";
 import {
-  formatOperatorAddress,
-  formatOperatorAddressCompact,
+  formatCommercialRegisterLine,
+  formatCompactOfficeAddress,
+  legalOperator,
+} from "@/config/legal";
+import {
   getOperatorIdentity,
   operatorDisplayName,
 } from "@/lib/legal/operator";
@@ -22,6 +24,7 @@ type LegalOperatorIdentityProps = {
 
 /**
  * Jediný UI zdroj zobrazení provozovatele — čte z centrální legal konfigurace.
+ * Adresa vždy z `legalOperator` (Pavlovova / Ostrava), nikdy z env částí.
  */
 export function LegalOperatorIdentity({
   variant = "full",
@@ -44,7 +47,14 @@ export function LegalOperatorIdentity({
           registerInsert: op.registerInsert,
         })
       : null;
-  const compactAddress = formatOperatorAddressCompact(op);
+  /** Canonical address — never assemble from possibly mixed env city/zip. */
+  const compactAddress = formatCompactOfficeAddress({
+    street: legalOperator.street,
+    district: legalOperator.district,
+    zip: legalOperator.zip,
+    city: legalOperator.city,
+  });
+  const fullAddress = `${compactAddress}, ${legalOperator.country}`;
 
   if (isCompact) {
     return (
@@ -64,8 +74,8 @@ export function LegalOperatorIdentity({
         ) : null}
         {includeBrandNote ? (
           <p className="text-xs leading-relaxed">
-            {legalOperator.brand} je obchodní značka provozovaná společností{" "}
-            {operatorDisplayName(op)}.
+            Obchodní značku {legalOperator.brand} provozuje{" "}
+            {operatorDisplayName(op)}
           </p>
         ) : null}
         {includeContact ? (
@@ -103,9 +113,7 @@ export function LegalOperatorIdentity({
       {op.ico ? (
         <p className="mt-1 text-muted-foreground">IČO: {op.ico}</p>
       ) : null}
-      <p className="mt-1 text-muted-foreground">
-        Sídlo: {formatOperatorAddress(op)}
-      </p>
+      <p className="mt-1 text-muted-foreground">Sídlo: {fullAddress}</p>
       {includeRegister && registerLine ? (
         <p className="mt-2 text-muted-foreground">{registerLine}</p>
       ) : null}
@@ -135,17 +143,9 @@ export function LegalOperatorIdentity({
       ) : null}
       {op.lastLegalReviewDate && op.legalReviewedBy ? (
         <p className="mt-3 text-xs text-muted-foreground">
-          Právní revize textů (evidovaný odborník): {op.lastLegalReviewDate} (
-          {op.legalReviewedBy}).
+          Právní revize textů: {op.lastLegalReviewDate} ({op.legalReviewedBy}).
         </p>
-      ) : (
-        <p className="mt-3 text-xs text-muted-foreground">
-          Tyto stránky prošly redakční kontrolou právních zdrojů. Nejde o
-          potvrzení finální právní revize kvalifikovaným právníkem — tu
-          zveřejníme odděleně, až bude evidován konkrétní odborník a datum
-          revize.
-        </p>
-      )}
+      ) : null}
     </div>
   );
 }

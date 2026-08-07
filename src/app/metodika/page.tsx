@@ -148,7 +148,7 @@ export default function MetodikaPage() {
             id="legal-review-heading"
             className="font-heading text-xl font-semibold text-text-dark"
           >
-            Redakční kontrola vs. právní revize
+            Právní a daňové přehledy
           </h2>
           <p className="text-sm leading-relaxed text-muted-foreground">
             {PUBLIC_METHODOLOGY_BLURBS.legal}
@@ -156,22 +156,13 @@ export default function MetodikaPage() {
           {op.lastLegalReviewDate && op.legalReviewedBy ? (
             <div className="rounded-xl border border-deep-teal/20 bg-deep-teal/5 px-4 py-3 text-sm text-text-dark">
               <p className="font-semibold text-deep-teal">
-                Evidovaná právní revize
+                Právní revize textů
               </p>
               <p className="mt-1 text-muted-foreground">
                 {op.lastLegalReviewDate} · {op.legalReviewedBy}
               </p>
             </div>
-          ) : (
-            <div className="rounded-xl border border-border bg-[#f7f8f7] px-4 py-3 text-sm text-muted-foreground">
-              Aktuálně zveřejňujeme{" "}
-              <strong className="text-text-dark">
-                redakční kontrolu právních zdrojů
-              </strong>
-              . Oddělenou právní revizi kvalifikovaným odborníkem zobrazíme až po
-              evidenci jména a data.
-            </div>
-          )}
+          ) : null}
         </section>
 
         <section className="mt-12 space-y-4" aria-labelledby="sources-heading">

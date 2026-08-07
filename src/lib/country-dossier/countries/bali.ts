@@ -143,7 +143,7 @@ export const baliDossier: CountryDossier = assemble(
     sourcesSection(
       {
         text: dossierEditorialLegalReviewText("Bali"),
-        source: "HypotekaJasne.cz (redakční review)",
+        source: "HypotekaJasne.cz",
         sourceUrl: null,
         asOf: LEGAL_REVIEW_AS_OF,
         status: "ESTIMATE",

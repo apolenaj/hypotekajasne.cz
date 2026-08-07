@@ -16,6 +16,7 @@ import {
   emptyFormConsentState,
   toConsentRecord,
 } from "@/components/consent/FormConsentFields";
+import { defaultPartnerScope } from "@/lib/consent/records";
 import { formatCurrency } from "@/lib/calculators";
 import { submitLead } from "@/lib/leads";
 import {
@@ -285,7 +286,7 @@ export function MortgageReadinessWizard() {
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [consent, setConsent] = useState(() =>
-    emptyFormConsentState("mortgage_specialist")
+    emptyFormConsentState(defaultPartnerScope("mortgage_calculator"))
   );
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitMsg, setSubmitMsg] = useState<string | null>(null);
@@ -976,7 +977,7 @@ export function MortgageReadinessWizard() {
               <p className="text-xs text-muted-foreground">
                 Finanční pas předá jen rozpočet, vlastní kapitál, účel, zemi a
                 anonymní označení zdroje návštěvy — žádné osobní údaje.
-                Předání partnerovi je v beta režimu.
+                Propojení rozpočtu s nabídkou nemovitostí je v beta režimu.
               </p>
 
               <section className="rounded-xl border border-border p-5">

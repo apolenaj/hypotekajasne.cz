@@ -43,31 +43,31 @@ export const ECOSYSTEM_ACTORS: EcosystemActor[] = [
     shortRole: "Provozovatel platformy a odborná hypoteční část",
     whatTheyDo: financialPartner.cooperationWording,
     whatTheyDont:
-      "Neschvaluje úvěr — to vždy provádí banka. Neuvádíme konkrétní ČNB označení vztahu k INSIA, dokud není ověřeno.",
+      "Neschvaluje úvěr. Schválení úvěru vždy provádí banka po vlastním posouzení.",
     dataYouGive:
-      "Kontaktní a kontextové údaje pro nezávaznou konzultaci (se souhlasem dle GDPR).",
+      "Kontaktní a kontextové údaje z formulářů — přímo jako správci (nejde o předání třetí straně).",
   },
   {
     id: "insia",
     name: financialPartner.network,
     shortRole: "Síť / partner pro související finanční distribuci",
     whatTheyDo:
-      "Prostřednictvím spolupráce s INSIA je zajišťována související finanční distribuce (neutrální popis — bez konkrétního ČNB statusu).",
+      "Prostřednictvím spolupráce s INSIA je zajišťována související finanční distribuce.",
     whatTheyDont:
       "Není totéž co značka Hypotéka Jasně ani banka schvalující úvěr.",
     dataYouGive:
-      "Údaje jen v rozsahu potřebném pro související služby — dle souhlasů a smluvních vztahů.",
+      "Z úvodního formuláře osobní údaje INSIA nedostává. Předání by vyžadovalo samostatný, výslovný souhlas pro konkrétního příjemce.",
   },
   {
     id: "bank",
     name: "Banka",
     shortRole: "Poskytovatel úvěru",
     whatTheyDo:
-      "Finální scoring, schválení nebo zamítnutí, sazba, zástava, smlouva. Vždy provádí vlastní posouzení.",
+      "Finální scoring, sazba, zástava, smlouva. Schválení úvěru vždy provádí banka po vlastním posouzení.",
     whatTheyDont:
       "Web Hypotéka Jasně není její pobočka ani závazná nabídka.",
     dataYouGive:
-      "Oficiální žádost a podklady dle interních pravidel banky.",
+      "Oficiální žádost a podklady dle interních pravidel banky — ne z úvodního formuláře webu.",
   },
   {
     id: "majetio",
@@ -78,7 +78,7 @@ export const ECOSYSTEM_ACTORS: EcosystemActor[] = [
     whatTheyDont:
       "Není hypoteční banka. Počet listingů neuvádíme bez ověřených dat.",
     dataYouGive:
-      "Rozpočtové parametry / attribution (llid, UTM) — viz /o-majetio.",
+      "Rozpočtové parametry / attribution (llid, UTM) — bez osobních údajů z úvodního formuláře, viz /o-majetio.",
   },
   {
     id: "broker_developer",
@@ -89,7 +89,7 @@ export const ECOSYSTEM_ACTORS: EcosystemActor[] = [
     whatTheyDont:
       "Nejsou Hypotéka Jasně. Jejich marketing ≠ náš model ani schválení banky.",
     dataYouGive:
-      "Údaje potřebné k rezervaci / koupi — přímo jim, ne automaticky přes HJ.",
+      "Údaje k rezervaci / koupi jen přímo jim — ne automaticky z úvodního formuláře Hypotéka Jasně.",
   },
 ];
 
@@ -105,7 +105,7 @@ export type TeamMember = {
   education: string[];
   contentResponsibility: string;
   linkedInUrl: string | null;
-  /** null = zobrazit placeholder */
+  /** null = initials placeholder (no invented stock photo) */
   photoUrl: string | null;
   /** Intrinsic size for Next.js Image (layout shift prevention). */
   photoWidth?: number;

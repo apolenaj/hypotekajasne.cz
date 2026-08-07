@@ -268,3 +268,23 @@ export function bootstrapAnalyticsAttribution(pathname?: string): void {
     touchVisitorSession();
   }
 }
+
+/**
+ * Clear first-party analytics storage after analytics consent is withdrawn
+ * or rejected. Does not invent or clear Google’s own HTTP cookies.
+ */
+export function clearConsentGatedAnalyticsStorage(): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(ATTRIBUTION_STORAGE_KEY);
+    localStorage.removeItem(VISITOR_STORAGE_KEY);
+  } catch {
+    /* ignore */
+  }
+  try {
+    sessionStorage.removeItem(SESSION_STORAGE_KEY);
+    sessionStorage.removeItem(UTM_PENDING_KEY);
+  } catch {
+    /* ignore */
+  }
+}

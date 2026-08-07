@@ -24,10 +24,6 @@ export function HomeTeamStrip() {
             >
               Kdo za platformou stojí
             </h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Zobrazujeme jen ověřené údaje. Fotografie a LinkedIn neuvádíme,
-              dokud nejsou dodané.
-            </p>
           </div>
           <Link
             href={routes.oNas}

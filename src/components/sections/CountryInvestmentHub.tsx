@@ -18,6 +18,7 @@ import {
   emptyFormConsentState,
   toConsentRecord,
 } from "@/components/consent/FormConsentFields";
+import { defaultPartnerScope } from "@/lib/consent/records";
 
 interface HubFormData {
   name: string;
@@ -84,7 +85,7 @@ function InvestorLeadForm({ countryName }: { countryName: string }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [consent, setConsent] = useState(() =>
-    emptyFormConsentState("mortgage_specialist")
+    emptyFormConsentState(defaultPartnerScope("country_hub"))
   );
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -207,7 +207,7 @@ export const saudiDossier: CountryDossier = assemble(
     sourcesSection(
       {
         text: `${dossierEditorialLegalReviewText("KSA")} (režim od 22. 1. 2026)`,
-        source: "HypotekaJasne.cz (redakční review)",
+        source: "HypotekaJasne.cz",
         sourceUrl: null,
         asOf: LEGAL_REVIEW_AS_OF,
         status: "ESTIMATE",

@@ -31,7 +31,7 @@ const ROLE_BLOCKS = [
   },
   {
     title: "Banka",
-    body: "Poskytovatel úvěru — vždy provádí vlastní posouzení a rozhoduje o schválení.",
+    body: "Poskytovatel úvěru — schválení úvěru vždy provádí banka po vlastním posouzení.",
   },
 ] as const;
 
@@ -41,7 +41,7 @@ export default function PartneriPage() {
       currentPath="/partneri"
       eyebrow="Centrum důvěry"
       title="Partneři a role"
-      lead="Hypotéka Jasně je digitální platforma. Provozovatelem je HEINZKE & partneři s.r.o. Schválení úvěru vždy provádí banka."
+      lead="Hypotéka Jasně je digitální platforma. Provozovatelem je HEINZKE & partneři s.r.o. Schválení úvěru vždy provádí banka po vlastním posouzení."
     >
       <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
         {COMPENSATION_DISCLOSURE}

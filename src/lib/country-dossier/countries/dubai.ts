@@ -156,7 +156,7 @@ export const dubaiDossier: CountryDossier = assemble(
     sourcesSection(
       {
         text: dossierEditorialLegalReviewText("Dubaj"),
-        source: "HypotekaJasne.cz (redakční review)",
+        source: "HypotekaJasne.cz",
         sourceUrl: null,
         asOf: LEGAL_REVIEW_AS_OF,
         status: "ESTIMATE",

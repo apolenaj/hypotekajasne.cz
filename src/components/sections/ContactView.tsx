@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Mail, MapPin, Send, Loader2 } from "lucide-react";
+import { Mail, Send, Loader2 } from "lucide-react";
 import {
   FormConsentFields,
   emptyFormConsentState,
@@ -113,16 +113,6 @@ export function ContactView() {
                 <Mail className="h-5 w-5" />
                 {siteContact.email}
               </a>
-            </div>
-
-            <div>
-              <p className="text-sm font-bold uppercase tracking-wide text-gray-500">
-                Sídlo provozovatele
-              </p>
-              <p className="mt-2 flex items-start gap-2 text-lg text-gray-800">
-                <MapPin className="mt-1 h-5 w-5 shrink-0 text-deep-teal" />
-                {siteContact.address}
-              </p>
             </div>
 
             <div className="space-y-3 rounded-2xl border border-gray-200 bg-white p-5 text-sm">

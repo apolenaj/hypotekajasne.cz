@@ -2,7 +2,11 @@
  * Centrální právní konfigurace provozovatele.
  *
  * Dočasný provozovatel: HEINZKE & partneři s.r.o.
- * Env `LEGAL_OPERATOR_*` může hodnoty přepsat (např. produkční override).
+ * Sídlo je ATOMICKÉ — vždy z `legalOperator` níže.
+ * Neskládat STREET/CITY/ZIP z env (historicky způsobilo Pavlovova + Krnov).
+ *
+ * Env smí přepsat jen neadresní údaje (jméno/IČO/e-mail/registr URL),
+ * a to jen pokud neobsahují zastaralé hodnoty (Josef / 19488483 / Krnov…).
  *
  * INTERNAL (never render to users):
  * Before final commercial launch, verify the exact current regulatory
@@ -101,15 +105,26 @@ function looksLikePlaceholder(value: string | null): boolean {
 }
 
 /**
- * Zastaralé hodnoty předchozího provozovatele — nikdy nepoužívat ve veřejném UI,
+ * Zastaralé hodnoty předchozího provozovatele / sídla — nikdy nepoužívat ve veřejném UI,
  * ani když by je omylem obsahovalo produkční env.
+ * Pozn.: „794 01 Krnov“ nesmí být kombinováno s Pavlovova 3048/40.
  */
 const OBSOLETE_OPERATOR_VALUE_RE =
-  /19488483|Soukenická|Hunger\s*killers|Josef\s+Apolen[aá][rř]/i;
+  /19488483|Soukenická|Hunger\s*killers|Josef\s+Apolen[aá][rř]|Krnov|794\s*01|79401/i;
 
 function isObsoleteOperatorValue(value: string | null): boolean {
   if (!value) return false;
   return OBSOLETE_OPERATOR_VALUE_RE.test(value);
+}
+
+/** Detekce smíchané adresy (např. Pavlovova + Krnov). */
+function isMixedOrInvalidOperatorAddress(value: string | null): boolean {
+  if (!value) return false;
+  if (isObsoleteOperatorValue(value)) return true;
+  const hasPavlovova = /Pavlovova/i.test(value);
+  const hasKrnovOrOldZip = /Krnov|794\s*01|79401/i.test(value);
+  if (hasPavlovova && hasKrnovOrOldZip) return true;
+  return false;
 }
 
 function cleanEnvOrDefault(envKeys: string[], fallback: string): string {
@@ -150,17 +165,53 @@ export function formatCompactOfficeAddress(parts: {
   return `${parts.street}, ${parts.zip} ${parts.city}`;
 }
 
-/** Komunikační / sídlení adresa z centrální konfigurace. */
-export function getContactAddressLine(): string {
-  const cfg = getLegalIdentityConfig();
-  if (cfg.registeredOffice) return cfg.registeredOffice;
-  return formatRegisteredOffice({
+/** Atomické sídlo HEINZKE — vždy z `legalOperator`, nikdy z env částí. */
+function heinzkeRegisteredOfficeParts() {
+  return {
     street: legalOperator.street,
     district: legalOperator.district,
     zip: legalOperator.zip,
     city: legalOperator.city,
     country: legalOperator.country,
-  });
+  } as const;
+}
+
+/**
+ * Sídlo provozovatele = výhradně `legalOperator`.
+ * LEGAL_OPERATOR_STREET / CITY / ZIP / DISTRICT / REGISTERED_OFFICE se
+ * pro HEINZKE záměrně nepoužívají (zdroj smíchaných adres s Krnov).
+ */
+function resolveHeinzkeRegisteredOffice(): {
+  street: string;
+  district: string;
+  zip: string;
+  city: string;
+  country: string;
+  registeredOffice: string;
+} {
+  const defaults = heinzkeRegisteredOfficeParts();
+  return {
+    ...defaults,
+    registeredOffice: formatRegisteredOffice(defaults),
+  };
+}
+
+/** Komunikační / sídlení adresa z centrální konfigurace. */
+export function getContactAddressLine(): string {
+  return (
+    getLegalIdentityConfig().registeredOffice ??
+    formatRegisteredOffice(heinzkeRegisteredOfficeParts())
+  );
+}
+
+/** Nominative court name → instrumental for „vedeném …“. */
+function courtNameInstrumental(court: string): string {
+  const trimmed = court.trim();
+  if (/soudem\b/i.test(trimmed)) return trimmed;
+  if (trimmed === "Krajský soud v Ostravě") {
+    return "Krajským soudem v Ostravě";
+  }
+  return trimmed.replace(/^Krajský soud\b/i, "Krajským soudem");
 }
 
 export function formatCommercialRegisterLine(cfg: {
@@ -168,7 +219,7 @@ export function formatCommercialRegisterLine(cfg: {
   registerSection: string;
   registerInsert: string;
 }): string {
-  return `Společnost je zapsaná v obchodním rejstříku vedeném ${cfg.court}, oddíl ${cfg.registerSection}, vložka ${cfg.registerInsert}.`;
+  return `Společnost je zapsána v obchodním rejstříku vedeném ${courtNameInstrumental(cfg.court)}, oddíl ${cfg.registerSection}, vložka ${cfg.registerInsert}.`;
 }
 
 export function getLegalIdentityConfig(): LegalIdentityConfig {
@@ -180,48 +231,9 @@ export function getLegalIdentityConfig(): LegalIdentityConfig {
     ["LEGAL_OPERATOR_ICO", "NEXT_PUBLIC_LEGAL_OPERATOR_ICO"],
     legalOperator.ico
   );
-  const street = cleanEnvOrDefault(
-    ["LEGAL_OPERATOR_STREET", "NEXT_PUBLIC_LEGAL_OPERATOR_STREET"],
-    legalOperator.street
-  );
-  const city = cleanEnvOrDefault(
-    ["LEGAL_OPERATOR_CITY", "NEXT_PUBLIC_LEGAL_OPERATOR_CITY"],
-    legalOperator.city
-  );
-  const zip = cleanEnvOrDefault(
-    ["LEGAL_OPERATOR_ZIP", "NEXT_PUBLIC_LEGAL_OPERATOR_ZIP"],
-    legalOperator.zip
-  );
-  const districtRaw =
-    envOrNull(
-      "LEGAL_OPERATOR_DISTRICT",
-      "NEXT_PUBLIC_LEGAL_OPERATOR_DISTRICT"
-    ) ?? legalOperator.district;
-  const district = isObsoleteOperatorValue(districtRaw)
-    ? legalOperator.district
-    : districtRaw;
-  const country =
-    envOrNull(
-      "LEGAL_OPERATOR_COUNTRY",
-      "NEXT_PUBLIC_LEGAL_OPERATOR_COUNTRY"
-    ) ?? legalOperator.country;
 
-  const registeredOfficeFromEnv = envOrNull(
-    "LEGAL_OPERATOR_REGISTERED_OFFICE",
-    "NEXT_PUBLIC_LEGAL_OPERATOR_REGISTERED_OFFICE"
-  );
-  const registeredOffice =
-    registeredOfficeFromEnv &&
-    !looksLikePlaceholder(registeredOfficeFromEnv) &&
-    !isObsoleteOperatorValue(registeredOfficeFromEnv)
-      ? registeredOfficeFromEnv
-      : formatRegisteredOffice({
-          street,
-          district: district ?? undefined,
-          zip,
-          city,
-          country,
-        });
+  const office = resolveHeinzkeRegisteredOffice();
+  const { street, district, zip, city, country, registeredOffice } = office;
 
   const registryName = cleanEnvOrDefault(
     ["LEGAL_OPERATOR_REGISTRY_NAME", "NEXT_PUBLIC_LEGAL_OPERATOR_REGISTRY_NAME"],
@@ -295,10 +307,8 @@ export function getLegalIdentityConfig(): LegalIdentityConfig {
   if (!companyId || looksLikePlaceholder(companyId)) {
     missingRequiredFields.push("LEGAL_OPERATOR_ICO");
   }
-  if (!registeredOffice) {
-    missingRequiredFields.push(
-      "LEGAL_OPERATOR_REGISTERED_OFFICE or STREET+CITY+ZIP"
-    );
+  if (!registeredOffice || isMixedOrInvalidOperatorAddress(registeredOffice)) {
+    missingRequiredFields.push("legalOperator registered office (canonical)");
   }
   if (!registryUrl || looksLikePlaceholder(registryUrl)) {
     missingRequiredFields.push("LEGAL_OPERATOR_REGISTER_URL");

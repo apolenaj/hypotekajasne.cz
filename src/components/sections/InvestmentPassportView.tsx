@@ -27,6 +27,7 @@ import {
   emptyFormConsentState,
   toConsentRecord,
 } from "@/components/consent/FormConsentFields";
+import { defaultPartnerScope } from "@/lib/consent/records";
 import { scoreToBucket } from "@/lib/analytics/events";
 import { track, trackCanonical } from "@/lib/analytics/track";
 import { useFocusTrap } from "@/lib/a11y/focus-trap";
@@ -808,7 +809,7 @@ export function InvestmentPassportView() {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [consent, setConsent] = useState(() =>
-    emptyFormConsentState("mortgage_specialist")
+    emptyFormConsentState(defaultPartnerScope("investment_passport"))
   );
   const [startedTracked, setStartedTracked] = useState(false);
 

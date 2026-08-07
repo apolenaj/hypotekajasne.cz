@@ -147,7 +147,7 @@ export function getPartnerClaimLabels(
         connectBlurb:
           "Platformu Hypotéka Jasně provozuje HEINZKE & partneři s.r.o. Zprostředkování hypotečních a souvisejících finančních služeb je zajišťováno ve spolupráci se společností INSIA. Nejsme banka.",
         leadIntakeDisclosure:
-          "Vaše údaje přijme provozovatel platformy HEINZKE & partneři s.r.o. pro nezávaznou konzultaci. Hypotéka Jasně není banka.",
+          "Údaje z formuláře použije provozovatel platformy HEINZKE & partneři s.r.o. k vyřízení poptávky. Hypotéka Jasně není banka.",
         thankYouHandoff:
           "Ozveme se vám ohledně nezávazné konzultace — obvykle do 24 hodin. Hypotéka Jasně není banka.",
       };
@@ -159,7 +159,7 @@ export function getPartnerClaimLabels(
         connectBlurb:
           "Platformu Hypotéka Jasně provozuje HEINZKE & partneři s.r.o. Zprostředkování hypotečních a souvisejících finančních služeb je zajišťováno ve spolupráci se společností INSIA. Nejsme banka.",
         leadIntakeDisclosure:
-          "Vaše údaje přijme provozovatel platformy HEINZKE & partneři s.r.o. pro nezávaznou konzultaci. Hypotéka Jasně není banka.",
+          "Údaje z formuláře použije provozovatel platformy HEINZKE & partneři s.r.o. k vyřízení poptávky. Hypotéka Jasně není banka.",
         thankYouHandoff:
           "Ozveme se vám ohledně nezávazné konzultace — obvykle do 24 hodin. Hypotéka Jasně není banka.",
       };

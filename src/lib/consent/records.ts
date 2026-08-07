@@ -6,9 +6,9 @@ import type { LeadSource } from "@/lib/leads";
 import {
   CONSENT_POLICY_VERSION,
   COOKIE_POLICY_VERSION,
+  isThirdPartyTransferActive,
   type PartnerTransferScope,
 } from "@/lib/legal/consent-versions";
-import { isMortgagePartnerHandoffReady } from "@/lib/legal/partner-config";
 
 export type FormConsentRecord = {
   policyVersion: typeof CONSENT_POLICY_VERSION | string;
@@ -36,7 +36,10 @@ export type CookieConsentRecord = {
 
 export const COOKIE_STORAGE_KEY = "hj_cookie_consent_v1";
 
-/** Zdroje s UI záměrem předání partnerovi (i když handoff ještě není ready). */
+/**
+ * Lead sources that *could* involve a third-party transfer when that transfer
+ * is product-activated (never HEINZKE → HEINZKE).
+ */
 export function isPartnerHandoffLeadSource(source: LeadSource): boolean {
   return (
     source === "lead_gen" ||
@@ -49,15 +52,9 @@ export function isPartnerHandoffLeadSource(source: LeadSource): boolean {
   );
 }
 
-/** Zdroje, u kterých je partner transfer povinný při odeslání. */
+/** True only when a named third-party PII transfer is active for this lead source. */
 export function requiresPartnerTransfer(source: LeadSource): boolean {
-  if (!isPartnerHandoffLeadSource(source)) return false;
-
-  // Majetio scope — vždy vyžaduj výslovný souhlas (i bez hypotečního partnera)
-  if (source === "property_analysis") return true;
-
-  // Hypoteční handoff jen s ověřenou identitou partnera
-  return isMortgagePartnerHandoffReady();
+  return isThirdPartyTransferActive(defaultPartnerScope(source));
 }
 
 /** Newsletter = výslovný marketing; bez marketingAccepted neukládat. */
@@ -68,7 +65,9 @@ export function requiresMarketingConsent(source: LeadSource): boolean {
 export function defaultPartnerScope(
   source: LeadSource
 ): PartnerTransferScope {
-  if (source === "property_analysis") return "majetio";
+  if (source === "property_analysis") {
+    return isThirdPartyTransferActive("majetio") ? "majetio" : "none";
+  }
   if (
     source === "lead_gen" ||
     source === "expert_request" ||
@@ -77,7 +76,7 @@ export function defaultPartnerScope(
     source === "mortgage_calculator" ||
     source === "country_hub"
   ) {
-    return isMortgagePartnerHandoffReady()
+    return isThirdPartyTransferActive("mortgage_specialist")
       ? "mortgage_specialist"
       : "none";
   }
@@ -104,7 +103,7 @@ export function validateFormConsent(
     return {
       ok: false,
       error:
-        "Pro předání partnerovi je nutný výslovný partner-specific souhlas.",
+        "Pro předání třetí straně je nutný výslovný souhlas pro konkrétního příjemce.",
     };
   }
   if (requiresMarketingConsent(source) && !consent.marketingAccepted) {

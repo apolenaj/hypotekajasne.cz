@@ -1,4 +1,5 @@
 import type { CountryId } from "@/lib/calculators";
+import { formatCompactOfficeAddress, legalOperator } from "@/config/legal";
 import { getCountryGuidePath, routes } from "@/lib/routes";
 
 export interface DestinationCard {
@@ -122,13 +123,19 @@ export const footerLinks = {
   ],
 };
 
+/** Kontaktní údaje — adresa vždy z `legalOperator` (Ostrava), nikdy Krnov. */
 export const siteContact = {
-  email: "info@hypotekajasne.cz",
+  email: legalOperator.email,
   /** Kontakt projektu (značka) — ne telefon firmy HEINZKE, dokud není explicitně ověřen. */
   phone: "+420 727 814 810",
   phoneHref: "tel:+420727814810",
-  emailHref: "mailto:info@hypotekajasne.cz",
-  address: "Pavlovova 3048/40, Zábřeh, 700 30 Ostrava",
+  emailHref: `mailto:${legalOperator.email}`,
+  address: formatCompactOfficeAddress({
+    street: legalOperator.street,
+    district: legalOperator.district,
+    zip: legalOperator.zip,
+    city: legalOperator.city,
+  }),
 } as const;
 
 export type FinancingEligibility = {

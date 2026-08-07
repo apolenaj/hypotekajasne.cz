@@ -26,21 +26,43 @@ export {
   REGULATED_BOUNDARIES,
   LEGAL_INTERNAL_REVIEW_NOTE,
   LAWYER_REVIEW_NOTICE,
+  getPublicProcessingRoles,
+  getConditionalProcessingRoles,
 } from "@/lib/legal/roles";
 export {
   CONSENT_POLICY_VERSION,
   COOKIE_POLICY_VERSION,
   TERMS_VERSION,
   PAID_ANALYSIS_TERMS_VERSION,
+  formatPolicyVersionDateCs,
   ANALYTICS_LEGAL_BASIS,
   CONSENT_PURPOSES,
   PARTNER_TRANSFER_SCOPE_LABELS,
   buildPartnerTransferCheckboxLabel,
   buildPrivacyProcessingCheckboxLabel,
+  buildEnquiryPrivacyNotice,
   buildConsentContextSummary,
+  isThirdPartyTransferActive,
   type ConsentPurposeId,
   type PartnerTransferScope,
 } from "@/lib/legal/consent-versions";
+export {
+  getCookieInventory,
+  getPublicCookieTableRows,
+  getCookiePolicyDeploymentNotes,
+  isGoogleAnalyticsConfigured,
+  isMetaPixelScriptActive,
+  COOKIE_CATEGORY_LABEL_CS,
+  type CookieInventoryRow,
+  type CookieCategory,
+} from "@/lib/legal/cookie-inventory";
+export {
+  privacyRetention,
+  buildPublicRetentionSummary,
+  isRetentionPeriodApproved,
+  type PrivacyRetentionKey,
+  type RetentionEntry,
+} from "@/lib/legal/privacy-retention";
 export { getPaidAnalysisTerms } from "@/lib/legal/paid-analysis-terms";
 export {
   getMortgagePartners,

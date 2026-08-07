@@ -332,7 +332,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     path: routes.legal.gdpr,
     title: "Ochrana osobních údajů (GDPR)",
     description:
-      "Správce, souhlasy, předání partnerovi a cookies — analytika jen se souhlasem.",
+      "Správce (HEINZKE), souhlasy a cookies — analytika jen se souhlasem. Úvodní formulář není předáním třetí straně.",
     priority: 0.4,
   },
   {

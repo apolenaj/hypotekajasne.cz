@@ -75,9 +75,11 @@ export function getPaidAnalysisTerms(): PaidAnalysisTerms {
         ],
     digitalServiceNotes: [
       "Hypotéka Jasně zůstává informační platformou — placená analýza není hypotečním zprostředkováním.",
-      commerciallyAvailable
-        ? `Verze podmínek: ${PAID_ANALYSIS_TERMS_VERSION}.`
-        : "Připravujeme — podrobné spotřebitelské podmínky zveřejníme před spuštěním prodeje.",
+      ...(commerciallyAvailable
+        ? []
+        : [
+            "Připravujeme — podrobné spotřebitelské podmínky zveřejníme před spuštěním prodeje.",
+          ]),
     ],
   };
 }

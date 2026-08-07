@@ -305,8 +305,8 @@ export function buildMarketMetrics(
       record: missingDataRecord(`pulse.${countryId}.supply`, {
         unit: "other",
         country: countryId,
-        source: "Feed nabídky není integrován",
-        notes: "Supply metrika bude doplněna z partner/Majetio dat.",
+        source: "Údaj není k dispozici",
+        notes: "Nabídková metrika není aktuálně dostupná.",
       }),
       trends: PULSE_TIMEFRAMES.map((tf) => ({
         timeframe: tf,

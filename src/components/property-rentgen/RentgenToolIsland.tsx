@@ -30,6 +30,7 @@ import {
   emptyFormConsentState,
   toConsentRecord,
 } from "@/components/consent/FormConsentFields";
+import { defaultPartnerScope } from "@/lib/consent/records";
 import { track, trackCanonical } from "@/lib/analytics/track";
 import { getExperimentVariant } from "@/lib/analytics/experiments";
 
@@ -128,7 +129,7 @@ export function RentgenToolIsland() {
   const [premiumLoading, setPremiumLoading] = useState(false);
   const [premiumMsg, setPremiumMsg] = useState<string | null>(null);
   const [consent, setConsent] = useState(() =>
-    emptyFormConsentState("majetio")
+    emptyFormConsentState(defaultPartnerScope("property_analysis"))
   );
   const startedRef = useRef(false);
   const freeViewedRef = useRef(false);

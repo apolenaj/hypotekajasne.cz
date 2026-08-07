@@ -67,27 +67,118 @@ describe("partner / legal SoT", () => {
     assert.match(partnerPublicDisplayName(p), /HEINZKE/i);
   });
 
-  it("consent copy names controller, non-bank, non-binding purpose", () => {
+  it("consent copy names controller and enquiry purpose without fake handoff", () => {
     const privacy = buildPrivacyProcessingCheckboxLabel();
-    assert.match(privacy, /správce/i);
     assert.match(privacy, /HEINZKE/i);
-    assert.match(privacy, /10880097/);
-    assert.match(privacy, /Hypotéka Jasně není banka/i);
-    assert.match(privacy, /nezávazné/i);
+    assert.match(privacy, /Zásadami ochrany osobních údajů/i);
+    assert.match(privacy, /vyřízení vaší poptávky/i);
+    assert.ok(!/předání údajů společnosti HEINZKE/i.test(privacy));
+    assert.ok(!/předání.*provozovatel/i.test(privacy));
 
     const summary = buildConsentContextSummary();
     assert.match(summary, /Správce/);
     assert.match(summary, /není banka/);
-    assert.match(summary, /HEINZKE|provozovatel/i);
+    assert.match(summary, /HEINZKE|provozovatel|správce/i);
+    assert.ok(!/předáme kontakt/i.test(summary));
+    assert.ok(!/Předání třetímu partnerovi zatím není aktivní/i.test(summary));
 
     const label = buildPartnerTransferCheckboxLabel("mortgage_specialist");
-    assert.ok(!label.includes("viz /partneri"));
-    assert.match(label, /nezávazn/i);
-    assert.ok(!/licencovan/i.test(label));
+    assert.equal(label, "");
+    assert.ok(!/předání údajů společnosti HEINZKE/i.test(label));
   });
 
   it("bumped consent policy version", () => {
-    assert.equal(CONSENT_POLICY_VERSION, "2026-08-07.2");
+    assert.equal(CONSENT_POLICY_VERSION, "2026-08-07.6");
+  });
+
+  it("cookie policy version matches material cookie inventory update", async () => {
+    const { COOKIE_POLICY_VERSION } = await import("@/lib/legal/consent-versions");
+    assert.equal(COOKIE_POLICY_VERSION, "2026-08-07.1");
+  });
+
+  it("cookie inventory does not invent inactive third-party trackers", async () => {
+    const {
+      getCookieInventory,
+      isMetaPixelScriptActive,
+      getCookiePolicyDeploymentNotes,
+    } = await import("@/lib/legal/cookie-inventory");
+    assert.equal(isMetaPixelScriptActive(), false);
+    const ids = getCookieInventory().map((r) => r.id);
+    assert.ok(ids.includes("consent_preference"));
+    assert.ok(!ids.includes("meta_pixel"));
+    assert.ok(!ids.includes("clarity"));
+    assert.ok(!ids.includes("posthog"));
+    const notes = getCookiePolicyDeploymentNotes().join(" ");
+    assert.match(notes, /Meta Pixel/);
+    assert.match(notes, /Clarity/);
+  });
+
+  it("privacy retention periods stay unapproved until legal decision", async () => {
+    const {
+      privacyRetention,
+      isRetentionPeriodApproved,
+      buildPublicRetentionSummary,
+    } = await import("@/lib/legal/privacy-retention");
+    assert.equal(privacyRetention.enquiries.days, null);
+    assert.equal(privacyRetention.marketingConsent.days, null);
+    assert.equal(privacyRetention.enquiries.automation, "manual_erasure_request");
+    assert.equal(isRetentionPeriodApproved("enquiries"), false);
+    const publicText = buildPublicRetentionSummary("privacy@example.com").join(
+      " "
+    );
+    assert.ok(!/null/i.test(publicText));
+    assert.ok(!/TODO/i.test(publicText));
+    assert.match(publicText, /Automatické mazání/);
+    assert.match(publicText, /není nastaveno/);
+  });
+
+  it("marketing consent is email-only and optional", async () => {
+    const { CONSENT_PURPOSES } = await import("@/lib/legal/consent-versions");
+    const label = CONSENT_PURPOSES.marketing.checkboxLabel;
+    assert.match(label, /e-mailem/i);
+    assert.match(label, /Hypotéka Jasně/i);
+    assert.match(label, /odvolat/i);
+    assert.ok(!/telefon/i.test(label));
+    assert.equal(CONSENT_PURPOSES.marketing.required, false);
+    assert.ok(!/odesláním formuláře/i.test(label));
+  });
+
+  it("third-party transfer is off until a named independent recipient exists", async () => {
+    const {
+      isThirdPartyTransferActive,
+      buildPartnerTransferCheckboxLabel,
+    } = await import("@/lib/legal/consent-versions");
+    assert.equal(isThirdPartyTransferActive("none"), false);
+    assert.equal(isThirdPartyTransferActive("mortgage_specialist"), false);
+    assert.equal(isThirdPartyTransferActive("majetio"), false);
+    assert.equal(isThirdPartyTransferActive("broker_developer"), false);
+    assert.equal(buildPartnerTransferCheckboxLabel("mortgage_specialist"), "");
+    assert.equal(buildPartnerTransferCheckboxLabel("majetio"), "");
+    assert.ok(
+      !/HEINZKE/i.test(buildPartnerTransferCheckboxLabel("mortgage_specialist"))
+    );
+  });
+
+  it("GDPR public roles keep HEINZKE as controller and do not merge INSIA", async () => {
+    const {
+      getPublicProcessingRoles,
+      getConditionalProcessingRoles,
+      PROCESSING_ROLES,
+    } = await import("@/lib/legal/roles");
+    const publicRoles = getPublicProcessingRoles();
+    assert.equal(getConditionalProcessingRoles().length, 0);
+    assert.equal(publicRoles.length, PROCESSING_ROLES.length);
+    assert.equal(publicRoles[0]?.id, "heinzke_operator");
+    assert.match(
+      publicRoles[0]!.roleLabelCs,
+      /správce platformy a údajů z úvodních formulářů/
+    );
+    assert.equal(publicRoles[1]?.gdprRole, "processor");
+    for (const r of publicRoles) {
+      assert.ok(!/INSIA/i.test(r.label));
+      assert.ok(!/\//.test(r.label));
+      assert.ok(!/Odborná hypoteční část/i.test(r.label));
+    }
   });
 });
 
@@ -97,13 +188,26 @@ describe("partner handoff gating", () => {
     assert.equal(isPartnerHandoffLeadSource("contact"), false);
   });
 
-  it("does not require mortgage partner transfer when identity unpublished", () => {
+  it("does not require third-party transfer when no independent recipient is active", () => {
     assert.equal(requiresPartnerTransfer("lead_gen"), false);
     assert.equal(requiresPartnerTransfer("navrh_na_miru"), false);
+    assert.equal(requiresPartnerTransfer("property_analysis"), false);
   });
 
   it("accepts privacy-only consent for mortgage lead when handoff offline", () => {
     const r = validateFormConsent("lead_gen", {
+      policyVersion: CONSENT_POLICY_VERSION,
+      privacyAccepted: true,
+      partnerTransferAccepted: false,
+      partnerTransferScope: "none",
+      marketingAccepted: false,
+      consentedAt: new Date().toISOString(),
+    });
+    assert.equal(r.ok, true);
+  });
+
+  it("accepts privacy-only consent for property analysis without Majetio PII transfer", () => {
+    const r = validateFormConsent("property_analysis", {
       policyVersion: CONSENT_POLICY_VERSION,
       privacyAccepted: true,
       partnerTransferAccepted: false,
@@ -167,6 +271,49 @@ describe("central legal config", () => {
     assert.equal(cfg.legalName, legalOperator.companyName);
     assert.equal(cfg.companyId, legalOperator.ico);
     assert.equal(isLegalIdentityComplete(cfg), true);
+  });
+
+  it("registered office is atomic Ostrava address, never mixed with Krnov", async () => {
+    const { getLegalIdentityConfig, formatCompactOfficeAddress, legalOperator } =
+      await import("@/config/legal");
+    const { formatOperatorAddressCompact, getOperatorIdentity } = await import(
+      "@/lib/legal/operator"
+    );
+    const cfg = getLegalIdentityConfig();
+    assert.equal(cfg.street, "Pavlovova 3048/40");
+    assert.equal(cfg.district, "Zábřeh");
+    assert.equal(cfg.city, "Ostrava");
+    assert.equal(cfg.zip, "700 30");
+    assert.match(cfg.registeredOffice ?? "", /Pavlovova 3048\/40/);
+    assert.match(cfg.registeredOffice ?? "", /700 30 Ostrava/);
+    assert.doesNotMatch(cfg.registeredOffice ?? "", /Krnov|794/);
+    const compact = formatOperatorAddressCompact(getOperatorIdentity());
+    assert.equal(
+      compact,
+      formatCompactOfficeAddress({
+        street: legalOperator.street,
+        district: legalOperator.district,
+        zip: legalOperator.zip,
+        city: legalOperator.city,
+      })
+    );
+    assert.equal(compact, "Pavlovova 3048/40, Zábřeh, 700 30 Ostrava");
+  });
+
+  it("commercial register line uses correct Czech grammar", async () => {
+    const { formatCommercialRegisterLine, legalOperator } = await import(
+      "@/config/legal"
+    );
+    const line = formatCommercialRegisterLine({
+      court: legalOperator.court,
+      registerSection: legalOperator.registerSection,
+      registerInsert: legalOperator.registerInsert,
+    });
+    assert.equal(
+      line,
+      "Společnost je zapsána v obchodním rejstříku vedeném Krajským soudem v Ostravě, oddíl C, vložka 85937."
+    );
+    assert.doesNotMatch(line, /zapsaná|vedeném Krajský soud/);
   });
 
   it("isLegalTextReviewed requires reviewer and date", async () => {

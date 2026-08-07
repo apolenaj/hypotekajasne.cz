@@ -70,7 +70,7 @@ function ProfilePhoto({
     <div
       className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-slate-100"
       role="img"
-      aria-label={`Fotografie: ${member.name} (zatím nedodána)`}
+      aria-label={member.name}
     >
       <div
         className={`absolute inset-0 bg-gradient-to-br ${accent} opacity-90`}
@@ -79,9 +79,6 @@ function ProfilePhoto({
         <span className="font-heading text-6xl font-bold tracking-tight text-white/90 md:text-7xl">
           {member.initials}
         </span>
-      </div>
-      <div className="absolute right-4 bottom-4 left-4 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-center text-[11px] font-medium tracking-wide text-white/80 backdrop-blur-sm uppercase">
-        Fotografie zatím není dodána
       </div>
     </div>
   );
@@ -160,10 +157,6 @@ export function AboutUsView() {
             <h2 className="font-heading text-3xl font-extrabold text-gray-900 md:text-4xl">
               Role, zkušenosti, odpovědnost za obsah
             </h2>
-            <p className="mt-4 text-muted-foreground leading-relaxed">
-              Fotografie a LinkedIn zobrazujeme jen když jsou skutečně
-              dodané — neověřené odkazy neuvádíme.
-            </p>
           </div>
 
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
@@ -200,11 +193,7 @@ export function AboutUsView() {
                         <ExternalLink className="h-4 w-4" />
                         LinkedIn
                       </a>
-                    ) : (
-                      <p className="mt-3 text-xs text-muted-foreground">
-                        LinkedIn profil zatím není zveřejněn.
-                      </p>
-                    )}
+                    ) : null}
                   </div>
                 </div>
 
@@ -317,7 +306,7 @@ export function AboutUsView() {
             <ShieldCheck className="h-6 w-6 text-emerald-800" />
           </div>
           <h3 className="font-heading mb-4 text-2xl font-bold text-emerald-900 md:text-3xl">
-            Chcete projít model a případně předání specialistovi?
+            Chcete projít model a případně konzultaci se specialistou?
           </h3>
           <p className="mx-auto mb-8 max-w-2xl text-base leading-relaxed text-emerald-800">
             Hypoteční připravenost spočítá skóre a překážky. Konzultaci se

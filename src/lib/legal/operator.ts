@@ -93,7 +93,23 @@ export function getOperatorIdentity(): OperatorIdentity {
 }
 
 export function formatOperatorAddress(op: OperatorIdentity): string {
-  if (op.registeredOffice) return op.registeredOffice;
+  // Prefer atomické části sídla — nikdy smíchané Pavlovova+Krnov z env.
+  if (op.street && op.city && op.zip) {
+    const compact = formatCompactOfficeAddress({
+      street: op.street,
+      district: op.district,
+      zip: op.zip,
+      city: op.city,
+    });
+    if (op.country) return `${compact}, ${op.country}`;
+    return compact;
+  }
+  if (
+    op.registeredOffice &&
+    !/Krnov|794\s*01|79401/i.test(op.registeredOffice)
+  ) {
+    return op.registeredOffice;
+  }
   return getContactAddressLine();
 }
 
@@ -107,7 +123,8 @@ export function formatOperatorAddressCompact(op: OperatorIdentity): string {
       city: op.city,
     });
   }
-  return formatOperatorAddress(op);
+  const full = formatOperatorAddress(op);
+  return full.replace(/,\s*Česká republika\s*$/i, "").trim();
 }
 
 export function formatOperatorRegisterLine(op: OperatorIdentity): string | null {

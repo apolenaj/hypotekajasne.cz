@@ -62,18 +62,6 @@ export function PartnerVerificationBadge({
           Otevřít veřejný registr
         </a>
       ) : null}
-      {verificationStatus === "PENDING" ? (
-        <p className="mt-1 text-[11px] leading-snug opacity-90">
-          Registrační údaje partnera zveřejníme až po dokončení ověření. Do té
-          doby nepřisuzujeme status „ověřený“ ani „licencovaný“.
-        </p>
-      ) : null}
-      {verificationStatus === "UNVERIFIED" ? (
-        <p className="mt-1 text-[11px] leading-snug opacity-90">
-          Identita partnera není zveřejněna. Nepoužíváme tvrzení „prověřený“ /
-          „licencovaný“ o konkrétním partnerovi.
-        </p>
-      ) : null}
     </div>
   );
 }

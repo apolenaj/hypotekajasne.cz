@@ -17,6 +17,7 @@ import {
   emptyFormConsentState,
   toConsentRecord,
 } from "@/components/consent/FormConsentFields";
+import { defaultPartnerScope } from "@/lib/consent/records";
 import { consultationCountries } from "@/lib/mock-data";
 import { buildThankYouPath, submitLead } from "@/lib/leads";
 import { track, trackCanonical } from "@/lib/analytics/track";
@@ -33,7 +34,7 @@ export function LeadGen() {
     country: "",
   });
   const [consent, setConsent] = useState(() =>
-    emptyFormConsentState("mortgage_specialist")
+    emptyFormConsentState(defaultPartnerScope("lead_gen"))
   );
 
   const markStarted = () => {

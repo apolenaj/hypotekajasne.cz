@@ -5,13 +5,35 @@ import {
   CONSENT_POLICY_VERSION,
   COOKIE_POLICY_VERSION,
   CONSENT_PURPOSES,
+  formatPolicyVersionDateCs,
   getOperatorIdentity,
   getPaidAnalysisTerms,
-  PROCESSING_ROLES,
+  getPublicProcessingRoles,
+  getPublicCookieTableRows,
+  getCookiePolicyDeploymentNotes,
+  COOKIE_CATEGORY_LABEL_CS,
+  buildPublicRetentionSummary,
+  isThirdPartyTransferActive,
   REGULATED_BOUNDARIES,
   TERMS_VERSION,
 } from "@/lib/legal";
 import { routes } from "@/lib/routes";
+
+function LegalVersionFooter({
+  version,
+  versionLabel,
+}: {
+  version: string;
+  versionLabel: string;
+}) {
+  const updated = formatPolicyVersionDateCs(version);
+  return (
+    <p className="text-xs text-muted-foreground">
+      {updated ? <>Poslední aktualizace: {updated}. </> : null}
+      {versionLabel}: {version}.
+    </p>
+  );
+}
 
 export type LegalPageType =
   | "gdpr"
@@ -90,6 +112,12 @@ function RegulatedBoundariesBox() {
 
 function GdprContent() {
   const op = getOperatorIdentity();
+  const processingRoles = getPublicProcessingRoles();
+  const anyThirdPartyTransfer =
+    isThirdPartyTransferActive("mortgage_specialist") ||
+    isThirdPartyTransferActive("majetio") ||
+    isThirdPartyTransferActive("broker_developer");
+
   return (
     <div className="space-y-8 text-gray-700 leading-relaxed">
       <section>
@@ -105,14 +133,14 @@ function GdprContent() {
           1. Role správců a zpracovatelů
         </h3>
         <ul className="space-y-3">
-          {PROCESSING_ROLES.map((r) => (
+          {processingRoles.map((r) => (
             <li
               key={r.id}
               className="rounded-lg border border-border px-3 py-2 text-sm"
             >
               <p className="font-semibold text-text-dark">{r.label}</p>
               <p className="text-xs font-medium text-deep-teal">
-                Role: {GDPR_ROLE_CS[r.gdprRole] ?? r.gdprRole}
+                Role: {r.roleLabelCs ?? GDPR_ROLE_CS[r.gdprRole] ?? r.gdprRole}
               </p>
               <p className="mt-1 text-muted-foreground">{r.description}</p>
             </li>
@@ -149,19 +177,28 @@ function GdprContent() {
           <strong>
             Odeslání formuláře není univerzální marketingový souhlas.
           </strong>{" "}
-          Marketing je samostatný checkbox. Předání partnerovi je samostatný
-          souhlas s uvedeným rozsahem.
+          Marketing je samostatný volitelný checkbox. Odeslání poptávky
+          provozovateli HEINZKE &amp; partneři s.r.o. není předáním třetí straně.
         </p>
         <ul className="list-disc space-y-2 pl-5 text-sm">
           <li>
-            <strong>Vyřízení žádosti:</strong>{" "}
+            <strong>Vyřízení poptávky:</strong>{" "}
             {CONSENT_PURPOSES.privacy_processing.description}
           </li>
-          <li>
-            <strong>Předání partnerovi:</strong>{" "}
-            {CONSENT_PURPOSES.partner_transfer.description} Základ: souhlas
-            (čl. 6 odst. 1 písm. a) GDPR).
-          </li>
+          {anyThirdPartyTransfer ? (
+            <li>
+              <strong>Předání konkrétní třetí straně:</strong>{" "}
+              {CONSENT_PURPOSES.partner_transfer.description} Základ: souhlas
+              (čl. 6 odst. 1 písm. a) GDPR).
+            </li>
+          ) : (
+            <li>
+              <strong>Předání třetí straně:</strong> V současnosti úvodní
+              formuláře nepředávají osobní údaje INSIA, bance, Majetiu ani
+              realitnímu partnerovi. Samostatný souhlas s předáním by se
+              zobrazil jen při skutečném předání konkrétnímu příjemci.
+            </li>
+          )}
           <li>
             <strong>Marketing:</strong> {CONSENT_PURPOSES.marketing.description}
           </li>
@@ -178,27 +215,41 @@ function GdprContent() {
 
       <section>
         <h3 className="mb-3 text-xl font-bold text-gray-900">
-          4. Předání partnerovi
+          4. Předání třetí straně
         </h3>
-        <p>
-          Údaje předáme jen pokud zaškrtnete souhlas s předáním a jen v uvedeném
-          rozsahu (např. ověřený hypoteční partner, Majetio). Nejde o
-          plošné předání všem makléřům. Hypotéka Jasně není banka; konzultace je
-          nezávazná. Stav zveřejnění identity partnera:{" "}
-          <Link href={routes.partneri} className="text-deep-teal underline">
-            Partneři
-          </Link>
-          . Poptávky přijímá správce — {op.dataControllerName}.
-        </p>
+        {anyThirdPartyTransfer ? (
+          <p>
+            Údaje předáme jen pokud zaškrtnete souhlas s předáním konkrétnímu
+            příjemci a jen pro uvedený účel. Nejde o plošné předání všem
+            partnerům. Hypotéka Jasně není banka; konzultace je nezávazná. Stav
+            partnerů:{" "}
+            <Link href={routes.partneri} className="text-deep-teal underline">
+              Partneři
+            </Link>
+            . Poptávky přijímá správce — {op.dataControllerName}.
+          </p>
+        ) : (
+          <p>
+            Úvodní formulář odesíláte přímo správci{" "}
+            {op.dataControllerName}. To není předání třetí straně. INSIA, banka,
+            Majetio ani realitní partner z úvodního formuláře osobní údaje
+            nedostávají, dokud nebude aktivní samostatný, výslovně odsouhlasený
+            přenos konkrétnímu příjemci. Přehled rolí:{" "}
+            <Link href={routes.partneri} className="text-deep-teal underline">
+              Partneři
+            </Link>
+            .
+          </p>
+        )}
       </section>
 
       <section>
         <h3 className="mb-3 text-xl font-bold text-gray-900">5. Doba uchování</h3>
-        <p>
-          Preference cookies ukládáme ve vašem prohlížeči do změny nebo smazání.
-          O výmaz nebo upřesnění doby uchování můžete požádat na{" "}
-          {op.privacyEmail}.
-        </p>
+        <ul className="list-disc space-y-2 pl-5">
+          {buildPublicRetentionSummary(op.privacyEmail).map((line) => (
+            <li key={line.slice(0, 48)}>{line}</li>
+          ))}
+        </ul>
       </section>
 
       <section>
@@ -206,32 +257,39 @@ function GdprContent() {
         <ul className="list-disc space-y-2 pl-5">
           <li>Přístup, oprava, výmaz, omezení, námitka, přenositelnost.</li>
           <li>
-            Odvolání souhlasu (marketing / předání partnerovi / cookies) na{" "}
-            {op.privacyEmail} — bez vlivu na zákonnost zpracování před
+            Odvolání souhlasu (marketing
+            {anyThirdPartyTransfer ? " / předání třetí straně" : ""} / cookies)
+            na {op.privacyEmail} — bez vlivu na zákonnost zpracování před
             odvoláním.
           </li>
           <li>Stížnost u ÚOOÚ.</li>
         </ul>
       </section>
 
-      <p className="text-xs text-muted-foreground">
-        Verze zásad ochrany osobních údajů: {CONSENT_POLICY_VERSION}. Verze
-        zásad cookies: {COOKIE_POLICY_VERSION}.
+      <LegalVersionFooter
+        version={CONSENT_POLICY_VERSION}
+        versionLabel="Verze zásad ochrany osobních údajů"
+      />
+      <p className="mt-1 text-xs text-muted-foreground">
+        Verze zásad cookies: {COOKIE_POLICY_VERSION}.
       </p>
     </div>
   );
 }
 
 function CookiesContent() {
+  const rows = getPublicCookieTableRows();
+  const notes = getCookiePolicyDeploymentNotes();
+
   return (
     <div className="space-y-8 text-gray-700 leading-relaxed">
       <OperatorBlock />
       <p>
         Tyto zásady odpovídají skutečnému chování webu: analytické i
-        marketingové cookies spouštíme{" "}
+        marketingové technologie spouštíme{" "}
         <strong>až po aktivním souhlasu</strong>. Banner nabízí „Přijmout vše“,
         „Odmítnout volitelné“ a „Nastavení“. Preference ukládáme ve vašem
-        prohlížeči.
+        prohlížeči (localStorage).
       </p>
       <ul className="list-disc space-y-3 pl-5">
         <li>
@@ -248,10 +306,63 @@ function CookiesContent() {
           {CONSENT_PURPOSES.cookie_marketing.description}
         </li>
       </ul>
+
+      <section>
+        <h3 className="mb-3 text-xl font-bold text-gray-900">
+          Přehled technologií v této instalaci
+        </h3>
+        <div className="overflow-x-auto rounded-lg border border-border">
+          <table className="min-w-full text-left text-sm">
+            <thead className="border-b border-border bg-muted/40 text-xs uppercase tracking-wide text-muted-foreground">
+              <tr>
+                <th className="px-3 py-2 font-semibold">Poskytovatel</th>
+                <th className="px-3 py-2 font-semibold">Technologie</th>
+                <th className="px-3 py-2 font-semibold">Účel</th>
+                <th className="px-3 py-2 font-semibold">Kategorie</th>
+                <th className="px-3 py-2 font-semibold">Doba</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row) => (
+                <tr key={row.id} className="border-b border-border last:border-0">
+                  <td className="px-3 py-2 align-top font-medium text-text-dark">
+                    {row.provider}
+                  </td>
+                  <td className="px-3 py-2 align-top font-mono text-xs">
+                    {row.technology}
+                  </td>
+                  <td className="px-3 py-2 align-top">{row.purpose}</td>
+                  <td className="px-3 py-2 align-top">
+                    {COOKIE_CATEGORY_LABEL_CS[row.category]}
+                  </td>
+                  <td className="px-3 py-2 align-top text-muted-foreground">
+                    {row.duration}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <ul className="mt-4 list-disc space-y-2 pl-5 text-sm">
+          {notes.map((n) => (
+            <li key={n.slice(0, 40)}>{n}</li>
+          ))}
+        </ul>
+        <p className="mt-3 text-sm text-muted-foreground">
+          Po „Odmítnout volitelné“ nebo odvolání analytiky se first-party
+          analytické klíče smažou a gtag se znovu nenačte. Případné cookies
+          Google z dřívějšího souhlasu může odstranit prohlížeč (web je sám
+          nepojmenovává ani nemáže).
+        </p>
+      </section>
+
       <p className="text-sm">
-        Preference změníte přes „Nastavení cookies“ v patičce. Verze zásad:{" "}
-        {COOKIE_POLICY_VERSION}.
+        Preference změníte přes „Nastavení cookies“ v patičce.
       </p>
+      <LegalVersionFooter
+        version={COOKIE_POLICY_VERSION}
+        versionLabel="Verze zásad"
+      />
       <p className="text-sm">
         Související:{" "}
         <Link href={routes.legal.gdpr} className="text-deep-teal underline">
@@ -269,13 +380,15 @@ function SmlouvyContent() {
       <OperatorBlock />
       <RegulatedBoundariesBox />
       <p>
-        Podmínky užití platformy Hypotéka Jasně (verze {TERMS_VERSION}).
-        Používáním webu berete na vědomí informační charakter nástrojů.
+        Podmínky užití platformy Hypotéka Jasně. Používáním webu berete na
+        vědomí informační charakter nástrojů.
       </p>
       <h3 className="text-xl font-bold text-gray-900">1. Povaha služeb</h3>
       <p>
         Portál je technologická a vzdělávací platforma. Modelové výpočty nejsou
-        závaznou nabídkou banky. Předání partnerovi jen se souhlasem.
+        závaznou nabídkou banky. Úvodní formulář přijímá provozovatel platformy;
+        předání jinému subjektu jen se souhlasem, pokud je takové předání
+        aktivní.
       </p>
       <h3 className="text-xl font-bold text-gray-900">2. Kalkulačky</h3>
       <p>
@@ -300,6 +413,10 @@ function SmlouvyContent() {
         základě modelů na webu ani za jednání třetích stran (banka, specialista,
         makléř).
       </p>
+      <LegalVersionFooter
+        version={TERMS_VERSION}
+        versionLabel="Verze podmínek užití"
+      />
     </div>
   );
 }
@@ -307,6 +424,7 @@ function SmlouvyContent() {
 function ZasadyContent() {
   return (
     <div className="space-y-8 text-gray-700 leading-relaxed">
+      <OperatorBlock />
       <RegulatedBoundariesBox />
       <p>
         Zásady doplňují smlouvy. Cookies:{" "}
@@ -340,6 +458,10 @@ function ZasadyContent() {
         Zákaz automatizovaného scrapingu a falešných poptávek. Kontaktní údaje
         musí být pravdivé.
       </p>
+      <LegalVersionFooter
+        version={TERMS_VERSION}
+        versionLabel="Verze zásad používání"
+      />
     </div>
   );
 }
@@ -368,8 +490,7 @@ function PlacenaAnalyzaContent() {
             {" "}
             · Orientační cena: <strong>{t.priceLabel}</strong>
           </>
-        ) : null}{" "}
-        · Verze textu: {t.version}
+        ) : null}
       </p>
 
       {t.commerciallyAvailable ? (
@@ -435,6 +556,10 @@ function PlacenaAnalyzaContent() {
           ))}
         </ul>
       </section>
+      <LegalVersionFooter
+        version={t.version}
+        versionLabel="Verze podmínek"
+      />
     </div>
   );
 }

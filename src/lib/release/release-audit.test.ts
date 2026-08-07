@@ -83,13 +83,16 @@ describe("release audit scanners", () => {
     assert.equal(ANALYTICS_EVENTS.length, new Set(ANALYTICS_EVENTS).size);
   });
 
-  it("AboutUs uses honest LinkedIn placeholder copy", () => {
+  it("AboutUs omits LinkedIn when URL is not configured", () => {
     const about = readFileSync(
       join(ROOT, "components/sections/AboutUsView.tsx"),
       "utf8"
     );
-    assert.ok(about.includes("LinkedIn profil zatím není zveřejněn"));
+    assert.ok(!about.includes("LinkedIn profil zatím není zveřejněn"));
+    assert.ok(!about.includes("Fotografie a LinkedIn zobrazujeme"));
+    assert.ok(!about.includes("Fotografie zatím není dodána"));
     assert.ok(!about.includes("odkaz doplníme"));
+    assert.ok(about.includes("member.linkedInUrl"));
     assert.ok(about.includes("josef-apolenar.webp") || about.includes("photoUrl"));
   });
 

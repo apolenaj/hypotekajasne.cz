@@ -4,13 +4,10 @@ import Link from "next/link";
 import {
   CONSENT_POLICY_VERSION,
   CONSENT_PURPOSES,
-  buildConsentContextSummary,
   buildPartnerTransferCheckboxLabel,
-  buildPrivacyProcessingCheckboxLabel,
+  isThirdPartyTransferActive,
   type PartnerTransferScope,
 } from "@/lib/legal/consent-versions";
-import { isMortgagePartnerHandoffReady } from "@/lib/legal/partner-config";
-import { getPartnerClaimLabels } from "@/lib/partners/verification";
 import {
   isLegalIdentityComplete,
   LEGAL_IDENTITY_INCOMPLETE_PUBLIC_MESSAGE,
@@ -29,7 +26,7 @@ export type FormConsentState = {
 };
 
 export const emptyFormConsentState = (
-  scope: PartnerTransferScope = "mortgage_specialist"
+  scope: PartnerTransferScope = "none"
 ): FormConsentState => ({
   privacyAccepted: false,
   partnerTransferAccepted: false,
@@ -47,7 +44,10 @@ export function toConsentRecord(
 type FormConsentFieldsProps = {
   state: FormConsentState;
   onChange: (next: FormConsentState) => void;
-  /** Zobrazit partner transfer checkbox */
+  /**
+   * Hint that this form *may* involve third-party transfer.
+   * Actual checkbox shows only when `isThirdPartyTransferActive(scope)`.
+   */
   showPartnerTransfer: boolean;
   /** Marketing povinný (newsletter) */
   marketingRequired?: boolean;
@@ -64,13 +64,17 @@ export function FormConsentFields({
   const set = (patch: Partial<FormConsentState>) =>
     onChange({ ...state, ...patch });
 
-  const handoffReady = isMortgagePartnerHandoffReady();
   const identityComplete = isLegalIdentityComplete();
-  const isMortgageScope = state.partnerTransferScope === "mortgage_specialist";
+  const transferLabel = buildPartnerTransferCheckboxLabel(
+    state.partnerTransferScope
+  );
+  const transferActive = isThirdPartyTransferActive(
+    state.partnerTransferScope
+  );
 
-  /** Bez ověřené identity partnera nepožadujeme falešný partner-transfer souhlas. */
+  /** Named independent recipient only — never HEINZKE → HEINZKE. */
   const effectiveShowPartnerTransfer =
-    showPartnerTransfer && (!isMortgageScope || handoffReady);
+    showPartnerTransfer && transferActive && Boolean(transferLabel);
 
   return (
     <fieldset
@@ -82,10 +86,6 @@ export function FormConsentFields({
       <legend className="sr-only">Souhlasy se zpracováním údajů</legend>
       <p className="text-[11px] font-semibold uppercase tracking-wide text-deep-teal">
         Verze zásad: {CONSENT_POLICY_VERSION}
-      </p>
-
-      <p className="text-[11px] leading-relaxed text-muted-foreground">
-        {buildConsentContextSummary()}
       </p>
 
       {!identityComplete ? (
@@ -106,22 +106,13 @@ export function FormConsentFields({
           onChange={(e) => set({ privacyAccepted: e.target.checked })}
         />
         <span>
-          {buildPrivacyProcessingCheckboxLabel()}{" "}
+          Odesláním formuláře potvrzujete, že jste se seznámil/a se{" "}
           <Link href={routes.legal.gdpr} className="text-deep-teal underline">
-            GDPR
+            Zásadami ochrany osobních údajů
           </Link>
-          .
+          . Údaje použije HEINZKE &amp; partneři s.r.o. k vyřízení vaší poptávky.
         </span>
       </label>
-
-      {showPartnerTransfer && isMortgageScope && !handoffReady ? (
-        <p
-          role="status"
-          className="rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-2 text-[11px] leading-relaxed text-amber-950"
-        >
-          {getPartnerClaimLabels().leadIntakeDisclosure}
-        </p>
-      ) : null}
 
       {effectiveShowPartnerTransfer ? (
         <label className="flex items-start gap-2.5">
@@ -135,19 +126,11 @@ export function FormConsentFields({
             }
           />
           <span>
-            {buildPartnerTransferCheckboxLabel(state.partnerTransferScope)}
-            {isMortgageScope && handoffReady ? (
-              <>
-                {" "}
-                <Link
-                  href={routes.partneri}
-                  className="text-deep-teal underline"
-                >
-                  Partneři
-                </Link>
-                .
-              </>
-            ) : null}
+            {transferLabel}{" "}
+            <Link href={routes.partneri} className="text-deep-teal underline">
+              Partneři
+            </Link>
+            .
           </span>
         </label>
       ) : null}
@@ -160,12 +143,7 @@ export function FormConsentFields({
           checked={state.marketingAccepted}
           onChange={(e) => set({ marketingAccepted: e.target.checked })}
         />
-        <span>
-          {CONSENT_PURPOSES.marketing.checkboxLabel}
-          {!marketingRequired
-            ? " Odesláním formuláře tento souhlas nevzniká automaticky."
-            : null}
-        </span>
+        <span>{CONSENT_PURPOSES.marketing.checkboxLabel}</span>
       </label>
     </fieldset>
   );

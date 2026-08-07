@@ -5,20 +5,21 @@
 
 import {
   isMortgagePartnerHandoffReady,
-  partnerPublicDisplayName,
   getPrimaryMortgagePartner,
 } from "@/lib/legal/partner-config";
-import {
-  canUseStrongPartnerTrustClaims,
-  getPartnerClaimLabels,
-  getPrimaryPartnerVerification,
-} from "@/lib/partners/verification";
 import { getLegalIdentityConfig } from "@/config/legal";
 
-export const CONSENT_POLICY_VERSION = "2026-08-07.2" as const;
-export const COOKIE_POLICY_VERSION = "2026-07-20.1" as const;
+export const CONSENT_POLICY_VERSION = "2026-08-07.6" as const;
+export const COOKIE_POLICY_VERSION = "2026-08-07.1" as const;
 export const TERMS_VERSION = "2026-07-20.1" as const;
 export const PAID_ANALYSIS_TERMS_VERSION = "2026-07-20.1" as const;
+
+/** Veřejné „Poslední aktualizace: D. M. YYYY“ z verze `YYYY-MM-DD…`. */
+export function formatPolicyVersionDateCs(version: string): string | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(version.trim());
+  if (!m) return null;
+  return `${Number(m[3])}. ${Number(m[2])}. ${m[1]}`;
+}
 
 export type ConsentPurposeId =
   | "privacy_processing"
@@ -49,27 +50,27 @@ export const CONSENT_PURPOSES: Record<ConsentPurposeId, ConsentPurposeCopy> = {
     id: "privacy_processing",
     version: CONSENT_POLICY_VERSION,
     checkboxLabel:
-      "Souhlasím se zpracováním údajů správcem HEINZKE & partneři s.r.o., IČO 10880097 (provozovatel platformy Hypotéka Jasně) za účelem vyřízení mé nezávazné poptávky / konzultace (viz Zásady ochrany osobních údajů). Hypotéka Jasně není banka.",
+      "Odesláním formuláře potvrzujete, že jste se seznámil/a se Zásadami ochrany osobních údajů. Údaje použije HEINZKE & partneři s.r.o. k vyřízení vaší poptávky.",
     description:
-      "Zpracování kontaktních a kontextových údajů správcem HEINZKE & partneři s.r.o., IČO 10880097 (provozovatel platformy Hypotéka Jasně) pro odpověď a vyřízení formuláře. Nejde o univerzální marketingový souhlas ani o nabídku banky.",
+      "Zpracování kontaktních a kontextových údajů správcem HEINZKE & partneři s.r.o., IČO 10880097 (provozovatel platformy Hypotéka Jasně) pro odpověď a vyřízení formuláře / poptávky. Nejde o předání třetí straně při odeslání formuláře, o univerzální marketingový souhlas ani o nabídku banky.",
     required: true,
   },
   partner_transfer: {
     id: "partner_transfer",
     version: CONSENT_POLICY_VERSION,
     checkboxLabel:
-      "Souhlasím s předáním údajů ověřenému hypotečnímu partnerovi (samostatný správce) za účelem nezávazné konzultace hypotéky — v uvedeném rozsahu.",
+      "Souhlasím s předáním údajů konkrétnímu třetímu příjemci (samostatný správce) za uvedeným účelem.",
     description:
-      "Výslovný souhlas s předáním konkrétnímu partnerovi. Partner jedná ve vlastní registraci; Hypotéka Jasně není banka ani zprostředkovatel dle z. č. 257/2016 Sb. Odeslání formuláře samo o sobě není marketingový souhlas. Checkbox se nabízí jen pokud je partner ověřen.",
+      "Výslovný souhlas se zobrazí jen pokud HEINZKE & partneři s.r.o. skutečně předává údaje jiné nezávislé entitě (např. ověřený hypoteční partner, Majetio, realitní partner). Není univerzálním souhlasem pro všechny možné příjemce. Počáteční poptávku přijímá provozovatel HEINZKE — to není předání třetí straně sobě samému. Odeslání formuláře není marketingový souhlas.",
     required: false,
   },
   marketing: {
     id: "marketing",
     version: CONSENT_POLICY_VERSION,
     checkboxLabel:
-      "Souhlasím se zasíláním obchodních sdělení e-mailem / telefonem (volitelné).",
+      "Chci dostávat novinky a užitečné informace od Hypotéka Jasně e-mailem. Souhlas mohu kdykoli odvolat.",
     description:
-      "Oddělený marketingový souhlas. Není odvozován z odeslání poptávky ani z partner transfer.",
+      "Oddělený volitelný souhlas s e-mailovými novinkami Hypotéka Jasně. Nezahrnuje telefonický marketing. Není odvozován z odeslání poptávky ani z partner transfer; výchozí stav je nezaškrtnuto.",
     required: false,
   },
   cookie_analytics: {
@@ -77,7 +78,7 @@ export const CONSENT_PURPOSES: Record<ConsentPurposeId, ConsentPurposeCopy> = {
     version: COOKIE_POLICY_VERSION,
     checkboxLabel: "Analytické cookies",
     description:
-      "Měření návštěvnosti (např. anonymizovaná analytika). Pouze po aktivním souhlasu — ne na základě oprávněného zájmu.",
+      "Měření návštěvnosti prostřednictvím Google Analytics (gtag), pokud je v instalaci nastaveno Measurement ID. Pouze po aktivním souhlasu — ne na základě oprávněného zájmu. Bez nastaveného ID se gtag nenačte.",
     required: false,
   },
   cookie_marketing: {
@@ -85,7 +86,7 @@ export const CONSENT_PURPOSES: Record<ConsentPurposeId, ConsentPurposeCopy> = {
     version: COOKIE_POLICY_VERSION,
     checkboxLabel: "Marketingové cookies",
     description:
-      "Remarketing / reklamní identifikátory. Pouze po aktivním souhlasu.",
+      "Kategorie pro budoucí reklamní identifikátory. V současné implementaci se nenačítá žádný marketingový skript třetí strany (včetně Meta Pixel). Pouze po aktivním souhlasu, až bude skript skutečně zapojen.",
     required: false,
   },
 };
@@ -100,13 +101,10 @@ export function getPartnerTransferScopeLabels(): Record<
   PartnerTransferScope,
   string
 > {
-  const verified = canUseStrongPartnerTrustClaims();
   return {
-    mortgage_specialist: verified
-      ? "Ověřený hypoteční partner"
-      : "Hypoteční partner (předání až po ověření identity)",
-    majetio: "Majetio — vyhledání a analýza nemovitostí / Finanční pas",
-    broker_developer: "Makléř / developer (pouze pokud výslovně zvoleno)",
+    mortgage_specialist: "Konkrétní ověřený hypoteční partner (třetí strana)",
+    majetio: "Majetio — vyhledání a analýza nemovitostí",
+    broker_developer: "Makléř / developer (konkrétní realitní partner)",
     none: "Bez předání třetí straně",
   };
 }
@@ -115,50 +113,97 @@ export function getPartnerTransferScopeLabels(): Record<
 export const PARTNER_TRANSFER_SCOPE_LABELS: Record<
   PartnerTransferScope,
   string
-> = {
-  mortgage_specialist: "Hypoteční partner (předání až po ověření identity)",
-  majetio: "Majetio — vyhledání a analýza nemovitostí / Finanční pas",
-  broker_developer: "Makléř / developer (pouze pokud výslovně zvoleno)",
-  none: "Bez předání třetí straně",
-};
+> = getPartnerTransferScopeLabels();
 
-/** Dynamický checkbox text — používá centrální legal config (bez TODO stringů). */
-export function buildPrivacyProcessingCheckboxLabel(): string {
-  const cfg = getLegalIdentityConfig();
-  const spravce = cfg.dataControllerName;
-  const ico = cfg.companyId ? `, IČO ${cfg.companyId}` : "";
-  return `Souhlasím se zpracováním údajů správcem ${spravce}${ico} za účelem vyřízení mé nezávazné poptávky / konzultace (viz Zásady ochrany osobních údajů). Hypotéka Jasně není banka.`;
+function looksLikeHeinzkeOperator(name: string | null | undefined): boolean {
+  if (!name?.trim()) return true;
+  return /HEINZKE/i.test(name);
 }
 
-/** Dynamický checkbox text — bez odkazu na /partneri, pokud identita není zveřejněna. */
+/**
+ * Checkbox předání třetí straně — jen když HEINZKE skutečně předává PII
+ * jiné nezávislé entitě. HEINZKE sobě = nikdy.
+ *
+ * INTERNAL: Majetio / makléř = true až po zapojení reálného PII handoffu
+ * (odchozí odkazy na majetio.cz nestačí).
+ */
+export function isThirdPartyTransferActive(
+  scope: PartnerTransferScope
+): boolean {
+  if (scope === "none") return false;
+
+  if (scope === "mortgage_specialist") {
+    if (!isMortgagePartnerHandoffReady()) return false;
+    const partner = getPrimaryMortgagePartner();
+    if (!partner.legalName || looksLikeHeinzkeOperator(partner.legalName)) {
+      return false;
+    }
+    return true;
+  }
+
+  if (scope === "majetio") {
+    return false;
+  }
+
+  if (scope === "broker_developer") {
+    return false;
+  }
+
+  return false;
+}
+
+/**
+ * Veřejný text u počátečního formuláře (příjemce = provozovatel / správce).
+ * Není „předání“ údajů provozovateli — formulář mu jde přímo.
+ */
+export function buildEnquiryPrivacyNotice(): string {
+  return CONSENT_PURPOSES.privacy_processing.checkboxLabel;
+}
+
+/** Dynamický checkbox text — používá centrální legal config. */
+export function buildPrivacyProcessingCheckboxLabel(): string {
+  return buildEnquiryPrivacyNotice();
+}
+
+/**
+ * Text souhlasu s předáním — vždy jmenuje konkrétního příjemce a účel.
+ * Prázdný string, pokud transfer není aktivní (UI nesmí zobrazit).
+ */
 export function buildPartnerTransferCheckboxLabel(
   scope: PartnerTransferScope
 ): string {
-  const scopeLabel = getPartnerTransferScopeLabels()[scope];
-
-  if (scope === "mortgage_specialist" && isMortgagePartnerHandoffReady()) {
-    const name = partnerPublicDisplayName(getPrimaryMortgagePartner());
-    return `Souhlasím s předáním údajů ověřenému hypotečnímu partnerovi (samostatný správce) za účelem nezávazné konzultace hypotéky. Příjemce: ${name}. Rozsah: ${scopeLabel}.`;
-  }
+  if (!isThirdPartyTransferActive(scope)) return "";
 
   if (scope === "mortgage_specialist") {
-    return `Souhlasím se zpracováním údajů provozovatelem platformy (HEINZKE & partneři s.r.o.) pro nezávaznou konzultaci. Předání třetímu partnerovi zatím není aktivní. Rozsah: ${scopeLabel}.`;
+    const name = getPrimaryMortgagePartner().legalName!;
+    return `Souhlasím s předáním údajů společnosti ${name} (samostatný správce) za účelem nezávazné hypoteční konzultace.`;
   }
 
-  return `Souhlasím s předáním údajů partnerovi (samostatný správce) v uvedeném rozsahu. Rozsah: ${scopeLabel}.`;
+  if (scope === "majetio") {
+    return "Souhlasím s předáním údajů společnosti Majetio (samostatný správce) za účelem vyhledání nebo analýzy nemovitostí související s mou poptávkou.";
+  }
+
+  if (scope === "broker_developer") {
+    return "Souhlasím s předáním údajů realitnímu partnerovi (makléř / developer, samostatný správce) za účelem řešení mé poptávky po nemovitosti.";
+  }
+
+  return "";
 }
 
-/** Krátké shrnutí u formuláře (správce / účel / role). */
+/** Krátké shrnutí u formuláře — bez handoff / „předání provozovateli“ jazyka. */
 export function buildConsentContextSummary(): string {
   const cfg = getLegalIdentityConfig();
   const spravce = cfg.dataControllerName;
-  const privacy = cfg.privacyEmail;
-  const labels = getPartnerClaimLabels(getPrimaryPartnerVerification());
   return [
-    `Správce údajů z formuláře: ${spravce}.`,
-    `Kontakt pro ochranu údajů: ${privacy}.`,
-    "Účel: vyřízení nezávazné poptávky / konzultace.",
+    sentenceFragment("Správce údajů z formuláře", spravce),
+    "Účel: vyřízení poptávky / konzultace.",
     "Hypotéka Jasně není banka a neschvaluje úvěry.",
-    labels.leadIntakeDisclosure,
   ].join(" ");
+}
+
+/** Avoid „s.r.o..“ when label already ends with a period. */
+function sentenceFragment(label: string, value: string): string {
+  const v = value.trim();
+  if (!v) return `${label}:`;
+  return /[.!?…]$/.test(v) ? `${label}: ${v}` : `${label}: ${v}.`;
 }

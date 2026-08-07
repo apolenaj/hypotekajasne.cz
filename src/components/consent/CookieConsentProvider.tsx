@@ -15,6 +15,7 @@ import {
   type CookieConsentCategories,
   type CookieConsentRecord,
 } from "@/lib/consent/records";
+import { clearConsentGatedAnalyticsStorage } from "@/lib/analytics/attribution";
 
 type CookieConsentContextValue = {
   ready: boolean;
@@ -106,6 +107,33 @@ function useStoredConsent() {
   return useSyncExternalStore(subscribeConsent, readStored, () => null);
 }
 
+function clearMarketingConsentStub(): void {
+  if (typeof window === "undefined") return;
+  try {
+    const w = window as Window & {
+      __hjMarketingConsent?: boolean;
+      __hjMetaPixelId?: string;
+    };
+    delete w.__hjMarketingConsent;
+    delete w.__hjMetaPixelId;
+  } catch {
+    /* ignore */
+  }
+}
+
+function applyConsentSideEffects(
+  previous: CookieConsentRecord | null,
+  next: CookieConsentRecord
+) {
+  if (!next.categories.analytics) {
+    clearConsentGatedAnalyticsStorage();
+  }
+  if (!next.categories.marketing) {
+    clearMarketingConsentStub();
+  }
+  void previous;
+}
+
 function makeRecord(
   analytics: boolean,
   marketing: boolean
@@ -130,11 +158,15 @@ export function CookieConsentProvider({ children }: { children: ReactNode }) {
 
   const openBanner = ready && (!record || forceBanner);
 
-  const persist = useCallback((next: CookieConsentRecord) => {
-    writeStored(next);
-    setForceBanner(false);
-    setOpenSettings(false);
-  }, []);
+  const persist = useCallback(
+    (next: CookieConsentRecord) => {
+      applyConsentSideEffects(record, next);
+      writeStored(next);
+      setForceBanner(false);
+      setOpenSettings(false);
+    },
+    [record]
+  );
 
   const acceptAll = useCallback(() => {
     persist(makeRecord(true, true));

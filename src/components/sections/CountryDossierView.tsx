@@ -245,7 +245,7 @@ function SectionBody({
           <div className="rounded-xl border border-deep-teal/20 bg-deep-teal/5 p-4">
             <p className="inline-flex items-center gap-2 text-sm font-semibold text-deep-teal">
               <Scale className="h-4 w-4" />
-              Poslední redakční kontrola právních zdrojů
+              Poslední aktualizace právních zdrojů
             </p>
             <p className="mt-2 text-sm text-text-dark">
               {section.lastLegalReview.text}

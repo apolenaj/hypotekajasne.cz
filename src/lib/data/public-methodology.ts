@@ -88,7 +88,7 @@ export const PUBLIC_METHODOLOGY_BLURBS = {
   predictions:
     "Scénáře růstu (konzervativní / střední / dynamický) jsou modelové projekce, ne předpověď budoucnosti ani investiční doporučení.",
   legal:
-    "Právní a daňové přehledy zemí označíme jako VERIFIED jen tehdy, když máme odkaz na autoritu. Jinak ESTIMATE, UNVERIFIED nebo NEEDS UPDATE. Nejsou individuální právní radou. Bez evidovaného odborníka neuvádíme „právní revizi“ — jen redakční kontrolu právních zdrojů.",
+    "Právní a daňové přehledy zemí označíme jako VERIFIED jen tehdy, když máme odkaz na autoritu. Jinak ESTIMATE, UNVERIFIED nebo NEEDS UPDATE. Nejsou individuální právní radou.",
   scoring:
     "Osobní investiční průvodce počítá organické skóre 0–100 jako vážený součet shody napříč dimenzemi (kapitál, financování, výnos, riziko, vlastnictví, likvidita, měna, regulace, horizont, účel). Placené partnerství organické skóre nemění — sponzoring musí být označen mimo žebříček.",
   general:
