@@ -1,6 +1,7 @@
 "use client";
 
 import { CockpitHero } from "@/components/home/CockpitHero";
+import { HomeDecisionLab } from "@/components/home/HomeDecisionLab";
 import { HomeJourney } from "@/components/home/HomeJourney";
 import { HomeIntents } from "@/components/home/HomeIntents";
 import { HomeTrustBlock } from "@/components/home/HomeTrustBlock";
@@ -17,6 +18,7 @@ export function HomeExperience() {
   return (
     <>
       <CockpitHero />
+      <HomeDecisionLab />
       <HomeJourney />
       <HomeIntents />
       <HomeTrustBlock />
