@@ -52,6 +52,7 @@ export const routes = {
     koupeVsNajem: "/kalkulacky/koupe-vs-najem",
     historickyVyvoj: "/kalkulacky/historicky-vyvoj",
     potencialniVyvoj: "/kalkulacky/potencialni-vyvoj",
+    hypotecniKalkulacka: "/kalkulacky/hypotecni",
   },
 } as const;
 

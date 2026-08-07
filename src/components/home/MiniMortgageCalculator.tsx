@@ -15,8 +15,12 @@ import {
 import { routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
-const controlClassName =
-  "h-11 min-h-11 w-full min-w-0 rounded-md border border-border bg-white px-2.5 text-base font-semibold text-text-dark outline-none focus:border-deep-teal focus:ring-2 focus:ring-deep-teal/20 sm:w-auto [color-scheme:light]";
+const fieldControlClassName = cn(
+  "h-11 min-h-11 w-full min-w-0 rounded-lg border border-border bg-white px-2.5",
+  "text-base text-text-dark outline-none transition-colors",
+  "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+  "[color-scheme:light]"
+);
 
 function MoneyField({
   id,
@@ -119,16 +123,19 @@ export function MiniMortgageCalculator() {
           onChange={setOwnFunds}
         />
 
-        <div className="flex min-w-0 flex-wrap items-center gap-3 rounded-lg border border-border/80 bg-[#f7f9f8] px-3 py-2.5">
-          <div className="min-w-0 flex-1 sm:flex-none">
-            <Label htmlFor="mini-mortgage-term" className="sr-only">
+        <div className="flex min-w-0 gap-4">
+          <div className="min-w-0 flex-1 space-y-1.5">
+            <Label
+              htmlFor="mini-mortgage-term"
+              className="text-xs font-semibold text-text-dark"
+            >
               Doba splácení
             </Label>
             <select
               id="mini-mortgage-term"
               value={termYears}
               onChange={(e) => setTermYears(Number(e.target.value))}
-              className={controlClassName}
+              className={fieldControlClassName}
             >
               {MINI_MORTGAGE_TERM_OPTIONS.map((y) => (
                 <option key={y} value={y}>
@@ -138,39 +145,47 @@ export function MiniMortgageCalculator() {
             </select>
           </div>
 
-          <div className="relative min-w-0 flex-1 sm:w-[7.5rem] sm:flex-none">
-            <Label htmlFor="mini-mortgage-rate" className="sr-only">
+          <div className="min-w-0 flex-1 space-y-1.5">
+            <Label
+              htmlFor="mini-mortgage-rate"
+              className="text-xs font-semibold text-text-dark"
+            >
               Úroková sazba
             </Label>
-            <input
-              id="mini-mortgage-rate"
-              type="text"
-              inputMode="decimal"
-              autoComplete="off"
-              value={rateDraft}
-              onChange={(e) => {
-                const next = e.target.value;
-                setRateDraft(next);
-                const parsed = parseInterestRate(next);
-                if (parsed != null) setInterestRate(parsed);
-              }}
-              onBlur={() => {
-                const parsed = parseInterestRate(rateDraft);
-                const next =
-                  parsed ?? MINI_MORTGAGE_DEFAULTS.annualRatePercent;
-                setInterestRate(next);
-                setRateDraft(next.toFixed(2).replace(".", ","));
-              }}
-              aria-describedby="mini-mortgage-rate-hint"
-              className={cn(controlClassName, "pr-8 tabular-nums")}
-              title="Modelová sazba — nejde o aktuální nabídku banky"
-            />
-            <span
-              className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground"
-              aria-hidden
-            >
-              %
-            </span>
+            <div className="relative min-w-0">
+              <input
+                id="mini-mortgage-rate"
+                type="text"
+                inputMode="decimal"
+                autoComplete="off"
+                value={rateDraft}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  setRateDraft(next);
+                  const parsed = parseInterestRate(next);
+                  if (parsed != null) setInterestRate(parsed);
+                }}
+                onBlur={() => {
+                  const parsed = parseInterestRate(rateDraft);
+                  const next =
+                    parsed ?? MINI_MORTGAGE_DEFAULTS.annualRatePercent;
+                  setInterestRate(next);
+                  setRateDraft(next.toFixed(2).replace(".", ","));
+                }}
+                aria-describedby="mini-mortgage-rate-hint"
+                className={cn(
+                  fieldControlClassName,
+                  "pr-12 tabular-nums"
+                )}
+                title="Modelová sazba — nejde o aktuální nabídku banky"
+              />
+              <span
+                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground"
+                aria-hidden
+              >
+                %
+              </span>
+            </div>
           </div>
         </div>
         <p id="mini-mortgage-rate-hint" className="sr-only">

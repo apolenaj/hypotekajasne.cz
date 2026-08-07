@@ -48,7 +48,7 @@ export function HomeProductPreviews() {
               Otevřít laboratoř →
             </Link>
           </div>
-          <ul className="grid min-w-0 gap-3 sm:grid-cols-3 lg:col-span-6">
+          <ul className="grid min-w-0 gap-3 sm:grid-cols-2 lg:col-span-6 lg:grid-cols-2">
             {[
               {
                 href: routes.kalkulacky.koupeVsNajem,
@@ -64,6 +64,11 @@ export function HomeProductPreviews() {
                 href: routes.kalkulacky.potencialniVyvoj,
                 title: "Potenciální vývoj",
                 hint: "Modelové scénáře dopředu",
+              },
+              {
+                href: routes.kalkulacky.hypotecniKalkulacka,
+                title: "Hypoteční kalkulačka",
+                hint: "Splátka a modelová sazba",
               },
             ].map((item) => (
               <li key={item.href}>

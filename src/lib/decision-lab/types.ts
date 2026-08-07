@@ -5,7 +5,8 @@
 export type DecisionLabToolId =
   | "buy_vs_rent"
   | "historical"
-  | "future";
+  | "future"
+  | "mortgage_calc";
 
 export type ChartMeta = {
   title: string;
