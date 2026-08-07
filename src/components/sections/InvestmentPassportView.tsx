@@ -840,8 +840,7 @@ export function InvestmentPassportView() {
         formData.name.trim().length > 1 &&
         formData.email.includes("@") &&
         formData.phone.trim().length >= 9 &&
-        consent.privacyAccepted &&
-        consent.partnerTransferAccepted
+        consent.privacyAccepted
       );
     }
     return false;

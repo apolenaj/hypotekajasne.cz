@@ -43,12 +43,18 @@ export const PUBLIC_STAGING_PHRASES = [
   "Redakční kontrola vs. právní revize",
   "Aktuálně zveřejňujeme",
   "Fotografie zatím není dodána",
+  "Fotografie a LinkedIn zobrazujeme",
   "LinkedIn profil zatím není zveřejněn",
   "zveřejníme až po ověření",
   "zveřejníme až po dokončení ověření",
   "ověření ČNB vztahu probíhá",
   "zatím neověřen veřejně",
   "dokud není ověřeno",
+  "SEO architektura",
+  "thin programmatic",
+  "ve stránce pro SEO",
+  "doplňte před publikací",
+  "Interní redakční zásady",
 ] as const;
 
 export function collectLegalProductionIssues(options?: {

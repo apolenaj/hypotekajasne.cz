@@ -63,7 +63,7 @@ export const SEO_LANDING_HUB = {
   path: "/temata",
   title: "Témata hypoték — přehled průvodců",
   description:
-    "Kurátorované SEO průvodce: příjem, věk do 36 let, OSVČ, investiční hypotéka, refinancování, koupě vs. nájem a zahraničí. Bez thin programmatic stránek.",
+    "Průvodce hypotékou: příjem, věk do 36 let, OSVČ, investiční hypotéka, refinancování, koupě vs. nájem a zahraničí.",
 } as const;
 
 const CNB_MACRO =

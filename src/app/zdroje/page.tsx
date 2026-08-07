@@ -13,7 +13,7 @@ export default function ZdrojePage() {
       currentPath="/zdroje"
       eyebrow="Centrum důvěry"
       title="Zdroje"
-      lead="Skutečné autority — ne interní soubory. Každý významný údaj má status důvěryhodnosti a u Ověřeno i odkaz na externí zdroj."
+      lead="Skutečné autority — ne soubory bez odkazu na veřejný zdroj. Každý významný údaj má status důvěryhodnosti a u Ověřeno i odkaz na externí zdroj."
     >
       <p className="text-sm text-muted-foreground">
         Podrobný popis výpočtů a modelů:{" "}

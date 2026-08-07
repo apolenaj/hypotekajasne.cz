@@ -117,7 +117,7 @@ export function Footer() {
           </p>
           <p className="max-w-md text-center text-xs text-muted-foreground sm:text-right">
             Informační platforma — nejsme banka. Schválení úvěru vždy provádí
-            banka.
+            banka po vlastním posouzení.
           </p>
         </div>
       </div>

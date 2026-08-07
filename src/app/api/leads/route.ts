@@ -14,6 +14,7 @@ import {
   canAcceptPersonalLeads,
   LEGAL_LEAD_BLOCKED_PUBLIC_MESSAGE,
 } from "@/lib/legal";
+import { computeEnquiryRetentionUntil } from "@/lib/legal/privacy-retention";
 
 function getSupabaseAdmin() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -152,7 +153,53 @@ export async function POST(request: Request) {
       .filter(Boolean)
       .join("\n");
 
-    const row = {
+    const nowIso = new Date().toISOString();
+    const marketingConsent = payload.consent.marketingAccepted === true;
+    const retentionUntil = computeEnquiryRetentionUntil({
+      lastInteractionAt: nowIso,
+      source: payload.source,
+      activeCase: false,
+      marketingConsent,
+    });
+
+    const consentMeta = {
+      consent: payload.consent,
+      privacy_notice_version: payload.consent.policyVersion,
+      privacy_notice_acknowledged: payload.consent.privacyAccepted === true,
+      privacy_notice_acknowledged_at: payload.consent.consentedAt,
+      marketing_consent: marketingConsent,
+      marketing_consent_at: marketingConsent
+        ? payload.consent.consentedAt
+        : null,
+      marketing_consent_withdrawn_at: null,
+      marketing_consent_version: marketingConsent
+        ? payload.consent.policyVersion
+        : null,
+      marketing_opt_in: marketingConsent,
+      transfer_consent: payload.consent.partnerTransferAccepted === true,
+      transfer_consent_at:
+        payload.consent.partnerTransferAccepted === true
+          ? payload.consent.consentedAt
+          : null,
+      transfer_consent_version:
+        payload.consent.partnerTransferAccepted === true
+          ? payload.consent.policyVersion
+          : null,
+      transfer_recipient:
+        payload.consent.partnerTransferAccepted === true &&
+        payload.consent.partnerTransferScope !== "none"
+          ? payload.consent.partnerTransferScope
+          : null,
+      partner_transfer: payload.consent.partnerTransferAccepted === true,
+      partner_scope: payload.consent.partnerTransferScope,
+      consent_policy_version: payload.consent.policyVersion,
+      partner_handoff_ready: isMortgagePartnerHandoffReady(),
+      intake_mode: isMortgagePartnerHandoffReady()
+        ? "partner_handoff"
+        : "operator_only",
+    };
+
+    const baseRow = {
       name: payload.name,
       email: payload.email,
       phone: payload.phone ?? null,
@@ -162,24 +209,46 @@ export async function POST(request: Request) {
       metadata: {
         ...(payload.metadata ?? {}),
         source_label: sourceLabel,
-        submitted_at: new Date().toISOString(),
+        submitted_at: nowIso,
         user_agent:
           request.headers.get("user-agent")?.slice(0, 200) ?? undefined,
-        consent: payload.consent,
-        // Explicitně: marketing jen pokud checkbox
-        marketing_opt_in: payload.consent.marketingAccepted === true,
-        partner_transfer: payload.consent.partnerTransferAccepted === true,
-        partner_scope: payload.consent.partnerTransferScope,
-        consent_policy_version: payload.consent.policyVersion,
-        partner_handoff_ready: isMortgagePartnerHandoffReady(),
-        intake_mode: isMortgagePartnerHandoffReady()
-          ? "partner_handoff"
-          : "operator_only",
+        ...consentMeta,
       },
     };
 
+    // First-class retention / consent columns (requires leads_retention.sql).
+    const rowWithRetention = {
+      ...baseRow,
+      updated_at: nowIso,
+      last_interaction_at: nowIso,
+      retention_until: retentionUntil?.toISOString() ?? null,
+      privacy_notice_version: payload.consent.policyVersion,
+      deleted_at: null,
+      legal_hold: false,
+      active_case: false,
+      marketing_consent: marketingConsent,
+      marketing_consent_at: marketingConsent
+        ? payload.consent.consentedAt
+        : null,
+      marketing_consent_withdrawn_at: null,
+      marketing_consent_version: marketingConsent
+        ? payload.consent.policyVersion
+        : null,
+    };
+
     const supabase = getSupabaseAdmin();
-    const { error } = await supabase.from("leads").insert(row);
+    let { error } = await supabase.from("leads").insert(rowWithRetention);
+
+    // Fallback if retention migration not applied yet — still store consent in metadata.
+    if (
+      error &&
+      /column|schema cache|does not exist/i.test(error.message)
+    ) {
+      console.warn(
+        "Supabase leads retention columns missing — inserting base row. Apply supabase/leads_retention.sql."
+      );
+      ({ error } = await supabase.from("leads").insert(baseRow));
+    }
 
     if (error) {
       console.error("Supabase leads insert error:", error.message);

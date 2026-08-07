@@ -1,5 +1,6 @@
 import { absoluteUrl, SITE_DOMAIN_LABEL, SITE_NAME_SHORT } from "@/lib/seo/site";
 import { getOperatorIdentity, formatOperatorAddress } from "@/lib/legal";
+import { legalOperator } from "@/config/legal";
 
 export type JsonLd = Record<string, unknown>;
 
@@ -20,9 +21,10 @@ export function organizationJsonLd(): JsonLd {
     email: op.email,
     address: {
       "@type": "PostalAddress",
-      streetAddress: op.street ?? undefined,
-      addressLocality: op.city ?? undefined,
-      postalCode: op.zip ?? undefined,
+      streetAddress: legalOperator.street,
+      addressLocality: legalOperator.city,
+      addressRegion: legalOperator.district,
+      postalCode: legalOperator.zip,
       addressCountry: "CZ",
     },
   };

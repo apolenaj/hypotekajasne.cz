@@ -88,12 +88,12 @@ describe("partner / legal SoT", () => {
   });
 
   it("bumped consent policy version", () => {
-    assert.equal(CONSENT_POLICY_VERSION, "2026-08-07.6");
+    assert.equal(CONSENT_POLICY_VERSION, "2026-08-07.8");
   });
 
   it("cookie policy version matches material cookie inventory update", async () => {
     const { COOKIE_POLICY_VERSION } = await import("@/lib/legal/consent-versions");
-    assert.equal(COOKIE_POLICY_VERSION, "2026-08-07.1");
+    assert.equal(COOKIE_POLICY_VERSION, "2026-08-07.2");
   });
 
   it("cookie inventory does not invent inactive third-party trackers", async () => {
@@ -113,23 +113,36 @@ describe("partner / legal SoT", () => {
     assert.match(notes, /Clarity/);
   });
 
-  it("privacy retention periods stay unapproved until legal decision", async () => {
+  it("privacy retention policy is concrete and cron-aware", async () => {
     const {
       privacyRetention,
-      isRetentionPeriodApproved,
       buildPublicRetentionSummary,
+      computeEnquiryRetentionUntil,
     } = await import("@/lib/legal/privacy-retention");
-    assert.equal(privacyRetention.enquiries.days, null);
-    assert.equal(privacyRetention.marketingConsent.days, null);
-    assert.equal(privacyRetention.enquiries.automation, "manual_erasure_request");
-    assert.equal(isRetentionPeriodApproved("enquiries"), false);
+    assert.equal(privacyRetention.inactiveEnquiryMonths, 6);
+    assert.equal(privacyRetention.closedCaseMonths, 6);
+    assert.equal(privacyRetention.marketingInactivityMonths, 24);
+    assert.equal(privacyRetention.technicalLogDays, 90);
+    assert.equal(privacyRetention.cleanupScheduledInCron, true);
+
+    const until = computeEnquiryRetentionUntil({
+      lastInteractionAt: "2026-01-01T00:00:00.000Z",
+      source: "contact",
+    });
+    assert.ok(until);
+    assert.equal(until!.toISOString().startsWith("2026-07-01"), true);
+
     const publicText = buildPublicRetentionSummary("privacy@example.com").join(
       " "
     );
     assert.ok(!/null/i.test(publicText));
     assert.ok(!/TODO/i.test(publicText));
-    assert.match(publicText, /Automatické mazání/);
-    assert.match(publicText, /není nastaveno/);
+    assert.ok(!/bude upřesněno/i.test(publicText));
+    assert.ok(!/není nastaveno/i.test(publicText));
+    assert.match(publicText, /6 měsíců/);
+    assert.match(publicText, /24 měsíců/);
+    assert.match(publicText, /90 dní/);
+    assert.match(publicText, /automatickým úklidem/i);
   });
 
   it("marketing consent is email-only and optional", async () => {
@@ -140,7 +153,22 @@ describe("partner / legal SoT", () => {
     assert.match(label, /odvolat/i);
     assert.ok(!/telefon/i.test(label));
     assert.equal(CONSENT_PURPOSES.marketing.required, false);
+    assert.equal(CONSENT_PURPOSES.marketing.uiKind, "consent");
     assert.ok(!/odesláním formuláře/i.test(label));
+  });
+
+  it("enquiry privacy notice is acknowledgment not marketing consent", async () => {
+    const {
+      CONSENT_PURPOSES,
+      ENQUIRY_PROCESSING_LEGAL_BASIS,
+      buildPrivacyProcessingCheckboxLabel,
+    } = await import("@/lib/legal/consent-versions");
+    assert.equal(CONSENT_PURPOSES.privacy_processing.uiKind, "privacy_notice");
+    assert.equal(ENQUIRY_PROCESSING_LEGAL_BASIS.art6Status, "pending_counsel");
+    const notice = buildPrivacyProcessingCheckboxLabel();
+    assert.match(notice, /Zásadami ochrany osobních údajů/i);
+    assert.match(notice, /HEINZKE/i);
+    assert.ok(!/předání údajů společnosti HEINZKE/i.test(notice));
   });
 
   it("third-party transfer is off until a named independent recipient exists", async () => {

@@ -1,8 +1,13 @@
 /**
  * Lightweight A/B experiment framework.
- * Assignment is sticky in localStorage; exposure only after analytics consent
- * when reporting — assignment itself is local UX only.
+ * Sticky assignment in localStorage only after analytics consent.
+ * Before consent: returns control variant without writing storage.
  */
+
+import {
+  COOKIE_STORAGE_KEY,
+  type CookieConsentRecord,
+} from "@/lib/consent/records";
 
 export const EXPERIMENTS = {
   hero: {
@@ -37,6 +42,19 @@ export type ExperimentVariant<E extends ExperimentId> =
   (typeof EXPERIMENTS)[E]["variants"][number];
 
 const STORAGE_PREFIX = "hj_exp_";
+const SEED_KEY = "hj_exp_seed";
+
+function hasAnalyticsConsent(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const raw = localStorage.getItem(COOKIE_STORAGE_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw) as CookieConsentRecord;
+    return Boolean(parsed?.categories?.analytics);
+  } catch {
+    return false;
+  }
+}
 
 function hashString(input: string): number {
   let h = 0;
@@ -57,14 +75,13 @@ function pickVariant<E extends ExperimentId>(
 
 function getOrCreateSeed(): string {
   if (typeof window === "undefined") return "ssr";
-  const key = "hj_exp_seed";
-  let seed = localStorage.getItem(key);
+  let seed = localStorage.getItem(SEED_KEY);
   if (!seed) {
     seed =
       typeof crypto !== "undefined" && "randomUUID" in crypto
         ? crypto.randomUUID()
         : `s_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-    localStorage.setItem(key, seed);
+    localStorage.setItem(SEED_KEY, seed);
   }
   return seed;
 }
@@ -72,9 +89,10 @@ function getOrCreateSeed(): string {
 export function getExperimentVariant<E extends ExperimentId>(
   experimentId: E
 ): ExperimentVariant<E> {
-  if (typeof window === "undefined") {
-    return EXPERIMENTS[experimentId].variants[0] as ExperimentVariant<E>;
-  }
+  const control = EXPERIMENTS[experimentId].variants[0] as ExperimentVariant<E>;
+  if (typeof window === "undefined") return control;
+  if (!hasAnalyticsConsent()) return control;
+
   const storageKey = `${STORAGE_PREFIX}${experimentId}`;
   const stored = localStorage.getItem(storageKey);
   const allowed = EXPERIMENTS[experimentId].variants as readonly string[];
@@ -84,6 +102,19 @@ export function getExperimentVariant<E extends ExperimentId>(
   const assigned = pickVariant(experimentId, getOrCreateSeed());
   localStorage.setItem(storageKey, assigned);
   return assigned;
+}
+
+/** Clear experiment keys when analytics consent is withdrawn. */
+export function clearExperimentStorage(): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(SEED_KEY);
+    for (const id of Object.keys(EXPERIMENTS) as ExperimentId[]) {
+      localStorage.removeItem(`${STORAGE_PREFIX}${id}`);
+    }
+  } catch {
+    /* ignore */
+  }
 }
 
 export type ExperimentAssignment = {

@@ -96,7 +96,8 @@ export function validateFormConsent(
   if (!consent.privacyAccepted) {
     return {
       ok: false,
-      error: "Je nutný souhlas se zpracováním údajů pro vyřízení žádosti.",
+      error:
+        "Potvrďte, že jste se seznámil/a se Zásadami ochrany osobních údajů.",
     };
   }
   if (requiresPartnerTransfer(source) && !consent.partnerTransferAccepted) {

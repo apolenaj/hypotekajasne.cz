@@ -25,6 +25,7 @@ import type {
 } from "@/lib/copilot/types";
 import { routes } from "@/lib/routes";
 import { MODEL_FALLBACK_RATE_PERCENT } from "@/lib/rates/model-fallback";
+import { legalOperator } from "@/config/legal";
 
 export type ToolBundle = {
   markdown: string;
@@ -911,7 +912,7 @@ export function toolContactSpecialist(): ToolBundle {
     markdown: [
       "## Kontaktovat specialistu",
       "",
-      "Předání kontaktu probíhá **jen se souhlasem** (oddělený od marketingu). Poptávky přijímá provozovatel HEINZKE & partneři s.r.o.",
+      `Předání kontaktu probíhá **jen se souhlasem** (oddělený od marketingu). Poptávky přijímá provozovatel ${legalOperator.companyName}.`,
       "",
       "1. Dokončete / zkontrolujte [Hypoteční připravenost](" +
         routes.navrhNaMiru +

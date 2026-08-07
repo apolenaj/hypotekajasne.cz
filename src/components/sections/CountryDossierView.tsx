@@ -528,8 +528,7 @@ function DeepResearchBlock({
               Zobrazit kompletní datový profil trhu
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Plný editorial přehled, klíčová čísla a provenance — obsah zůstává
-              ve stránce pro SEO.
+              Plný editorial přehled, klíčová čísla a provenance zdrojů.
             </p>
           </div>
           <ChevronDown className="h-5 w-5 shrink-0 text-deep-teal transition-transform group-open:rotate-180" />

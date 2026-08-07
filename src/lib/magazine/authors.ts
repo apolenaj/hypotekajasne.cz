@@ -29,7 +29,7 @@ export const MAGAZINE_PEOPLE: Record<string, MagazinePerson> = {
     name: "Redakce Hypotéka Jasně",
     role: "Redakce",
     bio: "Datová redakce zaměřená na hypotéky, kvalifikaci a zahraniční financování. Texty označujeme statusem dat a zdroji.",
-    credentials: "Interní redakční zásady · metodika /metodika",
+    credentials: "Redakční zásady · metodika /metodika",
     url: routes.editorialPolicy,
   },
 };
@@ -40,7 +40,7 @@ export function getPerson(id: string): MagazinePerson {
       id: "unknown",
       name: "Neuvedeno",
       role: "—",
-      bio: "Autor nebo odborná kontrola není v registru — doplňte před publikací.",
+      bio: "Autor nebo odborná kontrola není uvedena.",
     }
   );
 }

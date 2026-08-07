@@ -23,15 +23,14 @@ export default function TemataHubPage() {
       </div>
       <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6 lg:py-20">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-deep-teal">
-          SEO architektura
+          Průvodce
         </p>
         <h1 className="mt-2 font-heading text-3xl font-bold tracking-tight text-text-dark sm:text-4xl">
           Témata hypoték
         </h1>
         <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-          Kurátorované průvodce s autorem, aktualizací a zdroji. Nevytváříme
-          stovky thin programmatic stránek — země mají jeden kvalitní dossier
-          v průvodci investora.
+          Kurátorované průvodce s autorem, datem aktualizace a zdroji. Země mají
+          jeden souvislý profil v průvodci investora.
         </p>
 
         <ul className="mt-10 space-y-4">

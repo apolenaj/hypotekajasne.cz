@@ -36,6 +36,7 @@ export {
   PAID_ANALYSIS_TERMS_VERSION,
   formatPolicyVersionDateCs,
   ANALYTICS_LEGAL_BASIS,
+  ENQUIRY_PROCESSING_LEGAL_BASIS,
   CONSENT_PURPOSES,
   PARTNER_TRANSFER_SCOPE_LABELS,
   buildPartnerTransferCheckboxLabel,
@@ -59,9 +60,10 @@ export {
 export {
   privacyRetention,
   buildPublicRetentionSummary,
-  isRetentionPeriodApproved,
-  type PrivacyRetentionKey,
-  type RetentionEntry,
+  computeEnquiryRetentionUntil,
+  addMonths,
+  addDays,
+  type PrivacyRetentionConfig,
 } from "@/lib/legal/privacy-retention";
 export { getPaidAnalysisTerms } from "@/lib/legal/paid-analysis-terms";
 export {

@@ -3,6 +3,10 @@
     {
       "path": "/api/scrape-rates",
       "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/privacy-retention",
+      "schedule": "30 4 * * *"
     }
   ]
 }

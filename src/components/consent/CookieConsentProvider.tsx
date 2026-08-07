@@ -16,6 +16,7 @@ import {
   type CookieConsentRecord,
 } from "@/lib/consent/records";
 import { clearConsentGatedAnalyticsStorage } from "@/lib/analytics/attribution";
+import { clearExperimentStorage } from "@/lib/analytics/experiments";
 
 type CookieConsentContextValue = {
   ready: boolean;
@@ -127,6 +128,7 @@ function applyConsentSideEffects(
 ) {
   if (!next.categories.analytics) {
     clearConsentGatedAnalyticsStorage();
+    clearExperimentStorage();
   }
   if (!next.categories.marketing) {
     clearMarketingConsentStub();

@@ -7,10 +7,10 @@ import {
   isMortgagePartnerHandoffReady,
   getPrimaryMortgagePartner,
 } from "@/lib/legal/partner-config";
-import { getLegalIdentityConfig } from "@/config/legal";
+import { getLegalIdentityConfig, legalOperator } from "@/config/legal";
 
-export const CONSENT_POLICY_VERSION = "2026-08-07.6" as const;
-export const COOKIE_POLICY_VERSION = "2026-08-07.1" as const;
+export const CONSENT_POLICY_VERSION = "2026-08-07.8" as const;
+export const COOKIE_POLICY_VERSION = "2026-08-07.2" as const;
 export const TERMS_VERSION = "2026-07-20.1" as const;
 export const PAID_ANALYSIS_TERMS_VERSION = "2026-07-20.1" as const;
 
@@ -20,6 +20,19 @@ export function formatPolicyVersionDateCs(version: string): string | null {
   if (!m) return null;
   return `${Number(m[3])}. ${Number(m[2])}. ${m[1]}`;
 }
+
+/**
+ * Central legal-basis config for enquiry processing.
+ * UI shows a privacy-notice acknowledgment — NOT Art. 6(1)(a) marketing-style consent.
+ *
+ * INTERNAL: Confirm the exact Art. 6 basis with counsel before commercial launch.
+ */
+export const ENQUIRY_PROCESSING_LEGAL_BASIS = {
+  publicPurposeLabel: "Vyřízení nezávazné poptávky",
+  art6Status: "pending_counsel" as const,
+  internalNote:
+    "Initial form → HEINZKE as controller. Not a third-party transfer. Confirm Art. 6 basis with counsel; UI must not fake marketing consent for enquiry processing.",
+} as const;
 
 export type ConsentPurposeId =
   | "privacy_processing"
@@ -31,11 +44,11 @@ export type ConsentPurposeId =
 export type ConsentPurposeCopy = {
   id: ConsentPurposeId;
   version: string;
-  /** Krátký label u checkboxu */
   checkboxLabel: string;
-  /** Delší popis pro policy */
   description: string;
   required: boolean;
+  /** privacy_notice = acknowledgment; consent = explicit opt-in */
+  uiKind: "privacy_notice" | "consent";
 };
 
 /**
@@ -49,29 +62,27 @@ export const CONSENT_PURPOSES: Record<ConsentPurposeId, ConsentPurposeCopy> = {
   privacy_processing: {
     id: "privacy_processing",
     version: CONSENT_POLICY_VERSION,
-    checkboxLabel:
-      "Odesláním formuláře potvrzujete, že jste se seznámil/a se Zásadami ochrany osobních údajů. Údaje použije HEINZKE & partneři s.r.o. k vyřízení vaší poptávky.",
-    description:
-      "Zpracování kontaktních a kontextových údajů správcem HEINZKE & partneři s.r.o., IČO 10880097 (provozovatel platformy Hypotéka Jasně) pro odpověď a vyřízení formuláře / poptávky. Nejde o předání třetí straně při odeslání formuláře, o univerzální marketingový souhlas ani o nabídku banky.",
+    checkboxLabel: `Odesláním formuláře potvrzujete, že jste se seznámil/a se Zásadami ochrany osobních údajů. Údaje použije ${legalOperator.companyName} k vyřízení vaší poptávky.`,
+    description: `Zpracování kontaktních a kontextových údajů správcem ${legalOperator.companyName}, IČO ${legalOperator.ico} (provozovatel platformy ${legalOperator.brand}) pro odpověď a vyřízení formuláře / poptávky. Nejde o předání třetí straně, o marketingový souhlas ani o nabídku banky. Formulář zobrazuje seznámení se zásadami — ne fiktivní marketingový souhlas se zpracováním.`,
     required: true,
+    uiKind: "privacy_notice",
   },
   partner_transfer: {
     id: "partner_transfer",
     version: CONSENT_POLICY_VERSION,
     checkboxLabel:
-      "Souhlasím s předáním údajů konkrétnímu třetímu příjemci (samostatný správce) za uvedeným účelem.",
-    description:
-      "Výslovný souhlas se zobrazí jen pokud HEINZKE & partneři s.r.o. skutečně předává údaje jiné nezávislé entitě (např. ověřený hypoteční partner, Majetio, realitní partner). Není univerzálním souhlasem pro všechny možné příjemce. Počáteční poptávku přijímá provozovatel HEINZKE — to není předání třetí straně sobě samému. Odeslání formuláře není marketingový souhlas.",
+      "Souhlasím s předáním údajů konkrétnímu třetímu příjemci za uvedeným účelem.",
+    description: `Výslovný souhlas se zobrazí jen pokud ${legalOperator.companyName} skutečně předává údaje jiné nezávislé entitě (konkrétní příjemce, Majetio, realitní partner). Není univerzálním souhlasem pro všechny možné příjemce. Počáteční poptávku přijímá provozovatel ${legalOperator.companyName} — to není předání třetí straně sobě samému.`,
     required: false,
+    uiKind: "consent",
   },
   marketing: {
     id: "marketing",
     version: CONSENT_POLICY_VERSION,
-    checkboxLabel:
-      "Chci dostávat novinky a užitečné informace od Hypotéka Jasně e-mailem. Souhlas mohu kdykoli odvolat.",
-    description:
-      "Oddělený volitelný souhlas s e-mailovými novinkami Hypotéka Jasně. Nezahrnuje telefonický marketing. Není odvozován z odeslání poptávky ani z partner transfer; výchozí stav je nezaškrtnuto.",
+    checkboxLabel: `Chci dostávat e-mailem novinky a užitečné informace od ${legalOperator.brand}. Souhlas mohu kdykoli odvolat.`,
+    description: `Oddělený volitelný souhlas s e-mailovými novinkami ${legalOperator.brand}. Nezahrnuje telefonický marketing. Není odvozován z odeslání poptávky ani z předání třetí straně; výchozí stav je nezaškrtnuto. Právní základ: souhlas (čl. 6 odst. 1 písm. a) GDPR).`,
     required: false,
+    uiKind: "consent",
   },
   cookie_analytics: {
     id: "cookie_analytics",
@@ -80,6 +91,7 @@ export const CONSENT_PURPOSES: Record<ConsentPurposeId, ConsentPurposeCopy> = {
     description:
       "Měření návštěvnosti prostřednictvím Google Analytics (gtag), pokud je v instalaci nastaveno Measurement ID. Pouze po aktivním souhlasu — ne na základě oprávněného zájmu. Bez nastaveného ID se gtag nenačte.",
     required: false,
+    uiKind: "consent",
   },
   cookie_marketing: {
     id: "cookie_marketing",
@@ -88,6 +100,7 @@ export const CONSENT_PURPOSES: Record<ConsentPurposeId, ConsentPurposeCopy> = {
     description:
       "Kategorie pro budoucí reklamní identifikátory. V současné implementaci se nenačítá žádný marketingový skript třetí strany (včetně Meta Pixel). Pouze po aktivním souhlasu, až bude skript skutečně zapojen.",
     required: false,
+    uiKind: "consent",
   },
 };
 
@@ -102,7 +115,7 @@ export function getPartnerTransferScopeLabels(): Record<
   string
 > {
   return {
-    mortgage_specialist: "Konkrétní ověřený hypoteční partner (třetí strana)",
+    mortgage_specialist: "Konkrétní hypoteční partner (třetí strana)",
     majetio: "Majetio — vyhledání a analýza nemovitostí",
     broker_developer: "Makléř / developer (konkrétní realitní partner)",
     none: "Bez předání třetí straně",

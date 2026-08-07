@@ -17,6 +17,7 @@ import {
   REGULATED_BOUNDARIES,
   TERMS_VERSION,
 } from "@/lib/legal";
+import { legalOperator } from "@/config/legal";
 import { routes } from "@/lib/routes";
 
 function LegalVersionFooter({
@@ -113,6 +114,15 @@ function RegulatedBoundariesBox() {
 function GdprContent() {
   const op = getOperatorIdentity();
   const processingRoles = getPublicProcessingRoles();
+  const controllerRoles = processingRoles.filter(
+    (r) => r.gdprRole === "controller"
+  );
+  const processorRoles = processingRoles.filter(
+    (r) => r.gdprRole === "processor"
+  );
+  const independentRoles = processingRoles.filter(
+    (r) => r.gdprRole === "independent_controller"
+  );
   const anyThirdPartyTransfer =
     isThirdPartyTransferActive("mortgage_specialist") ||
     isThirdPartyTransferActive("majetio") ||
@@ -121,19 +131,54 @@ function GdprContent() {
   return (
     <div className="space-y-8 text-gray-700 leading-relaxed">
       <section>
-        <h2 className="mb-3 text-xl font-bold text-gray-900">
-          Správce osobních údajů
-        </h2>
+        <h2 className="mb-3 text-xl font-bold text-gray-900">Správce</h2>
         <LegalOperatorIdentity variant="full" />
+        <p className="mt-3 text-sm text-muted-foreground">
+          Úvodní formuláře přijímá přímo {legalOperator.companyName}. To není
+          předání údajů třetí straně.
+        </p>
       </section>
       <RegulatedBoundariesBox />
 
       <section>
         <h3 className="mb-3 text-xl font-bold text-gray-900">
-          1. Role správců a zpracovatelů
+          Účely zpracování
+        </h3>
+        <ul className="list-disc space-y-2 pl-5 text-sm">
+          <li>
+            <strong>Vyřízení nezávazné poptávky:</strong>{" "}
+            {CONSENT_PURPOSES.privacy_processing.description}
+          </li>
+          <li>
+            <strong>Příprava objednávky / placené služby:</strong> pokud
+            požádáte o placenou analýzu nebo obdobnou službu, údaje použijeme k
+            vyřízení poptávky a případné objednávky.
+          </li>
+          <li>
+            <strong>Marketing:</strong> jen pokud zaškrtnete samostatný
+            e-mailový souhlas.{" "}
+            {CONSENT_PURPOSES.marketing.description}
+          </li>
+          <li>
+            <strong>Technický provoz a bezpečnost:</strong> provoz webu, session,
+            ochrana proti zneužití.
+          </li>
+          <li>
+            <strong>Analytika:</strong> jen po souhlasu se zásadami cookies — viz{" "}
+            <Link href={routes.legal.cookies} className="text-deep-teal underline">
+              Zásady cookies
+            </Link>
+            . Nepoužíváme oprávněný zájem pro analytické cookies.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h3 className="mb-3 text-xl font-bold text-gray-900">
+          Příjemci / zpracovatelé
         </h3>
         <ul className="space-y-3">
-          {processingRoles.map((r) => (
+          {[...controllerRoles, ...processorRoles].map((r) => (
             <li
               key={r.id}
               className="rounded-lg border border-border px-3 py-2 text-sm"
@@ -150,101 +195,61 @@ function GdprContent() {
 
       <section>
         <h3 className="mb-3 text-xl font-bold text-gray-900">
-          2. Jaké údaje zpracováváme
+          Další samostatní správci
         </h3>
-        <ul className="list-disc space-y-2 pl-5">
-          <li>Kontaktní údaje z formulářů (jméno, e-mail, telefon).</li>
-          <li>
-            Kontext záměru (příjem, kapitál, lokalita) — pro model a vyřízení
-            žádosti.
-          </li>
-          <li>
-            Technické údaje nezbytné pro provoz (bezpečnost, session). Analytika
-            a marketingové cookies jen po souhlasu — viz{" "}
-            <Link href={routes.legal.cookies} className="text-deep-teal underline">
-              Zásady cookies
-            </Link>
-            .
-          </li>
-        </ul>
-      </section>
-
-      <section>
-        <h3 className="mb-3 text-xl font-bold text-gray-900">
-          3. Právní základy a souhlasy
-        </h3>
-        <p className="mb-3 text-sm">
-          <strong>
-            Odeslání formuláře není univerzální marketingový souhlas.
-          </strong>{" "}
-          Marketing je samostatný volitelný checkbox. Odeslání poptávky
-          provozovateli HEINZKE &amp; partneři s.r.o. není předáním třetí straně.
-        </p>
-        <ul className="list-disc space-y-2 pl-5 text-sm">
-          <li>
-            <strong>Vyřízení poptávky:</strong>{" "}
-            {CONSENT_PURPOSES.privacy_processing.description}
-          </li>
-          {anyThirdPartyTransfer ? (
-            <li>
-              <strong>Předání konkrétní třetí straně:</strong>{" "}
-              {CONSENT_PURPOSES.partner_transfer.description} Základ: souhlas
-              (čl. 6 odst. 1 písm. a) GDPR).
-            </li>
-          ) : (
-            <li>
-              <strong>Předání třetí straně:</strong> V současnosti úvodní
-              formuláře nepředávají osobní údaje INSIA, bance, Majetiu ani
-              realitnímu partnerovi. Samostatný souhlas s předáním by se
-              zobrazil jen při skutečném předání konkrétnímu příjemci.
-            </li>
-          )}
-          <li>
-            <strong>Marketing:</strong> {CONSENT_PURPOSES.marketing.description}
-          </li>
-          <li>
-            <strong>Analytické cookies:</strong> právní základ = souhlas.{" "}
-            <strong className="text-text-dark">
-              Nepoužíváme oprávněný zájem pro analytické cookies.
-            </strong>{" "}
-            Analytiku spouštíme až po „Přijmout vše“ nebo po výslovném zapnutí v
-            nastavení.
-          </li>
-        </ul>
-      </section>
-
-      <section>
-        <h3 className="mb-3 text-xl font-bold text-gray-900">
-          4. Předání třetí straně
-        </h3>
-        {anyThirdPartyTransfer ? (
-          <p>
-            Údaje předáme jen pokud zaškrtnete souhlas s předáním konkrétnímu
-            příjemci a jen pro uvedený účel. Nejde o plošné předání všem
-            partnerům. Hypotéka Jasně není banka; konzultace je nezávazná. Stav
-            partnerů:{" "}
-            <Link href={routes.partneri} className="text-deep-teal underline">
-              Partneři
-            </Link>
-            . Poptávky přijímá správce — {op.dataControllerName}.
-          </p>
+        {independentRoles.length > 0 ? (
+          <ul className="space-y-3">
+            {independentRoles.map((r) => (
+              <li
+                key={r.id}
+                className="rounded-lg border border-border px-3 py-2 text-sm"
+              >
+                <p className="font-semibold text-text-dark">{r.label}</p>
+                <p className="text-xs font-medium text-deep-teal">
+                  Role: {r.roleLabelCs ?? GDPR_ROLE_CS[r.gdprRole] ?? r.gdprRole}
+                </p>
+                <p className="mt-1 text-muted-foreground">{r.description}</p>
+              </li>
+            ))}
+          </ul>
         ) : (
-          <p>
-            Úvodní formulář odesíláte přímo správci{" "}
-            {op.dataControllerName}. To není předání třetí straně. INSIA, banka,
-            Majetio ani realitní partner z úvodního formuláře osobní údaje
-            nedostávají, dokud nebude aktivní samostatný, výslovně odsouhlasený
-            přenos konkrétnímu příjemci. Přehled rolí:{" "}
+          <p className="text-sm">
+            INSIA, banka, Majetio ani realitní partner z úvodního formuláře
+            osobní údaje nedostávají. Samostatný správce by se zde uváděl jen
+            při skutečném, výslovně odsouhlaseném předání konkrétnímu příjemci.
+            Přehled obchodních rolí:{" "}
             <Link href={routes.partneri} className="text-deep-teal underline">
               Partneři
             </Link>
             .
           </p>
         )}
+        {anyThirdPartyTransfer ? (
+          <p className="mt-3 text-sm">
+            Předání třetí straně probíhá jen po souhlasu pro konkrétního
+            příjemce. {CONSENT_PURPOSES.partner_transfer.description}
+          </p>
+        ) : null}
       </section>
 
       <section>
-        <h3 className="mb-3 text-xl font-bold text-gray-900">5. Doba uchování</h3>
+        <h3 className="mb-3 text-xl font-bold text-gray-900">
+          Jaké údaje zpracováváme
+        </h3>
+        <ul className="list-disc space-y-2 pl-5">
+          <li>Kontaktní údaje z formulářů (jméno, e-mail, telefon).</li>
+          <li>
+            Kontext záměru (příjem, kapitál, lokalita) — pro model a vyřízení
+            poptávky.
+          </li>
+          <li>
+            Technické údaje nezbytné pro provoz (bezpečnost, session).
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h3 className="mb-3 text-xl font-bold text-gray-900">Doba uchování</h3>
         <ul className="list-disc space-y-2 pl-5">
           {buildPublicRetentionSummary(op.privacyEmail).map((line) => (
             <li key={line.slice(0, 48)}>{line}</li>
@@ -253,7 +258,7 @@ function GdprContent() {
       </section>
 
       <section>
-        <h3 className="mb-3 text-xl font-bold text-gray-900">6. Vaše práva</h3>
+        <h3 className="mb-3 text-xl font-bold text-gray-900">Vaše práva</h3>
         <ul className="list-disc space-y-2 pl-5">
           <li>Přístup, oprava, výmaz, omezení, námitka, přenositelnost.</li>
           <li>
@@ -315,26 +320,26 @@ function CookiesContent() {
           <table className="min-w-full text-left text-sm">
             <thead className="border-b border-border bg-muted/40 text-xs uppercase tracking-wide text-muted-foreground">
               <tr>
-                <th className="px-3 py-2 font-semibold">Poskytovatel</th>
                 <th className="px-3 py-2 font-semibold">Technologie</th>
-                <th className="px-3 py-2 font-semibold">Účel</th>
+                <th className="px-3 py-2 font-semibold">Poskytovatel</th>
                 <th className="px-3 py-2 font-semibold">Kategorie</th>
+                <th className="px-3 py-2 font-semibold">Účel</th>
                 <th className="px-3 py-2 font-semibold">Doba</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((row) => (
                 <tr key={row.id} className="border-b border-border last:border-0">
-                  <td className="px-3 py-2 align-top font-medium text-text-dark">
-                    {row.provider}
-                  </td>
                   <td className="px-3 py-2 align-top font-mono text-xs">
                     {row.technology}
                   </td>
-                  <td className="px-3 py-2 align-top">{row.purpose}</td>
+                  <td className="px-3 py-2 align-top font-medium text-text-dark">
+                    {row.provider}
+                  </td>
                   <td className="px-3 py-2 align-top">
                     {COOKIE_CATEGORY_LABEL_CS[row.category]}
                   </td>
+                  <td className="px-3 py-2 align-top">{row.purpose}</td>
                   <td className="px-3 py-2 align-top text-muted-foreground">
                     {row.duration}
                   </td>

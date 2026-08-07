@@ -140,7 +140,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
     photoUrl: "/images/team/josef-apolenar.webp",
     photoWidth: 800,
     photoHeight: 800,
-    photoAlt: "Josef Apolenář – zakladatel Hypotéka Jasně",
+    photoAlt: `${projectFounder.name} – ${projectFounder.role}`,
   },
   {
     id: "michal-heinzke",

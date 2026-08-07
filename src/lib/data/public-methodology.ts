@@ -23,7 +23,7 @@ export const PUBLIC_STATUS_MEANINGS: Record<
     code: "VERIFIED",
     label: "VERIFIED",
     description:
-      "Ověřeno proti primárnímu nebo autoritativnímu externímu zdroji (regulátor, centrální banka, katastr, daňová správa). Interní soubor sám o sobě není důkazem.",
+      "Ověřeno proti primárnímu nebo autoritativnímu externímu zdroji (regulátor, centrální banka, katastr, daňová správa). Soubor bez odkazu na autoritu sám o sobě není důkazem.",
   },
   MODEL: {
     code: "MODEL",
@@ -74,7 +74,7 @@ export const PUBLIC_STATUS_ORDER: DataStatus[] = [
  */
 export const PUBLIC_METHODOLOGY_BLURBS = {
   rates:
-    "Sazby českých bank bereme z oficiálních webů bank (a ověřených agregátorů). Kontrolujeme je pravidelně. Chybí-li sazba bez pojištění, doplníme ji jen jako orientační modelový výpočet (+0,3 p. b.) — nikdy jako aktuální data.",
+    "Sazby českých bank bereme z oficiálních webů bank (a ověřených agregátorů). Kontrolujeme je pravidelně. Chybí-li sazba bez pojištění, použijeme jen orientační modelový výpočet (+0,3 p. b.) — nikdy jako aktuální data.",
   rpsn:
     "RPSN zobrazíme, jen když je ve zdroji uvedené. Jinak „Na vyžádání“ — RPSN si nevymýšlíme.",
   ltv:
@@ -92,7 +92,7 @@ export const PUBLIC_METHODOLOGY_BLURBS = {
   scoring:
     "Osobní investiční průvodce počítá organické skóre 0–100 jako vážený součet shody napříč dimenzemi (kapitál, financování, výnos, riziko, vlastnictví, likvidita, měna, regulace, horizont, účel). Placené partnerství organické skóre nemění — sponzoring musí být označen mimo žebříček.",
   general:
-    "Každé důležité číslo má status (LIVE / VERIFIED / MODEL / ESTIMATE / UNVERIFIED / NEEDS UPDATE / PARTNER OFFER), veřejný zdroj a datum. Interní soubor není důkazem. Model nikdy nevydáváme za aktuální data.",
+    "Každé důležité číslo má status (LIVE / VERIFIED / MODEL / ESTIMATE / UNVERIFIED / NEEDS UPDATE / PARTNER OFFER), veřejný zdroj a datum. Soubor bez odkazu na autoritu není důkazem. Model nikdy nevydáváme za aktuální data.",
   updateFrequency:
     "Sazby českých bank kontrolujeme automaticky; pokud dlouho nepřijdou nová data, označíme je jako NEEDS UPDATE. Limity ČNB kontrolujeme manuálně proti oficiální stránce. Modelové hodnoty zůstávají modelem — stárnutím se nestanou LIVE.",
   qualityGuide:

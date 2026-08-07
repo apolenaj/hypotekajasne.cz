@@ -16,6 +16,8 @@ import {
   type TeamMember,
 } from "@/lib/trust";
 import { routes } from "@/lib/routes";
+import { financialPartner, legalOperator } from "@/config/legal";
+
 const pillars = [
   {
     icon: BarChart3,
@@ -33,7 +35,7 @@ const pillars = [
     icon: ClipboardList,
     title: "Konkrétní proces předání",
     description:
-      "1) Vyplníte záměr a model. 2) Provozovatel HEINZKE & partneři s.r.o. přijme poptávku pro nezávaznou konzultaci. 3) Schválení vždy provádí banka. 4) Majetio slouží k nemovitostem — odděleně.",
+      `1) Vyplníte záměr a model. 2) Provozovatel ${legalOperator.companyName} přijme poptávku pro nezávaznou konzultaci. 3) Schválení úvěru vždy provádí banka po vlastním posouzení. 4) Majetio slouží k nemovitostem — odděleně.`,
   },
 ];
 
@@ -100,10 +102,10 @@ export function AboutUsView() {
             Lidé a role za Hypotéka Jasně
           </h1>
           <p className="mx-auto max-w-3xl text-lg leading-relaxed font-light text-emerald-50/90 md:text-xl">
-            Jsme digitální platforma provozovaná společností HEINZKE &amp;
-            partneři s.r.o. Nejsme banka. Zprostředkování hypotečních a
-            souvisejících finančních služeb zajišťujeme ve spolupráci se
-            společností INSIA. Úvěr schvaluje banka. Detail rolí v{" "}
+            Jsme digitální platforma provozovaná společností{" "}
+            {legalOperator.companyName}. Nejsme banka.{" "}
+            {financialPartner.cooperationWording} Schválení úvěru vždy provádí
+            banka po vlastním posouzení. Detail rolí v{" "}
             <Link href={routes.duvera} className="underline decoration-white/40">
               Centru důvěry
             </Link>
@@ -287,11 +289,14 @@ export function AboutUsView() {
             </span>{" "}
             je digitální platforma.{" "}
             <strong className="font-semibold text-gray-900">
-              HEINZKE &amp; partneři s.r.o.
+              {legalOperator.companyName}
             </strong>{" "}
             je provozovatel a zajišťuje odbornou hypoteční část ve spolupráci s{" "}
-            <strong className="font-semibold text-gray-900">INSIA</strong>. Banka
-            schvaluje. Makléř/developer prodává.{" "}
+            <strong className="font-semibold text-gray-900">
+              {financialPartner.network}
+            </strong>
+            . Schválení úvěru vždy provádí banka po vlastním posouzení.
+            Makléř/developer prodává.{" "}
             <Link href={routes.partneri} className="text-deep-teal underline">
               Partneři a role
             </Link>

@@ -45,21 +45,18 @@ export const projectFounder = {
 } as const;
 
 export const financialPartner = {
-  company: "HEINZKE & partneři s.r.o.",
-  representative: "Michal Heinzke",
-  representativeRole: "Jednatel HEINZKE & partneři s.r.o.",
+  company: legalOperator.companyName,
+  representative: legalOperator.representative,
+  representativeRole: `Jednatel ${legalOperator.companyName}`,
   specialistTitle: "Hypoteční specialista",
   network: "INSIA",
   /**
    * Neutrální zákaznické znění — bez konkrétního ČNB statusu,
    * dokud není ověřen (viz INTERNAL poznámka výše).
    */
-  cooperationWording:
-    "Zprostředkování hypotečních a souvisejících finančních služeb zajišťuje HEINZKE & partneři s.r.o. ve spolupráci se společností INSIA.",
-  platformWording:
-    "Platformu Hypotéka Jasně provozuje HEINZKE & partneři s.r.o. Zprostředkování hypotečních a souvisejících finančních služeb je zajišťováno ve spolupráci se společností INSIA.",
-  michalDescription:
-    "Michal zajišťuje odbornou část související s hypotečním financováním a individuálním řešením klientských případů prostřednictvím HEINZKE & partneři s.r.o., která spolupracuje se sítí INSIA.",
+  cooperationWording: `Zprostředkování hypotečních a souvisejících finančních služeb zajišťuje ${legalOperator.companyName} ve spolupráci se společností INSIA.`,
+  platformWording: `Platformu ${legalOperator.brand} provozuje ${legalOperator.companyName}. Zprostředkování hypotečních a souvisejících finančních služeb je zajišťováno ve spolupráci se společností INSIA.`,
+  michalDescription: `Michal zajišťuje odbornou část související s hypotečním financováním a individuálním řešením klientských případů prostřednictvím ${legalOperator.companyName}, která spolupracuje se sítí INSIA.`,
 } as const;
 
 /** @deprecated Prefer legalOperator — retained for adapters. */

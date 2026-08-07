@@ -11,6 +11,7 @@ import {
 import {
   isLegalIdentityComplete,
   LEGAL_IDENTITY_INCOMPLETE_PUBLIC_MESSAGE,
+  legalOperator,
 } from "@/config/legal";
 import {
   buildFormConsentRecord,
@@ -19,6 +20,7 @@ import {
 import { routes } from "@/lib/routes";
 
 export type FormConsentState = {
+  /** Acknowledgment of privacy notice — not Art. 6(1)(a) marketing consent */
   privacyAccepted: boolean;
   partnerTransferAccepted: boolean;
   partnerTransferScope: PartnerTransferScope;
@@ -83,7 +85,7 @@ export function FormConsentFields({
         "space-y-3 rounded-xl border border-border bg-slate-50 px-3 py-3 text-left text-xs leading-relaxed text-muted-foreground sm:text-sm"
       }
     >
-      <legend className="sr-only">Souhlasy se zpracováním údajů</legend>
+      <legend className="sr-only">Ochrana osobních údajů a souhlasy</legend>
       <p className="text-[11px] font-semibold uppercase tracking-wide text-deep-teal">
         Verze zásad: {CONSENT_POLICY_VERSION}
       </p>
@@ -110,7 +112,7 @@ export function FormConsentFields({
           <Link href={routes.legal.gdpr} className="text-deep-teal underline">
             Zásadami ochrany osobních údajů
           </Link>
-          . Údaje použije HEINZKE &amp; partneři s.r.o. k vyřízení vaší poptávky.
+          . Údaje použije {legalOperator.companyName} k vyřízení vaší poptávky.
         </span>
       </label>
 

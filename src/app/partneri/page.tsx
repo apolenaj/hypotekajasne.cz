@@ -41,7 +41,7 @@ export default function PartneriPage() {
       currentPath="/partneri"
       eyebrow="Centrum důvěry"
       title="Partneři a role"
-      lead="Hypotéka Jasně je digitální platforma. Provozovatelem je HEINZKE & partneři s.r.o. Schválení úvěru vždy provádí banka po vlastním posouzení."
+      lead={`${legalOperator.brand} je digitální platforma. Provozovatelem je ${legalOperator.companyName}. Schválení úvěru vždy provádí banka po vlastním posouzení.`}
     >
       <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
         {COMPENSATION_DISCLOSURE}

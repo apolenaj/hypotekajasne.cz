@@ -6,6 +6,8 @@
  * Bez ověření: veřejný web nesmí tvrdit, že identita je zveřejněna / ověřena.
  */
 
+import { financialPartner, legalOperator } from "@/config/legal";
+
 export type MortgagePartnerJerrsStatus =
   | "LIVE"
   | "UNPUBLISHED"
@@ -87,11 +89,11 @@ export function getMortgagePartners(): MortgagePartner[] {
         "NEXT_PUBLIC_LEGAL_PARTNER_LICENCE_SUMMARY"
       ) ??
       "Poskytuje službu v rozsahu své registrace u dohledového orgánu. Hypotéka Jasně není touto osobou.")
-    : "Zprostředkování hypotečních a souvisejících finančních služeb zajišťuje HEINZKE & partneři s.r.o. ve spolupráci se společností INSIA.";
+    : financialPartner.cooperationWording;
   const role = verified
     ? (envOrNull("LEGAL_PARTNER_ROLE", "NEXT_PUBLIC_LEGAL_PARTNER_ROLE") ??
       "Zprostředkování spotřebitelských úvěrů / hypoték dle registrace")
-    : "HEINZKE & partneři s.r.o. — provozovatel platformy (spolupráce s INSIA)";
+    : `${legalOperator.companyName} — provozovatel platformy (spolupráce s ${financialPartner.network})`;
   const scope =
     envOrNull("LEGAL_PARTNER_SCOPE", "NEXT_PUBLIC_LEGAL_PARTNER_SCOPE") ??
     "Individuální konzultace, příprava podkladů, komunikace s bankami. Nezahrnuje závazné schválení úvěru.";
@@ -118,7 +120,7 @@ export function getPrimaryMortgagePartner(): MortgagePartner {
 /** Veřejný zobrazovaný název — nikdy falešná ČNB licence. */
 export function partnerPublicDisplayName(p: MortgagePartner): string {
   if (p.legalName && p.jerrsStatus === "LIVE") return p.legalName;
-  return "HEINZKE & partneři s.r.o. (ve spolupráci s INSIA)";
+  return `${legalOperator.companyName} (ve spolupráci s ${financialPartner.network})`;
 }
 
 export function isMortgagePartnerIdentityVerified(

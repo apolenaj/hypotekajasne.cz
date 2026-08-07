@@ -90,11 +90,22 @@ export function getCookieInventory(): CookieInventoryRow[] {
       provider: "Hypotéka Jasně (first-party)",
       technology: "sessionStorage · hj-analytics-utm-pending",
       purpose:
-        "Dočasné uložení sanitizovaných UTM parametrů z URL před souhlasem (bez trvalého zápisu atributace)",
+        "Dočasné uložení sanitizovaných UTM parametrů z URL před souhlasem (bez trvalého zápisu atributace a bez odeslání třetí straně)",
       category: "analytics",
       duration: "Do souhlasu, odvolání, nebo konce relace prohlížeče",
       activeInDeployment: true,
       loadsBeforeConsent: true,
+    },
+    {
+      id: "experiments_ab",
+      provider: "Hypotéka Jasně (first-party)",
+      technology: "localStorage · hj_exp_seed, hj_exp_*",
+      purpose: "Lokální A/B přiřazení variant (bez odeslání před souhlasem)",
+      category: "analytics",
+      duration:
+        "Zápis jen po souhlasu s analytikou; při odvolání se klíče mažou",
+      activeInDeployment: true,
+      loadsBeforeConsent: false,
     },
   ];
 }

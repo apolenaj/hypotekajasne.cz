@@ -6,7 +6,7 @@ export const NUMBER_PIPELINE_STEPS = [
   {
     id: "source",
     title: "Zdroj",
-    text: "Vezmeme primární nebo autoritativní vstup (web banky, ČNB, katastr, daňová správa). Interní soubor sám o sobě nestačí.",
+    text: "Vezmeme primární nebo autoritativní vstup (web banky, ČNB, katastr, daňová správa). Soubor bez odkazu na autoritu sám o sobě nestačí.",
   },
   {
     id: "validation",

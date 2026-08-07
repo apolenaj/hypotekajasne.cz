@@ -41,7 +41,7 @@ export const PROCESSING_ROLES: ProcessingRole[] = [
   },
   {
     id: "hosting_processors",
-    label: "Technologičtí poskytovatelé (např. hosting, databáze)",
+    label: "Technologičtí poskytovatelé (hosting, databáze)",
     roleLabelCs: "zpracovatelé (tam, kde to vyplývá ze smlouvy)",
     gdprRole: "processor",
     description:

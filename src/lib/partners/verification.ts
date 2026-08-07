@@ -9,6 +9,7 @@ import {
   isMortgagePartnerIdentityVerified,
   type MortgagePartner,
 } from "@/lib/legal/partner-config";
+import { financialPartner, legalOperator } from "@/config/legal";
 
 export type PartnerVerificationStatus =
   | "VERIFIED"
@@ -142,24 +143,20 @@ export function getPartnerClaimLabels(
     case "PENDING":
       return {
         badgeLabel: "Konzultace přes provozovatele",
-        roleLabel: "HEINZKE & partneři s.r.o. (ve spolupráci s INSIA)",
+        roleLabel: `${legalOperator.companyName} (ve spolupráci s ${financialPartner.network})`,
         consultCta: "Nezávazná konzultace",
-        connectBlurb:
-          "Platformu Hypotéka Jasně provozuje HEINZKE & partneři s.r.o. Zprostředkování hypotečních a souvisejících finančních služeb je zajišťováno ve spolupráci se společností INSIA. Nejsme banka.",
-        leadIntakeDisclosure:
-          "Údaje z formuláře použije provozovatel platformy HEINZKE & partneři s.r.o. k vyřízení poptávky. Hypotéka Jasně není banka.",
+        connectBlurb: `${financialPartner.platformWording} Nejsme banka.`,
+        leadIntakeDisclosure: `Údaje z formuláře použije provozovatel platformy ${legalOperator.companyName} k vyřízení poptávky. ${legalOperator.brand} není banka.`,
         thankYouHandoff:
           "Ozveme se vám ohledně nezávazné konzultace — obvykle do 24 hodin. Hypotéka Jasně není banka.",
       };
     default:
       return {
         badgeLabel: "Provozovatel platformy",
-        roleLabel: "HEINZKE & partneři s.r.o. (ve spolupráci s INSIA)",
+        roleLabel: `${legalOperator.companyName} (ve spolupráci s ${financialPartner.network})`,
         consultCta: "Nezávazná konzultace",
-        connectBlurb:
-          "Platformu Hypotéka Jasně provozuje HEINZKE & partneři s.r.o. Zprostředkování hypotečních a souvisejících finančních služeb je zajišťováno ve spolupráci se společností INSIA. Nejsme banka.",
-        leadIntakeDisclosure:
-          "Údaje z formuláře použije provozovatel platformy HEINZKE & partneři s.r.o. k vyřízení poptávky. Hypotéka Jasně není banka.",
+        connectBlurb: `${financialPartner.platformWording} Nejsme banka.`,
+        leadIntakeDisclosure: `Údaje z formuláře použije provozovatel platformy ${legalOperator.companyName} k vyřízení poptávky. ${legalOperator.brand} není banka.`,
         thankYouHandoff:
           "Ozveme se vám ohledně nezávazné konzultace — obvykle do 24 hodin. Hypotéka Jasně není banka.",
       };

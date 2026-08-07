@@ -11,7 +11,8 @@ import { editorialLegalSourcesReviewText } from "@/lib/trust/number-pipeline";
 
 export const LEGAL_REVIEW_AS_OF = "2026-07-01";
 
-/** Redakční kontrola právních zdrojů (bez evidovaného právního experta). */
+/** Redakční kontrola právních zdrojů (bez evidovaného právního experta).
+ * INTERNAL only — public dossier shows freshness date via editorialLegalSourcesReviewText. */
 export function dossierEditorialLegalReviewText(scope: string): string {
   return editorialLegalSourcesReviewText(scope, LEGAL_REVIEW_AS_OF);
 }
