@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
   formatNumber,
@@ -47,11 +47,7 @@ export function FormattedMoneyInput({
     formatNumber(value, { emptyZero: !showZero })
   );
 
-  useEffect(() => {
-    if (!focused) {
-      setDraft(formatNumber(value, { emptyZero: !showZero }));
-    }
-  }, [value, focused, showZero]);
+  // Unfocused display is derived from `value` below; draft is only for typing.
 
   return (
     <div className={cn("relative min-w-0", suffix && "has-suffix")}>

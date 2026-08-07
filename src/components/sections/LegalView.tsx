@@ -105,7 +105,7 @@ function RegulatedBoundariesBox() {
         <Link href={routes.duvera} className="font-semibold underline">
           Centrum důvěry
         </Link>
-        .
+        {"."}
       </p>
     </div>
   );
@@ -168,7 +168,7 @@ function GdprContent() {
             <Link href={routes.legal.cookies} className="text-deep-teal underline">
               Zásady cookies
             </Link>
-            . Nepoužíváme oprávněný zájem pro analytické cookies.
+            {". Nepoužíváme oprávněný zájem pro analytické cookies."}
           </li>
         </ul>
       </section>
@@ -221,7 +221,7 @@ function GdprContent() {
             <Link href={routes.partneri} className="text-deep-teal underline">
               Partneři
             </Link>
-            .
+            {"."}
           </p>
         )}
         {anyThirdPartyTransfer ? (
@@ -373,7 +373,7 @@ function CookiesContent() {
         <Link href={routes.legal.gdpr} className="text-deep-teal underline">
           Ochrana osobních údajů
         </Link>
-        .
+        {"."}
       </p>
     </div>
   );
@@ -410,7 +410,7 @@ function SmlouvyContent() {
         >
           Podmínky placené analýzy
         </Link>
-        .
+        {"."}
       </p>
       <h3 className="text-xl font-bold text-gray-900">4. Odpovědnost</h3>
       <p>
@@ -445,7 +445,7 @@ function ZasadyContent() {
           <Link href={routes.metodika} className="text-deep-teal underline">
             metodika
           </Link>
-          .
+          {"."}
         </li>
         <li>
           Odměna od partnera při realizaci — viz{" "}
@@ -455,7 +455,7 @@ function ZasadyContent() {
           >
             Jak vyděláváme
           </Link>
-          .
+          {"."}
         </li>
       </ul>
       <h3 className="text-xl font-bold text-gray-900">Chování uživatelů</h3>

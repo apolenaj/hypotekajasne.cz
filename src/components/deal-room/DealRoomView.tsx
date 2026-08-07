@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   useCallback,
-  useEffect,
   useMemo,
   useState,
   useSyncExternalStore,
@@ -94,7 +93,6 @@ type Props = {
 export function DealRoomView({ workspaceId }: Props) {
   const ready = useIsClient();
   const [section, setSection] = useState<DealRoomSectionId>("timeline");
-  const [workspace, setWorkspace] = useState<DealRoomWorkspace | null>(null);
   const [shareTarget, setShareTarget] = useState<{
     docId: string;
     toRole: DealRoomRole;
@@ -102,11 +100,11 @@ export function DealRoomView({ workspaceId }: Props) {
   const [consentNote, setConsentNote] = useState("");
   const [tick, setTick] = useState(0);
 
-  useEffect(() => {
-    if (!ready) return;
+  const workspace = useMemo(() => {
+    if (!ready) return null;
+    void tick;
     const store = loadDealRoomStore();
-    const ws = store.workspaces.find((w) => w.id === workspaceId);
-    setWorkspace(ws ?? null);
+    return store.workspaces.find((w) => w.id === workspaceId) ?? null;
   }, [ready, workspaceId, tick]);
 
   const dashboard = useMemo(() => {
@@ -114,15 +112,11 @@ export function DealRoomView({ workspaceId }: Props) {
     return buildDealRoomDashboard(workspace);
   }, [workspace]);
 
-  const persist = useCallback(
-    (ws: DealRoomWorkspace) => {
-      const store = upsertWorkspace(loadDealRoomStore(), ws);
-      saveDealRoomStore(store);
-      setWorkspace(ws);
-      setTick((t) => t + 1);
-    },
-    []
-  );
+  const persist = useCallback((ws: DealRoomWorkspace) => {
+    const store = upsertWorkspace(loadDealRoomStore(), ws);
+    saveDealRoomStore(store);
+    setTick((t) => t + 1);
+  }, []);
 
   const handleGrantShare = useCallback(() => {
     if (!workspace || !shareTarget || !consentNote.trim()) return;

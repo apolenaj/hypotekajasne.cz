@@ -8,30 +8,45 @@
  * - skip already deleted_at
  * - only rows with retention_until < now()
  * - anonymize PII; do not keep unnecessary personal data in cleanup logs
+ * - dryRun=true selects candidates only (no updates / deletes)
  */
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { privacyRetention } from "@/lib/legal/privacy-retention";
 
 export type RetentionCleanupResult = {
+  dryRun: boolean;
   scanned: number;
   anonymized: number;
   skipped: number;
   technicalLogsDeleted: number;
+  /** Candidate lead IDs (expired, eligible). Safe for authorized cron callers. */
+  candidateIds: string[];
+  /** Count of technical logs that would be deleted in a real run. */
+  technicalLogsWouldDelete: number;
   errors: string[];
+};
+
+export type RetentionCleanupOptions = {
+  dryRun?: boolean;
 };
 
 const ANON_NAME = "[anonymized]";
 const ANON_EMAIL = "anonymized@invalid.local";
 
 export async function runPrivacyRetentionCleanup(
-  supabase: SupabaseClient
+  supabase: SupabaseClient,
+  options: RetentionCleanupOptions = {}
 ): Promise<RetentionCleanupResult> {
+  const dryRun = options.dryRun === true;
   const result: RetentionCleanupResult = {
+    dryRun,
     scanned: 0,
     anonymized: 0,
     skipped: 0,
     technicalLogsDeleted: 0,
+    candidateIds: [],
+    technicalLogsWouldDelete: 0,
     errors: [],
   };
 
@@ -55,6 +70,29 @@ export async function runPrivacyRetentionCleanup(
 
   const expired = rows ?? [];
   result.scanned = expired.length;
+  result.candidateIds = expired.map((row) => String(row.id));
+
+  if (dryRun) {
+    // Count technical logs that would be removed — no delete.
+    const logCutoff = new Date(
+      Date.now() - privacyRetention.technicalLogDays * 24 * 60 * 60 * 1000
+    ).toISOString();
+
+    const { count, error: pipeErr } = await supabase
+      .from("pipeline_runs")
+      .select("id", { count: "exact", head: true })
+      .lt("created_at", logCutoff);
+
+    if (pipeErr) {
+      if (!/relation|does not exist|schema cache/i.test(pipeErr.message)) {
+        result.errors.push(`pipeline_runs: ${pipeErr.message}`);
+      }
+    } else {
+      result.technicalLogsWouldDelete = count ?? 0;
+    }
+
+    return result;
+  }
 
   for (const row of expired) {
     const { error: updErr } = await supabase

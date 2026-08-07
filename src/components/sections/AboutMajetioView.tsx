@@ -198,7 +198,7 @@ export function AboutMajetioView() {
             >
               majetio.cz
             </a>
-            .
+            {"."}
           </p>
         </div>
       </section>

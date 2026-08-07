@@ -269,10 +269,11 @@ function PassportContent({
   const [whatIf, setWhatIf] = useState<FinancialWhatIfParams>(() =>
     whatIfFromProfile(profile, baseRate)
   );
-
-  useEffect(() => {
+  const [syncedBaseRate, setSyncedBaseRate] = useState(baseRate);
+  if (baseRate !== syncedBaseRate) {
+    setSyncedBaseRate(baseRate);
     setWhatIf((prev) => ({ ...prev, modelRatePercent: baseRate }));
-  }, [baseRate]);
+  }
 
   const live = useMemo(
     () => runWhatIf(profile, whatIf, baseRate),

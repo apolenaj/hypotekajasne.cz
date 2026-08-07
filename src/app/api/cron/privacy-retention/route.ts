@@ -28,6 +28,10 @@ function authorize(request: Request): boolean {
 /**
  * Scheduled retention cleanup.
  * Logs aggregate counts only — no personal data.
+ *
+ * Safe preview (no writes):
+ *   GET /api/cron/privacy-retention?dryRun=true
+ *   Authorization: Bearer $CRON_SECRET
  */
 export async function GET(request: Request) {
   if (!authorize(request)) {
@@ -42,22 +46,31 @@ export async function GET(request: Request) {
     });
   }
 
+  const dryRun =
+    new URL(request.url).searchParams.get("dryRun") === "true";
+
   try {
     const supabase = getSupabaseAdmin();
-    const result = await runPrivacyRetentionCleanup(supabase);
+    const result = await runPrivacyRetentionCleanup(supabase, { dryRun });
     console.info("[privacy-retention]", {
+      dryRun: result.dryRun,
       scanned: result.scanned,
       anonymized: result.anonymized,
       skipped: result.skipped,
       technicalLogsDeleted: result.technicalLogsDeleted,
+      technicalLogsWouldDelete: result.technicalLogsWouldDelete,
+      candidateCount: result.candidateIds.length,
       errorCount: result.errors.length,
     });
     return NextResponse.json({
       ok: result.errors.length === 0,
+      dryRun: result.dryRun,
       scanned: result.scanned,
       anonymized: result.anonymized,
       skipped: result.skipped,
       technicalLogsDeleted: result.technicalLogsDeleted,
+      technicalLogsWouldDelete: result.technicalLogsWouldDelete,
+      candidateIds: result.candidateIds,
       errors: result.errors.slice(0, 5),
     });
   } catch (err) {

@@ -405,15 +405,15 @@ export function SmartWatchlistView() {
                   : NOTIFY_CHANNELS.in_app.status === "BETA"
                     ? "beta"
                     : "připravujeme"}
-                . E-mail:{" "}
+                {". E-mail: "}
                 {NOTIFY_CHANNELS.email.status === "LIVE"
                   ? "dostupné"
                   : "připravujeme"}
-                . Push v prohlížeči:{" "}
+                {". Push v prohlížeči: "}
                 {NOTIFY_CHANNELS.web_push.status === "LIVE"
                   ? "dostupné"
                   : "připravujeme"}
-                . Nic neodesíláme bez vašeho souhlasu.
+                {". Nic neodesíláme bez vašeho souhlasu."}
               </p>
             </section>
           </div>

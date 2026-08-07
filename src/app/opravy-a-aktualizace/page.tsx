@@ -42,7 +42,7 @@ export default function OpravyPage() {
         <Link href={routes.kontakt} className="underline">
           kontakt
         </Link>
-        .
+        {"."}
       </p>
     </TrustPageShell>
   );

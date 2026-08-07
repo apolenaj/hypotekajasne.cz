@@ -252,7 +252,7 @@ function MatchExplainDialog({
           <Link href={routes.metodika} className="text-deep-teal underline">
             /metodika
           </Link>
-          . Affiliate / partner revenue skóre nemění.
+          {". Affiliate / partner revenue skóre nemění."}
         </p>
       </div>
     </div>
@@ -715,7 +715,7 @@ function PassportDashboard({
             <Link href={routes.metodika} className="text-deep-teal underline">
               metodika
             </Link>
-            .
+            {"."}
           </p>
 
           <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-3">

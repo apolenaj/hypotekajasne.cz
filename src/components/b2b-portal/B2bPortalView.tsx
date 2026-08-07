@@ -3,10 +3,13 @@
 import Link from "next/link";
 import {
   useCallback,
-  useEffect,
   useState,
   useSyncExternalStore,
 } from "react";
+
+function createConsentId(): string {
+  return `consent_${Date.now()}`;
+}
 import type { LucideIcon } from "lucide-react";
 import {
   Building2,
@@ -97,11 +100,12 @@ export function B2bPortalView() {
   const org = dash.organization;
   const member = dash.member;
 
-  useEffect(() => {
-    if (org) {
-      setTab(defaultWorkspaceForOrgType(org.type));
-    }
-  }, [org?.id, org?.type]);
+  const orgKey = org ? `${org.id}:${org.type}` : "";
+  const [syncedOrgKey, setSyncedOrgKey] = useState(orgKey);
+  if (org && orgKey !== syncedOrgKey) {
+    setSyncedOrgKey(orgKey);
+    setTab(defaultWorkspaceForOrgType(org.type));
+  }
 
   const refresh = useCallback(() => setTick((t) => t + 1), []);
 
@@ -201,7 +205,7 @@ export function B2bPortalView() {
       analysisOrderId: orderId,
       orgId: org.id,
       memberId: member.id,
-      consentId: `consent_${Date.now()}`,
+      consentId: createConsentId(),
       consentText:
         "Souhlasím se sdílením kontaktu s makléřem za účelem follow-up k této nemovitosti.",
       contactName: "Zájemce A.",

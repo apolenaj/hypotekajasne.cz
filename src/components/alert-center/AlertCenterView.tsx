@@ -3,7 +3,6 @@
 import Link from "next/link";
 import {
   useCallback,
-  useEffect,
   useMemo,
   useState,
   useSyncExternalStore,
@@ -147,14 +146,16 @@ function AlertCard({
 export function AlertCenterView() {
   const ready = useIsClient();
   const { rates } = useCurrentRates();
-  const [store, setStore] = useState(() =>
-    ready ? loadAlertCenterStore() : null
-  );
+  const [store, setStore] = useState<ReturnType<
+    typeof loadAlertCenterStore
+  > | null>(null);
   const [tab, setTab] = useState<"immediate" | "digest" | "all">("immediate");
+  const [hydrated, setHydrated] = useState(false);
 
-  useEffect(() => {
-    if (ready) setStore(loadAlertCenterStore());
-  }, [ready]);
+  if (ready && !hydrated) {
+    setHydrated(true);
+    setStore(loadAlertCenterStore());
+  }
 
   const dashboard = useMemo(() => {
     if (!store) return null;

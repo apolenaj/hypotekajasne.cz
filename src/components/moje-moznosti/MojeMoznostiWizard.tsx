@@ -67,9 +67,8 @@ export function MojeMoznostiWizard() {
   const [started, setStarted] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
-  // Continue later: obnovit výsledek z lokálního profilu
-  useEffect(() => {
-    if (hydrated) return;
+  // Continue later: obnovit výsledek z lokálního profilu (once on first render).
+  if (!hydrated) {
     setHydrated(true);
     const existing = loadFinancialProfile();
     if (existing && canComputeFirstResult(existing)) {
@@ -87,7 +86,7 @@ export function MojeMoznostiWizard() {
       );
       setStepIndex(STEPS.length - 1);
     }
-  }, [hydrated, prefs, resolved.ratePercent, resolved.uiKind]);
+  }
 
   const step = STEPS[stepIndex]!.id;
 
@@ -308,7 +307,7 @@ export function MojeMoznostiWizard() {
           <strong className="font-medium text-text-dark">
             jen ve vašem prohlížeči
           </strong>
-          . Nejde o schválení banky.
+          {". Nejde o schválení banky."}
         </p>
       </div>
 
@@ -625,7 +624,7 @@ export function MojeMoznostiWizard() {
         <Link href={routes.navrhNaMiru} className="underline">
           Hypoteční připravenost
         </Link>
-        .
+        {"."}
       </p>
     </div>
   );

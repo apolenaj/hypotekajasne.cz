@@ -150,7 +150,7 @@ function InvestorLeadForm({ countryName }: { countryName: string }) {
         >
           Majetio.cz
         </a>
-        .
+        {"."}
       </p>
 
       <form className="space-y-5" onSubmit={handleSubmit}>
@@ -480,7 +480,7 @@ export function CountryArticlesSection({ countryId }: { countryId: CountryId }) 
           <Link href={routes.clanky} className="text-emerald-700 font-semibold hover:underline">
             investiční magazín
           </Link>
-          .
+          {"."}
         </p>
       </div>
     );

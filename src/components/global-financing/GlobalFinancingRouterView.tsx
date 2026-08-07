@@ -3,7 +3,6 @@
 import Link from "next/link";
 import {
   useCallback,
-  useEffect,
   useMemo,
   useState,
   useSyncExternalStore,
@@ -208,14 +207,15 @@ export function GlobalFinancingRouterView() {
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
 
-  useEffect(() => {
-    if (!ready) return;
+  const [hydrated, setHydrated] = useState(false);
+  if (ready && !hydrated) {
+    setHydrated(true);
     const store = loadGlobalFinancingStore();
     if (store.input) {
       setInput(store.input);
       setForm(inputToForm(store.input));
     }
-  }, [ready]);
+  }
 
   const map = useMemo(() => {
     if (!ready) return null;

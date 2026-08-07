@@ -3,7 +3,6 @@
 import Link from "next/link";
 import {
   useCallback,
-  useEffect,
   useState,
   useSyncExternalStore,
 } from "react";
@@ -48,9 +47,11 @@ export function ReportEngineView() {
     setReports(listReports(loadReportEngineStore()));
   }, []);
 
-  useEffect(() => {
-    if (ready) refreshReports();
-  }, [ready, refreshReports]);
+  const [hydrated, setHydrated] = useState(false);
+  if (ready && !hydrated) {
+    setHydrated(true);
+    setReports(listReports(loadReportEngineStore()));
+  }
 
   const selected = reports.find((r) => r.id === selectedId) ?? reports[0] ?? null;
 

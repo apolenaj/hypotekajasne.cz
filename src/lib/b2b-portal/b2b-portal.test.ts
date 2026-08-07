@@ -129,7 +129,7 @@ describe("analysis order — payment does not affect score", () => {
 
 describe("engagement tracking", () => {
   it("tracks anonymous events", () => {
-    let store = seedDemoB2bStore(defaultB2bPortalStore());
+    const store = seedDemoB2bStore(defaultB2bPortalStore());
     const { event } = trackShareEngagement({
       store,
       analysisOrderId: "ord_test",
@@ -144,7 +144,7 @@ describe("engagement tracking", () => {
 
 describe("sponsored placements", () => {
   it("marks sponsored and doesNotAffectScore on orders", () => {
-    let store = seedDemoB2bStore(defaultB2bPortalStore());
+    const store = seedDemoB2bStore(defaultB2bPortalStore());
     const { store: s1, submission } = submitProperty({
       store,
       orgId: DEMO_AGENT_ORG.id,

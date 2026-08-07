@@ -240,8 +240,9 @@ export function RefinanceRadarView() {
     track("refinance_radar_started", { tool_id: "refinance_radar" });
   }, []);
 
-  useEffect(() => {
-    if (!ready) return;
+  const [bootHydrated, setBootHydrated] = useState(false);
+  if (ready && !bootHydrated) {
+    setBootHydrated(true);
     const store = loadRefinanceRadarStore();
     setWatchEnabled(store.preferences.watchEnabled);
 
@@ -249,21 +250,16 @@ export function RefinanceRadarView() {
       setProfile(store.profile);
       setForm(profileToForm(store.profile));
       setPhase("results");
-      markRadarStarted();
-      return;
-    }
-
-    const fp = loadFinancialProfile();
-    if (fp) {
-      const partial = importFromFinancialProfile(fp);
-      const merged = emptyLoanProfile(partial);
-      setForm(profileToForm(merged));
+    } else {
+      const fp = loadFinancialProfile();
+      if (fp) {
+        const partial = importFromFinancialProfile(fp);
+        const merged = emptyLoanProfile(partial);
+        setForm(profileToForm(merged));
+      }
       setPhase("empty");
-      return;
     }
-
-    setPhase("empty");
-  }, [ready, markRadarStarted]);
+  }
 
   // Hydration fallback — never stay on boot forever
   useEffect(() => {
@@ -272,6 +268,10 @@ export function RefinanceRadarView() {
     const t = window.setTimeout(() => setPhase("empty"), 80);
     return () => window.clearTimeout(t);
   }, [ready, phase]);
+
+  useEffect(() => {
+    if (phase === "results") markRadarStarted();
+  }, [phase, markRadarStarted]);
 
   const activeProfile = useMemo(() => {
     if (useDemo) return DEMO_REFINANCE_PROFILE;
@@ -867,8 +867,9 @@ export function RefinanceRadarView() {
                 >
                   Centru upozornění
                 </Link>
-                . E-mailové / push notifikace zatím nejsou spuštěné — neslibujeme
-                automatický kontakt.
+                {
+                  ". E-mailové / push notifikace zatím nejsou spuštěné — neslibujeme automatický kontakt."
+                }
               </p>
               <div className="mt-4 flex flex-wrap gap-3">
                 <button
@@ -1079,7 +1080,7 @@ export function RefinanceRadarView() {
                   >
                     kontakt
                   </Link>
-                  .
+                  {"."}
                 </p>
               </section>
             )}

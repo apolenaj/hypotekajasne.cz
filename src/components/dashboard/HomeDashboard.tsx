@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import {
   BarChart3,
   Bell,
@@ -486,31 +486,20 @@ export function HomeDashboard() {
   const { rates } = useCurrentRates();
   const [tick, setTick] = useState(0);
 
-  useEffect(() => {
-    if (!ready) return;
+  const model = useMemo(() => {
+    if (!ready) return null;
+    void tick;
     const profile = loadFinancialProfile();
     const rate =
       rates?.rateWithInsurance ?? rates?.rateWithoutInsurance ?? null;
     const doc = profile
       ? buildFinancialPassportDocument(profile, rate ?? 5)
       : null;
-    const result = runWatchlistEvaluation({
+    // Evaluate watchlist before building the model so newly accepted alerts appear.
+    runWatchlistEvaluation({
       currentRatePercent: rate,
       doc,
     });
-    if (result.accepted.length > 0) setTick((t) => t + 1);
-  }, [ready, rates]);
-
-  const model = useMemo(() => {
-    if (!ready) return null;
-    void tick;
-    const profile = loadFinancialProfile();
-    const doc = profile
-      ? buildFinancialPassportDocument(
-          profile,
-          rates?.rateWithInsurance ?? rates?.rateWithoutInsurance ?? 5
-        )
-      : null;
     return buildDashboardModel({
       doc,
       profile,

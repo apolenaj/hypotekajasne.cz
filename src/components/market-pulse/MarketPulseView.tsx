@@ -3,7 +3,6 @@
 import Link from "next/link";
 import {
   useCallback,
-  useEffect,
   useMemo,
   useState,
   useSyncExternalStore,
@@ -12,7 +11,6 @@ import {
   Activity,
   AlertTriangle,
   Bell,
-  ChevronRight,
   HelpCircle,
   Minus,
   TrendingDown,
@@ -139,10 +137,12 @@ export function MarketPulseView() {
     null
   );
   const [timeframe, setTimeframe] = useState<PulseTimeframe>("1Y");
+  const [hydrated, setHydrated] = useState(false);
 
-  useEffect(() => {
-    if (ready) setStore(loadMarketPulseStore());
-  }, [ready]);
+  if (ready && !hydrated) {
+    setHydrated(true);
+    setStore(loadMarketPulseStore());
+  }
 
   const dashboard = useMemo(() => {
     if (!ready || !store) return null;

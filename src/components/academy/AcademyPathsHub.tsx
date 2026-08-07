@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useSyncExternalStore } from "react";
 import {
   Award,
   BookOpen,
@@ -110,13 +110,17 @@ function PathCard({
   );
 }
 
-export function AcademyPathsHub() {
-  // Always start with default store — never block SSR/hydration on localStorage.
-  const [store, setStore] = useState(defaultAcademyProgressStore);
+function subscribeNoop() {
+  return () => {};
+}
 
-  useEffect(() => {
-    setStore(loadAcademyProgressStore());
-  }, []);
+export function AcademyPathsHub() {
+  // Client store via external snapshot — SSR uses default (no localStorage).
+  const store = useSyncExternalStore(
+    subscribeNoop,
+    loadAcademyProgressStore,
+    defaultAcademyProgressStore
+  );
 
   const dashboard = useMemo(
     () => buildGamificationDashboard(store),
@@ -302,11 +306,11 @@ export function AcademyPathsHub() {
 
 export function AcademyPathDetail({ pathId }: { pathId: LearningPathId }) {
   const path = getLearningPath(pathId);
-  const [store, setStore] = useState(defaultAcademyProgressStore);
-
-  useEffect(() => {
-    setStore(loadAcademyProgressStore());
-  }, []);
+  const store = useSyncExternalStore(
+    subscribeNoop,
+    loadAcademyProgressStore,
+    defaultAcademyProgressStore
+  );
 
   const dashboard = useMemo(
     () => buildGamificationDashboard(store),

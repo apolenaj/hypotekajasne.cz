@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   FileDown,
@@ -197,11 +197,10 @@ export function PropertyCompareView() {
     return DEMO_COMPARE_PROPERTIES;
   }, [searchParams]);
 
-  useEffect(() => {
-    if (!ready || initialized) return;
-    setProperties(initFromUrl());
+  if (ready && !initialized) {
     setInitialized(true);
-  }, [ready, initialized, initFromUrl]);
+    setProperties(initFromUrl());
+  }
 
   const comparison = useMemo(() => {
     if (!ready || properties.length < MIN_PROPERTIES) return null;

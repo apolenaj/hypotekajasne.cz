@@ -231,11 +231,6 @@ export function useMortgageRateEngine(hasInsurance: boolean): {
   resolved: ResolvedMortgageRate;
 } {
   const { rates, loading, error } = useCurrentRates();
-  const [cached, setCached] = useState(() => readVerifiedRateCache());
-
-  useEffect(() => {
-    setCached(readVerifiedRateCache());
-  }, [rates.updatedAt, rates.rateWithInsurance]);
 
   const resolved = useMemo(
     () =>
@@ -244,14 +239,14 @@ export function useMortgageRateEngine(hasInsurance: boolean): {
         rateWithoutInsurance: rates.rateWithoutInsurance,
         updatedAt: rates.updatedAt,
         hasInsurance,
-        cachedVerified: cached,
+        // Re-read when rate inputs change (cache may have been written by fetch).
+        cachedVerified: readVerifiedRateCache(),
       }),
     [
       rates.rateWithInsurance,
       rates.rateWithoutInsurance,
       rates.updatedAt,
       hasInsurance,
-      cached,
     ]
   );
 

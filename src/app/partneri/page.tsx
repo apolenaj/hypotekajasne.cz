@@ -93,11 +93,11 @@ export default function PartneriPage() {
         <Link href={routes.duvera} className="text-deep-teal underline">
           Centrum důvěry
         </Link>
-        . Majetio:{" "}
+        {". Majetio: "}
         <Link href={routes.oMajetio} className="text-deep-teal underline">
           /o-majetio
         </Link>
-        .
+        {"."}
       </p>
     </TrustPageShell>
   );

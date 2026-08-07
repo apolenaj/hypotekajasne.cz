@@ -645,7 +645,8 @@ export function CzMortgageDecisionTool() {
             <span className="font-semibold tabular-nums text-text-dark">
               {fmt(recommended.monthlyPayment)}
             </span>
-            . {recommended.description}
+            {". "}
+            {recommended.description}
           </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <Metric

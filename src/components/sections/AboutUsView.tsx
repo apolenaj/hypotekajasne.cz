@@ -109,7 +109,7 @@ export function AboutUsView() {
             <Link href={routes.duvera} className="underline decoration-white/40">
               Centru důvěry
             </Link>
-            .
+            {"."}
           </p>
         </div>
       </div>
@@ -295,12 +295,12 @@ export function AboutUsView() {
             <strong className="font-semibold text-gray-900">
               {financialPartner.network}
             </strong>
-            . Schválení úvěru vždy provádí banka po vlastním posouzení.
+            {". Schválení úvěru vždy provádí banka po vlastním posouzení. "}
             Makléř/developer prodává.{" "}
             <Link href={routes.partneri} className="text-deep-teal underline">
               Partneři a role
             </Link>
-            .
+            {"."}
           </p>
         </div>
       </div>

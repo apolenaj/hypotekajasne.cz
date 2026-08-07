@@ -23,7 +23,7 @@ export default function ZdrojePage() {
         >
           Metodika dat
         </Link>
-        .
+        {"."}
       </p>
 
       <ZdrojeExplorer />

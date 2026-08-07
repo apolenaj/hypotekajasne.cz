@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { Copy, Link2, Lock, ShieldOff } from "lucide-react";
 import {
   buildShareUrl,
@@ -17,7 +17,13 @@ type ReportSharePanelProps = {
   onSharesChange?: () => void;
 };
 
+function subscribeClock(onStoreChange: () => void) {
+  const id = window.setInterval(onStoreChange, 30_000);
+  return () => window.clearInterval(id);
+}
+
 export function ReportSharePanel({ report, onSharesChange }: ReportSharePanelProps) {
+  const nowMs = useSyncExternalStore(subscribeClock, () => Date.now(), () => 0);
   const [password, setPassword] = useState("");
   const [expiresHours, setExpiresHours] = useState(168);
   const [allowSensitive, setAllowSensitive] = useState(false);
@@ -137,7 +143,7 @@ export function ReportSharePanel({ report, onSharesChange }: ReportSharePanelPro
           <p className="text-xs font-bold uppercase text-muted-foreground">Aktivní granty</p>
           {shares.map((s) => {
             const url = buildShareUrl(s.token);
-            const expired = Date.parse(s.expiresAt) <= Date.now();
+            const expired = Date.parse(s.expiresAt) <= nowMs;
             const revoked = Boolean(s.revokedAt);
             return (
               <li

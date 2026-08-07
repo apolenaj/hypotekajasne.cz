@@ -111,9 +111,9 @@ export function Footer() {
           <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} Hypotéka Jasně ·{" "}
             <span className="text-xs text-muted-foreground/80">
-              {SITE_DOMAIN_LABEL}
-            </span>
-            . Všechna práva vyhrazena.
+              {SITE_DOMAIN_LABEL}.
+            </span>{" "}
+            Všechna práva vyhrazena.
           </p>
           <p className="max-w-md text-center text-xs text-muted-foreground sm:text-right">
             Informační platforma — nejsme banka. Schválení úvěru vždy provádí

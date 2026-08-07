@@ -48,7 +48,7 @@ export default function EditorialPolicyPage() {
           <Link href={routes.opravyAAktualizace} className="text-deep-teal underline">
             /opravy-a-aktualizace
           </Link>
-          .
+          {"."}
         </p>
       </section>
     </TrustPageShell>
