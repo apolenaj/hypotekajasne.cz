@@ -1,6 +1,7 @@
 import { formatCommercialRegisterLine, legalOperator } from "@/config/legal";
 import {
   formatOperatorAddress,
+  formatOperatorAddressCompact,
   getOperatorIdentity,
   operatorDisplayName,
 } from "@/lib/legal/operator";
@@ -43,17 +44,19 @@ export function LegalOperatorIdentity({
           registerInsert: op.registerInsert,
         })
       : null;
+  const compactAddress = formatOperatorAddressCompact(op);
 
   if (isCompact) {
     return (
       <div className={cn("space-y-1 text-sm text-muted-foreground", className)}>
-        <p className="font-semibold text-text-dark">{op.brand}</p>
         <p>
           <span className="text-muted-foreground">Provozovatel: </span>
-          <span className="text-text-dark">{operatorDisplayName(op)}</span>
+          <span className="font-semibold text-text-dark">
+            {operatorDisplayName(op)}
+          </span>
         </p>
         {op.ico ? <p>IČO: {op.ico}</p> : null}
-        <p>{formatOperatorAddress(op)}</p>
+        <p>{compactAddress}</p>
         {includeRegister && registerLine ? (
           <p className="text-xs leading-relaxed text-muted-foreground/90">
             {registerLine}
@@ -87,10 +90,10 @@ export function LegalOperatorIdentity({
         className
       )}
     >
-      <p className="font-semibold text-text-dark">
-        {heading ?? "Správce osobních údajů / provozovatel"}
-      </p>
-      <p className="mt-2 text-muted-foreground">
+      {heading ? (
+        <p className="font-semibold text-text-dark">{heading}</p>
+      ) : null}
+      <p className={cn("text-muted-foreground", heading ? "mt-2" : undefined)}>
         Správcem osobních údajů zpracovávaných prostřednictvím platformy{" "}
         {op.brand} je:
       </p>
@@ -123,25 +126,11 @@ export function LegalOperatorIdentity({
           {op.privacyEmail && op.privacyEmail !== op.email
             ? ` · Ochrana údajů: ${op.privacyEmail}`
             : null}
-          {op.phone ? ` · Tel: ${op.phone}` : null}
         </p>
       ) : null}
       {op.dpoContact ? (
         <p className="mt-1 text-muted-foreground">
           Kontakt pověřence / DPO: {op.dpoContact}
-        </p>
-      ) : null}
-      {op.publicRegisterUrl ? (
-        <p className="mt-2 text-xs text-muted-foreground">
-          {op.registryName ?? "Veřejný registr"}:{" "}
-          <a
-            href={op.publicRegisterUrl}
-            className="text-deep-teal underline"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Otevřít výpis
-          </a>
         </p>
       ) : null}
       {op.lastLegalReviewDate && op.legalReviewedBy ? (

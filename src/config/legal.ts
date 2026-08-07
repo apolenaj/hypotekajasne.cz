@@ -100,12 +100,27 @@ function looksLikePlaceholder(value: string | null): boolean {
   return /TODO|TBD|PLACEHOLDER|doplníme|čeká na ověření|pending/i.test(value);
 }
 
-function cleanEnvOrDefault(
-  envKeys: string[],
-  fallback: string
-): string {
+/**
+ * Zastaralé hodnoty předchozího provozovatele — nikdy nepoužívat ve veřejném UI,
+ * ani když by je omylem obsahovalo produkční env.
+ */
+const OBSOLETE_OPERATOR_VALUE_RE =
+  /19488483|Soukenická|Hunger\s*killers|Josef\s+Apolen[aá][rř]/i;
+
+function isObsoleteOperatorValue(value: string | null): boolean {
+  if (!value) return false;
+  return OBSOLETE_OPERATOR_VALUE_RE.test(value);
+}
+
+function cleanEnvOrDefault(envKeys: string[], fallback: string): string {
   const fromEnv = envOrNull(...envKeys);
-  if (fromEnv && !looksLikePlaceholder(fromEnv)) return fromEnv;
+  if (
+    fromEnv &&
+    !looksLikePlaceholder(fromEnv) &&
+    !isObsoleteOperatorValue(fromEnv)
+  ) {
+    return fromEnv;
+  }
   return fallback;
 }
 
@@ -120,6 +135,19 @@ function formatRegisteredOffice(parts: {
     ? `${parts.district}, ${parts.zip} ${parts.city}`
     : `${parts.zip} ${parts.city}`;
   return `${parts.street}, ${locality}, ${parts.country}`;
+}
+
+/** Kompaktní adresa bez země (patička / kontakt). */
+export function formatCompactOfficeAddress(parts: {
+  street: string;
+  district?: string | null;
+  zip: string;
+  city: string;
+}): string {
+  if (parts.district) {
+    return `${parts.street}, ${parts.district}, ${parts.zip} ${parts.city}`;
+  }
+  return `${parts.street}, ${parts.zip} ${parts.city}`;
 }
 
 /** Komunikační / sídlení adresa z centrální konfigurace. */
@@ -164,11 +192,14 @@ export function getLegalIdentityConfig(): LegalIdentityConfig {
     ["LEGAL_OPERATOR_ZIP", "NEXT_PUBLIC_LEGAL_OPERATOR_ZIP"],
     legalOperator.zip
   );
-  const district =
+  const districtRaw =
     envOrNull(
       "LEGAL_OPERATOR_DISTRICT",
       "NEXT_PUBLIC_LEGAL_OPERATOR_DISTRICT"
     ) ?? legalOperator.district;
+  const district = isObsoleteOperatorValue(districtRaw)
+    ? legalOperator.district
+    : districtRaw;
   const country =
     envOrNull(
       "LEGAL_OPERATOR_COUNTRY",
@@ -180,7 +211,9 @@ export function getLegalIdentityConfig(): LegalIdentityConfig {
     "NEXT_PUBLIC_LEGAL_OPERATOR_REGISTERED_OFFICE"
   );
   const registeredOffice =
-    registeredOfficeFromEnv && !looksLikePlaceholder(registeredOfficeFromEnv)
+    registeredOfficeFromEnv &&
+    !looksLikePlaceholder(registeredOfficeFromEnv) &&
+    !isObsoleteOperatorValue(registeredOfficeFromEnv)
       ? registeredOfficeFromEnv
       : formatRegisteredOffice({
           street,

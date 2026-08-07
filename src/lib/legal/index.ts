@@ -1,6 +1,7 @@
 export {
   getOperatorIdentity,
   formatOperatorAddress,
+  formatOperatorAddressCompact,
   formatOperatorRegisterLine,
   operatorDisplayName,
   isPaidAnalysisCommerciallyAvailable,
@@ -18,6 +19,7 @@ export {
   projectFounder,
   financialPartner,
   formatCommercialRegisterLine,
+  formatCompactOfficeAddress,
 } from "@/config/legal";
 export {
   PROCESSING_ROLES,

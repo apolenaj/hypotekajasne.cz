@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { formatCurrency } from "@/lib/calculators";
 import {
   computeMiniMortgage,
-  matchMiniTeaserOffers,
   miniMortgageCtaLabel,
   MINI_MORTGAGE_DEFAULTS,
   MINI_MORTGAGE_TERM_OPTIONS,
@@ -85,11 +84,7 @@ export function MiniMortgageCalculator() {
     [propertyPrice, ownFunds, termYears, interestRate]
   );
 
-  const teaserMatch = useMemo(
-    () => matchMiniTeaserOffers(interestRate),
-    [interestRate]
-  );
-  const ctaLabel = miniMortgageCtaLabel(teaserMatch);
+  const ctaLabel = miniMortgageCtaLabel();
 
   const rateDisplay = interestRate.toFixed(2).replace(".", ",");
   const ltvHigh = result.ltvPct > 80;
@@ -240,8 +235,8 @@ export function MiniMortgageCalculator() {
       </TrackedCtaLink>
 
       <p className="mt-3 text-center text-[10px] leading-snug text-muted-foreground">
-        Orientační model — sazba {rateDisplay}&nbsp;% (model). Počty nabídek v
-        tlačítku jsou ilustrativní, ne aktuální lístek bank.
+        Orientační model — sazba {rateDisplay}&nbsp;% (model). Nejde o aktuální
+        nabídku banky.
       </p>
     </article>
   );

@@ -90,7 +90,7 @@ export function ContactView() {
 
             <div>
               <p className="text-sm font-bold uppercase tracking-wide text-gray-500">
-                Provozovatel
+                Provozovatel platformy
               </p>
               <div className="mt-2">
                 <LegalOperatorIdentity

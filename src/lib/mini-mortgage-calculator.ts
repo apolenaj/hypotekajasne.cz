@@ -78,19 +78,10 @@ export function matchMiniTeaserOffers(
   };
 }
 
-/** Text CTA podle počtu shodných demo nabídek. */
-export function miniMortgageCtaLabel(match: MiniTeaserMatch): string {
-  if (match.count <= 0 || match.lowestRatePercent == null) {
-    return "Nezávazně ověřit možnosti";
-  }
-  const lowest = match.lowestRatePercent.toFixed(2).replace(".", ",");
-  const noun =
-    match.count === 1
-      ? "nabídku"
-      : match.count >= 2 && match.count <= 4
-        ? "nabídky"
-        : "nabídek";
-  return `Zobrazit ${match.count} ${noun} od ${lowest} %`;
+/** Text CTA — neutrální, bez fiktivního počtu bankovních nabídek. */
+export function miniMortgageCtaLabel(_match?: MiniTeaserMatch): string {
+  void _match;
+  return "Zjistit moje možnosti";
 }
 
 /** Anuitní splátka + LTV z ceny a vlastních prostředků. */

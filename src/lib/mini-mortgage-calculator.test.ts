@@ -6,29 +6,27 @@ import {
 } from "@/lib/mini-mortgage-calculator";
 
 describe("mini mortgage teaser CTA", () => {
-  it("matches better-or-close offers at default 5 %", () => {
+  it("uses neutral CTA without invented bank offer counts", () => {
     const match = matchMiniTeaserOffers(5);
     assert.ok(match.count >= 3);
     assert.equal(match.lowestRatePercent, 4.19);
-    assert.match(miniMortgageCtaLabel(match), /Zobrazit \d+ nabídek od 4,19 %/);
+    assert.equal(miniMortgageCtaLabel(match), "Zjistit moje možnosti");
+    assert.equal(miniMortgageCtaLabel(), "Zjistit moje možnosti");
   });
 
-  it("falls back when user rate is far below all teasers", () => {
+  it("keeps teaser matching available for internal demos", () => {
     const match = matchMiniTeaserOffers(3.5);
     assert.equal(match.count, 0);
-    assert.equal(
-      miniMortgageCtaLabel(match),
-      "Nezávazně ověřit možnosti"
-    );
+    assert.equal(miniMortgageCtaLabel(match), "Zjistit moje možnosti");
   });
 
-  it("uses Czech plural for 1–4 offers", () => {
+  it("uses Czech plural counts only inside match helper", () => {
     const one = matchMiniTeaserOffers(4.0);
     assert.equal(one.count, 1);
-    assert.equal(miniMortgageCtaLabel(one), "Zobrazit 1 nabídku od 4,19 %");
+    assert.equal(one.lowestRatePercent, 4.19);
 
     const few = matchMiniTeaserOffers(4.2);
     assert.equal(few.count, 2);
-    assert.equal(miniMortgageCtaLabel(few), "Zobrazit 2 nabídky od 4,19 %");
+    assert.equal(few.lowestRatePercent, 4.19);
   });
 });

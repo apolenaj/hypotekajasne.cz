@@ -128,7 +128,7 @@ export const siteContact = {
   phone: "+420 727 814 810",
   phoneHref: "tel:+420727814810",
   emailHref: "mailto:info@hypotekajasne.cz",
-  address: "Pavlovova 3048/40, Zábřeh, 700 30 Ostrava, Česká republika",
+  address: "Pavlovova 3048/40, Zábřeh, 700 30 Ostrava",
 } as const;
 
 export type FinancingEligibility = {

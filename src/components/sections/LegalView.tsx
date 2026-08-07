@@ -96,7 +96,7 @@ function GdprContent() {
         <h2 className="mb-3 text-xl font-bold text-gray-900">
           Správce osobních údajů
         </h2>
-        <OperatorBlock heading="Správce osobních údajů" />
+        <LegalOperatorIdentity variant="full" />
       </section>
       <RegulatedBoundariesBox />
 
@@ -353,11 +353,10 @@ function PlacenaAnalyzaContent() {
 
       {!t.commerciallyAvailable ? (
         <div className="rounded-xl border border-deep-teal/30 bg-deep-teal/5 px-4 py-3 text-sm text-text-dark">
-          <p className="font-semibold">Připravujeme</p>
+          <p className="font-semibold">Služba zatím není k dispozici ke koupi</p>
           <p className="mt-1 text-muted-foreground">
-            Placená analýza zatím není k dispozici ke koupi. Můžete zanechat
-            kontakt v Investičním rentgenu — jde o evidenci zájmu, ne o
-            objednávku.
+            Placená analýza není aktivní. Můžete zanechat kontakt v Investičním
+            rentgenu — jde o evidenci zájmu, ne o objednávku.
           </p>
         </div>
       ) : null}

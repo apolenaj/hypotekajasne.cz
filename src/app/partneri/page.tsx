@@ -19,7 +19,7 @@ const ROLE_BLOCKS = [
   },
   {
     title: legalOperator.companyName,
-    body: "Provozovatel platformy a subjekt zajišťující odbornou hypoteční část.",
+    body: `Provozovatel platformy · IČO ${legalOperator.ico}`,
   },
   {
     title: financialPartner.representative,

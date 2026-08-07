@@ -71,6 +71,7 @@ describe("partner / legal SoT", () => {
     const privacy = buildPrivacyProcessingCheckboxLabel();
     assert.match(privacy, /správce/i);
     assert.match(privacy, /HEINZKE/i);
+    assert.match(privacy, /10880097/);
     assert.match(privacy, /Hypotéka Jasně není banka/i);
     assert.match(privacy, /nezávazné/i);
 
@@ -86,7 +87,7 @@ describe("partner / legal SoT", () => {
   });
 
   it("bumped consent policy version", () => {
-    assert.equal(CONSENT_POLICY_VERSION, "2026-08-07.1");
+    assert.equal(CONSENT_POLICY_VERSION, "2026-08-07.2");
   });
 });
 

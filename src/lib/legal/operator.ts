@@ -8,6 +8,7 @@
 
 import {
   formatCommercialRegisterLine,
+  formatCompactOfficeAddress,
   getContactAddressLine,
   getLegalIdentityConfig,
   legalOperator,
@@ -94,6 +95,19 @@ export function getOperatorIdentity(): OperatorIdentity {
 export function formatOperatorAddress(op: OperatorIdentity): string {
   if (op.registeredOffice) return op.registeredOffice;
   return getContactAddressLine();
+}
+
+/** Kompaktní adresa pro patičku / kontakt (bez země). */
+export function formatOperatorAddressCompact(op: OperatorIdentity): string {
+  if (op.street && op.city && op.zip) {
+    return formatCompactOfficeAddress({
+      street: op.street,
+      district: op.district,
+      zip: op.zip,
+      city: op.city,
+    });
+  }
+  return formatOperatorAddress(op);
 }
 
 export function formatOperatorRegisterLine(op: OperatorIdentity): string | null {

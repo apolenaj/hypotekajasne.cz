@@ -83,15 +83,14 @@ describe("release audit scanners", () => {
     assert.equal(ANALYTICS_EVENTS.length, new Set(ANALYTICS_EVENTS).size);
   });
 
-  it("AboutUs uses honest photo placeholder copy", () => {
+  it("AboutUs uses honest LinkedIn placeholder copy", () => {
     const about = readFileSync(
       join(ROOT, "components/sections/AboutUsView.tsx"),
       "utf8"
     );
-    assert.ok(about.includes("Fotografie zatím není dodána"));
-    assert.ok(!about.includes("Fotografie brzy"));
     assert.ok(about.includes("LinkedIn profil zatím není zveřejněn"));
     assert.ok(!about.includes("odkaz doplníme"));
+    assert.ok(about.includes("josef-apolenar.webp") || about.includes("photoUrl"));
   });
 
   it("forbids developer jargon in public CS UI surfaces", () => {
