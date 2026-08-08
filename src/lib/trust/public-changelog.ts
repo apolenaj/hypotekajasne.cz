@@ -1,6 +1,7 @@
 /**
  * Veřejný changelog Centra důvěry — jen reálné změny.
  * Žádná fake historie. Nové položky přidávej chronologicky (nejnovější nahoře).
+ * Customer-facing Czech only — žádné názvy komponent ani interní jargon.
  */
 
 import { routes } from "@/lib/routes";
@@ -20,23 +21,23 @@ export type PublicChangelogEntry = {
 export const PUBLIC_CHANGELOG: PublicChangelogEntry[] = [
   {
     date: "2026-07-21",
-    area: "Zdrojování claimů",
+    area: "Zdroje údajů",
     summary:
-      "Claim-level evidence pro všechny podporované země; SourceEvidenceDrawer (tvrzení, hodnota, jurisdikce, URL, datum, platnost, status, poznámka). Zahraniční sazby bez deep-linku = NEEDS UPDATE / UNVERIFIED — URL nevymýšlíme.",
+      "Doplnili jsme dohledatelné zdroje a datum kontroly k důležitým údajům v jednotlivých zemích. U zahraničních sazeb bez ověřeného odkazu uvádíme, že údaj potřebuje aktualizaci — odkazy nevymýšlíme.",
     href: routes.zdroje,
   },
   {
     date: "2026-07-21",
-    area: "UX / progressive disclosure",
+    area: "Zjednodušení práce s výsledky",
     summary:
-      "Jednotný panel „Co mám udělat dál?“, disclosure „Jak jsme to spočítali“ a sjednocené CTA „Zjistit moje možnosti“.",
+      "Jednotný panel „Co mám udělat dál?“, vysvětlení „Jak jsme to spočítali“ a sjednocené tlačítko „Zjistit moje možnosti“.",
     href: routes.mojeMoznosti,
   },
   {
     date: "2026-07-21",
     area: "Homepage",
     summary:
-      "Nové pozicionování: 5-step journey, čtyní intenty, trust statusy Data/Model/Odhad.",
+      "Nové pozicionování: pět kroků rozhodování, čtyři hlavní situace a srozumitelné stavy údajů Data / Model / Odhad.",
     href: routes.home,
   },
   {
@@ -48,9 +49,9 @@ export const PUBLIC_CHANGELOG: PublicChangelogEntry[] = [
   },
   {
     date: "2026-07-21",
-    area: "Sazby / pipeline",
+    area: "Sazby",
     summary:
-      "Rate engine LIVE → STALE (NEEDS UPDATE) → MODEL; model se nevydává za nabídku banky.",
+      "Aktuální sazby přecházejí na stav „potřebuje aktualizaci“, pokud data zestárnou; modelový výpočet se nevydává za nabídku banky.",
     href: routes.metodika,
   },
   {
@@ -64,7 +65,7 @@ export const PUBLIC_CHANGELOG: PublicChangelogEntry[] = [
     date: "2026-07-19",
     area: "Magazín",
     summary:
-      "YMYL články: autor, reviewer, sources; odstraněn claim „s.r.o. je záchrana“.",
+      "Odborné články: autor, odborná kontrola a zdroje; odstraněn nepodložený slogan o s.r.o.",
     href: routes.clanky,
   },
   {

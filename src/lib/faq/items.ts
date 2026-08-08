@@ -3,7 +3,7 @@ import { financialPartner, legalOperator } from "@/config/legal";
 export const FAQ_ITEMS = [
   {
     q: "Poskytujete přímo hypotéky nebo finanční poradenství?",
-    a: `${legalOperator.brand} je digitální platforma provozovaná společností ${legalOperator.companyName}. Nejsme banka. ${financialPartner.cooperationWording} Schválení úvěru vždy provádí banka po vlastním posouzení. Role jsou popsány v Centru důvěry (/duvera) a na /partneri.`,
+    a: `${legalOperator.brand} je digitální platforma provozovaná společností ${legalOperator.companyName} Nejsme banka. ${financialPartner.cooperationWording} Schválení úvěru vždy provádí banka po vlastním posouzení. Role jsou popsány v Centru důvěry (/duvera) a na /partneri.`,
   },
   {
     q: "Jsou vaše kalkulace a investiční skóre závazné?",

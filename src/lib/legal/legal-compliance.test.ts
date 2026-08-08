@@ -52,6 +52,9 @@ function publicSurfaces(): string[] {
     if (f.includes(`${join("app")}`) && f.endsWith("page.tsx")) return true;
     if (f.includes(`${join("lib", "faq")}`)) return true;
     if (f.includes(`${join("lib", "seo", "pages.ts")}`)) return true;
+    if (f.includes(`${join("lib", "trust")}`)) return true;
+    if (f.includes(`${join("lib", "partners", "verification.ts")}`)) return true;
+    if (f.includes(`${join("lib", "legal", "roles.ts")}`)) return true;
     return false;
   });
 }
@@ -364,6 +367,34 @@ describe("public UI forbids staging legal phrases", () => {
       }
     }
   });
+
+  it("operator company name does not create s.r.o.. in public copy helpers", async () => {
+    const { legalOperator, financialPartner, withSentencePeriod } = await import(
+      "@/config/legal"
+    );
+    assert.match(legalOperator.companyName, /s\.r\.o\.$/);
+    assert.equal(
+      withSentencePeriod(legalOperator.companyName),
+      legalOperator.companyName
+    );
+    assert.doesNotMatch(financialPartner.platformWording, /s\.r\.o\.\./);
+    assert.doesNotMatch(financialPartner.cooperationWording, /s\.r\.o\.\./);
+
+    for (const f of publicSurfaces()) {
+      const text = readFileSync(f, "utf8");
+      assert.doesNotMatch(
+        text,
+        /s\.r\.o\.\./,
+        `Double period after s.r.o. in ${f}`
+      );
+      // Template anti-pattern: companyName}.  (extra period after already-dotted name)
+      assert.doesNotMatch(
+        text,
+        /companyName\}\./,
+        `Avoid companyName}. punctuation in ${f}`
+      );
+    }
+  });
 });
 
 describe("public UI forbids unverified partner trust claims", () => {
@@ -380,6 +411,8 @@ describe("public UI forbids unverified partner trust claims", () => {
   it("no over-strong partner claims when identity unpublished", () => {
     assert.equal(isMortgagePartnerHandoffReady(), false);
     for (const f of publicSurfaces()) {
+      // Pattern registry — lists forbidden phrases for enforcement, not UI copy.
+      if (f.includes(`${join("lib", "partners", "verification.ts")}`)) continue;
       const text = readFileSync(f, "utf8");
       for (const phrase of FORBIDDEN) {
         assert.ok(

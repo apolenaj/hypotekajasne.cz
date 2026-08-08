@@ -9,7 +9,11 @@
  * the ČNB register. Do not invent ČNB status in public copy.
  */
 
-import { financialPartner, legalOperator } from "@/config/legal";
+import {
+  financialPartner,
+  legalOperator,
+  withSentencePeriod,
+} from "@/config/legal";
 import { getPrimaryMortgagePartner } from "@/lib/legal/partner-config";
 import { isThirdPartyTransferActive } from "@/lib/legal/consent-versions";
 
@@ -103,7 +107,7 @@ export function getPublicProcessingRoles(): ProcessingRole[] {
 export const REGULATED_BOUNDARIES = {
   title: "Regulované hranice",
   statements: [
-    `${legalOperator.brand} je obchodní značka digitální platformy provozované společností ${legalOperator.companyName}.`,
+    `${legalOperator.brand} je obchodní značka digitální platformy provozované společností ${withSentencePeriod(legalOperator.companyName)}`,
     "Digitální nástroje a modelové výpočty nejsou závaznou nabídkou banky ani investičním doporučením.",
     financialPartner.cooperationWording,
     "INSIA, banka ani jiný finanční subjekt nejsou příjemci údajů z úvodního formuláře, dokud nedojde k samostatnému, výslovně odsouhlasenému předání.",

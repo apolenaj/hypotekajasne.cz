@@ -41,7 +41,7 @@ export const ECOSYSTEM_ACTORS: EcosystemActor[] = [
     id: "operator",
     name: legalOperator.companyName,
     shortRole: "Provozovatel platformy a odborná hypoteční část",
-    whatTheyDo: financialPartner.cooperationWording,
+    whatTheyDo: `${financialPartner.cooperationWording} Jednatelem a hypotečním specialistou je ${financialPartner.representative}.`,
     whatTheyDont:
       "Neschvaluje úvěr. Schválení úvěru vždy provádí banka po vlastním posouzení.",
     dataYouGive:

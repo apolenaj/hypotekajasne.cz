@@ -55,6 +55,16 @@ export const PUBLIC_STAGING_PHRASES = [
   "ve stránce pro SEO",
   "doplňte před publikací",
   "Interní redakční zásady",
+  // Legacy operator / partner identity — must never render publicly
+  "Soukenická",
+  "79401",
+  "794 01",
+  "Identita partnera nezveřejněna",
+  "Identity partnera nezveřejněna",
+  "partnerovi až po zveřejnění",
+  "Předání partnerovi až po zveřejnění",
+  "Nejsme banka ani licencovaný zprostředkovatel",
+  "Registrační údaje zveřejňujeme jen po ověření",
 ] as const;
 
 export function collectLegalProductionIssues(options?: {

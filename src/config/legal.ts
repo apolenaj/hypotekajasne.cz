@@ -44,6 +44,16 @@ export const projectFounder = {
     "Josef stojí za konceptem, produktem a vývojem platformy Hypotéka Jasně. Zaměřuje se na digitální nástroje, kalkulačky, uživatelskou zkušenost a rozvoj platformy.",
 } as const;
 
+/**
+ * Ensure a sentence ends with exactly one terminal punctuation mark.
+ * Prevents „s.r.o..“ when `legalOperator.companyName` already ends with „.“.
+ */
+export function withSentencePeriod(text: string): string {
+  const t = text.trim();
+  if (!t) return t;
+  return /[.!?…]$/.test(t) ? t : `${t}.`;
+}
+
 export const financialPartner = {
   company: legalOperator.companyName,
   representative: legalOperator.representative,
@@ -55,7 +65,7 @@ export const financialPartner = {
    * dokud není ověřen (viz INTERNAL poznámka výše).
    */
   cooperationWording: `Zprostředkování hypotečních a souvisejících finančních služeb zajišťuje ${legalOperator.companyName} ve spolupráci se společností INSIA.`,
-  platformWording: `Platformu ${legalOperator.brand} provozuje ${legalOperator.companyName}. Zprostředkování hypotečních a souvisejících finančních služeb je zajišťováno ve spolupráci se společností INSIA.`,
+  platformWording: `Platformu ${legalOperator.brand} provozuje ${withSentencePeriod(legalOperator.companyName)} Zprostředkování hypotečních a souvisejících finančních služeb je zajišťováno ve spolupráci se společností INSIA.`,
   michalDescription: `Michal zajišťuje odbornou část související s hypotečním financováním a individuálním řešením klientských případů prostřednictvím ${legalOperator.companyName}, která spolupracuje se sítí INSIA.`,
 } as const;
 

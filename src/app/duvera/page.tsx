@@ -28,7 +28,7 @@ export default function DuveraPage() {
       currentPath="/duvera"
       eyebrow="Důvěryhodnost"
       title="Centrum důvěry"
-      lead={`Do 30 sekund: ${legalOperator.brand} je digitální platforma provozovaná společností ${legalOperator.companyName}. Schválení úvěru vždy provádí banka po vlastním posouzení. Zprostředkování hypotečních služeb probíhá ve spolupráci s ${financialPartner.network}. Majetio slouží k nemovitostem.`}
+      lead={`Do 30 sekund: ${legalOperator.brand} je digitální platforma. Provozovatelem je ${legalOperator.companyName} Jednatelem a hypotečním specialistou je ${financialPartner.representative}. Zprostředkování hypotečních služeb probíhá ve spolupráci s ${financialPartner.network}. Schválení úvěru vždy provádí banka po vlastním posouzení.`}
     >
       <section>
         <h2 className="font-heading text-xl font-semibold text-text-dark">

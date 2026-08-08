@@ -103,7 +103,7 @@ export function AboutUsView() {
           </h1>
           <p className="mx-auto max-w-3xl text-lg leading-relaxed font-light text-emerald-50/90 md:text-xl">
             Jsme digitální platforma provozovaná společností{" "}
-            {legalOperator.companyName}. Nejsme banka.{" "}
+            {legalOperator.companyName} Nejsme banka.{" "}
             {financialPartner.cooperationWording} Schválení úvěru vždy provádí
             banka po vlastním posouzení. Detail rolí v{" "}
             <Link href={routes.duvera} className="underline decoration-white/40">

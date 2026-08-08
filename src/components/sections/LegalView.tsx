@@ -134,7 +134,7 @@ function GdprContent() {
         <h2 className="mb-3 text-xl font-bold text-gray-900">Správce</h2>
         <LegalOperatorIdentity variant="full" />
         <p className="mt-3 text-sm text-muted-foreground">
-          Úvodní formuláře přijímá přímo {legalOperator.companyName}. To není
+          Úvodní formuláře přijímá přímo {legalOperator.companyName} To není
           předání údajů třetí straně.
         </p>
       </section>

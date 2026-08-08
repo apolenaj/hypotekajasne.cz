@@ -912,7 +912,7 @@ export function toolContactSpecialist(): ToolBundle {
     markdown: [
       "## Kontaktovat specialistu",
       "",
-      `Předání kontaktu probíhá **jen se souhlasem** (oddělený od marketingu). Poptávky přijímá provozovatel ${legalOperator.companyName}.`,
+      `Předání kontaktu probíhá **jen se souhlasem** (oddělený od marketingu). Poptávky přijímá provozovatel ${legalOperator.companyName}`,
       "",
       "1. Dokončete / zkontrolujte [Hypoteční připravenost](" +
         routes.navrhNaMiru +

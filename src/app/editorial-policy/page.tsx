@@ -1,10 +1,10 @@
 import { getStaticPageSeo } from "@/lib/seo/pages";
 import Link from "next/link";
 import { TrustPageShell } from "@/components/trust/TrustPageShell";
+import { legalOperator } from "@/config/legal";
 import { routes } from "@/lib/routes";
 
 export const metadata = getStaticPageSeo("/editorial-policy");
-
 
 export default function EditorialPolicyPage() {
   return (
@@ -12,17 +12,17 @@ export default function EditorialPolicyPage() {
       currentPath="/editorial-policy"
       eyebrow="Centrum důvěry"
       title="Redakční zásady"
-      lead="Pravidla pro magazín, akademii a marketingové texty — zejména YMYL (finance)."
+      lead={`Pravidla pro magazín, akademii a marketingové texty na ${legalOperator.brand} — zejména u financí a bydlení.`}
     >
       <section>
         <h2 className="font-heading text-lg font-semibold text-text-dark">
-          Povinné u YMYL článku
+          Povinné u odborného článku
         </h2>
         <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground">
-          <li>Autor a reviewer (jména v Trust / magazine people registry)</li>
-          <li>publishedAt, updatedAt, factCheckedAt</li>
-          <li>Zdroje — primární nebo metodika platformy</li>
-          <li>Oddělení Data / Modelový výpočet / Odhad / Neověřeno</li>
+          <li>Jméno autora a osoby, která text odborně zkontrolovala</li>
+          <li>Datum zveřejnění, aktualizace a ověření faktů</li>
+          <li>Zdroje — primární podklady nebo metodika platformy</li>
+          <li>Oddělení dat, modelového výpočtu, odhadu a neověřených údajů</li>
         </ul>
       </section>
 

@@ -129,13 +129,12 @@ export function getPartnerClaimLabels(
 ): PartnerClaimLabels {
   switch (v.verificationStatus) {
     case "VERIFIED": {
-      const who = v.name ?? "ověřený partner";
+      const who = v.name ?? legalOperator.companyName;
       return {
         badgeLabel: "Ověřený partner",
         roleLabel: "Ověřený hypoteční partner",
         consultCta: `Konzultace s ověřeným partnerem`,
-        connectBlurb:
-          "Nejsme banka ani licencovaný zprostředkovatel. Individuální konzultaci zajišťuje ověřený partner — s odkazem na veřejný registr.",
+        connectBlurb: `${financialPartner.platformWording} Nejsme banka.`,
         leadIntakeDisclosure: `Při souhlasu s předáním předáme kontakt ověřenému partnerovi (${who}). Hypotéka Jasně není banka; konzultace je nezávazná.`,
         thankYouHandoff: `${who} se vám ozve ohledně nezávazné konzultace — obvykle do 24 hodin. Hypotéka Jasně není banka.`,
       };
