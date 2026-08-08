@@ -47,8 +47,7 @@ export default function EditorialPolicyPage() {
           Chyby opravujeme veřejně na{" "}
           <Link href={routes.opravyAAktualizace} className="text-deep-teal underline">
             /opravy-a-aktualizace
-          </Link>
-          {"."}
+          </Link>{"."}
         </p>
       </section>
     </TrustPageShell>

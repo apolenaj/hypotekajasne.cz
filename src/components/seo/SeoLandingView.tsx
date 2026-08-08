@@ -228,8 +228,7 @@ export function SeoLandingView({ landing }: { landing: SeoLanding }) {
           odborníka.{" "}
           <Link href={routes.metodika} className="text-deep-teal underline">
             Metodika
-          </Link>
-          {"."}
+          </Link>{"."}
         </p>
       </div>
     </article>

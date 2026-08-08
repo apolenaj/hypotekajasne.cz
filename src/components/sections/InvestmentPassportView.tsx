@@ -251,8 +251,7 @@ function MatchExplainDialog({
           Váhy jsou veřejné na{" "}
           <Link href={routes.metodika} className="text-deep-teal underline">
             /metodika
-          </Link>
-          {". Affiliate / partner revenue skóre nemění."}
+          </Link>{". Affiliate / partner revenue skóre nemění."}
         </p>
       </div>
     </div>
@@ -714,8 +713,7 @@ function PassportDashboard({
             neovlivňuje — viz{" "}
             <Link href={routes.metodika} className="text-deep-teal underline">
               metodika
-            </Link>
-            {"."}
+            </Link>{"."}
           </p>
 
           <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-3">

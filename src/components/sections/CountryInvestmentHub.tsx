@@ -149,8 +149,7 @@ function InvestorLeadForm({ countryName }: { countryName: string }) {
           className="font-bold text-emerald-800 hover:underline"
         >
           Majetio.cz
-        </a>
-        {"."}
+        </a>{"."}
       </p>
 
       <form className="space-y-5" onSubmit={handleSubmit}>
@@ -479,8 +478,7 @@ export function CountryArticlesSection({ countryId }: { countryId: CountryId }) 
           Pro tuto destinaci zatím nemáme publikované články. Sledujte náš{" "}
           <Link href={routes.clanky} className="text-emerald-700 font-semibold hover:underline">
             investiční magazín
-          </Link>
-          {"."}
+          </Link>{"."}
         </p>
       </div>
     );

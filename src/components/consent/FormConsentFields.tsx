@@ -111,8 +111,7 @@ export function FormConsentFields({
           Odesláním formuláře potvrzujete, že jste se seznámil/a se{" "}
           <Link href={routes.legal.gdpr} className="text-deep-teal underline">
             Zásadami ochrany osobních údajů
-          </Link>
-          {". Údaje použije "}
+          </Link>{". Údaje použije "}
           {legalOperator.companyName} k vyřízení vaší poptávky.
         </span>
       </label>
@@ -132,8 +131,7 @@ export function FormConsentFields({
             {transferLabel}{" "}
             <Link href={routes.partneri} className="text-deep-teal underline">
               Partneři
-            </Link>
-            {"."}
+            </Link>{"."}
           </span>
         </label>
       ) : null}

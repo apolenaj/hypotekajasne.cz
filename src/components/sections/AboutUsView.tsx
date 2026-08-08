@@ -108,8 +108,7 @@ export function AboutUsView() {
             banka po vlastním posouzení. Detail rolí v{" "}
             <Link href={routes.duvera} className="underline decoration-white/40">
               Centru důvěry
-            </Link>
-            {"."}
+            </Link>{"."}
           </p>
         </div>
       </div>
@@ -294,13 +293,11 @@ export function AboutUsView() {
             je provozovatel a zajišťuje odbornou hypoteční část ve spolupráci s{" "}
             <strong className="font-semibold text-gray-900">
               {financialPartner.network}
-            </strong>
-            {". Schválení úvěru vždy provádí banka po vlastním posouzení. "}
+            </strong>{". Schválení úvěru vždy provádí banka po vlastním posouzení. "}
             Makléř/developer prodává.{" "}
             <Link href={routes.partneri} className="text-deep-teal underline">
               Partneři a role
-            </Link>
-            {"."}
+            </Link>{"."}
           </p>
         </div>
       </div>

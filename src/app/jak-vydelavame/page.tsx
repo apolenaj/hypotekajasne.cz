@@ -35,8 +35,7 @@ export default function JakVydelavamePage() {
             nemění — viz{" "}
             <Link href={routes.metodika} className="text-deep-teal underline">
               metodika
-            </Link>
-            {"."}
+            </Link>{"."}
           </li>
           <li>
             Neúčtujeme skryté poplatky za „schválení“ — schválení vždy provádí
@@ -53,8 +52,7 @@ export default function JakVydelavamePage() {
           Modelové limity, skóre a scénáře nejsou závaznou nabídkou. Detail rolí:{" "}
           <Link href={routes.duvera} className="text-deep-teal underline">
             Centrum důvěry
-          </Link>
-          {"."}
+          </Link>{"."}
         </p>
       </section>
     </TrustPageShell>

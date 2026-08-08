@@ -41,8 +41,7 @@ export default function OpravyPage() {
         Nahlášení chyby:{" "}
         <Link href={routes.kontakt} className="underline">
           kontakt
-        </Link>
-        {"."}
+        </Link>{"."}
       </p>
     </TrustPageShell>
   );

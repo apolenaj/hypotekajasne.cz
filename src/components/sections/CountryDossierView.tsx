@@ -270,8 +270,7 @@ function SectionBody({
               className="font-semibold text-deep-teal underline-offset-2 hover:underline"
             >
               Zdroje dat
-            </Link>
-            {"."}
+            </Link>{"."}
           </p>
         </>
       );
@@ -383,8 +382,7 @@ function YieldBlock({ countryId }: { countryId: CountryId }) {
             maximumFractionDigits: 1,
           })}
           %
-        </strong>
-        {". Jde o modelový předpoklad v měně "}
+        </strong>{". Jde o modelový předpoklad v měně "}
         {config.currency === "CZK" ? "Kč" : config.currency} — ne o garanci.
         Detailní scénáře (neobsazenost, správa, růst hodnoty) spočítejte v
         kalkulačkách níže.

@@ -866,10 +866,7 @@ export function RefinanceRadarView() {
                   className="font-semibold text-deep-teal underline-offset-2 hover:underline"
                 >
                   Centru upozornění
-                </Link>
-                {
-                  ". E-mailové / push notifikace zatím nejsou spuštěné — neslibujeme automatický kontakt."
-                }
+                </Link>{". E-mailové / push notifikace zatím nejsou spuštěné — neslibujeme automatický kontakt."}
               </p>
               <div className="mt-4 flex flex-wrap gap-3">
                 <button
@@ -1079,8 +1076,7 @@ export function RefinanceRadarView() {
                     className="font-semibold text-deep-teal underline-offset-2 hover:underline"
                   >
                     kontakt
-                  </Link>
-                  {"."}
+                  </Link>{"."}
                 </p>
               </section>
             )}

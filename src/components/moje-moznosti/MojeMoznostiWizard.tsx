@@ -306,8 +306,7 @@ export function MojeMoznostiWizard() {
           Několik otázek → personalizovaný přehled. Údaje zůstávají{" "}
           <strong className="font-medium text-text-dark">
             jen ve vašem prohlížeči
-          </strong>
-          {". Nejde o schválení banky."}
+          </strong>{". Nejde o schválení banky."}
         </p>
       </div>
 
@@ -623,8 +622,7 @@ export function MojeMoznostiWizard() {
         kdykoli. Plný průvodce:{" "}
         <Link href={routes.navrhNaMiru} className="underline">
           Hypoteční připravenost
-        </Link>
-        {"."}
+        </Link>{"."}
       </p>
     </div>
   );

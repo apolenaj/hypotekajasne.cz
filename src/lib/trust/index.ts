@@ -154,7 +154,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
       "Kontrola, že webové modely odpovídají běžné bankovní praxi",
     ],
     experience: [
-      "11 let praxe v oblasti hypoték, úvěrů a pojištění (uváděno jako praxe na trhu)",
+      "Praxe v oblasti hypoték, úvěrů a pojištění",
       "Zkušenost s metodikami českých bank a dokládáním příjmů",
     ],
     education: ["Odborná praxe ve finančních službách"],

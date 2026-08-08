@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { financialPartner, legalOperator } from "@/config/legal";
 import { routes } from "@/lib/routes";
 
 /**
@@ -35,8 +36,10 @@ export function HomeWhyDecision() {
               řešit produkt nebo konzultaci.
             </p>
             <p>
-              Individuální zprostředkování provádí partner jen po ověření a se
-              souhlasem. Schválení úvěru vždy zůstává na bance.
+              Pokud požádáte o individuální konzultaci, odbornou hypoteční část
+              zajišťuje {legalOperator.companyName} ve spolupráci se společností{" "}
+              {financialPartner.network}. Schválení úvěru vždy provádí banka po
+              vlastním posouzení.
             </p>
             <p>
               <Link

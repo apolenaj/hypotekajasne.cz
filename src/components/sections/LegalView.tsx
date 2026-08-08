@@ -104,8 +104,7 @@ function RegulatedBoundariesBox() {
         Role v ekosystému:{" "}
         <Link href={routes.duvera} className="font-semibold underline">
           Centrum důvěry
-        </Link>
-        {"."}
+        </Link>{"."}
       </p>
     </div>
   );
@@ -167,8 +166,7 @@ function GdprContent() {
             <strong>Analytika:</strong> jen po souhlasu se zásadami cookies — viz{" "}
             <Link href={routes.legal.cookies} className="text-deep-teal underline">
               Zásady cookies
-            </Link>
-            {". Nepoužíváme oprávněný zájem pro analytické cookies."}
+            </Link>{". Nepoužíváme oprávněný zájem pro analytické cookies."}
           </li>
         </ul>
       </section>
@@ -220,8 +218,7 @@ function GdprContent() {
             Přehled obchodních rolí:{" "}
             <Link href={routes.partneri} className="text-deep-teal underline">
               Partneři
-            </Link>
-            {"."}
+            </Link>{"."}
           </p>
         )}
         {anyThirdPartyTransfer ? (
@@ -372,8 +369,7 @@ function CookiesContent() {
         Související:{" "}
         <Link href={routes.legal.gdpr} className="text-deep-teal underline">
           Ochrana osobních údajů
-        </Link>
-        {"."}
+        </Link>{"."}
       </p>
     </div>
   );
@@ -409,8 +405,7 @@ function SmlouvyContent() {
           className="text-deep-teal underline"
         >
           Podmínky placené analýzy
-        </Link>
-        {"."}
+        </Link>{"."}
       </p>
       <h3 className="text-xl font-bold text-gray-900">4. Odpovědnost</h3>
       <p>
@@ -444,8 +439,7 @@ function ZasadyContent() {
           Organické skóre se neprodává. Sponzoring je označen — viz{" "}
           <Link href={routes.metodika} className="text-deep-teal underline">
             metodika
-          </Link>
-          {"."}
+          </Link>{"."}
         </li>
         <li>
           Odměna od partnera při realizaci — viz{" "}
@@ -454,8 +448,7 @@ function ZasadyContent() {
             className="text-deep-teal underline"
           >
             Jak vyděláváme
-          </Link>
-          {"."}
+          </Link>{"."}
         </li>
       </ul>
       <h3 className="text-xl font-bold text-gray-900">Chování uživatelů</h3>

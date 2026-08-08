@@ -197,8 +197,7 @@ export function AboutMajetioView() {
               className="font-semibold text-deep-teal underline-offset-2 hover:underline"
             >
               majetio.cz
-            </a>
-            {"."}
+            </a>{"."}
           </p>
         </div>
       </section>

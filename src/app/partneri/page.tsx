@@ -92,12 +92,10 @@ export default function PartneriPage() {
         Role v ekosystému:{" "}
         <Link href={routes.duvera} className="text-deep-teal underline">
           Centrum důvěry
-        </Link>
-        {". Majetio: "}
+        </Link>{". Majetio: "}
         <Link href={routes.oMajetio} className="text-deep-teal underline">
           /o-majetio
-        </Link>
-        {"."}
+        </Link>{"."}
       </p>
     </TrustPageShell>
   );

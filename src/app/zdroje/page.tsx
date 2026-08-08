@@ -22,8 +22,7 @@ export default function ZdrojePage() {
           className="font-semibold text-deep-teal underline"
         >
           Metodika dat
-        </Link>
-        {"."}
+        </Link>{"."}
       </p>
 
       <ZdrojeExplorer />

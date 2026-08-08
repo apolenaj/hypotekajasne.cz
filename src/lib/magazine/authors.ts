@@ -21,7 +21,7 @@ export const MAGAZINE_PEOPLE: Record<string, MagazinePerson> = {
     name: financialPartner.representative,
     role: `${financialPartner.representativeRole} · ${financialPartner.specialistTitle}`,
     bio: financialPartner.michalDescription,
-    credentials: "11 let praxe v oblasti hypoték, úvěrů a pojištění (uváděno jako praxe na trhu)",
+    credentials: "Praxe v oblasti hypoték, úvěrů a pojištění",
     url: `${routes.oNas}#michal-heinzke`,
   },
   "redakce-hj": {
