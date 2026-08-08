@@ -17,13 +17,15 @@ import {
 import { computeEnquiryRetentionUntil } from "@/lib/legal/privacy-retention";
 
 function getSupabaseAdmin() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  // Project root only — /rest/v1 doubles the path and yields PGRST125 "Invalid path".
+  let url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ?? "";
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  url = url.replace(/\/rest\/v1\/?$/i, "").replace(/\/$/, "");
 
   if (!url || !key) {
-    throw new Error("Chybí Supabase credentials (URL / klíč).");
+    throw new Error(
+      "Chybí Supabase credentials (NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY).",
+    );
   }
 
   return createClient(url, key, {
