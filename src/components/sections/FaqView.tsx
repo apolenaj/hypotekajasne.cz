@@ -51,11 +51,26 @@ export function FaqView() {
                     )}
                   />
                 </button>
-                {open && (
-                  <div className="border-t border-gray-100 px-5 py-4 text-sm leading-relaxed text-muted-foreground sm:px-6 sm:text-base">
-                    {item.a}
+                {/* Always in DOM for crawlable FAQ HTML; collapse visually when closed. */}
+                <div
+                  className={
+                    open
+                      ? "border-t border-gray-100 px-5 py-4 text-sm leading-relaxed text-muted-foreground sm:px-6 sm:text-base"
+                      : "grid grid-rows-[0fr] overflow-hidden border-t border-transparent"
+                  }
+                >
+                  <div className={open ? undefined : "min-h-0 overflow-hidden"}>
+                    <div
+                      className={
+                        open
+                          ? undefined
+                          : "px-5 py-4 text-sm leading-relaxed text-muted-foreground sm:px-6 sm:text-base"
+                      }
+                    >
+                      {item.a}
+                    </div>
                   </div>
-                )}
+                </div>
               </div>
             );
           })}

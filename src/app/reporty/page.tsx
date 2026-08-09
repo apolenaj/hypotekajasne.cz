@@ -10,6 +10,7 @@ export const metadata: Metadata = buildPageMetadata({
   description:
     "Připravenost na hypotéku, analýza nemovitosti, porovnání, investiční pas, riziko portfolia, refinancování — web, tisk, HTML připravené pro PDF. Časově omezený token, volitelné heslo, maskování citlivých dat.",
   path: routes.reportEngine,
+  noIndex: true,
 });
 
 export default function ReportEnginePage() {

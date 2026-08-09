@@ -1,11 +1,15 @@
 /**
  * Canonical site + Vercel deployment URL strategy.
  *
- * Configure production canonical via:
- *   NEXT_PUBLIC_SITE_URL=https://hypotekajasne.cz
+ * Production host (matches current Vercel primary):
+ *   https://www.hypotekajasne.cz
+ * Apex https://hypotekajasne.cz must 301/308 → www (Vercel domain config).
+ *
+ * Configure via:
+ *   NEXT_PUBLIC_SITE_URL=https://www.hypotekajasne.cz
+ *   (apex URL is normalized to www so sitemap/canonicals never diverge)
  *
  * Preview/staging: robots noindex; never promote *.vercel.app as canonical.
- * If NEXT_PUBLIC_SITE_URL points at vercel.app, we fall back to PRODUCTION_ORIGIN.
  */
 
 import {
@@ -16,7 +20,15 @@ import {
   SITE_NAME_SHORT,
 } from "@/lib/brand";
 
-export const PRODUCTION_HOST = SITE_DOMAIN_HOST;
+/** Bare apex hostname (brand DNS). */
+export const APEX_HOST = SITE_DOMAIN_HOST;
+
+/**
+ * Canonical production hostname.
+ * Matches live Vercel primary (apex currently redirects → www).
+ * Prefer www until apex can be primary without a redirect loop.
+ */
+export const PRODUCTION_HOST = `www.${SITE_DOMAIN_HOST}`;
 export const PRODUCTION_ORIGIN = `https://${PRODUCTION_HOST}`;
 
 export type DeployEnv = "production" | "preview" | "development";
@@ -36,13 +48,29 @@ export function isDisallowedCanonicalOrigin(origin: string): boolean {
   }
 }
 
+/** Collapse apex ↔ www to the single canonical production origin. */
+export function normalizeProductionOrigin(origin: string): string {
+  try {
+    const host = new URL(origin).hostname.toLowerCase();
+    if (host === APEX_HOST || host === PRODUCTION_HOST) {
+      return PRODUCTION_ORIGIN;
+    }
+    return origin.replace(/\/$/, "");
+  } catch {
+    return PRODUCTION_ORIGIN;
+  }
+}
+
 export function getDeployEnv(): DeployEnv {
   const v = process.env.VERCEL_ENV;
   if (v === "production") return "production";
   if (v === "preview") return "preview";
   if (process.env.NODE_ENV === "development") return "development";
   // Prefer explicit site URL when set outside Vercel
-  if (process.env.NEXT_PUBLIC_SITE_URL?.includes(PRODUCTION_HOST)) {
+  if (
+    process.env.NEXT_PUBLIC_SITE_URL?.includes(APEX_HOST) ||
+    process.env.NEXT_PUBLIC_SITE_URL?.includes(PRODUCTION_HOST)
+  ) {
     return "production";
   }
   return process.env.NODE_ENV === "production" ? "production" : "development";
@@ -50,13 +78,13 @@ export function getDeployEnv(): DeployEnv {
 
 /**
  * Absolute origin used for canonical, OG, sitemap, hreflang.
- * Always production host in production and as canonical target.
- * Preview uses production origin for canonical URLs (and robots noindex).
+ * Always the single production host (www). Preview uses the same origin
+ * for canonical URLs while robots stay noindex.
  */
 export function getSiteOrigin(): string {
   const explicit = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "").trim();
   if (explicit && !isDisallowedCanonicalOrigin(explicit)) {
-    return explicit;
+    return normalizeProductionOrigin(explicit);
   }
   return PRODUCTION_ORIGIN;
 }

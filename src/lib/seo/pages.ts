@@ -34,9 +34,9 @@ export type StaticPageSeo = {
 export const STATIC_PAGE_SEO: StaticPageSeo[] = [
   {
     path: "/",
-    title: "Hypotéka Jasně | Co si můžete dovolit. Kde koupit. Jak financovat.",
+    title: "Hypotéka Jasně | Kalkulačka, sazby a srovnání hypoték",
     description:
-      "Informační platforma: živá hypoteční data ČR, srovnání trhů, kalkulačky a jasný další krok. Nejsme banka.",
+      "Spočítejte si hypotéku, porovnejte ověřené zveřejněné sazby bank a pochopte podmínky. Nezávislá informační platforma — nejsme banka.",
     changeFrequency: "daily",
     priority: 1,
   },
@@ -49,11 +49,28 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     priority: 0.5,
   },
   {
+    path: routes.sazby,
+    title: "Sazby hypoték — ověřené zveřejněné sazby bank",
+    description:
+      "Aktuální zveřejněné sazby hypoték z oficiálních zdrojů bank. Oddělujeme modelový výpočet od sazebníku — konečná nabídka vždy závisí na vaší situaci.",
+    changeFrequency: "daily",
+    priority: 0.98,
+  },
+  {
+    path: routes.kalkulacky.hypotecniKalkulacka,
+    title: "Hypoteční kalkulačka — orientační splátka",
+    description:
+      "Spočítejte orientační měsíční splátku podle ceny nemovitosti, vlastních prostředků a splatnosti. Modelový výpočet — nejde o nabídku banky.",
+    changeFrequency: "weekly",
+    priority: 0.97,
+  },
+  {
     path: routes.navrhNaMiru,
     title: "Hypoteční připravenost",
     description:
       "Skóre připravenosti, překážky a action plan podle záměru — bez příslibu schválení bankou.",
     priority: 0.9,
+    noIndex: true,
   },
   {
     path: routes.copilot,
@@ -61,6 +78,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     description:
       "Finanční AI průvodce nad ověřenými daty a kalkulačkami — citace, bez halucinací sazeb.",
     priority: 0.9,
+    noIndex: true,
   },
   {
     path: routes.financniPas,
@@ -68,6 +86,28 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     description:
       "Centrální profil dostupnosti, rizik a připravenosti s dimenzionálním skóre, timeline a simulacemi.",
     priority: 0.92,
+    noIndex: true,
+  },
+  {
+    path: routes.dashboard,
+    title: "Můj přehled — finančně-realitní situace",
+    description:
+      "Personalizovaný přehled: připravenost, bezpečná kupní síla, relevantní sazby a další krok.",
+    noIndex: true,
+  },
+  {
+    path: routes.mojeMoznosti,
+    title: "Zjistit moje možnosti — diagnostika",
+    description:
+      "Orientační budget, připravenost a market match. Údaje lokálně v prohlížeči — ne schválení banky.",
+    noIndex: true,
+  },
+  {
+    path: routes.dekujeme,
+    title: "Poptávku jsme přijali | Hypotéka Jasně",
+    description:
+      "Vaši poptávku jsme přijali. Ozveme se k nezávazné konzultaci. Hypotéka Jasně není banka.",
+    noIndex: true,
   },
   {
     path: routes.b2bPortal,
@@ -84,6 +124,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     description:
       "Připravenost na hypotéku, analýza nemovitosti, porovnání, investiční pas, riziko portfolia, refinancování. Web, tisk, HTML připravené pro PDF. Časově omezený token, heslo, revoke, maskování PII.",
     priority: 0.88,
+    noIndex: true,
   },
   {
     path: routes.alertCenter,
@@ -91,6 +132,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     description:
       "Personalizované alerty: sazby v LTV kontextu, fixace, dokumenty, regulace. Deduplication a preference doručení. Email/push vyžadují consent.",
     priority: 0.87,
+    noIndex: true,
   },
   {
     path: routes.marketPulse,
@@ -98,6 +140,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     description:
       "Trendy sazeb, cen, nájmů a yieldu pro podporované trhy. Radar příležitostí upozorňuje na shodu s kritérii — ne garantuje investici.",
     priority: 0.86,
+    noIndex: true,
   },
   {
     path: routes.dueDiligence,
@@ -105,6 +148,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     description:
       "Personalizovaný checklist LEGAL–EXIT dle typu nemovitosti. Semafor výchozí šedý — unknown není green. Eskalace k lidskému specialistovi.",
     priority: 0.85,
+    noIndex: true,
   },
   {
     path: routes.offerStrategy,
@@ -112,6 +156,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     description:
       "Modelová otevírací, cílová a maximální cena, scénáře výnosu a cash-flow a návrh textu nabídky. Nejde o znalecký posudek.",
     priority: 0.83,
+    noIndex: true,
   },
   {
     path: routes.dealRoom,
@@ -128,6 +173,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     description:
       "Šifrovaný trezor, checklist dle situace, AI extrakce faktických pozorování, auditní záznam a sdílení se specialistou po souhlasu.",
     priority: 0.85,
+    noIndex: true,
   },
   {
     path: routes.globalFinancing,
@@ -135,6 +181,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     description:
       "Porovnejte lokální hypotéku, české zajištěné financování, plán developera, hotovost a kombinace — přehledně v jedné mapě.",
     priority: 0.88,
+    noIndex: true,
   },
   {
     path: routes.refinanceRadar,
@@ -142,6 +189,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     description:
       "Personalizovaná upozornění k fixaci, scénáře splátky (model), Zůstat vs. refinancovat porovnání s poplatky a pojištěním. CTA na specialistu.",
     priority: 0.87,
+    noIndex: true,
   },
   {
     path: routes.portfolio,
@@ -149,6 +197,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     description:
       "Souhrn hodnoty, vlastní kapitál, LTV, peněžní tok, koncentrace rizik a zátěžové testy. Export pro poradce.",
     priority: 0.86,
+    noIndex: true,
   },
   {
     path: routes.sledovani,
@@ -156,6 +205,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     description:
       "Sledujte nemovitosti, města a filtry. Upozornění jen z dostupných dat — propojeno s Majetio, bez spamu.",
     priority: 0.88,
+    noIndex: true,
   },
   {
     path: routes.investicniPas,
@@ -163,6 +213,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     description:
       "Transparentní přiřazení trhů: Top 3 trhy, váhy dimenzí a srovnání — organické skóre se neprodává.",
     priority: 0.9,
+    noIndex: true,
   },
   {
     path: routes.investicniRentgen,
@@ -177,6 +228,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     description:
       "Model cash-flow a citlivosti na 30 let — předpoklady jsou viditelné, výsledek není garance.",
     priority: 0.7,
+    noIndex: true,
   },
   {
     path: routes.investicniRentgenPorovnani,
@@ -184,6 +236,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     description:
       "Srovnejte 2–5 nemovitostí: výnos, peněžní tok, IRR, DSCR, riziko a shodu s profilem. Kompromisy a sdílený odkaz.",
     priority: 0.75,
+    noIndex: true,
   },
   {
     path: routes.akademie,
@@ -254,10 +307,10 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
   },
   {
     path: routes.oNas,
-    title: "O nás — tým a role",
+    title: "O nás — kdo stojí za Hypotéka Jasně",
     description:
-      "Role, vzdělání, odpovědnost za obsah. Centrum důvěry: kdo co dělá.",
-    priority: 0.6,
+      "Provozovatel HEINZKE & partneři s.r.o., tým a role na platformě Hypotéka Jasně. Transparentní informační služba — nejsme banka.",
+    priority: 0.7,
   },
   {
     path: routes.duvera,
@@ -316,17 +369,17 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
   },
   {
     path: routes.kontakt,
-    title: "Kontakt",
+    title: "Kontakt — Hypotéka Jasně",
     description:
-      "Kontaktní údaje provozovatele platformy Hypotéka Jasně a kontaktní formulář.",
-    priority: 0.5,
+      "Řešíte hypotéku nebo máte otázku k výpočtu či sazbám? Napište provozovateli platformy Hypotéka Jasně.",
+    priority: 0.75,
   },
   {
     path: routes.faq,
-    title: "FAQ — časté otázky",
+    title: "FAQ — časté otázky o hypotékách a platformě",
     description:
-      "Kdo jsme, zda jsou kalkulace závazné, jak funguje odměna a předání dat.",
-    priority: 0.65,
+      "Odpovědi: kdo jsme, zda jsou kalkulace závazné, jak fungují sazby, odměna a ochrana údajů na Hypotéka Jasně.",
+    priority: 0.8,
   },
   {
     path: routes.legal.gdpr,

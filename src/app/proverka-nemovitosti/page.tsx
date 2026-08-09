@@ -10,6 +10,7 @@ export const metadata: Metadata = buildPageMetadata({
   description:
     "Personalizovaný checklist LEGAL–EXIT dle typu nemovitosti. Semafor výchozí šedý — unknown není green. Eskalace k lidskému specialistovi.",
   path: routes.dueDiligence,
+  noIndex: true,
 });
 
 export default function DueDiligencePage() {

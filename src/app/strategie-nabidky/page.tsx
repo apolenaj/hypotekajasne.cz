@@ -10,6 +10,7 @@ export const metadata: Metadata = buildPageMetadata({
   description:
     "Modelová otevírací, cílová a maximální cena, vyjednávací marže, scénáře výnosu a cash-flow a návrh textu nabídky.",
   path: routes.offerStrategy,
+  noIndex: true,
 });
 
 export default function OfferStrategyPage() {

@@ -10,6 +10,7 @@ export const metadata: Metadata = buildPageMetadata({
   description:
     "Centrální profil dostupnosti, rizik a připravenosti s dimenzionálním skóre, timeline a simulacemi. Bez PII, kompatibilní s Majetio.",
   path: routes.financniPas,
+  noIndex: true,
 });
 
 export default function FinancniPasPage() {

@@ -118,9 +118,9 @@ export function buildPageMetadata(input: PageSeoInput): Metadata {
 }
 
 export const rootMetadata = buildPageMetadata({
-  title: "Hypotéka Jasně | Co si můžete dovolit. Kde koupit. Jak financovat.",
+  title: "Hypotéka Jasně | Kalkulačka, sazby a srovnání hypoték",
   description:
-    "Informační platforma: živá hypoteční data ČR, srovnání trhů, kalkulačky a jasný další krok — bydlení, investice, refinancování i zahraničí. Nejsme banka.",
+    "Spočítejte si hypotéku, porovnejte ověřené zveřejněné sazby bank a pochopte podmínky. Nezávislá informační platforma — nejsme banka.",
   path: "/",
   alternatePath: { cs: "/", en: "/en" },
 });

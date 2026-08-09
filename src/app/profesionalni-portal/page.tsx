@@ -10,6 +10,7 @@ export const metadata: Metadata = buildPageMetadata({
   title: "Profesionální B2B portál — partner SaaS",
   description: `Portál pro makléře, kanceláře, developery a hypoteční partnery: objednávky analýz ${formatAnalysisPrice()}, reporty, sdílení, engagement, projekty, fakturace, audit.`,
   path: routes.b2bPortal,
+  noIndex: true,
 });
 
 export default function B2bPortalPage() {

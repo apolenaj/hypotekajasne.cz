@@ -3,15 +3,14 @@ import { SazbyExperience } from "@/components/mortgage-market/SazbyExperience";
 import { getMortgageOffersFromSupabase } from "@/lib/mortgage-market/offers.server";
 import { getCz20260809Catalog } from "@/lib/mortgage-market/catalog-from-manifest";
 import { getMortgageOffers } from "@/lib/mortgage-market/offers";
-import { buildPageMetadata } from "@/lib/seo/metadata";
+import { getStaticPageSeo } from "@/lib/seo/pages";
 import { routes } from "@/lib/routes";
 
-export const metadata: Metadata = buildPageMetadata({
-  title: "Sazby hypoték",
-  description:
-    "Ověřené zveřejněné sazby českých bank a jejich podmínky. Orientační výpočet oddělujeme od bankovních sazeb.",
-  path: routes.sazby,
-});
+/**
+ * Canonical search document is always /sazby (no query variants).
+ * Filters (fixation, LTV, purpose, loan…) personalize the UI only.
+ */
+export const metadata: Metadata = getStaticPageSeo(routes.sazby);
 
 export const dynamic = "force-dynamic";
 

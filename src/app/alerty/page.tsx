@@ -10,6 +10,7 @@ export const metadata: Metadata = buildPageMetadata({
   description:
     "Personalizované alerty: sazby (LTV kontext), fixace, dokumenty, regulace, transakční místnost. Deduplication, preference immediate/digest, notification channels s consent.",
   path: routes.alertCenter,
+  noIndex: true,
 });
 
 export default function AlertCenterPage() {

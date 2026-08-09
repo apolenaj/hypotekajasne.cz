@@ -1,4 +1,3 @@
-import { buildPageMetadata } from "@/lib/seo/metadata";
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 import {
@@ -7,15 +6,10 @@ import {
   type LeadSource,
 } from "@/lib/leads";
 import { getPartnerClaimLabels } from "@/lib/partners/verification";
+import { getStaticPageSeo } from "@/lib/seo/pages";
 import { routes } from "@/lib/routes";
 
-export const metadata = buildPageMetadata({
-  title: "Poptávku jsme přijali | Hypotéka Jasně",
-  description:
-    "Vaši poptávku jsme přijali. Ozveme se k nezávazné konzultaci. Hypotéka Jasně není banka.",
-  path: "/dekujeme",
-  noIndex: true,
-});
+export const metadata = getStaticPageSeo(routes.dekujeme);
 
 type PageProps = {
   searchParams: Promise<{ source?: string }>;

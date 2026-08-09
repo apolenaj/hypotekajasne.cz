@@ -11,6 +11,7 @@ export const metadata: Metadata = buildPageMetadata({
   description:
     "Srovnejte 2–5 nemovitostí: výnos, peněžní tok, IRR, DSCR, riziko a shodu s profilem. Kategorie vítězů, kompromisy, sdílený odkaz a PDF report.",
   path: routes.investicniRentgenPorovnani,
+  noIndex: true,
 });
 
 export default function InvesticniRentgenPorovnaniPage() {

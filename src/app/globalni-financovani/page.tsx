@@ -10,6 +10,7 @@ export const metadata: Metadata = buildPageMetadata({
   description:
     "Porovnejte lokální hypotéku, české zajištěné financování, platební plán developera, hotovost a kombinace. Bez jediného doporučení — s riziky, dokumenty a partnery.",
   path: routes.globalFinancing,
+  noIndex: true,
 });
 
 export default function GlobalFinancingPage() {

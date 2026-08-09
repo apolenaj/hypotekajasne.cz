@@ -10,6 +10,7 @@ export const metadata: Metadata = buildPageMetadata({
   description:
     "Spočítejte čas do konce fixace, modelové scénáře splátek a uložte si in-app hlídání. Orientační model — ne individuální nabídka banky.",
   path: routes.refinanceRadar,
+  noIndex: true,
 });
 
 export default function RefinanceRadarPage() {

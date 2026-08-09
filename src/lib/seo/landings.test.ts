@@ -88,6 +88,11 @@ describe("canonical domain config", () => {
       isDisallowedCanonicalOrigin("https://hypotekajasne.cz"),
       false
     );
+    assert.equal(
+      isDisallowedCanonicalOrigin("https://www.hypotekajasne.cz"),
+      false
+    );
+    assert.equal(getSiteOrigin(), "https://www.hypotekajasne.cz");
     assert.ok(!getSiteOrigin().includes("vercel.app"));
   });
 });

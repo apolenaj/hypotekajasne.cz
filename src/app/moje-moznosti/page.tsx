@@ -1,17 +1,11 @@
 import type { Metadata } from "next";
 import { MojeMoznostiWizard } from "@/components/moje-moznosti/MojeMoznostiWizard";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
-import { buildPageMetadata } from "@/lib/seo/metadata";
+import { getStaticPageSeo } from "@/lib/seo/pages";
 import { crumbs } from "@/lib/seo/breadcrumbs";
 import { routes } from "@/lib/routes";
 
-export const metadata: Metadata = buildPageMetadata({
-  title: "Zjistit moje možnosti — diagnostika a dashboard",
-  description:
-    "Jedna diagnostika: orientační budget, připravenost, market match a další kroky. Údaje jen lokálně v prohlížeči — ne schválení banky.",
-  path: routes.mojeMoznosti,
-  noIndex: true,
-});
+export const metadata: Metadata = getStaticPageSeo(routes.mojeMoznosti);
 
 export default function MojeMoznostiPage() {
   return (

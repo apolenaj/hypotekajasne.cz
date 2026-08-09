@@ -5,3 +5,4 @@ export * from "@/lib/seo/json-ld";
 export * from "@/lib/seo/breadcrumbs";
 export * from "@/lib/seo/sitemap-data";
 export * from "@/lib/seo/landings";
+export * from "@/lib/seo/indexation";

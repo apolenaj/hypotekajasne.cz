@@ -52,8 +52,10 @@ export function SazbyExperience({
             Porovnejte zveřejněné sazby bank
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-            Oddělujeme modelový odhad splátky od ověřených sazeb z oficiálních
-            zdrojů. Konečná nabídka banky vždy závisí na vaší situaci.
+            Zobrazujeme ověřené sazby z oficiálních sazebníků. Část bank uvádí
+            pásmo LTV a podmínky (účet, pojištění) — shoda LTV sama o sobě
+            neznamená nárok na úvěr. Oddělujeme modelový odhad splátky od
+            zveřejněné sazby; konečná nabídka a RPSN vždy závisí na vaší situaci.
           </p>
         </div>
       </header>

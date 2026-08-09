@@ -8,10 +8,12 @@ import path from "node:path";
 import {
   absoluteUrl,
   getSiteOrigin,
+  normalizeProductionOrigin,
+  PRODUCTION_HOST,
   PRODUCTION_ORIGIN,
   shouldNoIndex,
 } from "@/lib/seo/site";
-import { buildPageMetadata } from "@/lib/seo/metadata";
+import { buildPageMetadata, rootMetadata } from "@/lib/seo/metadata";
 import {
   STATIC_PAGE_SEO,
   countryGuideSeoEntries,
@@ -33,6 +35,12 @@ import {
   SITEMAP_BUCKETS,
   sitemapIndexEntries,
 } from "@/lib/seo/sitemap-data";
+import {
+  assertCoreIndexInCatalog,
+  catalogNoIndexPaths,
+  CORE_INDEX_PATHS,
+  ROBOTS_DISALLOW_PATHS,
+} from "@/lib/seo/indexation";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/i18n/format";
 import { LOCALES, localizedPath, stripLocalePrefix } from "@/lib/i18n/config";
 import { PUBLISHED_EN_PATHS } from "@/lib/i18n/messages";
@@ -42,12 +50,25 @@ import {
   getRelatedMechanicsLessons,
 } from "@/lib/academy/related-lessons";
 import { getCountryThematicCluster } from "@/lib/country-dossier/thematic-cluster";
+import { routes } from "@/lib/routes";
 
 describe("site canonical strategy", () => {
-  it("uses production hypotekajasne.cz origin by default", () => {
+  it("uses single www production host by default", () => {
+    assert.equal(PRODUCTION_HOST, "www.hypotekajasne.cz");
     assert.equal(getSiteOrigin(), PRODUCTION_ORIGIN);
-    assert.ok(absoluteUrl("/clanky").startsWith("https://hypotekajasne.cz"));
-    assert.equal(absoluteUrl("/"), "https://hypotekajasne.cz");
+    assert.equal(absoluteUrl("/"), "https://www.hypotekajasne.cz");
+    assert.ok(absoluteUrl("/clanky").startsWith("https://www.hypotekajasne.cz"));
+  });
+
+  it("normalizes apex NEXT_PUBLIC_SITE_URL to www canonical", () => {
+    assert.equal(
+      normalizeProductionOrigin("https://hypotekajasne.cz"),
+      "https://www.hypotekajasne.cz"
+    );
+    assert.equal(
+      normalizeProductionOrigin("https://www.hypotekajasne.cz/"),
+      "https://www.hypotekajasne.cz"
+    );
   });
 
   it("never treats vercel.app as required canonical host in helper", () => {
@@ -84,6 +105,16 @@ describe("unique titles & descriptions", () => {
     const paths = countryGuideSeoEntries().map((p) => p.path);
     assert.equal(paths.length, new Set(paths).size);
   });
+
+  it("core commercial pages have distinct titles", () => {
+    const home = findStaticPageSeo("/")!;
+    const sazby = findStaticPageSeo(routes.sazby)!;
+    const calc = findStaticPageSeo(routes.kalkulacky.hypotecniKalkulacka)!;
+    assert.notEqual(home.title, sazby.title);
+    assert.notEqual(home.title, calc.title);
+    assert.notEqual(sazby.title, calc.title);
+    assert.match(home.title, /Kalkulačka|sazby|srovnání/i);
+  });
 });
 
 describe("metadata builder", () => {
@@ -94,10 +125,10 @@ describe("metadata builder", () => {
         "A sufficiently long description for SEO testing purposes here.",
       path: "/faq",
     });
-    assert.equal(m.alternates?.canonical, "https://hypotekajasne.cz/faq");
+    assert.equal(m.alternates?.canonical, "https://www.hypotekajasne.cz/faq");
     assert.equal(
       (m.openGraph as { url?: string } | undefined)?.url,
-      "https://hypotekajasne.cz/faq"
+      "https://www.hypotekajasne.cz/faq"
     );
     assert.ok(m.twitter);
   });
@@ -111,9 +142,9 @@ describe("metadata builder", () => {
       alternatePath: { cs: "/", en: "/en" },
     });
     const langs = (home.alternates?.languages ?? {}) as Record<string, string>;
-    assert.equal(langs["cs-CZ"], "https://hypotekajasne.cz");
+    assert.equal(langs["cs-CZ"], "https://www.hypotekajasne.cz");
     assert.ok(PUBLISHED_EN_PATHS.has("/en"));
-    assert.equal(langs.en, "https://hypotekajasne.cz/en");
+    assert.equal(langs.en, "https://www.hypotekajasne.cz/en");
   });
 
   it("respects noIndex flag", () => {
@@ -129,16 +160,64 @@ describe("metadata builder", () => {
 
   it("getStaticPageSeo builds page-specific canonical (not homepage)", () => {
     const m = getStaticPageSeo("/faq");
-    assert.equal(m.alternates?.canonical, "https://hypotekajasne.cz/faq");
-    assert.notEqual(m.alternates?.canonical, "https://hypotekajasne.cz");
+    assert.equal(m.alternates?.canonical, "https://www.hypotekajasne.cz/faq");
+    assert.notEqual(m.alternates?.canonical, "https://www.hypotekajasne.cz");
     assert.equal(
       (m.openGraph as { url?: string }).url,
-      "https://hypotekajasne.cz/faq"
+      "https://www.hypotekajasne.cz/faq"
     );
   });
 
   it("getStaticPageSeo throws on unknown path", () => {
     assert.throws(() => getStaticPageSeo("/does-not-exist-seo"), /missing/i);
+  });
+
+  it("rootMetadata matches homepage catalog entry", () => {
+    assert.equal(rootMetadata.title, findStaticPageSeo("/")!.title);
+    assert.equal(
+      (rootMetadata.alternates as { canonical?: string })?.canonical,
+      "https://www.hypotekajasne.cz"
+    );
+  });
+
+  it("parameterized /sazby still canonicalizes to base /sazby", () => {
+    const m = getStaticPageSeo(routes.sazby);
+    assert.equal(
+      m.alternates?.canonical,
+      "https://www.hypotekajasne.cz/sazby"
+    );
+    assert.ok(!String(m.alternates?.canonical).includes("?"));
+  });
+});
+
+describe("indexation policy", () => {
+  it("core INDEX paths are in catalog and indexable", () => {
+    assert.deepEqual(assertCoreIndexInCatalog(), []);
+    for (const p of CORE_INDEX_PATHS) {
+      assert.equal(findStaticPageSeo(p)?.noIndex, undefined);
+    }
+  });
+
+  it("private/tool routes are noindex in catalog", () => {
+    for (const p of [
+      routes.dashboard,
+      routes.mojeMoznosti,
+      routes.dekujeme,
+      routes.financniPas,
+      routes.b2bPortal,
+      routes.dealRoom,
+      routes.portfolio,
+    ]) {
+      assert.equal(findStaticPageSeo(p)?.noIndex, true, p);
+      const m = getStaticPageSeo(p);
+      assert.equal((m.robots as { index?: boolean }).index, false, p);
+    }
+  });
+
+  it("robots disallow list covers private prefixes", () => {
+    assert.ok(ROBOTS_DISALLOW_PATHS.includes("/dashboard"));
+    assert.ok(ROBOTS_DISALLOW_PATHS.includes("/api/"));
+    assert.ok(ROBOTS_DISALLOW_PATHS.includes("/transakce"));
   });
 });
 
@@ -155,15 +234,39 @@ describe("sitemap index", () => {
     assert.ok(index.every((e) => e.url.includes("/sitemap/")));
   });
 
-  it("pages bucket includes home and faq", () => {
+  it("pages bucket includes home, sazby, calculator, faq", () => {
     const urls = buildSitemapBucket("pages").map((e) => e.url);
-    assert.ok(urls.some((u) => u === "https://hypotekajasne.cz"));
+    assert.ok(urls.some((u) => u === "https://www.hypotekajasne.cz"));
+    assert.ok(urls.some((u) => u.endsWith("/sazby")));
+    assert.ok(urls.some((u) => u.endsWith("/kalkulacky/hypotecni")));
     assert.ok(urls.some((u) => u.includes("/faq")));
   });
 
   it("pages bucket excludes thank-you / noIndex catalog entries", () => {
     const urls = buildSitemapBucket("pages").map((e) => e.url);
     assert.ok(!urls.some((u) => u.includes("/dekujeme")));
+    assert.ok(!urls.some((u) => u.includes("/dashboard")));
+    assert.ok(!urls.some((u) => u.includes("/profesionalni-portal")));
+    for (const p of catalogNoIndexPaths()) {
+      assert.ok(
+        !urls.includes(absoluteUrl(p)),
+        `noindex path leaked into sitemap: ${p}`
+      );
+    }
+  });
+
+  it("sitemap URLs use only www host and no query strings", () => {
+    for (const id of SITEMAP_BUCKETS) {
+      for (const entry of buildSitemapBucket(id)) {
+        assert.ok(
+          entry.url.startsWith("https://www.hypotekajasne.cz"),
+          entry.url
+        );
+        assert.ok(!entry.url.includes("?"), entry.url);
+        assert.ok(!entry.url.includes("localhost"), entry.url);
+        assert.ok(!entry.url.includes("vercel.app"), entry.url);
+      }
+    }
   });
 
   it("academy bucket includes cesty hub and path pages", () => {
@@ -197,12 +300,13 @@ describe("json-ld — no fake reviews", () => {
     const org = organizationJsonLd();
     const site = webSiteJsonLd();
     assert.equal(org["@type"], "Organization");
-    assert.equal(org["@id"], "https://hypotekajasne.cz/#organization");
+    assert.equal(org["@id"], "https://www.hypotekajasne.cz/#organization");
     assert.deepEqual(site.publisher, {
-      "@id": "https://hypotekajasne.cz/#organization",
+      "@id": "https://www.hypotekajasne.cz/#organization",
     });
     assert.equal(org.aggregateRating, undefined);
     assert.equal(org.review, undefined);
+    assert.ok(JSON.parse(JSON.stringify(org)));
   });
 
   it("article schema matches visible fields", () => {
@@ -322,6 +426,9 @@ describe("app pages must not inherit homepage-only raw metadata", () => {
       "/kontakt",
       "/temata",
       "/temata/refinancovani",
+      "/sazby",
+      "/kalkulacky/hypotecni",
+      "/dashboard",
     ]) {
       assert.ok(findStaticPageSeo(required), required);
     }

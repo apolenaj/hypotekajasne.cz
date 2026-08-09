@@ -10,6 +10,7 @@ export const metadata: Metadata = buildPageMetadata({
   description:
     "Sledujte nemovitosti, města a filtry. Inteligentní upozornění jen z dostupných dat.",
   path: routes.sledovani,
+  noIndex: true,
 });
 
 export default function SledovaniPage() {

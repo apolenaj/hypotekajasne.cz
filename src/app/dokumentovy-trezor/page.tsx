@@ -10,6 +10,7 @@ export const metadata: Metadata = buildPageMetadata({
   description:
     "Šifrovaný trezor dokumentů, checklist dle situace, AI extrakce faktických pozorování a sdílení se specialistou po explicitním souhlasu.",
   path: routes.documentVault,
+  noIndex: true,
 });
 
 export default function DocumentVaultPage() {

@@ -10,6 +10,7 @@ export const metadata: Metadata = buildPageMetadata({
   description:
     "Finanční AI průvodce nad ověřenými daty a kalkulačkami Hypotéka Jasně — citace, audit log, bez příslibu schválení.",
   path: routes.copilot,
+  noIndex: true,
 });
 
 export default function CopilotPage() {

@@ -10,6 +10,7 @@ export const metadata: Metadata = buildPageMetadata({
   description:
     "Souhrn portfolia, koncentrace rizik, zátěžové testy a srozumitelné scénáře. Export pro účetního. Bez pokynů k prodeji.",
   path: routes.portfolio,
+  noIndex: true,
 });
 
 export default function PortfolioPage() {

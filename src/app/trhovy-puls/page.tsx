@@ -10,6 +10,7 @@ export const metadata: Metadata = buildPageMetadata({
   description:
     "Trendy sazeb, cen, nájmů a yieldu pro podporované trhy. Radar příležitostí upozorňuje na shodu s kritérii — ne garantuje investici. Regulační přehled změn.",
   path: routes.marketPulse,
+  noIndex: true,
 });
 
 export default function MarketPulsePage() {

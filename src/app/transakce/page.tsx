@@ -10,6 +10,7 @@ export const metadata: Metadata = buildPageMetadata({
   description:
     "Jeden přehled místo WhatsAppu a PDF: časová osa, dokumenty s oprávněními, kontakty a úkoly. Vznikne po „Mám vážný zájem“.",
   path: routes.dealRoom,
+  noIndex: true,
 });
 
 export default function DealRoomLandingPage() {
