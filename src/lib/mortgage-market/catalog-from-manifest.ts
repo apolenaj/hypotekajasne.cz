@@ -132,7 +132,7 @@ export function catalogFromImportManifest(
       pricingScenarioKey: r.pricingScenarioKey,
       pricingScenarioLabel: r.pricingScenarioLabel ?? null,
       financingPurpose: r.financingPurpose ?? null,
-      fixationMonths: r.fixationMonths!,
+      fixationMonths: r.fixationMonths ?? null,
       ltvMin: ltv.ltvMin,
       ltvMax: ltv.ltvMax,
       ltvMinExclusive: ltv.ltvMinExclusive,
@@ -157,6 +157,7 @@ export function catalogFromImportManifest(
     }
   }
   // Campaign HOLD evidence must never back an active offer path.
+  evidenceById.delete("ev-cs-web-campaign-od-5-09-hold");
   evidenceById.delete("ev-cs-web-campaign-od-4-94-hold");
 
   const fees: CatalogFee[] = (manifest.fees ?? [])

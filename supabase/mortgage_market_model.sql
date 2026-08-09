@@ -195,7 +195,7 @@ create table if not exists public.mortgage_rate_variants (
   -- Examples: purchase, construction, refinance, own_housing, investment,
   -- non_purpose, american, business
   financing_purpose text null,
-  fixation_months integer not null,
+  fixation_months integer null,
   -- Both NULL = LTV pricing segment not evidenced by this source (NOT "all LTV").
   -- Both set = explicit published band. Never invent from product.max_ltv.
   ltv_min numeric(5, 2) null,
@@ -221,7 +221,9 @@ create table if not exists public.mortgage_rate_variants (
   constraint mortgage_rate_variants_scenario_key_nonempty check (
     length(trim(pricing_scenario_key)) > 0
   ),
-  constraint mortgage_rate_variants_fixation_positive check (fixation_months > 0),
+  constraint mortgage_rate_variants_fixation_positive check (
+    fixation_months is null or fixation_months > 0
+  ),
   constraint mortgage_rate_variants_rate_bounds check (
     nominal_interest_rate > 0 and nominal_interest_rate < 30
   ),
@@ -298,11 +300,11 @@ end $$;
 -- Replace active uniqueness: history OK; distinct scenarios OK; exact dupes blocked.
 drop index if exists public.mortgage_rate_variants_active_identity_uidx;
 
--- Sentinel -1 is outside valid LTV 0–100 so unspecified ≠ NULL identity is unique.
+-- Sentinel -1 is outside valid LTV/fixation ranges so NULL identity is unique.
 create unique index mortgage_rate_variants_active_identity_uidx
   on public.mortgage_rate_variants (
     product_id,
-    fixation_months,
+    coalesce(fixation_months, (-1)),
     coalesce(ltv_min, (-1)::numeric),
     coalesce(ltv_max, (-1)::numeric),
     ltv_min_exclusive,

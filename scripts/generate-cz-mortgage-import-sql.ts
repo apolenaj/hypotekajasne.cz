@@ -38,8 +38,9 @@ if (report.difference !== 0) {
   process.exit(1);
 }
 if (
-  report.forbiddenValuesPresent.cs494 ||
-  report.forbiddenValuesPresent.kb514 ||
+  report.forbiddenValuesPresent.csStale509 ||
+  report.forbiddenValuesPresent.kbStale539 ||
+  report.forbiddenValuesPresent.kbStale579 ||
   report.forbiddenValuesPresent.csobHoldRates ||
   report.forbiddenValuesPresent.rbKlasikRates
 ) {

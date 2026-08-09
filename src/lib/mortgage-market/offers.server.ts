@@ -136,7 +136,8 @@ export async function loadMortgageMarketCatalog(
       ? str(r.pricing_scenario_label)
       : null,
     financingPurpose: r.financing_purpose ? str(r.financing_purpose) : null,
-    fixationMonths: Number(r.fixation_months),
+    fixationMonths:
+      r.fixation_months == null ? null : Number(r.fixation_months),
     ltvMin: num(r.ltv_min),
     ltvMax: num(r.ltv_max),
     ltvMinExclusive: Boolean(r.ltv_min_exclusive),

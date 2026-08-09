@@ -19,7 +19,7 @@ import { PRIMARY_LENDER_EVIDENCE_TYPES } from "@/lib/mortgage-market/import/type
 import { CZ_2026_08_09_MANIFEST } from "@/lib/mortgage-market/import/data/cz-2026-08-09";
 
 const PRIMARY = new Set<string>(PRIMARY_LENDER_EVIDENCE_TYPES);
-export const EXPECTED_IMPORT_READY_RATES = 65;
+export const EXPECTED_IMPORT_READY_RATES = 66;
 
 export type SqlGenerationReport = {
   manifestImportReadyRates: number;
@@ -37,8 +37,11 @@ export type SqlGenerationReport = {
   excludedHoldRateIds: string[];
   ratesMissingPrimaryEvidence: string[];
   forbiddenValuesPresent: {
-    cs494: boolean;
-    kb514: boolean;
+    /** Stale prior CS Oznámení 3y 5.09 (replaced by current 4.94). */
+    csStale509: boolean;
+    /** Stale prior KB 3y matrix values. */
+    kbStale539: boolean;
+    kbStale579: boolean;
     csobHoldRates: boolean;
     rbKlasikRates: boolean;
   };
@@ -240,7 +243,13 @@ on conflict (id) do update set
 
 function emitRate(r: ImportRateRecord): string {
   const ltv = mapImportLtv(r);
-  if (r.fixationMonths == null) {
+  const allowNullFixation =
+    r.fixationMonths == null &&
+    r.rateType === "advertised_from" &&
+    r.ltv.kind === "unspecified" &&
+    (r.pricingScenarioKey.includes("product_page_advertised") ||
+      r.pricingScenarioKey.includes("advertised_from_conditional"));
+  if (r.fixationMonths == null && !allowNullFixation) {
     throw new Error(`IMPORT_READY rate ${r.recordId} missing fixationMonths`);
   }
   if (!PRIMARY.has(r.evidence.sourceType)) {
@@ -522,7 +531,7 @@ from (
   where is_active
   group by
     product_id,
-    fixation_months,
+    coalesce(fixation_months, (-1)),
     coalesce(ltv_min, (-1)::numeric),
     coalesce(ltv_max, (-1)::numeric),
     ltv_min_exclusive,
@@ -546,30 +555,43 @@ from public.mortgage_rate_variants
 where is_active
   and ((ltv_min is null) <> (ltv_max is null));
 
--- H) Česká spořitelna — confirm 4.94 absent
-select count(*)::int as cs_494_count
-from public.mortgage_rate_variants v
-join public.mortgage_catalog_products p on p.id = v.product_id
-join public.mortgage_lenders l on l.id = p.lender_id
-where v.is_active
-  and l.slug = 'ceska-sporitelna'
-  and v.nominal_interest_rate = 4.94;
-
+-- H) Česká spořitelna — current Oznámení matrix (incl. 4.94 at 2y/3y)
 select v.fixation_months, v.nominal_interest_rate, v.pricing_scenario_key
 from public.mortgage_rate_variants v
 join public.mortgage_catalog_products p on p.id = v.product_id
 join public.mortgage_lenders l on l.id = p.lender_id
 where v.is_active and l.slug = 'ceska-sporitelna'
-order by v.fixation_months;
+order by v.fixation_months nulls last;
 
--- I) KB — confirm stale 5.14 absent
-select count(*)::int as kb_514_count
+select count(*)::int as cs_3y_494_count
+from public.mortgage_rate_variants v
+join public.mortgage_catalog_products p on p.id = v.product_id
+join public.mortgage_lenders l on l.id = p.lender_id
+where v.is_active
+  and l.slug = 'ceska-sporitelna'
+  and v.fixation_months = 36
+  and v.nominal_interest_rate = 4.94
+  and v.pricing_scenario_key = 'oznameni_account_ppi_budoucnost';
+
+-- I) KB — confirm stale 3y matrix absent; current 3y <=80 = 5.24 present
+select count(*)::int as kb_stale_3y_539_count
 from public.mortgage_rate_variants v
 join public.mortgage_catalog_products p on p.id = v.product_id
 join public.mortgage_lenders l on l.id = p.lender_id
 where v.is_active
   and l.slug = 'komercni-banka'
-  and v.nominal_interest_rate = 5.14;
+  and v.fixation_months = 36
+  and v.nominal_interest_rate = 5.39;
+
+select count(*)::int as kb_current_3y_524_count
+from public.mortgage_rate_variants v
+join public.mortgage_catalog_products p on p.id = v.product_id
+join public.mortgage_lenders l on l.id = p.lender_id
+where v.is_active
+  and l.slug = 'komercni-banka'
+  and v.fixation_months = 36
+  and v.nominal_interest_rate = 5.24
+  and v.pricing_scenario_key = 'minimum_rate_by_fixation_ltv_le_80';
 
 -- J) CSOB active retail rate variants (expect 0)
 select count(*)::int as csob_active_rates
@@ -614,11 +636,26 @@ export function generateMortgageMarketImportSql(
 
   // Safety: never emit HOLD/campaign/stale values
   for (const r of readyRates) {
-    if (r.nominalInterestRate === 4.94) {
-      throw new Error("STOP: CS 4.94 campaign rate must not be IMPORT_READY");
+    if (
+      r.recordId === "kb-mortgage-3y-le80" &&
+      Math.abs(r.nominalInterestRate - 5.39) < 1e-9
+    ) {
+      throw new Error("STOP: stale KB 3y 5.39 must not be IMPORT_READY");
     }
-    if (r.lenderSlug === "komercni-banka" && r.nominalInterestRate === 5.14) {
-      throw new Error("STOP: stale KB 5.14 must not be IMPORT_READY");
+    if (
+      r.recordId === "kb-mortgage-3y-gt80-90" &&
+      Math.abs(r.nominalInterestRate - 5.79) < 1e-9
+    ) {
+      throw new Error("STOP: stale KB 3y 5.79 must not be IMPORT_READY");
+    }
+    if (
+      r.recordId === "cs-oznameni-3y" &&
+      Math.abs(r.nominalInterestRate - 5.09) < 1e-9
+    ) {
+      throw new Error("STOP: stale CS Oznámení 3y 5.09 must not be IMPORT_READY");
+    }
+    if (r.pricingScenarioKey.includes("unreconciled")) {
+      throw new Error("STOP: unreconciled campaign scenario must not be IMPORT_READY");
     }
     if (r.lenderSlug === "csob") {
       throw new Error("STOP: CSOB HOLD rates must not be IMPORT_READY");
@@ -629,7 +666,16 @@ export function generateMortgageMarketImportSql(
     if ((r.ltv.ltvMin == null) !== (r.ltv.ltvMax == null)) {
       throw new Error(`STOP: one-sided LTV on ${r.recordId}`);
     }
-    if (r.fixationMonths == null || r.fixationMonths <= 0) {
+    const allowNullFixation =
+      r.fixationMonths == null &&
+      r.rateType === "advertised_from" &&
+      r.ltv.kind === "unspecified" &&
+      (r.pricingScenarioKey.includes("product_page_advertised") ||
+        r.pricingScenarioKey.includes("advertised_from_conditional"));
+    if (
+      !allowNullFixation &&
+      (r.fixationMonths == null || r.fixationMonths <= 0)
+    ) {
       throw new Error(`STOP: invalid fixation on ${r.recordId}`);
     }
     if (!PRIMARY.has(r.evidence.sourceType)) {
@@ -678,6 +724,32 @@ export function generateMortgageMarketImportSql(
 -- Excludes HOLD campaign / stale / CSOB retail / RB Klasik rates.
 
 begin;
+
+-- Allow unpublished fixation for conditional advertised-from scenarios
+alter table public.mortgage_rate_variants
+  alter column fixation_months drop not null;
+alter table public.mortgage_rate_variants
+  drop constraint if exists mortgage_rate_variants_fixation_positive;
+alter table public.mortgage_rate_variants
+  add constraint mortgage_rate_variants_fixation_positive check (
+    fixation_months is null or fixation_months > 0
+  );
+drop index if exists public.mortgage_rate_variants_active_identity_uidx;
+create unique index mortgage_rate_variants_active_identity_uidx
+  on public.mortgage_rate_variants (
+    product_id,
+    coalesce(fixation_months, (-1)),
+    coalesce(ltv_min, (-1)::numeric),
+    coalesce(ltv_max, (-1)::numeric),
+    ltv_min_exclusive,
+    ltv_max_exclusive,
+    pricing_scenario_key,
+    rate_type,
+    coalesce(financing_purpose, ''),
+    coalesce(min_loan_amount, (-1)::numeric),
+    coalesce(max_loan_amount, (-1)::numeric)
+  )
+  where is_active = true;
 
 -- Pre-import assertions (fail transaction if catalog already has conflicting active identities
 -- for this import batch keys). Empty production catalog is expected on first apply.
@@ -821,7 +893,8 @@ begin
   select count(*) into bad_fix
   from public.mortgage_rate_variants
   where is_active and notes like '%[manifest:%'
-    and (fixation_months is null or fixation_months <= 0);
+    and fixation_months is not null
+    and fixation_months <= 0;
   if bad_fix <> 0 then
     raise exception 'IMPORT ASSERT: invalid fixation';
   end if;
@@ -830,7 +903,7 @@ begin
     select 1
     from public.mortgage_rate_variants
     where is_active
-    group by product_id, fixation_months,
+    group by product_id, coalesce(fixation_months, (-1)),
       coalesce(ltv_min, (-1)::numeric), coalesce(ltv_max, (-1)::numeric),
       ltv_min_exclusive, ltv_max_exclusive, pricing_scenario_key, rate_type,
       coalesce(financing_purpose, ''),
@@ -841,17 +914,24 @@ begin
     raise exception 'IMPORT ASSERT: duplicate active identities: %', dupes;
   end if;
 
+  -- Current CS Oznámení 3y must be 4.94 (not stale 5.09)
   select count(*) into cs_494 from public.mortgage_rate_variants v
   join public.mortgage_catalog_products p on p.id = v.product_id
   join public.mortgage_lenders l on l.id = p.lender_id
-  where v.is_active and l.slug = 'ceska-sporitelna' and v.nominal_interest_rate = 4.94;
-  if cs_494 <> 0 then raise exception 'IMPORT ASSERT: CS 4.94 imported'; end if;
+  where v.is_active and l.slug = 'ceska-sporitelna'
+    and v.fixation_months = 36
+    and v.nominal_interest_rate = 4.94
+    and v.pricing_scenario_key = 'oznameni_account_ppi_budoucnost';
+  if cs_494 <> 1 then raise exception 'IMPORT ASSERT: expected CS 3y Oznámení 4.94'; end if;
 
+  -- Stale KB 3y 5.39 must be gone; current 5.24 must exist
   select count(*) into kb_514 from public.mortgage_rate_variants v
   join public.mortgage_catalog_products p on p.id = v.product_id
   join public.mortgage_lenders l on l.id = p.lender_id
-  where v.is_active and l.slug = 'komercni-banka' and v.nominal_interest_rate = 5.14;
-  if kb_514 <> 0 then raise exception 'IMPORT ASSERT: stale KB 5.14 imported'; end if;
+  where v.is_active and l.slug = 'komercni-banka'
+    and v.fixation_months = 36
+    and v.nominal_interest_rate = 5.39;
+  if kb_514 <> 0 then raise exception 'IMPORT ASSERT: stale KB 3y 5.39 still active'; end if;
 
   select count(*) into csob_n from public.mortgage_rate_variants v
   join public.mortgage_catalog_products p on p.id = v.product_id
@@ -887,8 +967,21 @@ commit;
       .filter((r) => !PRIMARY.has(r.evidence.sourceType))
       .map((r) => r.recordId),
     forbiddenValuesPresent: {
-      cs494: readyRates.some((r) => r.nominalInterestRate === 4.94),
-      kb514: readyRates.some((r) => r.nominalInterestRate === 5.14),
+      csStale509: readyRates.some(
+        (r) =>
+          r.recordId === "cs-oznameni-3y" &&
+          Math.abs(r.nominalInterestRate - 5.09) < 1e-9
+      ),
+      kbStale539: readyRates.some(
+        (r) =>
+          r.recordId === "kb-mortgage-3y-le80" &&
+          Math.abs(r.nominalInterestRate - 5.39) < 1e-9
+      ),
+      kbStale579: readyRates.some(
+        (r) =>
+          r.recordId === "kb-mortgage-3y-gt80-90" &&
+          Math.abs(r.nominalInterestRate - 5.79) < 1e-9
+      ),
       csobHoldRates: readyRates.some((r) => r.lenderSlug === "csob"),
       rbKlasikRates: readyRates.some((r) => r.productSlug === "retail-klasik"),
     },

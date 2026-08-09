@@ -26,15 +26,17 @@ function ev(
   evidenceId: string,
   lenderSlug: string,
   sourceName: string,
-  documentTitle?: string
+  documentTitle?: string,
+  sourceUrl?: string | null,
+  sourceType: ImportEvidence["sourceType"] = "official_rate_page"
 ): ImportEvidence {
   return {
     evidenceId,
     lenderSlug,
-    sourceType: "official_rate_page",
+    sourceType,
     sourceName,
     documentTitle: documentTitle ?? sourceName,
-    sourceUrl: null,
+    sourceUrl: sourceUrl ?? null,
     checkedAt: CHECKED,
     reliabilityTier: "primary",
   };
@@ -103,21 +105,35 @@ const EV_UC = ev(
 const EV_CS = ev(
   "ev-cs-oznameni-urokovych-sazeb",
   "ceska-sporitelna",
-  "Česká spořitelna — Oznámení o úrokových sazbách (official fixed-rate table)",
-  "ČS Oznámení o úrokových sazbách"
+  "Česká spořitelna — Oznámení o úrokových sazbách (účinnost od 29. 5. 2026)",
+  "ČS Oznámení o úrokových sazbách",
+  "https://www.csas.cz/banka/content/inet/internet/cs/RR_SK.ANN..xml,pdf_IE",
+  "official_lender_pdf"
 );
-/** Conflicting campaign/marketing display — NOT used for IMPORT_READY rates. */
+/** Conflicting product-page headline — NOT used for IMPORT_READY rates. */
 const EV_CS_CAMPAIGN_HOLD = ev(
-  "ev-cs-web-campaign-od-4-94-hold",
+  "ev-cs-web-campaign-od-5-09-hold",
   "ceska-sporitelna",
-  "ČS other official web pages advertise lower/different rates (e.g. headline od 4.94%) — HOLD pending full campaign condition mapping",
-  "ČS web campaign / headline rates (unreconciled)"
+  "ČS product page headline „Nová hypotéka od 5,09 % ročně“ — HOLD; fixation not stated; do not overwrite Oznámení matrix",
+  "ČS web product-page headline (unreconciled)",
+  "https://www.csas.cz/cs/osobni-finance/hypoteky/hypoteka",
+  "official_lender_web"
 );
 const EV_KB = ev(
   "ev-kb-minimum-rates-by-fixation-ltv",
   "komercni-banka",
-  "Komerční banka official minimum interest rates by fixation and LTV (primary audit 2026-08-09)",
-  "KB minimální výše úrokové sazby podle doby fixace"
+  "Komerční banka — Oznámení o úrokových sazbách (účinnost od 24. 7. 2026)",
+  "KB minimální výše úrokové sazby podle doby fixace",
+  "https://www.kb.cz/getmedia/72c05c27-6ecd-4383-8c02-63d679fa4d00/oznameni-o-urokovych-sazbach.pdf",
+  "official_lender_pdf"
+);
+const EV_KB_PRODUCT = ev(
+  "ev-kb-product-page-advertised-from",
+  "komercni-banka",
+  "Komerční banka — Hypotéka product page (conditional advertised-from 5,19 % p.a.)",
+  "KB Hypotéka — produktová stránka",
+  "https://www.kb.cz/cs/obcane/pujcky/hypoteky/hypoteka",
+  "official_lender_web"
 );
 const EV_CSOB = ev(
   "ev-csob-rate-page-hold",
@@ -146,6 +162,7 @@ export const CZ_2026_08_09_EVIDENCE: ImportEvidence[] = [
   EV_CS,
   EV_CS_CAMPAIGN_HOLD,
   EV_KB,
+  EV_KB_PRODUCT,
   EV_CSOB,
   EV_RB,
   EV_RB_LOWER_PAYMENT,
@@ -204,7 +221,7 @@ export const CZ_2026_08_09_LENDERS: ImportLender[] = [
     checkedAt: CHECKED,
     auditStatus: "IMPORT_READY",
     notes:
-      "Current official minimum-rate matrix by fixation × LTV (stale 5.14 removed).",
+      "Official minimum-rate matrix by fixation × LTV from Oznámení (od 24. 7. 2026). Product-page 5.19% is a separate conditional scenario.",
   },
   {
     recordId: "lender-csob",
@@ -349,7 +366,7 @@ export const CZ_2026_08_09_PRODUCTS: ImportProduct[] = [
     checkedAt: CHECKED,
     auditStatus: "IMPORT_READY",
     notes:
-      "IMPORT_READY rates come only from Oznámení table. Web headline od 4.94% is a separate unreconciled collision (HOLD).",
+      "IMPORT_READY rates come only from Oznámení table (od 29. 5. 2026). Product-page headline od 5,09% is a separate unreconciled collision (HOLD).",
   },
   {
     recordId: "product-cs-american",
@@ -376,7 +393,7 @@ export const CZ_2026_08_09_PRODUCTS: ImportProduct[] = [
     checkedAt: CHECKED,
     auditStatus: "IMPORT_READY",
     notes:
-      "Current official minimum rates by fixation × LTV. Stale 5.14 removed from current manifest.",
+      "Official minimum rates by fixation × LTV from Oznámení. Product-page conditional od 5,19% is a separate scenario.",
   },
   {
     recordId: "product-kb-american",
@@ -713,14 +730,15 @@ function csRate(input: { id: string; years: number; rate: number }): ImportRateR
     rateType: "standard",
     pricingScenarioKey: "oznameni_account_ppi_budoucnost",
     pricingScenarioLabel:
-      "Oznámení o úrokových sazbách — rates reflect active ČS repayment account + repayment insurance + Hypotéka pro budoucnost (no numeric campaign discount inferred)",
+      "Oznámení o úrokových sazbách — sazby zohledňují aktivní účet ČS, pojištění schopnosti splácet a Hypotéku pro budoucnost (číselný efekt slev v Oznámení neuveden)",
     ltv: LTV_UNSPECIFIED,
     conditions: [
       {
         conditionType: "active_account_required",
         conditionRole: "published_discount",
-        description: "Active ČS repayment account — published effect −50 bp.",
-        rateEffectBp: -50,
+        description:
+          "Splácení z aktivního účtu u České spořitelny — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.",
+        rateEffectBp: null,
         isRequired: true,
         isOptional: false,
         effectInferred: false,
@@ -728,10 +746,11 @@ function csRate(input: { id: string; years: number; rate: number }): ImportRateR
       {
         conditionType: "repayment_insurance",
         conditionRole: "published_discount",
-        description: "Repayment insurance — published effect −10 bp.",
+        description:
+          "Pojištění schopnosti splácet od PČS — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.",
         insuranceKind: "repayment",
         requirementMode: "mandatory_for_rate",
-        rateEffectBp: -10,
+        rateEffectBp: null,
         isRequired: true,
         isOptional: false,
         effectInferred: false,
@@ -740,7 +759,7 @@ function csRate(input: { id: string; years: number; rate: number }): ImportRateR
         conditionType: "other",
         conditionRole: "qualifying",
         description:
-          "Hypotéka pro budoucnost — reflected in Oznámení scenario; no current numerical discount in primary evidence.",
+          "Hypotéka pro budoucnost — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.",
         rateEffectBp: null,
         isRequired: false,
         isOptional: true,
@@ -752,7 +771,7 @@ function csRate(input: { id: string; years: number; rate: number }): ImportRateR
     validFrom: null,
     auditStatus: "IMPORT_READY",
     notes:
-      "Do not mix with web headline od 4.94% campaign values (see HOLD collision).",
+      "Do not mix with product-page headline od 5,09% (see HOLD collision).",
   };
 }
 
@@ -776,13 +795,14 @@ function kbMinRate(input: {
     // (not guaranteed / not personalized).
     rateType: "advertised_from",
     pricingScenarioKey: `minimum_rate_by_fixation_${input.bandLabel}`,
-    pricingScenarioLabel:
-      "Minimální výše úrokové sazby podle doby fixace (official KB wording)",
+    pricingScenarioLabel: "Minimální sazba dle sazebníku",
     ltv: input.ltv,
     evidence: EV_KB,
     checkedAt: CHECKED,
     validFrom: null,
     auditStatus: "IMPORT_READY",
+    notes:
+      "From KB Oznámení matrix. Distinct from product-page conditional od 5,19%.",
   };
 }
 
@@ -940,16 +960,17 @@ const ucRates: ImportRateRecord[] = [
   }),
 ];
 
+/** ČS Oznámení (účinnost od 29. 5. 2026) — fixation-specific „od“ rates. */
 const csFixed: Array<[number, number]> = [
-  [1, 5.29],
-  [2, 5.09],
-  [3, 5.09],
-  [4, 5.19],
-  [5, 5.29],
-  [8, 5.49],
-  [10, 5.69],
-  [15, 5.89],
-  [20, 6.09],
+  [1, 5.14],
+  [2, 4.94],
+  [3, 4.94],
+  [4, 5.04],
+  [5, 5.14],
+  [8, 5.34],
+  [10, 5.54],
+  [15, 5.74],
+  [20, 5.94],
 ];
 
 const csRates: ImportRateRecord[] = [
@@ -962,51 +983,115 @@ const csRates: ImportRateRecord[] = [
     productSlug: "american-mortgage",
     financingPurpose: "non_purpose",
     fixationMonths: null,
-    nominalInterestRate: 5.59,
+    nominalInterestRate: 5.44,
     rateType: "advertised_from",
     pricingScenarioKey: "advertised_from",
     ltv: LTV_UNSPECIFIED,
     evidence: EV_CS,
     checkedAt: CHECKED,
     auditStatus: "HOLD",
-    notes: "Fixation not published in supplied audit — HOLD.",
+    notes: "Oznámení publishes „Americká hypotéka od 5,44 %“ without fixation — HOLD.",
   },
   {
-    recordId: "cs-web-campaign-od-4-94-unreconciled",
+    recordId: "cs-web-campaign-od-5-09-unreconciled",
     lenderSlug: "ceska-sporitelna",
     productSlug: "hypoteka-oznameni-fixed",
     financingPurpose: "purchase",
     fixationMonths: null,
-    nominalInterestRate: 4.94,
+    nominalInterestRate: 5.09,
     rateType: "advertised_from",
     pricingScenarioKey: "web_campaign_headline_unreconciled",
     pricingScenarioLabel:
-      "Other ČS web pages headline od 4.94% — NOT mixed with Oznámení table",
+      "Produktová stránka: Nová hypotéka od 5,09 % — NOT mixed with Oznámení table",
     ltv: LTV_UNSPECIFIED,
     evidence: EV_CS_CAMPAIGN_HOLD,
     checkedAt: CHECKED,
     auditStatus: "HOLD",
     notes:
-      "SOURCE COLLISION: lower/different campaign display vs Oznámení table. Campaign conditions not fully mapped — do not IMPORT_READY.",
+      "SOURCE COLLISION: product-page headline od 5,09% vs Oznámení fixation table (2y/3y od 4,94%). Do not invent fixation for the headline — HOLD.",
   },
 ];
 
-/** KB mortgage minimum rates: [years, le80, gt80_90] */
+/** KB Oznámení (od 24. 7. 2026): [years, le80, gt80_90] */
 const kbMortgageMin: Array<[number, number, number]> = [
-  [1, 5.19, 5.59],
-  [2, 5.29, 5.69],
-  [3, 5.39, 5.79],
+  [1, 5.14, 5.54],
+  [2, 5.19, 5.59],
+  [3, 5.24, 5.64],
   [4, 5.54, 5.94],
   [5, 5.74, 6.14],
 ];
 
 const kbAmericanMin: Array<[number, number]> = [
-  [1, 5.59],
-  [2, 5.69],
-  [3, 5.79],
+  [1, 5.54],
+  [2, 5.59],
+  [3, 5.64],
   [4, 5.94],
   [5, 6.14],
 ];
+
+const kbConditionalAdvertised: ImportRateRecord = {
+  recordId: "kb-product-page-advertised-from-5-19",
+  lenderSlug: "komercni-banka",
+  productSlug: "standard-mortgage",
+  financingPurpose: "purchase",
+  fixationMonths: null,
+  nominalInterestRate: 5.19,
+  rateType: "advertised_from",
+  pricingScenarioKey: "product_page_advertised_from_conditional",
+  pricingScenarioLabel: "Zvýhodněná sazba od",
+  ltv: LTV_UNSPECIFIED,
+  conditions: [
+    {
+      conditionType: "income_domiciliation_required",
+      conditionRole: "qualifying",
+      description: "Směřování příjmů na účet vedený u KB",
+      rateEffectBp: null,
+      isRequired: true,
+      isOptional: false,
+      effectInferred: false,
+    },
+    {
+      conditionType: "life_insurance_required",
+      conditionRole: "qualifying",
+      description:
+        "Rizikové životní pojištění u Komerční pojišťovny, a. s.",
+      insuranceKind: "life",
+      requirementMode: "mandatory_for_rate",
+      rateEffectBp: null,
+      isRequired: true,
+      isOptional: false,
+      effectInferred: false,
+    },
+    {
+      conditionType: "property_insurance_required",
+      conditionRole: "qualifying",
+      description:
+        "Pojištění zastavené nemovitosti u Komerční pojišťovny, a. s.",
+      insuranceKind: "property",
+      requirementMode: "mandatory_for_rate",
+      rateEffectBp: null,
+      isRequired: true,
+      isOptional: false,
+      effectInferred: false,
+    },
+    {
+      conditionType: "PENB_class_requirement",
+      conditionRole: "qualifying",
+      description: "PENB energetická třída A nebo B k zastavené nemovitosti",
+      valueText: "A|B",
+      rateEffectBp: null,
+      isRequired: true,
+      isOptional: false,
+      effectInferred: false,
+    },
+  ],
+  evidence: EV_KB_PRODUCT,
+  checkedAt: CHECKED,
+  validFrom: null,
+  auditStatus: "IMPORT_READY",
+  notes:
+    "Product-page conditional od 5,19%. Fixation and LTV not stated on page — must not personalized-match LTV or replace Oznámení matrix.",
+};
 
 const kbRates: ImportRateRecord[] = [
   ...kbMortgageMin.flatMap(([years, le80, gt80]) => [
@@ -1040,6 +1125,7 @@ const kbRates: ImportRateRecord[] = [
       purpose: "non_purpose",
     })
   ),
+  kbConditionalAdvertised,
 ];
 
 function csobHoldRate(input: {
@@ -1254,6 +1340,27 @@ export const CZ_2026_08_09_EXAMPLES: ImportRepresentativeExample[] = [
     auditStatus: "STRUCTURED",
     rpsnCalculated: false,
   },
+  {
+    recordId: "kb-product-page-representative-example",
+    lenderSlug: "komercni-banka",
+    productSlug: "standard-mortgage",
+    loanAmount: 4_000_000,
+    termYears: 30,
+    numberOfPayments: 360,
+    fixationMonths: 36,
+    nominalRate: 5.19,
+    monthlyPayment: 21_966,
+    rpsn: 5.34,
+    totalAmountPayable: 7_903_819.83,
+    insuranceIncluded: null,
+    insuranceCost: null,
+    pricingScenarioKey: "product_page_advertised_from_conditional",
+    linkedRateRecordId: "kb-product-page-advertised-from-5-19",
+    evidence: EV_KB_PRODUCT,
+    checkedAt: CHECKED,
+    auditStatus: "IMPORT_READY",
+    rpsnCalculated: false,
+  },
 ];
 
 /** Extra published payment figures for RB lower-payment example (not a rate variant). */
@@ -1381,7 +1488,7 @@ export const CZ_2026_08_09_HOLD_ROWS: ImportHoldRow[] = [
     lenderSlug: "ceska-sporitelna",
     productSlug: "hypoteka-oznameni-fixed",
     reason:
-      "SOURCE COLLISION: Oznámení fixed table vs other official web pages advertising lower/different rates (e.g. od 4.94%). Campaign conditions not fully mapped — NEEDS_RECONCILIATION.",
+      "SOURCE COLLISION: Oznámení fixation table (2y/3y od 4,94%) vs product-page headline od 5,09% without fixation — NEEDS_RECONCILIATION. Do not invent fixation for the headline.",
     auditStatus: "HOLD",
     evidence: EV_CS_CAMPAIGN_HOLD,
     checkedAt: CHECKED,

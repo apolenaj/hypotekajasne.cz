@@ -161,7 +161,8 @@ export type ImportRateRecord = {
   productSlug: string;
   financingPurpose?: string | null;
   /**
-   * Null only when fixation is not published (must not be IMPORT_READY).
+   * Null when fixation is not published. IMPORT_READY only for
+   * advertised_from + unspecified LTV product-page conditional scenarios.
    */
   fixationMonths: number | null;
   nominalInterestRate: number;

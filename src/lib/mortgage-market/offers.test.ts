@@ -128,16 +128,40 @@ describe("getMortgageOffers — UniCredit / KB LTV boundaries", () => {
     assert.equal(over90.offers.length, 0);
   });
 
-  it("E/F: KB 36m LTV 75 → 5.39; LTV 85 → 5.79; never 5.14", () => {
+  it("E/F: KB 36m LTV 75 → 5.24; LTV 85 → 5.64; conditional 5.19 not personalized", () => {
     const at75 = getMortgageOffers(catalog, {
       lenderSlug: "komercni-banka",
       fixationMonths: 36,
       ltv: 75,
+      includeLtvUnspecified: true,
       nowMs: NOW,
     });
     assert.deepEqual(
       at75.offers.map((o) => o.nominalInterestRate),
-      [5.39]
+      [5.24]
+    );
+    assert.ok(
+      at75.offers.every(
+        (o) =>
+          o.claimsPersonalizedLtvMatch === true &&
+          o.pricingScenarioKey.includes("minimum_rate")
+      )
+    );
+    assert.ok(
+      at75.unspecifiedLtvOffers.some(
+        (o) =>
+          o.nominalInterestRate === 5.19 &&
+          o.pricingScenarioKey === "product_page_advertised_from_conditional" &&
+          o.claimsPersonalizedLtvMatch === false &&
+          o.fixationMonths == null
+      )
+    );
+    assert.ok(
+      !at75.offers.some(
+        (o) =>
+          o.nominalInterestRate === 5.19 &&
+          o.pricingScenarioKey === "product_page_advertised_from_conditional"
+      )
     );
 
     const at85 = getMortgageOffers(catalog, {
@@ -148,30 +172,18 @@ describe("getMortgageOffers — UniCredit / KB LTV boundaries", () => {
     });
     assert.deepEqual(
       at85.offers.map((o) => o.nominalInterestRate),
-      [5.79]
+      [5.64]
     );
 
     assert.ok(
       !catalog.rates.some(
         (r) =>
-          r.nominalInterestRate === 5.14 &&
-          productsOfLender("komercni-banka").has(r.productId)
+          r.id === "kb-mortgage-3y-le80" &&
+          Math.abs(r.nominalInterestRate - 5.39) < 1e-9
       )
     );
-    const anyKb = getMortgageOffers(catalog, {
-      lenderSlug: "komercni-banka",
-      nowMs: NOW,
-    });
-    assert.ok(!anyKb.offers.some((o) => o.nominalInterestRate === 5.14));
   });
 });
-
-function productsOfLender(slug: string): Set<string> {
-  const lender = catalog.lenders.find((l) => l.slug === slug)!;
-  return new Set(
-    catalog.products.filter((p) => p.lenderId === lender.id).map((p) => p.id)
-  );
-}
 
 describe("getMortgageOffers — residential vs entrepreneur product audience", () => {
   it("ordinary purchase / 36m keeps MONETA housing 4.99 and excludes trade 5.59", () => {
@@ -280,7 +292,7 @@ describe("getMortgageOffers — unknown LTV safety", () => {
     );
   });
 
-  it("H: CS 36m Oznámení 5.09 stays LTV unspecified; 4.94 never active", () => {
+  it("H: CS 36m Oznámení 4.94 stays LTV unspecified; headline 5.09 not active", () => {
     const withBucket = getMortgageOffers(catalog, {
       lenderSlug: "ceska-sporitelna",
       fixationMonths: 36,
@@ -292,14 +304,20 @@ describe("getMortgageOffers — unknown LTV safety", () => {
     const rates = withBucket.unspecifiedLtvOffers.map(
       (o) => o.nominalInterestRate
     );
-    assert.ok(rates.includes(5.09));
-    assert.ok(!rates.includes(4.94));
+    assert.ok(rates.includes(4.94));
+    assert.ok(!rates.includes(5.09));
     assert.ok(
       withBucket.unspecifiedLtvOffers.every(
         (o) => o.ltvScope === "unspecified" && !o.claimsPersonalizedLtvMatch
       )
     );
-    assert.ok(!catalog.rates.some((r) => r.nominalInterestRate === 4.94));
+    assert.ok(
+      !catalog.rates.some(
+        (r) =>
+          r.id === "cs-oznameni-3y" &&
+          Math.abs(r.nominalInterestRate - 5.09) < 1e-9
+      )
+    );
   });
 });
 

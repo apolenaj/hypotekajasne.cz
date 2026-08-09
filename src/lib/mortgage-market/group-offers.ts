@@ -11,7 +11,7 @@ export type LenderOfferGroup = {
   lenderName: string;
   productSlug: string;
   productName: string;
-  fixationMonths: number;
+  fixationMonths: number | null;
   financingPurpose: string | null;
   scenarios: MortgageOffer[];
 };

@@ -87,7 +87,7 @@ export function activeRateVariantIdentityKey(
 ): string {
   return [
     identity.productId,
-    identity.fixationMonths,
+    nullableIdentityToken(identity.fixationMonths),
     nullableIdentityToken(identity.ltvMin),
     nullableIdentityToken(identity.ltvMax),
     identity.ltvMinExclusive ? "minEx" : "minIn",

@@ -51,8 +51,10 @@ export function scenarioLabelCs(offer: Pick<
     return "bez pojištění";
   if (key.startsWith("oznameni")) return "oficiální sazebník";
   if (key.includes("housing_published")) return "zveřejněná sazba bydlení";
-  if (key.includes("minimum_rate")) return "minimální sazba";
-  if (key.includes("advertised")) return "inzerovaná sazba od";
+  if (key.includes("minimum_rate")) return "Minimální sazba dle sazebníku";
+  if (key.includes("product_page_advertised") || key.includes("advertised_from_conditional"))
+    return "Zvýhodněná sazba od";
+  if (key.includes("advertised")) return "Zvýhodněná sazba od";
   if (offer.pricingScenarioLabel) {
     const label = offer.pricingScenarioLabel;
     // Skip English audit labels in public UI
@@ -64,7 +66,8 @@ export function scenarioLabelCs(offer: Pick<
   return "zveřejněná sazba";
 }
 
-export function fixationLabelCs(months: number): string {
+export function fixationLabelCs(months: number | null | undefined): string {
+  if (months == null) return "fixace neuvedena";
   if (months % 12 === 0) {
     const y = months / 12;
     if (y === 1) return "1 rok";
@@ -154,8 +157,18 @@ export function conditionTypeLabelCs(conditionType: string): string {
       return "Bez pojištění schopnosti splácet";
     case "active_account_required":
       return "Aktivní účet";
+    case "income_domiciliation_required":
+    case "salary_account_required":
+      return "Příjmy na účet u banky";
+    case "life_insurance":
+    case "life_insurance_required":
+      return "Životní pojištění";
+    case "property_insurance":
+    case "property_insurance_required":
+      return "Pojištění nemovitosti";
     case "green_property_required":
-      return "Energeticky úsporná nemovitost";
+    case "PENB_class_requirement":
+      return "PENB energetická třída";
     case "loyalty":
       return "Věrnostní podmínka";
     default:

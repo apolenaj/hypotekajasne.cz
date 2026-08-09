@@ -144,7 +144,7 @@ export function documentedCsCampaignCollision(
       r.fixationMonths === 36
   );
   const campaign = rates.find(
-    (r) => r.recordId === "cs-web-campaign-od-4-94-unreconciled"
+    (r) => r.recordId === "cs-web-campaign-od-5-09-unreconciled"
   );
   if (!oznameni || !campaign) return null;
   return {
@@ -158,7 +158,7 @@ export function documentedCsCampaignCollision(
     rateB: campaign.nominalInterestRate,
     recordB: campaign.recordId,
     likelyExplanation:
-      "Oznámení fixed-rate table vs other official web campaign/headline rates; campaign bonus conditions not fully mapped",
+      "Oznámení fixation table vs product-page headline od 5,09% without fixation; do not invent fixation for the headline",
     status: "NEEDS_RECONCILIATION",
   };
 }
@@ -196,7 +196,16 @@ function assertImportReadyEvidenceIntegrity(
   ) {
     // Only flag when explicitly marked inferred; equality alone is allowed if evidenced.
   }
-  if (rate.fixationMonths == null || rate.fixationMonths <= 0) {
+  const allowNullFixation =
+    rate.fixationMonths == null &&
+    rate.rateType === "advertised_from" &&
+    rate.ltv.kind === "unspecified" &&
+    (rate.pricingScenarioKey.includes("product_page_advertised") ||
+      rate.pricingScenarioKey.includes("advertised_from_conditional"));
+  if (
+    !allowNullFixation &&
+    (rate.fixationMonths == null || rate.fixationMonths <= 0)
+  ) {
     issues.push(issue(id, "FIXATION", "IMPORT_READY requires published fixation"));
   }
   for (const c of rate.conditions ?? []) {
@@ -278,18 +287,31 @@ export function verifyEvidenceIntegrity(
     }
   }
 
-  // Stale KB 5.14 must not remain as current active rate
+  // Stale prior KB 3y matrix (5.39 / 5.79) must not remain as current active rates
   for (const rate of manifest.rates) {
     if (
-      rate.lenderSlug === "komercni-banka" &&
-      rate.nominalInterestRate === 5.14 &&
-      rate.auditStatus !== "HOLD"
+      rate.recordId === "kb-mortgage-3y-le80" &&
+      Math.abs(rate.nominalInterestRate - 5.39) < 1e-9 &&
+      rate.auditStatus === "IMPORT_READY"
     ) {
       issues.push(
         issue(
           rate.recordId,
-          "STALE_KB_514",
-          "stale KB 5.14 must not remain as current non-HOLD rate"
+          "STALE_KB_539",
+          "stale KB 3y <=80 5.39 must not remain as current IMPORT_READY rate"
+        )
+      );
+    }
+    if (
+      rate.recordId === "kb-mortgage-3y-gt80-90" &&
+      Math.abs(rate.nominalInterestRate - 5.79) < 1e-9 &&
+      rate.auditStatus === "IMPORT_READY"
+    ) {
+      issues.push(
+        issue(
+          rate.recordId,
+          "STALE_KB_579",
+          "stale KB 3y >80–90 5.79 must not remain as current IMPORT_READY rate"
         )
       );
     }

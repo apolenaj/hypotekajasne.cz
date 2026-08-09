@@ -34,7 +34,16 @@ describe("Phase 3 UX — purchase LTV75 / 36m", () => {
       rate: o.nominalInterestRate,
     }));
     assert.ok(matchedRates.some((r) => r.lender === "unicredit" && r.rate === 5.19));
-    assert.ok(matchedRates.some((r) => r.lender === "komercni-banka" && r.rate === 5.39));
+    assert.ok(matchedRates.some((r) => r.lender === "komercni-banka" && r.rate === 5.24));
+    assert.ok(
+      result.unspecifiedLtvOffers.some(
+        (o) =>
+          o.lenderSlug === "komercni-banka" &&
+          o.nominalInterestRate === 5.19 &&
+          o.pricingScenarioKey === "product_page_advertised_from_conditional" &&
+          !o.claimsPersonalizedLtvMatch
+      )
+    );
 
     const airGroup = groupOffersByLenderProduct(
       result.offers.filter((o) => o.lenderSlug === "air-bank")
@@ -69,6 +78,11 @@ describe("Phase 3 UX — purchase LTV75 / 36m", () => {
     );
     assert.ok(
       result.unspecifiedLtvOffers.some(
+        (o) => o.lenderSlug === "ceska-sporitelna" && o.nominalInterestRate === 4.94
+      )
+    );
+    assert.ok(
+      !result.unspecifiedLtvOffers.some(
         (o) => o.lenderSlug === "ceska-sporitelna" && o.nominalInterestRate === 5.09
       )
     );
@@ -87,7 +101,7 @@ describe("Phase 3 UX — purchase LTV75 / 36m", () => {
       nowMs: NOW,
     });
     assert.ok(result.offers.some((o) => o.lenderSlug === "unicredit" && o.nominalInterestRate === 5.69));
-    assert.ok(result.offers.some((o) => o.lenderSlug === "komercni-banka" && o.nominalInterestRate === 5.79));
+    assert.ok(result.offers.some((o) => o.lenderSlug === "komercni-banka" && o.nominalInterestRate === 5.64));
     assert.ok(!result.offers.some((o) => o.lenderSlug === "unicredit" && o.nominalInterestRate === 5.19));
   });
 

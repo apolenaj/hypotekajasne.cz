@@ -99,7 +99,7 @@ describe("live production mortgage-market offers (READ-ONLY)", () => {
       });
       assert.deepEqual(
         kb75!.offers.map((o) => o.nominalInterestRate),
-        [5.39]
+        [5.24]
       );
 
       const kb85 = await getMortgageOffersFromSupabase({
@@ -109,9 +109,14 @@ describe("live production mortgage-market offers (READ-ONLY)", () => {
       });
       assert.deepEqual(
         kb85!.offers.map((o) => o.nominalInterestRate),
-        [5.79]
+        [5.64]
       );
-      assert.ok(!kb85!.offers.some((o) => o.nominalInterestRate === 5.14));
+      assert.ok(
+        !kb85!.offers.some(
+          (o) =>
+            o.nominalInterestRate === 5.39 || o.nominalInterestRate === 5.79
+        )
+      );
 
       const moneta = await getMortgageOffersFromSupabase({
         lenderSlug: "moneta",
@@ -134,10 +139,10 @@ describe("live production mortgage-market offers (READ-ONLY)", () => {
       });
       assert.equal(cs!.offers.length, 0);
       assert.ok(
-        cs!.unspecifiedLtvOffers.some((o) => o.nominalInterestRate === 5.09)
+        cs!.unspecifiedLtvOffers.some((o) => o.nominalInterestRate === 4.94)
       );
       assert.ok(
-        !cs!.unspecifiedLtvOffers.some((o) => o.nominalInterestRate === 4.94)
+        !cs!.unspecifiedLtvOffers.some((o) => o.nominalInterestRate === 5.09)
       );
 
       const csob = await getMortgageOffersFromSupabase({

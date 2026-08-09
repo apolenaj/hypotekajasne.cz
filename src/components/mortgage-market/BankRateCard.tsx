@@ -241,7 +241,7 @@ export function BankRateCard({
                 pricing_scenario_category: pricingScenarioCategory(
                   primary.pricingScenarioKey
                 ),
-                fixation_months: group.fixationMonths,
+                fixation_months: group.fixationMonths ?? undefined,
                 ltv_scope: primary.ltvScope,
                 rate_type: primary.rateType,
                 funnel_id: "phase4_conversion",

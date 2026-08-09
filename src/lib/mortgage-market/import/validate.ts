@@ -236,10 +236,17 @@ function validateRateCore(record: ImportRateRecord): ImportValidationIssue[] {
     );
   }
   if (record.auditStatus === "IMPORT_READY") {
+    const allowNullFixation =
+      record.fixationMonths == null &&
+      record.rateType === "advertised_from" &&
+      record.ltv.kind === "unspecified" &&
+      (record.pricingScenarioKey.includes("product_page_advertised") ||
+        record.pricingScenarioKey.includes("advertised_from_conditional"));
     if (
-      record.fixationMonths == null ||
-      !Number.isInteger(record.fixationMonths) ||
-      record.fixationMonths <= 0
+      !allowNullFixation &&
+      (record.fixationMonths == null ||
+        !Number.isInteger(record.fixationMonths) ||
+        record.fixationMonths <= 0)
     ) {
       issues.push(
         issue(

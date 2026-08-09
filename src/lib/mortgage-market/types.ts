@@ -169,7 +169,8 @@ export type MortgageRateVariant = {
   pricingScenarioLabel?: string | null;
   /** Extensible purpose; null = purpose-agnostic published rate. */
   financingPurpose?: string | null;
-  fixationMonths: number;
+  /** Null when the source does not publish fixation for this scenario. */
+  fixationMonths: number | null;
   /**
    * Explicit LTV band, or both null when the rate source does not publish an
    * LTV pricing segment. Null ≠ applies to all LTV. Never copy product.maxLtv.
@@ -287,7 +288,7 @@ export type MortgageMarketBenchmark = {
  */
 export type ActiveRateVariantIdentity = {
   productId: string;
-  fixationMonths: number;
+  fixationMonths: number | null;
   ltvMin: number | null;
   ltvMax: number | null;
   ltvMinExclusive: boolean;

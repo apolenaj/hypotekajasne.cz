@@ -46,7 +46,7 @@ export type CatalogRateVariant = {
   pricingScenarioKey: string;
   pricingScenarioLabel?: string | null;
   financingPurpose?: string | null;
-  fixationMonths: number;
+  fixationMonths: number | null;
   ltvMin: number | null;
   ltvMax: number | null;
   ltvMinExclusive: boolean;
@@ -170,7 +170,7 @@ export type MortgageOffer = {
   pricingScenarioKey: string;
   pricingScenarioLabel?: string | null;
   financingPurpose?: string | null;
-  fixationMonths: number;
+  fixationMonths: number | null;
   ltvScope: "explicit" | "unspecified";
   ltvMin: number | null;
   ltvMax: number | null;
@@ -397,6 +397,7 @@ export function getMortgageOffers(
         if (activeOnly && !r.isActive) return false;
         if (
           query.fixationMonths != null &&
+          r.fixationMonths != null &&
           r.fixationMonths !== query.fixationMonths
         ) {
           return false;
@@ -427,9 +428,20 @@ export function getMortgageOffers(
       let matchedAny = false;
       for (const rate of rates) {
         const unspecified = isLtvUnspecified(rate);
+        const fixationUnpublished = rate.fixationMonths == null;
+
+        // Fixation filter: unpublished fixation never matches a selected fixation
+        // as a personalized/matrix row — surface only in the non-LTV-match bucket.
+        if (
+          query.fixationMonths != null &&
+          rate.fixationMonths != null &&
+          rate.fixationMonths !== query.fixationMonths
+        ) {
+          continue;
+        }
 
         if (query.ltv != null) {
-          if (unspecified) {
+          if (unspecified || fixationUnpublished) {
             if (query.includeLtvUnspecified) {
               unspecifiedLtvOffers.push(
                 toOffer(catalog, lender, product, rate, false, nowMs)
@@ -440,6 +452,15 @@ export function getMortgageOffers(
           if (!variantMatchesLtv(rate, query.ltv)) continue;
           offers.push(toOffer(catalog, lender, product, rate, true, nowMs));
           matchedAny = true;
+          continue;
+        }
+
+        if (fixationUnpublished && query.fixationMonths != null) {
+          // No LTV filter but fixation selected — keep conditional "od" visible
+          // without claiming it is the selected fixation.
+          unspecifiedLtvOffers.push(
+            toOffer(catalog, lender, product, rate, false, nowMs)
+          );
           continue;
         }
 

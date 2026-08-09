@@ -72,7 +72,7 @@ export function SazbyExperience({
               "decision_funnel_start:sazby",
               {
                 purpose: offer.financingPurpose ?? undefined,
-                fixation_months: offer.fixationMonths,
+                fixation_months: offer.fixationMonths ?? undefined,
                 selected_lender: offer.lenderSlug,
                 selected_rate_scenario_category: pricingScenarioCategory(
                   offer.pricingScenarioKey

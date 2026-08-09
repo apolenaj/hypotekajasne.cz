@@ -1,5 +1,6 @@
 /**
  * Phase 2 Step 2.2 — evidence integrity for CZ bank import manifest.
+ * Pre-Phase-6: KB + ČS current primary-source refresh.
  */
 
 import assert from "node:assert/strict";
@@ -32,26 +33,21 @@ describe("CZ 2026-08-09 evidence integrity", () => {
       counts.FOUND +
       counts.other;
     assert.equal(sum, counts.total);
-    assert.equal(counts.IMPORT_READY, 65);
+    assert.equal(counts.IMPORT_READY, 66);
     assert.equal(counts.HOLD, 7);
     assert.equal(counts.STRUCTURED, 0);
     assert.equal(counts.VERIFIED, 0);
     assert.equal(counts.FOUND, 0);
     assert.equal(counts.other, 0);
-    assert.equal(counts.total, 72);
+    assert.equal(counts.total, 73);
   });
 
-  it("removes stale KB 5.14 and stores current minimum matrix", () => {
-    const stale = CZ_2026_08_09_MANIFEST.rates.filter(
-      (r) => r.lenderSlug === "komercni-banka" && r.nominalInterestRate === 5.14
-    );
-    assert.equal(stale.length, 0);
-
+  it("stores current KB Oznámení matrix and keeps product-page 5.19 separate", () => {
     const kb3y80 = CZ_2026_08_09_MANIFEST.rates.find(
       (r) => r.recordId === "kb-mortgage-3y-le80"
     );
     assert.ok(kb3y80);
-    assert.equal(kb3y80.nominalInterestRate, 5.39);
+    assert.equal(kb3y80.nominalInterestRate, 5.24);
     assert.equal(kb3y80.rateType, "advertised_from");
     assert.equal(kb3y80.auditStatus, "IMPORT_READY");
     if (kb3y80.ltv.kind === "explicit") {
@@ -64,20 +60,61 @@ describe("CZ 2026-08-09 evidence integrity", () => {
       (r) => r.recordId === "kb-mortgage-3y-gt80-90"
     );
     assert.ok(kb3y90);
-    assert.equal(kb3y90.nominalInterestRate, 5.79);
+    assert.equal(kb3y90.nominalInterestRate, 5.64);
     if (kb3y90.ltv.kind === "explicit") {
       assert.equal(kb3y90.ltv.ltvMinExclusive, true);
     }
+
+    const kb1y80 = CZ_2026_08_09_MANIFEST.rates.find(
+      (r) => r.recordId === "kb-mortgage-1y-le80"
+    );
+    assert.ok(kb1y80);
+    assert.equal(kb1y80.nominalInterestRate, 5.14);
+
+    const stale539 = CZ_2026_08_09_MANIFEST.rates.filter(
+      (r) =>
+        r.recordId === "kb-mortgage-3y-le80" &&
+        Math.abs(r.nominalInterestRate - 5.39) < 1e-9
+    );
+    assert.equal(stale539.length, 0);
+
+    const conditional = CZ_2026_08_09_MANIFEST.rates.find(
+      (r) => r.recordId === "kb-product-page-advertised-from-5-19"
+    );
+    assert.ok(conditional);
+    assert.equal(conditional.nominalInterestRate, 5.19);
+    assert.equal(conditional.fixationMonths, null);
+    assert.equal(conditional.ltv.kind, "unspecified");
+    assert.equal(
+      conditional.pricingScenarioKey,
+      "product_page_advertised_from_conditional"
+    );
+    assert.equal(conditional.auditStatus, "IMPORT_READY");
+    assert.ok((conditional.conditions?.length ?? 0) >= 4);
+    assert.ok(
+      conditional.conditions?.every(
+        (c) => c.rateEffectBp == null && c.effectInferred !== true
+      )
+    );
 
     const kbAm = CZ_2026_08_09_MANIFEST.rates.find(
       (r) => r.recordId === "kb-american-1y"
     );
     assert.ok(kbAm);
-    assert.equal(kbAm.nominalInterestRate, 5.59);
+    assert.equal(kbAm.nominalInterestRate, 5.54);
     assert.equal(kbAm.ltv.kind, "unspecified");
+
+    const example = CZ_2026_08_09_MANIFEST.representativeExamples?.find(
+      (e) => e.recordId === "kb-product-page-representative-example"
+    );
+    assert.ok(example);
+    assert.equal(example.nominalRate, 5.19);
+    assert.equal(example.fixationMonths, 36);
+    assert.equal(example.rpsn, 5.34);
+    assert.equal(example.auditStatus, "IMPORT_READY");
   });
 
-  it("keeps ČS Oznámení scenario IMPORT_READY and campaign 4.94 on HOLD", () => {
+  it("keeps ČS Oznámení scenario IMPORT_READY and product-page 5.09 on HOLD", () => {
     const oznameni = CZ_2026_08_09_MANIFEST.rates.filter(
       (r) =>
         r.lenderSlug === "ceska-sporitelna" &&
@@ -85,16 +122,29 @@ describe("CZ 2026-08-09 evidence integrity", () => {
     );
     assert.equal(oznameni.length, 9);
     assert.ok(oznameni.every((r) => r.auditStatus === "IMPORT_READY"));
+    const cs3y = oznameni.find((r) => r.fixationMonths === 36);
+    assert.ok(cs3y);
+    assert.equal(cs3y.nominalInterestRate, 4.94);
     assert.ok(
-      !oznameni.some((r) => Math.abs(r.nominalInterestRate - 4.94) < 1e-9)
+      !oznameni.some(
+        (r) =>
+          r.fixationMonths === 36 &&
+          Math.abs(r.nominalInterestRate - 5.09) < 1e-9
+      )
+    );
+    assert.ok(
+      oznameni.every((r) =>
+        (r.conditions ?? []).every((c) => c.rateEffectBp == null)
+      )
     );
 
     const campaign = CZ_2026_08_09_MANIFEST.rates.find(
-      (r) => r.recordId === "cs-web-campaign-od-4-94-unreconciled"
+      (r) => r.recordId === "cs-web-campaign-od-5-09-unreconciled"
     );
     assert.ok(campaign);
     assert.equal(campaign.auditStatus, "HOLD");
-    assert.equal(campaign.nominalInterestRate, 4.94);
+    assert.equal(campaign.nominalInterestRate, 5.09);
+    assert.equal(campaign.fixationMonths, null);
   });
 
   it("keeps ČSOB displayed rates HOLD without inventing fixation", () => {
@@ -136,15 +186,16 @@ describe("CZ 2026-08-09 evidence integrity", () => {
       formatEvidenceIntegrityReport(integrity)
     );
     assert.equal(integrity.ok, true);
-    assert.equal(integrity.importReadyRateIds.length, 65);
+    assert.equal(integrity.importReadyRateIds.length, 66);
     assert.ok(integrity.holdRowCount >= 3);
 
     const csCollision = integrity.collisions.find(
-      (c) => c.recordB === "cs-web-campaign-od-4-94-unreconciled"
+      (c) => c.recordB === "cs-web-campaign-od-5-09-unreconciled"
     );
     assert.ok(csCollision);
     assert.equal(csCollision.status, "NEEDS_RECONCILIATION");
-    assert.equal(csCollision.rateB, 4.94);
+    assert.equal(csCollision.rateB, 5.09);
+    assert.equal(csCollision.rateA, 4.94);
 
     console.log(formatEvidenceIntegrityReport(integrity));
     console.log(

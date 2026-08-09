@@ -1,7 +1,7 @@
 -- Phase 2 Step 2.3 — Production import from verified manifest
 -- Source: src/lib/mortgage-market/import/data/cz-2026-08-09.ts
 -- checked_at: 2026-08-09
--- IMPORT_READY rate variants only: 65
+-- IMPORT_READY rate variants only: 66
 -- HOLD rate variants excluded: 7
 -- DO NOT execute blindly — owner review required.
 -- Idempotent via stable UUIDs + ON CONFLICT (id) DO UPDATE.
@@ -9,6 +9,32 @@
 -- Excludes HOLD campaign / stale / CSOB retail / RB Klasik rates.
 
 begin;
+
+-- Allow unpublished fixation for conditional advertised-from scenarios
+alter table public.mortgage_rate_variants
+  alter column fixation_months drop not null;
+alter table public.mortgage_rate_variants
+  drop constraint if exists mortgage_rate_variants_fixation_positive;
+alter table public.mortgage_rate_variants
+  add constraint mortgage_rate_variants_fixation_positive check (
+    fixation_months is null or fixation_months > 0
+  );
+drop index if exists public.mortgage_rate_variants_active_identity_uidx;
+create unique index mortgage_rate_variants_active_identity_uidx
+  on public.mortgage_rate_variants (
+    product_id,
+    coalesce(fixation_months, (-1)),
+    coalesce(ltv_min, (-1)::numeric),
+    coalesce(ltv_max, (-1)::numeric),
+    ltv_min_exclusive,
+    ltv_max_exclusive,
+    pricing_scenario_key,
+    rate_type,
+    coalesce(financing_purpose, ''),
+    coalesce(min_loan_amount, (-1)::numeric),
+    coalesce(max_loan_amount, (-1)::numeric)
+  )
+  where is_active = true;
 
 -- Pre-import assertions (fail transaction if catalog already has conflicting active identities
 -- for this import batch keys). Empty production catalog is expected on first apply.
@@ -230,9 +256,9 @@ insert into public.mortgage_source_evidence (
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
   '15ee8ba6-5803-59fd-a9c8-f3a0ef976a19',
   null,
-  'official_rate_page',
-  'Česká spořitelna — Oznámení o úrokových sazbách (official fixed-rate table)',
-  null,
+  'official_lender_pdf',
+  'Česká spořitelna — Oznámení o úrokových sazbách (účinnost od 29. 5. 2026)',
+  'https://www.csas.cz/banka/content/inet/internet/cs/RR_SK.ANN..xml,pdf_IE',
   'ČS Oznámení o úrokových sazbách',
   '2026-08-09T00:00:00.000Z',
   'primary'
@@ -253,9 +279,9 @@ insert into public.mortgage_source_evidence (
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
   '874616e6-064e-5e6c-a8ef-6b47d67fd041',
   null,
-  'official_rate_page',
-  'Komerční banka official minimum interest rates by fixation and LTV (primary audit 2026-08-09)',
-  null,
+  'official_lender_pdf',
+  'Komerční banka — Oznámení o úrokových sazbách (účinnost od 24. 7. 2026)',
+  'https://www.kb.cz/getmedia/72c05c27-6ecd-4383-8c02-63d679fa4d00/oznameni-o-urokovych-sazbach.pdf',
   'KB minimální výše úrokové sazby podle doby fixace',
   '2026-08-09T00:00:00.000Z',
   'primary'
@@ -326,6 +352,29 @@ insert into public.mortgage_source_evidence (
   'Raiffeisenbank — Hypotéka s nižší splátkou official representative example',
   null,
   'RB Hypotéka s nižší splátkou — reprezentativní příklad',
+  '2026-08-09T00:00:00.000Z',
+  'primary'
+)
+on conflict (id) do update set
+  lender_id = excluded.lender_id,
+  source_type = excluded.source_type,
+  source_name = excluded.source_name,
+  source_url = excluded.source_url,
+  document_title = excluded.document_title,
+  checked_at = excluded.checked_at,
+  reliability_tier = excluded.reliability_tier;
+
+insert into public.mortgage_source_evidence (
+  id, lender_id, product_id, source_type, source_name, source_url,
+  document_title, checked_at, reliability_tier
+) values (
+  'ea271d28-bc5a-5e71-a91d-6502192c41ad',
+  '874616e6-064e-5e6c-a8ef-6b47d67fd041',
+  null,
+  'official_lender_web',
+  'Komerční banka — Hypotéka product page (conditional advertised-from 5,19 % p.a.)',
+  'https://www.kb.cz/cs/obcane/pujcky/hypoteky/hypoteka',
+  'KB Hypotéka — produktová stránka',
   '2026-08-09T00:00:00.000Z',
   'primary'
 )
@@ -1010,7 +1059,7 @@ where id = '4538e3aa-c077-58aa-9f30-a9cd2f058e10'
 
 -- 4) rate variants (IMPORT_READY only)
 
--- EXPECTED_COUNT=65
+-- EXPECTED_COUNT=66
 
 insert into public.mortgage_rate_variants (
   id, product_id, pricing_scenario_key, pricing_scenario_label, financing_purpose,
@@ -2948,14 +2997,14 @@ insert into public.mortgage_rate_variants (
   '458ebec8-9812-561e-9fcc-a22220fa2af3',
   'd821ac9c-2173-5bba-a8b8-2ab5a71f5584',
   'oznameni_account_ppi_budoucnost',
-  'Oznámení o úrokových sazbách — rates reflect active ČS repayment account + repayment insurance + Hypotéka pro budoucnost (no numeric campaign discount inferred)',
+  'Oznámení o úrokových sazbách — sazby zohledňují aktivní účet ČS, pojištění schopnosti splácet a Hypotéku pro budoucnost (číselný efekt slev v Oznámení neuveden)',
   'purchase',
   12,
   null,
   null,
   false,
   false,
-  5.29,
+  5.14,
   'standard',
   null,
   null,
@@ -2964,7 +3013,7 @@ insert into public.mortgage_rate_variants (
   '2026-08-09T00:00:00.000Z',
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
-  'Do not mix with web headline od 4.94% campaign values (see HOLD collision). [manifest:cs-oznameni-1y]'
+  'Do not mix with product-page headline od 5,09% (see HOLD collision). [manifest:cs-oznameni-1y]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -2995,14 +3044,14 @@ insert into public.mortgage_rate_variants (
   'a3fa982d-8018-5085-b4eb-e43064b14135',
   'd821ac9c-2173-5bba-a8b8-2ab5a71f5584',
   'oznameni_account_ppi_budoucnost',
-  'Oznámení o úrokových sazbách — rates reflect active ČS repayment account + repayment insurance + Hypotéka pro budoucnost (no numeric campaign discount inferred)',
+  'Oznámení o úrokových sazbách — sazby zohledňují aktivní účet ČS, pojištění schopnosti splácet a Hypotéku pro budoucnost (číselný efekt slev v Oznámení neuveden)',
   'purchase',
   24,
   null,
   null,
   false,
   false,
-  5.09,
+  4.94,
   'standard',
   null,
   null,
@@ -3011,7 +3060,7 @@ insert into public.mortgage_rate_variants (
   '2026-08-09T00:00:00.000Z',
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
-  'Do not mix with web headline od 4.94% campaign values (see HOLD collision). [manifest:cs-oznameni-2y]'
+  'Do not mix with product-page headline od 5,09% (see HOLD collision). [manifest:cs-oznameni-2y]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3042,14 +3091,14 @@ insert into public.mortgage_rate_variants (
   'e059011f-c62f-5062-9285-178869acfa9c',
   'd821ac9c-2173-5bba-a8b8-2ab5a71f5584',
   'oznameni_account_ppi_budoucnost',
-  'Oznámení o úrokových sazbách — rates reflect active ČS repayment account + repayment insurance + Hypotéka pro budoucnost (no numeric campaign discount inferred)',
+  'Oznámení o úrokových sazbách — sazby zohledňují aktivní účet ČS, pojištění schopnosti splácet a Hypotéku pro budoucnost (číselný efekt slev v Oznámení neuveden)',
   'purchase',
   36,
   null,
   null,
   false,
   false,
-  5.09,
+  4.94,
   'standard',
   null,
   null,
@@ -3058,7 +3107,7 @@ insert into public.mortgage_rate_variants (
   '2026-08-09T00:00:00.000Z',
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
-  'Do not mix with web headline od 4.94% campaign values (see HOLD collision). [manifest:cs-oznameni-3y]'
+  'Do not mix with product-page headline od 5,09% (see HOLD collision). [manifest:cs-oznameni-3y]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3089,14 +3138,14 @@ insert into public.mortgage_rate_variants (
   '85d9846b-3c18-5219-9598-75b245ba6f95',
   'd821ac9c-2173-5bba-a8b8-2ab5a71f5584',
   'oznameni_account_ppi_budoucnost',
-  'Oznámení o úrokových sazbách — rates reflect active ČS repayment account + repayment insurance + Hypotéka pro budoucnost (no numeric campaign discount inferred)',
+  'Oznámení o úrokových sazbách — sazby zohledňují aktivní účet ČS, pojištění schopnosti splácet a Hypotéku pro budoucnost (číselný efekt slev v Oznámení neuveden)',
   'purchase',
   48,
   null,
   null,
   false,
   false,
-  5.19,
+  5.04,
   'standard',
   null,
   null,
@@ -3105,7 +3154,7 @@ insert into public.mortgage_rate_variants (
   '2026-08-09T00:00:00.000Z',
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
-  'Do not mix with web headline od 4.94% campaign values (see HOLD collision). [manifest:cs-oznameni-4y]'
+  'Do not mix with product-page headline od 5,09% (see HOLD collision). [manifest:cs-oznameni-4y]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3136,14 +3185,14 @@ insert into public.mortgage_rate_variants (
   'c1803d60-36a5-55a9-a16b-5108be45ad9b',
   'd821ac9c-2173-5bba-a8b8-2ab5a71f5584',
   'oznameni_account_ppi_budoucnost',
-  'Oznámení o úrokových sazbách — rates reflect active ČS repayment account + repayment insurance + Hypotéka pro budoucnost (no numeric campaign discount inferred)',
+  'Oznámení o úrokových sazbách — sazby zohledňují aktivní účet ČS, pojištění schopnosti splácet a Hypotéku pro budoucnost (číselný efekt slev v Oznámení neuveden)',
   'purchase',
   60,
   null,
   null,
   false,
   false,
-  5.29,
+  5.14,
   'standard',
   null,
   null,
@@ -3152,7 +3201,7 @@ insert into public.mortgage_rate_variants (
   '2026-08-09T00:00:00.000Z',
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
-  'Do not mix with web headline od 4.94% campaign values (see HOLD collision). [manifest:cs-oznameni-5y]'
+  'Do not mix with product-page headline od 5,09% (see HOLD collision). [manifest:cs-oznameni-5y]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3183,14 +3232,14 @@ insert into public.mortgage_rate_variants (
   'e699579f-f3d7-54d8-a54e-c17c70a2fc7c',
   'd821ac9c-2173-5bba-a8b8-2ab5a71f5584',
   'oznameni_account_ppi_budoucnost',
-  'Oznámení o úrokových sazbách — rates reflect active ČS repayment account + repayment insurance + Hypotéka pro budoucnost (no numeric campaign discount inferred)',
+  'Oznámení o úrokových sazbách — sazby zohledňují aktivní účet ČS, pojištění schopnosti splácet a Hypotéku pro budoucnost (číselný efekt slev v Oznámení neuveden)',
   'purchase',
   96,
   null,
   null,
   false,
   false,
-  5.49,
+  5.34,
   'standard',
   null,
   null,
@@ -3199,7 +3248,7 @@ insert into public.mortgage_rate_variants (
   '2026-08-09T00:00:00.000Z',
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
-  'Do not mix with web headline od 4.94% campaign values (see HOLD collision). [manifest:cs-oznameni-8y]'
+  'Do not mix with product-page headline od 5,09% (see HOLD collision). [manifest:cs-oznameni-8y]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3230,14 +3279,14 @@ insert into public.mortgage_rate_variants (
   'd9791f6b-9576-5b9c-a943-57c797b9668b',
   'd821ac9c-2173-5bba-a8b8-2ab5a71f5584',
   'oznameni_account_ppi_budoucnost',
-  'Oznámení o úrokových sazbách — rates reflect active ČS repayment account + repayment insurance + Hypotéka pro budoucnost (no numeric campaign discount inferred)',
+  'Oznámení o úrokových sazbách — sazby zohledňují aktivní účet ČS, pojištění schopnosti splácet a Hypotéku pro budoucnost (číselný efekt slev v Oznámení neuveden)',
   'purchase',
   120,
   null,
   null,
   false,
   false,
-  5.69,
+  5.54,
   'standard',
   null,
   null,
@@ -3246,7 +3295,7 @@ insert into public.mortgage_rate_variants (
   '2026-08-09T00:00:00.000Z',
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
-  'Do not mix with web headline od 4.94% campaign values (see HOLD collision). [manifest:cs-oznameni-10y]'
+  'Do not mix with product-page headline od 5,09% (see HOLD collision). [manifest:cs-oznameni-10y]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3277,14 +3326,14 @@ insert into public.mortgage_rate_variants (
   'fb6cb740-8b21-52fa-a7fe-ed04a6a5d132',
   'd821ac9c-2173-5bba-a8b8-2ab5a71f5584',
   'oznameni_account_ppi_budoucnost',
-  'Oznámení o úrokových sazbách — rates reflect active ČS repayment account + repayment insurance + Hypotéka pro budoucnost (no numeric campaign discount inferred)',
+  'Oznámení o úrokových sazbách — sazby zohledňují aktivní účet ČS, pojištění schopnosti splácet a Hypotéku pro budoucnost (číselný efekt slev v Oznámení neuveden)',
   'purchase',
   180,
   null,
   null,
   false,
   false,
-  5.89,
+  5.74,
   'standard',
   null,
   null,
@@ -3293,7 +3342,7 @@ insert into public.mortgage_rate_variants (
   '2026-08-09T00:00:00.000Z',
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
-  'Do not mix with web headline od 4.94% campaign values (see HOLD collision). [manifest:cs-oznameni-15y]'
+  'Do not mix with product-page headline od 5,09% (see HOLD collision). [manifest:cs-oznameni-15y]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3324,14 +3373,14 @@ insert into public.mortgage_rate_variants (
   'e6b372f5-5b7a-53b9-8374-c3e7fc7dea42',
   'd821ac9c-2173-5bba-a8b8-2ab5a71f5584',
   'oznameni_account_ppi_budoucnost',
-  'Oznámení o úrokových sazbách — rates reflect active ČS repayment account + repayment insurance + Hypotéka pro budoucnost (no numeric campaign discount inferred)',
+  'Oznámení o úrokových sazbách — sazby zohledňují aktivní účet ČS, pojištění schopnosti splácet a Hypotéku pro budoucnost (číselný efekt slev v Oznámení neuveden)',
   'purchase',
   240,
   null,
   null,
   false,
   false,
-  6.09,
+  5.94,
   'standard',
   null,
   null,
@@ -3340,7 +3389,7 @@ insert into public.mortgage_rate_variants (
   '2026-08-09T00:00:00.000Z',
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
-  'Do not mix with web headline od 4.94% campaign values (see HOLD collision). [manifest:cs-oznameni-20y]'
+  'Do not mix with product-page headline od 5,09% (see HOLD collision). [manifest:cs-oznameni-20y]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3371,14 +3420,14 @@ insert into public.mortgage_rate_variants (
   '3728c2da-b73e-5571-b700-46ac8ebd4541',
   '53f176ac-6488-507e-b02a-82eeb07477a6',
   'minimum_rate_by_fixation_ltv_le_80',
-  'Minimální výše úrokové sazby podle doby fixace (official KB wording)',
+  'Minimální sazba dle sazebníku',
   'purchase',
   12,
   0,
   80,
   false,
   false,
-  5.19,
+  5.14,
   'advertised_from',
   null,
   null,
@@ -3387,7 +3436,7 @@ insert into public.mortgage_rate_variants (
   '2026-08-09T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
-  '[manifest:kb-mortgage-1y-le80]'
+  'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-mortgage-1y-le80]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3418,14 +3467,14 @@ insert into public.mortgage_rate_variants (
   'ec1eb016-3055-5c77-8335-fe7f04dedfe6',
   '53f176ac-6488-507e-b02a-82eeb07477a6',
   'minimum_rate_by_fixation_ltv_gt80_90',
-  'Minimální výše úrokové sazby podle doby fixace (official KB wording)',
+  'Minimální sazba dle sazebníku',
   'purchase',
   12,
   80,
   90,
   true,
   false,
-  5.59,
+  5.54,
   'advertised_from',
   null,
   null,
@@ -3434,7 +3483,7 @@ insert into public.mortgage_rate_variants (
   '2026-08-09T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
-  '[manifest:kb-mortgage-1y-gt80-90]'
+  'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-mortgage-1y-gt80-90]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3465,14 +3514,14 @@ insert into public.mortgage_rate_variants (
   '64893db7-d065-5a0f-972b-98c23c5cb74e',
   '53f176ac-6488-507e-b02a-82eeb07477a6',
   'minimum_rate_by_fixation_ltv_le_80',
-  'Minimální výše úrokové sazby podle doby fixace (official KB wording)',
+  'Minimální sazba dle sazebníku',
   'purchase',
   24,
   0,
   80,
   false,
   false,
-  5.29,
+  5.19,
   'advertised_from',
   null,
   null,
@@ -3481,7 +3530,7 @@ insert into public.mortgage_rate_variants (
   '2026-08-09T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
-  '[manifest:kb-mortgage-2y-le80]'
+  'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-mortgage-2y-le80]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3512,14 +3561,14 @@ insert into public.mortgage_rate_variants (
   'a7667380-8169-5f27-86f3-6e9f241615c4',
   '53f176ac-6488-507e-b02a-82eeb07477a6',
   'minimum_rate_by_fixation_ltv_gt80_90',
-  'Minimální výše úrokové sazby podle doby fixace (official KB wording)',
+  'Minimální sazba dle sazebníku',
   'purchase',
   24,
   80,
   90,
   true,
   false,
-  5.69,
+  5.59,
   'advertised_from',
   null,
   null,
@@ -3528,7 +3577,7 @@ insert into public.mortgage_rate_variants (
   '2026-08-09T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
-  '[manifest:kb-mortgage-2y-gt80-90]'
+  'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-mortgage-2y-gt80-90]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3559,14 +3608,14 @@ insert into public.mortgage_rate_variants (
   '1f7dcbe8-02ac-55b8-bc6b-3f881c42beae',
   '53f176ac-6488-507e-b02a-82eeb07477a6',
   'minimum_rate_by_fixation_ltv_le_80',
-  'Minimální výše úrokové sazby podle doby fixace (official KB wording)',
+  'Minimální sazba dle sazebníku',
   'purchase',
   36,
   0,
   80,
   false,
   false,
-  5.39,
+  5.24,
   'advertised_from',
   null,
   null,
@@ -3575,7 +3624,7 @@ insert into public.mortgage_rate_variants (
   '2026-08-09T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
-  '[manifest:kb-mortgage-3y-le80]'
+  'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-mortgage-3y-le80]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3606,14 +3655,14 @@ insert into public.mortgage_rate_variants (
   'b483887c-a925-5841-9656-200ba9f4c99c',
   '53f176ac-6488-507e-b02a-82eeb07477a6',
   'minimum_rate_by_fixation_ltv_gt80_90',
-  'Minimální výše úrokové sazby podle doby fixace (official KB wording)',
+  'Minimální sazba dle sazebníku',
   'purchase',
   36,
   80,
   90,
   true,
   false,
-  5.79,
+  5.64,
   'advertised_from',
   null,
   null,
@@ -3622,7 +3671,7 @@ insert into public.mortgage_rate_variants (
   '2026-08-09T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
-  '[manifest:kb-mortgage-3y-gt80-90]'
+  'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-mortgage-3y-gt80-90]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3653,7 +3702,7 @@ insert into public.mortgage_rate_variants (
   'dacdf90d-c4c8-5337-be34-d72b998d583b',
   '53f176ac-6488-507e-b02a-82eeb07477a6',
   'minimum_rate_by_fixation_ltv_le_80',
-  'Minimální výše úrokové sazby podle doby fixace (official KB wording)',
+  'Minimální sazba dle sazebníku',
   'purchase',
   48,
   0,
@@ -3669,7 +3718,7 @@ insert into public.mortgage_rate_variants (
   '2026-08-09T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
-  '[manifest:kb-mortgage-4y-le80]'
+  'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-mortgage-4y-le80]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3700,7 +3749,7 @@ insert into public.mortgage_rate_variants (
   '8fbcc5c7-6b8c-5735-836f-a6bcda61a3a1',
   '53f176ac-6488-507e-b02a-82eeb07477a6',
   'minimum_rate_by_fixation_ltv_gt80_90',
-  'Minimální výše úrokové sazby podle doby fixace (official KB wording)',
+  'Minimální sazba dle sazebníku',
   'purchase',
   48,
   80,
@@ -3716,7 +3765,7 @@ insert into public.mortgage_rate_variants (
   '2026-08-09T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
-  '[manifest:kb-mortgage-4y-gt80-90]'
+  'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-mortgage-4y-gt80-90]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3747,7 +3796,7 @@ insert into public.mortgage_rate_variants (
   'e25a061d-b4cd-5729-8fa2-ccfb70e0d3a0',
   '53f176ac-6488-507e-b02a-82eeb07477a6',
   'minimum_rate_by_fixation_ltv_le_80',
-  'Minimální výše úrokové sazby podle doby fixace (official KB wording)',
+  'Minimální sazba dle sazebníku',
   'purchase',
   60,
   0,
@@ -3763,7 +3812,7 @@ insert into public.mortgage_rate_variants (
   '2026-08-09T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
-  '[manifest:kb-mortgage-5y-le80]'
+  'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-mortgage-5y-le80]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3794,7 +3843,7 @@ insert into public.mortgage_rate_variants (
   '48fa2ffa-5088-5a1a-a5cb-a1e823914b10',
   '53f176ac-6488-507e-b02a-82eeb07477a6',
   'minimum_rate_by_fixation_ltv_gt80_90',
-  'Minimální výše úrokové sazby podle doby fixace (official KB wording)',
+  'Minimální sazba dle sazebníku',
   'purchase',
   60,
   80,
@@ -3810,7 +3859,7 @@ insert into public.mortgage_rate_variants (
   '2026-08-09T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
-  '[manifest:kb-mortgage-5y-gt80-90]'
+  'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-mortgage-5y-gt80-90]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3841,14 +3890,14 @@ insert into public.mortgage_rate_variants (
   '660c77e9-eea3-51af-8448-0440aeed9cb3',
   '55ae593d-1eee-585f-b03c-ea6e7f91c72e',
   'minimum_rate_by_fixation_ltv_unspecified',
-  'Minimální výše úrokové sazby podle doby fixace (official KB wording)',
+  'Minimální sazba dle sazebníku',
   'non_purpose',
   12,
   null,
   null,
   false,
   false,
-  5.59,
+  5.54,
   'advertised_from',
   null,
   null,
@@ -3857,7 +3906,7 @@ insert into public.mortgage_rate_variants (
   '2026-08-09T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
-  '[manifest:kb-american-1y]'
+  'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-american-1y]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3888,14 +3937,14 @@ insert into public.mortgage_rate_variants (
   '13089fca-e6cf-5b76-9545-beb1707fe714',
   '55ae593d-1eee-585f-b03c-ea6e7f91c72e',
   'minimum_rate_by_fixation_ltv_unspecified',
-  'Minimální výše úrokové sazby podle doby fixace (official KB wording)',
+  'Minimální sazba dle sazebníku',
   'non_purpose',
   24,
   null,
   null,
   false,
   false,
-  5.69,
+  5.59,
   'advertised_from',
   null,
   null,
@@ -3904,7 +3953,7 @@ insert into public.mortgage_rate_variants (
   '2026-08-09T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
-  '[manifest:kb-american-2y]'
+  'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-american-2y]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3935,14 +3984,14 @@ insert into public.mortgage_rate_variants (
   'e746d67f-0048-504c-a6d4-8d385582c4fc',
   '55ae593d-1eee-585f-b03c-ea6e7f91c72e',
   'minimum_rate_by_fixation_ltv_unspecified',
-  'Minimální výše úrokové sazby podle doby fixace (official KB wording)',
+  'Minimální sazba dle sazebníku',
   'non_purpose',
   36,
   null,
   null,
   false,
   false,
-  5.79,
+  5.64,
   'advertised_from',
   null,
   null,
@@ -3951,7 +4000,7 @@ insert into public.mortgage_rate_variants (
   '2026-08-09T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
-  '[manifest:kb-american-3y]'
+  'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-american-3y]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3982,7 +4031,7 @@ insert into public.mortgage_rate_variants (
   'a4b3ea53-1153-575e-b4a9-dfd14f49b193',
   '55ae593d-1eee-585f-b03c-ea6e7f91c72e',
   'minimum_rate_by_fixation_ltv_unspecified',
-  'Minimální výše úrokové sazby podle doby fixace (official KB wording)',
+  'Minimální sazba dle sazebníku',
   'non_purpose',
   48,
   null,
@@ -3998,7 +4047,7 @@ insert into public.mortgage_rate_variants (
   '2026-08-09T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
-  '[manifest:kb-american-4y]'
+  'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-american-4y]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -4029,7 +4078,7 @@ insert into public.mortgage_rate_variants (
   '8df3b13f-a397-50d6-9cf1-0e14592c1a24',
   '55ae593d-1eee-585f-b03c-ea6e7f91c72e',
   'minimum_rate_by_fixation_ltv_unspecified',
-  'Minimální výše úrokové sazby podle doby fixace (official KB wording)',
+  'Minimální sazba dle sazebníku',
   'non_purpose',
   60,
   null,
@@ -4045,7 +4094,54 @@ insert into public.mortgage_rate_variants (
   '2026-08-09T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
-  '[manifest:kb-american-5y]'
+  'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-american-5y]'
+)
+on conflict (id) do update set
+  pricing_scenario_key = excluded.pricing_scenario_key,
+  pricing_scenario_label = excluded.pricing_scenario_label,
+  financing_purpose = excluded.financing_purpose,
+  fixation_months = excluded.fixation_months,
+  ltv_min = excluded.ltv_min,
+  ltv_max = excluded.ltv_max,
+  ltv_min_exclusive = excluded.ltv_min_exclusive,
+  ltv_max_exclusive = excluded.ltv_max_exclusive,
+  nominal_interest_rate = excluded.nominal_interest_rate,
+  rate_type = excluded.rate_type,
+  min_loan_amount = excluded.min_loan_amount,
+  max_loan_amount = excluded.max_loan_amount,
+  valid_from = excluded.valid_from,
+  checked_at = excluded.checked_at,
+  is_active = true,
+  source_evidence_id = excluded.source_evidence_id,
+  notes = excluded.notes,
+  updated_at = now();
+
+insert into public.mortgage_rate_variants (
+  id, product_id, pricing_scenario_key, pricing_scenario_label, financing_purpose,
+  fixation_months, ltv_min, ltv_max, ltv_min_exclusive, ltv_max_exclusive,
+  nominal_interest_rate, rate_type, min_loan_amount, max_loan_amount,
+  valid_from, valid_to, checked_at, is_active, source_evidence_id, notes
+) values (
+  '9b762b00-7f77-53e2-b5c9-14a6b113853c',
+  '53f176ac-6488-507e-b02a-82eeb07477a6',
+  'product_page_advertised_from_conditional',
+  'Zvýhodněná sazba od',
+  'purchase',
+  null,
+  null,
+  null,
+  false,
+  false,
+  5.19,
+  'advertised_from',
+  null,
+  null,
+  '2026-08-09T00:00:00.000Z',
+  null,
+  '2026-08-09T00:00:00.000Z',
+  true,
+  'ea271d28-bc5a-5e71-a91d-6502192c41ad',
+  'Product-page conditional od 5,19%. Fixation and LTV not stated on page — must not personalized-match LTV or replace Oznámení matrix. [manifest:kb-product-page-advertised-from-5-19]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -5825,8 +5921,8 @@ insert into public.mortgage_rate_conditions (
   null,
   null,
   null,
-  -50,
-  'Active ČS repayment account — published effect −50 bp.',
+  null,
+  'Splácení z aktivního účtu u České spořitelny — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.',
   true,
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
@@ -5862,8 +5958,8 @@ insert into public.mortgage_rate_conditions (
   null,
   null,
   null,
-  -10,
-  'Repayment insurance — published effect −10 bp.',
+  null,
+  'Pojištění schopnosti splácet od PČS — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.',
   true,
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
@@ -5900,7 +5996,7 @@ insert into public.mortgage_rate_conditions (
   null,
   null,
   null,
-  'Hypotéka pro budoucnost — reflected in Oznámení scenario; no current numerical discount in primary evidence.',
+  'Hypotéka pro budoucnost — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.',
   false,
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
@@ -5936,8 +6032,8 @@ insert into public.mortgage_rate_conditions (
   null,
   null,
   null,
-  -50,
-  'Active ČS repayment account — published effect −50 bp.',
+  null,
+  'Splácení z aktivního účtu u České spořitelny — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.',
   true,
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
@@ -5973,8 +6069,8 @@ insert into public.mortgage_rate_conditions (
   null,
   null,
   null,
-  -10,
-  'Repayment insurance — published effect −10 bp.',
+  null,
+  'Pojištění schopnosti splácet od PČS — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.',
   true,
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
@@ -6011,7 +6107,7 @@ insert into public.mortgage_rate_conditions (
   null,
   null,
   null,
-  'Hypotéka pro budoucnost — reflected in Oznámení scenario; no current numerical discount in primary evidence.',
+  'Hypotéka pro budoucnost — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.',
   false,
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
@@ -6047,8 +6143,8 @@ insert into public.mortgage_rate_conditions (
   null,
   null,
   null,
-  -50,
-  'Active ČS repayment account — published effect −50 bp.',
+  null,
+  'Splácení z aktivního účtu u České spořitelny — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.',
   true,
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
@@ -6084,8 +6180,8 @@ insert into public.mortgage_rate_conditions (
   null,
   null,
   null,
-  -10,
-  'Repayment insurance — published effect −10 bp.',
+  null,
+  'Pojištění schopnosti splácet od PČS — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.',
   true,
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
@@ -6122,7 +6218,7 @@ insert into public.mortgage_rate_conditions (
   null,
   null,
   null,
-  'Hypotéka pro budoucnost — reflected in Oznámení scenario; no current numerical discount in primary evidence.',
+  'Hypotéka pro budoucnost — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.',
   false,
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
@@ -6158,8 +6254,8 @@ insert into public.mortgage_rate_conditions (
   null,
   null,
   null,
-  -50,
-  'Active ČS repayment account — published effect −50 bp.',
+  null,
+  'Splácení z aktivního účtu u České spořitelny — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.',
   true,
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
@@ -6195,8 +6291,8 @@ insert into public.mortgage_rate_conditions (
   null,
   null,
   null,
-  -10,
-  'Repayment insurance — published effect −10 bp.',
+  null,
+  'Pojištění schopnosti splácet od PČS — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.',
   true,
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
@@ -6233,7 +6329,7 @@ insert into public.mortgage_rate_conditions (
   null,
   null,
   null,
-  'Hypotéka pro budoucnost — reflected in Oznámení scenario; no current numerical discount in primary evidence.',
+  'Hypotéka pro budoucnost — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.',
   false,
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
@@ -6269,8 +6365,8 @@ insert into public.mortgage_rate_conditions (
   null,
   null,
   null,
-  -50,
-  'Active ČS repayment account — published effect −50 bp.',
+  null,
+  'Splácení z aktivního účtu u České spořitelny — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.',
   true,
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
@@ -6306,8 +6402,8 @@ insert into public.mortgage_rate_conditions (
   null,
   null,
   null,
-  -10,
-  'Repayment insurance — published effect −10 bp.',
+  null,
+  'Pojištění schopnosti splácet od PČS — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.',
   true,
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
@@ -6344,7 +6440,7 @@ insert into public.mortgage_rate_conditions (
   null,
   null,
   null,
-  'Hypotéka pro budoucnost — reflected in Oznámení scenario; no current numerical discount in primary evidence.',
+  'Hypotéka pro budoucnost — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.',
   false,
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
@@ -6380,8 +6476,8 @@ insert into public.mortgage_rate_conditions (
   null,
   null,
   null,
-  -50,
-  'Active ČS repayment account — published effect −50 bp.',
+  null,
+  'Splácení z aktivního účtu u České spořitelny — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.',
   true,
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
@@ -6417,8 +6513,8 @@ insert into public.mortgage_rate_conditions (
   null,
   null,
   null,
-  -10,
-  'Repayment insurance — published effect −10 bp.',
+  null,
+  'Pojištění schopnosti splácet od PČS — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.',
   true,
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
@@ -6455,7 +6551,7 @@ insert into public.mortgage_rate_conditions (
   null,
   null,
   null,
-  'Hypotéka pro budoucnost — reflected in Oznámení scenario; no current numerical discount in primary evidence.',
+  'Hypotéka pro budoucnost — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.',
   false,
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
@@ -6491,8 +6587,8 @@ insert into public.mortgage_rate_conditions (
   null,
   null,
   null,
-  -50,
-  'Active ČS repayment account — published effect −50 bp.',
+  null,
+  'Splácení z aktivního účtu u České spořitelny — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.',
   true,
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
@@ -6528,8 +6624,8 @@ insert into public.mortgage_rate_conditions (
   null,
   null,
   null,
-  -10,
-  'Repayment insurance — published effect −10 bp.',
+  null,
+  'Pojištění schopnosti splácet od PČS — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.',
   true,
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
@@ -6566,7 +6662,7 @@ insert into public.mortgage_rate_conditions (
   null,
   null,
   null,
-  'Hypotéka pro budoucnost — reflected in Oznámení scenario; no current numerical discount in primary evidence.',
+  'Hypotéka pro budoucnost — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.',
   false,
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
@@ -6602,8 +6698,8 @@ insert into public.mortgage_rate_conditions (
   null,
   null,
   null,
-  -50,
-  'Active ČS repayment account — published effect −50 bp.',
+  null,
+  'Splácení z aktivního účtu u České spořitelny — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.',
   true,
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
@@ -6639,8 +6735,8 @@ insert into public.mortgage_rate_conditions (
   null,
   null,
   null,
-  -10,
-  'Repayment insurance — published effect −10 bp.',
+  null,
+  'Pojištění schopnosti splácet od PČS — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.',
   true,
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
@@ -6677,7 +6773,7 @@ insert into public.mortgage_rate_conditions (
   null,
   null,
   null,
-  'Hypotéka pro budoucnost — reflected in Oznámení scenario; no current numerical discount in primary evidence.',
+  'Hypotéka pro budoucnost — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.',
   false,
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
@@ -6713,8 +6809,8 @@ insert into public.mortgage_rate_conditions (
   null,
   null,
   null,
-  -50,
-  'Active ČS repayment account — published effect −50 bp.',
+  null,
+  'Splácení z aktivního účtu u České spořitelny — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.',
   true,
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
@@ -6750,8 +6846,8 @@ insert into public.mortgage_rate_conditions (
   null,
   null,
   null,
-  -10,
-  'Repayment insurance — published effect −10 bp.',
+  null,
+  'Pojištění schopnosti splácet od PČS — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.',
   true,
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
@@ -6788,10 +6884,158 @@ insert into public.mortgage_rate_conditions (
   null,
   null,
   null,
-  'Hypotéka pro budoucnost — reflected in Oznámení scenario; no current numerical discount in primary evidence.',
+  'Hypotéka pro budoucnost — sleva je v sazbě zohledněna; číselný efekt Oznámení neuvádí.',
   false,
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
+  true,
+  '2026-08-09T00:00:00.000Z'
+)
+on conflict (id) do update set
+  condition_type = excluded.condition_type,
+  condition_role = excluded.condition_role,
+  insurance_kind = excluded.insurance_kind,
+  requirement_mode = excluded.requirement_mode,
+  rate_effect_bp = excluded.rate_effect_bp,
+  description = excluded.description,
+  is_required = excluded.is_required,
+  is_optional = excluded.is_optional,
+  source_evidence_id = excluded.source_evidence_id,
+  is_active = true,
+  updated_at = now();
+
+insert into public.mortgage_rate_conditions (
+  id, rate_variant_id, condition_type, condition_role, insurance_kind,
+  requirement_mode, operator, value_numeric, value_text, unit,
+  rate_effect_bp, description, is_required, is_optional,
+  source_evidence_id, is_active, valid_from
+) values (
+  'fbf7b176-3aa9-5716-8bac-cfe72ccaf67a',
+  '9b762b00-7f77-53e2-b5c9-14a6b113853c',
+  'income_domiciliation_required',
+  'qualifying',
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  'Směřování příjmů na účet vedený u KB',
+  true,
+  false,
+  'ea271d28-bc5a-5e71-a91d-6502192c41ad',
+  true,
+  '2026-08-09T00:00:00.000Z'
+)
+on conflict (id) do update set
+  condition_type = excluded.condition_type,
+  condition_role = excluded.condition_role,
+  insurance_kind = excluded.insurance_kind,
+  requirement_mode = excluded.requirement_mode,
+  rate_effect_bp = excluded.rate_effect_bp,
+  description = excluded.description,
+  is_required = excluded.is_required,
+  is_optional = excluded.is_optional,
+  source_evidence_id = excluded.source_evidence_id,
+  is_active = true,
+  updated_at = now();
+
+insert into public.mortgage_rate_conditions (
+  id, rate_variant_id, condition_type, condition_role, insurance_kind,
+  requirement_mode, operator, value_numeric, value_text, unit,
+  rate_effect_bp, description, is_required, is_optional,
+  source_evidence_id, is_active, valid_from
+) values (
+  'dce95499-da20-5ae1-ac18-4da20dca0125',
+  '9b762b00-7f77-53e2-b5c9-14a6b113853c',
+  'life_insurance_required',
+  'qualifying',
+  'life',
+  'mandatory_for_rate',
+  null,
+  null,
+  null,
+  null,
+  null,
+  'Rizikové životní pojištění u Komerční pojišťovny, a. s.',
+  true,
+  false,
+  'ea271d28-bc5a-5e71-a91d-6502192c41ad',
+  true,
+  '2026-08-09T00:00:00.000Z'
+)
+on conflict (id) do update set
+  condition_type = excluded.condition_type,
+  condition_role = excluded.condition_role,
+  insurance_kind = excluded.insurance_kind,
+  requirement_mode = excluded.requirement_mode,
+  rate_effect_bp = excluded.rate_effect_bp,
+  description = excluded.description,
+  is_required = excluded.is_required,
+  is_optional = excluded.is_optional,
+  source_evidence_id = excluded.source_evidence_id,
+  is_active = true,
+  updated_at = now();
+
+insert into public.mortgage_rate_conditions (
+  id, rate_variant_id, condition_type, condition_role, insurance_kind,
+  requirement_mode, operator, value_numeric, value_text, unit,
+  rate_effect_bp, description, is_required, is_optional,
+  source_evidence_id, is_active, valid_from
+) values (
+  'aaf99ca9-99ec-5fdd-909b-e4e560305c7b',
+  '9b762b00-7f77-53e2-b5c9-14a6b113853c',
+  'property_insurance_required',
+  'qualifying',
+  'property',
+  'mandatory_for_rate',
+  null,
+  null,
+  null,
+  null,
+  null,
+  'Pojištění zastavené nemovitosti u Komerční pojišťovny, a. s.',
+  true,
+  false,
+  'ea271d28-bc5a-5e71-a91d-6502192c41ad',
+  true,
+  '2026-08-09T00:00:00.000Z'
+)
+on conflict (id) do update set
+  condition_type = excluded.condition_type,
+  condition_role = excluded.condition_role,
+  insurance_kind = excluded.insurance_kind,
+  requirement_mode = excluded.requirement_mode,
+  rate_effect_bp = excluded.rate_effect_bp,
+  description = excluded.description,
+  is_required = excluded.is_required,
+  is_optional = excluded.is_optional,
+  source_evidence_id = excluded.source_evidence_id,
+  is_active = true,
+  updated_at = now();
+
+insert into public.mortgage_rate_conditions (
+  id, rate_variant_id, condition_type, condition_role, insurance_kind,
+  requirement_mode, operator, value_numeric, value_text, unit,
+  rate_effect_bp, description, is_required, is_optional,
+  source_evidence_id, is_active, valid_from
+) values (
+  '49206581-517a-5751-ae91-f295d5bd3b52',
+  '9b762b00-7f77-53e2-b5c9-14a6b113853c',
+  'PENB_class_requirement',
+  'qualifying',
+  null,
+  null,
+  null,
+  null,
+  'A|B',
+  null,
+  null,
+  'PENB energetická třída A nebo B k zastavené nemovitosti',
+  true,
+  false,
+  'ea271d28-bc5a-5e71-a91d-6502192c41ad',
   true,
   '2026-08-09T00:00:00.000Z'
 )
@@ -6945,6 +7189,52 @@ insert into public.mortgage_representative_examples (
   '2026-08-09T00:00:00.000Z',
   '2026-08-09T00:00:00.000Z',
   '7ba4ea56-eb7a-5c7a-be47-564c78de33a6',
+  true
+)
+on conflict (id) do update set
+  rate_variant_id = excluded.rate_variant_id,
+  loan_amount = excluded.loan_amount,
+  term_years = excluded.term_years,
+  fixation_months = excluded.fixation_months,
+  nominal_rate = excluded.nominal_rate,
+  rpsn = excluded.rpsn,
+  monthly_payment = excluded.monthly_payment,
+  total_amount_payable = excluded.total_amount_payable,
+  number_of_payments = excluded.number_of_payments,
+  insurance_included = excluded.insurance_included,
+  insurance_cost = excluded.insurance_cost,
+  account_cost = excluded.account_cost,
+  representative_example_text = excluded.representative_example_text,
+  checked_at = excluded.checked_at,
+  source_evidence_id = excluded.source_evidence_id,
+  is_active = true,
+  updated_at = now();
+
+insert into public.mortgage_representative_examples (
+  id, product_id, rate_variant_id, loan_amount, term_years, fixation_months,
+  nominal_rate, rpsn, monthly_payment, total_amount_payable, number_of_payments,
+  included_fees, insurance_included, insurance_cost, account_cost,
+  representative_example_text, checked_at, valid_from, source_evidence_id, is_active
+) values (
+  '0ee2ceb5-8d3a-5a12-ae05-df1ae492e424',
+  '53f176ac-6488-507e-b02a-82eeb07477a6',
+  '9b762b00-7f77-53e2-b5c9-14a6b113853c',
+  4000000,
+  30,
+  36,
+  5.19,
+  5.34,
+  21966,
+  7903819.83,
+  360,
+  null,
+  null,
+  null,
+  null,
+  'Published representative example [product_page_advertised_from_conditional] [manifest:kb-product-page-representative-example]',
+  '2026-08-09T00:00:00.000Z',
+  '2026-08-09T00:00:00.000Z',
+  'ea271d28-bc5a-5e71-a91d-6502192c41ad',
   true
 )
 on conflict (id) do update set
@@ -7348,8 +7638,8 @@ declare
   rb_klasik_n int;
 begin
   select count(*) into rate_n from public.mortgage_rate_variants where is_active and notes like '%[manifest:%';
-  if rate_n <> 65 then
-    raise exception 'IMPORT ASSERT: expected 65 manifest rates, found %', rate_n;
+  if rate_n <> 66 then
+    raise exception 'IMPORT ASSERT: expected 66 manifest rates, found %', rate_n;
   end if;
 
   select count(*) into missing_ev
@@ -7378,7 +7668,8 @@ begin
   select count(*) into bad_fix
   from public.mortgage_rate_variants
   where is_active and notes like '%[manifest:%'
-    and (fixation_months is null or fixation_months <= 0);
+    and fixation_months is not null
+    and fixation_months <= 0;
   if bad_fix <> 0 then
     raise exception 'IMPORT ASSERT: invalid fixation';
   end if;
@@ -7387,7 +7678,7 @@ begin
     select 1
     from public.mortgage_rate_variants
     where is_active
-    group by product_id, fixation_months,
+    group by product_id, coalesce(fixation_months, (-1)),
       coalesce(ltv_min, (-1)::numeric), coalesce(ltv_max, (-1)::numeric),
       ltv_min_exclusive, ltv_max_exclusive, pricing_scenario_key, rate_type,
       coalesce(financing_purpose, ''),
@@ -7398,17 +7689,24 @@ begin
     raise exception 'IMPORT ASSERT: duplicate active identities: %', dupes;
   end if;
 
+  -- Current CS Oznámení 3y must be 4.94 (not stale 5.09)
   select count(*) into cs_494 from public.mortgage_rate_variants v
   join public.mortgage_catalog_products p on p.id = v.product_id
   join public.mortgage_lenders l on l.id = p.lender_id
-  where v.is_active and l.slug = 'ceska-sporitelna' and v.nominal_interest_rate = 4.94;
-  if cs_494 <> 0 then raise exception 'IMPORT ASSERT: CS 4.94 imported'; end if;
+  where v.is_active and l.slug = 'ceska-sporitelna'
+    and v.fixation_months = 36
+    and v.nominal_interest_rate = 4.94
+    and v.pricing_scenario_key = 'oznameni_account_ppi_budoucnost';
+  if cs_494 <> 1 then raise exception 'IMPORT ASSERT: expected CS 3y Oznámení 4.94'; end if;
 
+  -- Stale KB 3y 5.39 must be gone; current 5.24 must exist
   select count(*) into kb_514 from public.mortgage_rate_variants v
   join public.mortgage_catalog_products p on p.id = v.product_id
   join public.mortgage_lenders l on l.id = p.lender_id
-  where v.is_active and l.slug = 'komercni-banka' and v.nominal_interest_rate = 5.14;
-  if kb_514 <> 0 then raise exception 'IMPORT ASSERT: stale KB 5.14 imported'; end if;
+  where v.is_active and l.slug = 'komercni-banka'
+    and v.fixation_months = 36
+    and v.nominal_interest_rate = 5.39;
+  if kb_514 <> 0 then raise exception 'IMPORT ASSERT: stale KB 3y 5.39 still active'; end if;
 
   select count(*) into csob_n from public.mortgage_rate_variants v
   join public.mortgage_catalog_products p on p.id = v.product_id

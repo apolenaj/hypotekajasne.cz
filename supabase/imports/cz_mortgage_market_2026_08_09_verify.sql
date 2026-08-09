@@ -46,7 +46,7 @@ from (
   where is_active
   group by
     product_id,
-    fixation_months,
+    coalesce(fixation_months, (-1)),
     coalesce(ltv_min, (-1)::numeric),
     coalesce(ltv_max, (-1)::numeric),
     ltv_min_exclusive,
@@ -70,30 +70,43 @@ from public.mortgage_rate_variants
 where is_active
   and ((ltv_min is null) <> (ltv_max is null));
 
--- H) Česká spořitelna — confirm 4.94 absent
-select count(*)::int as cs_494_count
-from public.mortgage_rate_variants v
-join public.mortgage_catalog_products p on p.id = v.product_id
-join public.mortgage_lenders l on l.id = p.lender_id
-where v.is_active
-  and l.slug = 'ceska-sporitelna'
-  and v.nominal_interest_rate = 4.94;
-
+-- H) Česká spořitelna — current Oznámení matrix (incl. 4.94 at 2y/3y)
 select v.fixation_months, v.nominal_interest_rate, v.pricing_scenario_key
 from public.mortgage_rate_variants v
 join public.mortgage_catalog_products p on p.id = v.product_id
 join public.mortgage_lenders l on l.id = p.lender_id
 where v.is_active and l.slug = 'ceska-sporitelna'
-order by v.fixation_months;
+order by v.fixation_months nulls last;
 
--- I) KB — confirm stale 5.14 absent
-select count(*)::int as kb_514_count
+select count(*)::int as cs_3y_494_count
+from public.mortgage_rate_variants v
+join public.mortgage_catalog_products p on p.id = v.product_id
+join public.mortgage_lenders l on l.id = p.lender_id
+where v.is_active
+  and l.slug = 'ceska-sporitelna'
+  and v.fixation_months = 36
+  and v.nominal_interest_rate = 4.94
+  and v.pricing_scenario_key = 'oznameni_account_ppi_budoucnost';
+
+-- I) KB — confirm stale 3y matrix absent; current 3y <=80 = 5.24 present
+select count(*)::int as kb_stale_3y_539_count
 from public.mortgage_rate_variants v
 join public.mortgage_catalog_products p on p.id = v.product_id
 join public.mortgage_lenders l on l.id = p.lender_id
 where v.is_active
   and l.slug = 'komercni-banka'
-  and v.nominal_interest_rate = 5.14;
+  and v.fixation_months = 36
+  and v.nominal_interest_rate = 5.39;
+
+select count(*)::int as kb_current_3y_524_count
+from public.mortgage_rate_variants v
+join public.mortgage_catalog_products p on p.id = v.product_id
+join public.mortgage_lenders l on l.id = p.lender_id
+where v.is_active
+  and l.slug = 'komercni-banka'
+  and v.fixation_months = 36
+  and v.nominal_interest_rate = 5.24
+  and v.pricing_scenario_key = 'minimum_rate_by_fixation_ltv_le_80';
 
 -- J) CSOB active retail rate variants (expect 0)
 select count(*)::int as csob_active_rates
@@ -114,10 +127,10 @@ where v.is_active
 -- Expected import snapshot (generator reconciliation)
 -- lenders=7
 -- products=16
--- evidence=9
--- rate_variants=65
--- conditions=74
+-- evidence=10
+-- rate_variants=66
+-- conditions=78
 -- fees=2
--- examples=2
+-- examples=3
 -- eligibility=12
 -- benchmarks=0
