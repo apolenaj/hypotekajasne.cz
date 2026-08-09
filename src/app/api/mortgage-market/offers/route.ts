@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
  * Not wired into production UI yet.
  *
  * GET /api/mortgage-market/offers?country=CZ&purpose=purchase&fixationMonths=36&ltv=75
- * Optional: lender, product, pricingScenarioKey, includeLtvUnspecified=1
+ * Optional: lender, product, productType, borrowerScope, pricingScenarioKey, includeLtvUnspecified=1
  */
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -18,6 +18,9 @@ export async function GET(request: Request) {
   const purpose = url.searchParams.get("purpose")?.trim() || undefined;
   const lenderSlug = url.searchParams.get("lender")?.trim() || undefined;
   const productSlug = url.searchParams.get("product")?.trim() || undefined;
+  const productType = url.searchParams.get("productType")?.trim() || undefined;
+  const borrowerScope =
+    url.searchParams.get("borrowerScope")?.trim() || undefined;
   const pricingScenarioKey =
     url.searchParams.get("pricingScenarioKey")?.trim() || undefined;
 
@@ -56,6 +59,8 @@ export async function GET(request: Request) {
     ltv,
     lenderSlug,
     productSlug,
+    productType,
+    borrowerScope,
     pricingScenarioKey,
     includeLtvUnspecified,
   });

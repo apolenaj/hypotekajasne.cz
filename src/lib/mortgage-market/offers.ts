@@ -34,6 +34,8 @@ export type CatalogProduct = {
   slug: string;
   name: string;
   productType: string;
+  /** natural_person | entrepreneur | … — default natural_person when absent */
+  borrowerScope?: string | null;
   maxLtv?: number | null;
   isActive: boolean;
 };
@@ -129,6 +131,10 @@ export type GetMortgageOffersQuery = {
   ltv?: number;
   lenderSlug?: string;
   productSlug?: string;
+  /** Explicit product_type filter (e.g. business_secured). */
+  productType?: string;
+  /** Explicit borrower_scope filter (e.g. entrepreneur). */
+  borrowerScope?: string;
   pricingScenarioKey?: string;
   /**
    * When true with `ltv`, also return unspecified-LTV published rates in
@@ -157,6 +163,7 @@ export type MortgageOffer = {
   productSlug: string;
   productName: string;
   productType: string;
+  borrowerScope: string;
   rateVariantId: string;
   nominalInterestRate: number;
   rateType: MortgageMarketRateType;
@@ -223,6 +230,51 @@ function purposeMatches(
   return financingPurpose === queryPurpose;
 }
 
+const BUSINESS_PRODUCT_TYPES = new Set(["business_secured"]);
+const ENTREPRENEUR_BORROWER_SCOPES = new Set([
+  "entrepreneur",
+  "legal_entity",
+  "company",
+]);
+
+/** Trade / entrepreneur / business-secured products — not ordinary residential. */
+export function isBusinessOrientedProduct(product: CatalogProduct): boolean {
+  const type = (product.productType || "").toLowerCase();
+  const scope = (product.borrowerScope || "natural_person").toLowerCase();
+  return (
+    BUSINESS_PRODUCT_TYPES.has(type) || ENTREPRENEUR_BORROWER_SCOPES.has(scope)
+  );
+}
+
+/**
+ * Ordinary purchase/refinance journeys exclude business/entrepreneur products
+ * unless the caller explicitly asks via productSlug, productType, or borrowerScope.
+ * financing_purpose overlap alone must not surface trade mortgages.
+ */
+export function productMatchesQuery(
+  product: CatalogProduct,
+  query: GetMortgageOffersQuery
+): boolean {
+  if (query.productSlug && product.slug !== query.productSlug) return false;
+  if (query.productType && product.productType !== query.productType) {
+    return false;
+  }
+  if (query.borrowerScope) {
+    const scope = product.borrowerScope || "natural_person";
+    if (scope !== query.borrowerScope) return false;
+  }
+
+  const explicitProductAudience =
+    Boolean(query.productSlug) ||
+    Boolean(query.productType) ||
+    Boolean(query.borrowerScope);
+
+  if (!explicitProductAudience && isBusinessOrientedProduct(product)) {
+    return false;
+  }
+  return true;
+}
+
 function toOffer(
   catalog: MortgageMarketCatalog,
   lender: CatalogLender,
@@ -264,6 +316,7 @@ function toOffer(
     productSlug: product.slug,
     productName: product.name,
     productType: product.productType,
+    borrowerScope: product.borrowerScope || "natural_person",
     rateVariantId: rate.id,
     nominalInterestRate: rate.nominalInterestRate,
     rateType: rate.rateType,
@@ -323,7 +376,7 @@ export function getMortgageOffers(
       (p) =>
         p.lenderId === lender.id &&
         (!activeOnly || p.isActive) &&
-        (!query.productSlug || p.slug === query.productSlug)
+        productMatchesQuery(p, query)
     );
 
     if (products.length === 0) {

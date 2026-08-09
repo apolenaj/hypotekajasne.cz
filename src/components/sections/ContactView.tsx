@@ -70,8 +70,11 @@ export function ContactView() {
             Ozvěte se nám
           </h1>
           <p className="mt-4 max-w-2xl text-lg text-emerald-50/90">
-            Máte dotaz k fungování platformy nebo se chcete stát naším
-            partnerem? Napište nám.
+            Řešíte hypotéku nebo máte otázku k výpočtu či sazbám? Ozvěte se nám.
+          </p>
+          <p className="mt-2 max-w-2xl text-sm text-emerald-100/80">
+            Zájem o partnerství nebo otázky k fungování platformy nám můžete
+            napsat také.
           </p>
         </div>
       </section>

@@ -244,11 +244,12 @@ export function PublishedRatesPanel({
 
         <div className="mt-8">
           <h3 className="font-heading text-lg font-semibold text-text-dark">
-            Sazby odpovídající zadanému LTV
+            Sazby s cenovým pásmem odpovídajícím vašemu LTV
           </h3>
           <p className="mt-1 text-sm text-muted-foreground">
             Banka v sazebníku uvádí pásmo LTV, které odpovídá vašemu zadání (
-            {query.ltv}&nbsp;%).
+            {query.ltv}&nbsp;%). Shoda LTV sama o sobě neznamená nárok na úvěr
+            nebo sazbu. Banka posuzuje i další podmínky.
           </p>
           {matchedGroups.length === 0 ? (
             <p className="mt-4 text-sm text-muted-foreground">

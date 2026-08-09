@@ -58,7 +58,7 @@ export async function loadMortgageMarketCatalog(
     client
       .from("mortgage_catalog_products")
       .select(
-        "id,lender_id,slug,name,product_type,max_ltv,is_active"
+        "id,lender_id,slug,name,product_type,borrower_scope,max_ltv,is_active"
       )
       .eq("is_active", true),
     client
@@ -121,6 +121,9 @@ export async function loadMortgageMarketCatalog(
     slug: str(r.slug),
     name: str(r.name),
     productType: str(r.product_type),
+    borrowerScope: r.borrower_scope
+      ? str(r.borrower_scope)
+      : "natural_person",
     maxLtv: num(r.max_ltv),
     isActive: Boolean(r.is_active),
   }));

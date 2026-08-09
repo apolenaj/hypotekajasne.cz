@@ -173,6 +173,80 @@ function productsOfLender(slug: string): Set<string> {
   );
 }
 
+describe("getMortgageOffers — residential vs entrepreneur product audience", () => {
+  it("ordinary purchase / 36m keeps MONETA housing 4.99 and excludes trade 5.59", () => {
+    const ordinary = getMortgageOffers(catalog, {
+      purpose: "purchase",
+      fixationMonths: 36,
+      includeLtvUnspecified: true,
+      nowMs: NOW,
+    });
+    const moneta = [
+      ...ordinary.offers,
+      ...ordinary.unspecifiedLtvOffers,
+    ].filter((o) => o.lenderSlug === "moneta");
+
+    assert.ok(
+      moneta.some(
+        (o) =>
+          o.productSlug === "mortgage-housing" &&
+          o.nominalInterestRate === 4.99
+      )
+    );
+    assert.ok(
+      !moneta.some(
+        (o) =>
+          o.productSlug === "mortgage-trade-entrepreneur" ||
+          o.nominalInterestRate === 5.59 ||
+          o.productType === "business_secured" ||
+          o.borrowerScope === "entrepreneur"
+      )
+    );
+  });
+
+  it("explicit entrepreneur / business path still returns MONETA trade 5.59", () => {
+    const bySlug = getMortgageOffers(catalog, {
+      purpose: "purchase",
+      fixationMonths: 36,
+      productSlug: "mortgage-trade-entrepreneur",
+      includeLtvUnspecified: true,
+      nowMs: NOW,
+    });
+    const tradeBySlug = [
+      ...bySlug.offers,
+      ...bySlug.unspecifiedLtvOffers,
+    ];
+    assert.ok(
+      tradeBySlug.some(
+        (o) =>
+          o.productSlug === "mortgage-trade-entrepreneur" &&
+          o.nominalInterestRate === 5.59
+      )
+    );
+
+    const byAudience = getMortgageOffers(catalog, {
+      purpose: "purchase",
+      fixationMonths: 36,
+      productType: "business_secured",
+      borrowerScope: "entrepreneur",
+      includeLtvUnspecified: true,
+      nowMs: NOW,
+    });
+    const tradeByAudience = [
+      ...byAudience.offers,
+      ...byAudience.unspecifiedLtvOffers,
+    ];
+    assert.ok(
+      tradeByAudience.some(
+        (o) =>
+          o.lenderSlug === "moneta" &&
+          o.productSlug === "mortgage-trade-entrepreneur" &&
+          o.nominalInterestRate === 5.59
+      )
+    );
+  });
+});
+
 describe("getMortgageOffers — unknown LTV safety", () => {
   it("G: MONETA 36m LTV 75 never claims personalized LTV match", () => {
     const strict = getMortgageOffers(catalog, {

@@ -52,7 +52,20 @@ describe("Phase 3 UX — purchase LTV75 / 36m", () => {
       0
     );
     assert.ok(
-      result.unspecifiedLtvOffers.some((o) => o.lenderSlug === "moneta")
+      result.unspecifiedLtvOffers.some(
+        (o) =>
+          o.lenderSlug === "moneta" &&
+          o.productSlug === "mortgage-housing" &&
+          o.nominalInterestRate === 4.99
+      )
+    );
+    assert.ok(
+      !result.unspecifiedLtvOffers.some(
+        (o) =>
+          o.lenderSlug === "moneta" &&
+          (o.productSlug === "mortgage-trade-entrepreneur" ||
+            o.nominalInterestRate === 5.59)
+      )
     );
     assert.ok(
       result.unspecifiedLtvOffers.some(

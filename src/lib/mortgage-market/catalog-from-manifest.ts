@@ -104,6 +104,7 @@ export function catalogFromImportManifest(
     slug: p.slug,
     name: p.name,
     productType: p.productType,
+    borrowerScope: p.borrowerScope ?? "natural_person",
     maxLtv: p.maxLtv ?? null,
     isActive: true,
   }));
