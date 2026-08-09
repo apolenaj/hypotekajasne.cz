@@ -31,7 +31,7 @@ export function DataStatusBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-md font-semibold uppercase tracking-wide ring-1 ring-inset",
+        "inline-flex items-center rounded-md font-semibold tracking-wide ring-1 ring-inset",
         size === "sm" ? "px-1.5 py-0.5 text-[10px]" : "px-2 py-1 text-xs",
         TONE[status],
         className

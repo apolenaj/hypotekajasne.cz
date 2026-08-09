@@ -11,7 +11,13 @@ const UTM_PENDING_KEY = "hj-analytics-utm-pending";
 const VISITOR_STORAGE_KEY = "hj-analytics-visitor-v1";
 const SESSION_STORAGE_KEY = "hj-analytics-session-v1";
 
-const UTM_PARAM_KEYS = ["utm_source", "utm_medium", "utm_campaign"] as const;
+const UTM_PARAM_KEYS = [
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_content",
+  "utm_term",
+] as const;
 
 export type UtmParamKey = (typeof UTM_PARAM_KEYS)[number];
 
@@ -19,6 +25,8 @@ export type PersistedAttribution = {
   utm_source: string | null;
   utm_medium: string | null;
   utm_campaign: string | null;
+  utm_content: string | null;
+  utm_term: string | null;
   captured_at: string;
   landing_path: string | null;
 };
@@ -145,7 +153,13 @@ export function persistAttributionAfterConsent(
   if (!hasAnalyticsConsentFromStorage()) return null;
 
   const existing = readJson<PersistedAttribution>(ATTRIBUTION_STORAGE_KEY);
-  if (existing?.utm_source || existing?.utm_medium || existing?.utm_campaign) {
+  if (
+    existing?.utm_source ||
+    existing?.utm_medium ||
+    existing?.utm_campaign ||
+    existing?.utm_content ||
+    existing?.utm_term
+  ) {
     return existing;
   }
 
@@ -157,13 +171,21 @@ export function persistAttributionAfterConsent(
     utm_source: merged.utm_source ?? null,
     utm_medium: merged.utm_medium ?? null,
     utm_campaign: merged.utm_campaign ?? null,
+    utm_content: merged.utm_content ?? null,
+    utm_term: merged.utm_term ?? null,
     captured_at: new Date().toISOString(),
     landing_path:
       sanitizePath(pending?.landing_path) ??
       sanitizePath(pathname ?? window.location.pathname),
   };
 
-  if (!next.utm_source && !next.utm_medium && !next.utm_campaign) {
+  if (
+    !next.utm_source &&
+    !next.utm_medium &&
+    !next.utm_campaign &&
+    !next.utm_content &&
+    !next.utm_term
+  ) {
     return null;
   }
 
@@ -249,13 +271,19 @@ export function getAnalyticsContext(): Partial<AnalyticsContext> {
   const ctx: Partial<AnalyticsContext> = {
     ...(visitor ?? {}),
     has_attribution: Boolean(
-      attr?.utm_source || attr?.utm_medium || attr?.utm_campaign
+      attr?.utm_source ||
+        attr?.utm_medium ||
+        attr?.utm_campaign ||
+        attr?.utm_content ||
+        attr?.utm_term
     ),
   };
 
   if (attr?.utm_source) ctx.utm_source = attr.utm_source;
   if (attr?.utm_medium) ctx.utm_medium = attr.utm_medium;
   if (attr?.utm_campaign) ctx.utm_campaign = attr.utm_campaign;
+  if (attr?.utm_content) ctx.utm_content = attr.utm_content;
+  if (attr?.utm_term) ctx.utm_term = attr.utm_term;
 
   return ctx;
 }

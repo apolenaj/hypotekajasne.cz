@@ -4,9 +4,10 @@ import { ArrowRight } from "lucide-react";
 import { MiniMortgageCalculator } from "@/components/home/MiniMortgageCalculator";
 import { TrackedCtaLink } from "@/components/analytics/TrackedCtaLink";
 import { routes } from "@/lib/routes";
+import { CTA_CS } from "@/lib/ux/cta";
 
 /**
- * Hero — dvousloupcový layout: copy vlevo, kalkulačka placeholder vpravo.
+ * Hero — brand-first mortgage journey: copy + quick calculator.
  */
 export function CockpitHero() {
   return (
@@ -37,44 +38,47 @@ export function CockpitHero() {
       <div className="relative z-10 mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
         <div className="grid min-w-0 items-center gap-8 md:grid-cols-[55fr_45fr] md:gap-8 lg:gap-12">
           <div className="order-1 min-w-0 md:order-none">
+            <p className="home-reveal text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-gold">
+              Hypotéka Jasně
+            </p>
             <h1
               id="home-hero-heading"
-              className="home-reveal font-heading text-[1.55rem] font-bold leading-[1.25] tracking-tight text-white sm:text-3xl lg:text-[2.25rem]"
+              className="home-reveal home-reveal-delay-1 mt-3 font-heading text-[1.55rem] font-bold leading-[1.25] tracking-tight text-white sm:text-3xl lg:text-[2.25rem]"
             >
-              Zjistěte, co si můžete dovolit. Kde koupit. Jak to financovat.
+              Zjistěte, jak může vypadat vaše hypotéka.
             </h1>
 
-            <p className="home-reveal home-reveal-delay-1 mt-4 max-w-xl text-sm leading-relaxed text-white/80 sm:text-base">
-              Zjistěte svůj bezpečný rozpočet, porovnejte možnosti financování a
-              udělejte lepší rozhodnutí při koupi nemovitosti.
+            <p className="home-reveal home-reveal-delay-2 mt-4 max-w-xl text-sm leading-relaxed text-white/80 sm:text-base">
+              Spočítejte financování a měsíční splátku. Porovnejte ověřené
+              zveřejněné sazby bank a jejich podmínky na jednom místě. Konečná
+              nabídka vždy závisí na vaší situaci.
             </p>
 
-            <div className="home-reveal home-reveal-delay-2 mt-7 flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <div className="home-reveal home-reveal-delay-3 mt-7 flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
               <TrackedCtaLink
-                href={routes.mojeMoznosti}
-                ctaId="hero_moje_moznosti"
-                toolId="moje_moznosti"
+                href="#hero-calculator"
+                ctaId="hero_spocitat_hypoteku"
                 className="inline-flex h-11 min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-muted-gold px-5 text-sm font-semibold text-text-dark transition-colors hover:bg-muted-gold-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-deep-teal sm:w-auto"
               >
-                Zjistit moje možnosti
+                {CTA_CS.calculateMortgage}
                 <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
               </TrackedCtaLink>
               <TrackedCtaLink
-                href={routes.pruvodceInvestora}
-                ctaId="hero_porovnat_trhy"
+                href={routes.sazby}
+                ctaId="hero_porovnat_sazby"
                 className="inline-flex h-11 min-h-11 w-full items-center justify-center rounded-lg border border-white/25 bg-transparent px-5 text-sm font-medium text-white/90 transition-colors hover:border-white/50 hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-deep-teal sm:w-auto"
               >
-                Porovnat trhy
+                {CTA_CS.compareRates}
               </TrackedCtaLink>
             </div>
 
             <p className="home-reveal home-reveal-delay-3 mt-4 text-xs text-white/60">
-              Bez registrace • 2 minuty
+              Bez registrace · sazby z oficiálních zdrojů bank
             </p>
           </div>
 
           <div className="order-2 min-w-0 md:order-none md:flex md:justify-end">
-            <div id="hero-calculator-placeholder" className="w-full min-w-0 max-w-full">
+            <div id="hero-calculator" className="w-full min-w-0 max-w-full">
               <MiniMortgageCalculator />
             </div>
           </div>

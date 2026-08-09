@@ -21,20 +21,20 @@ describe("PROMPT 13 — public status taxonomy", () => {
     assert.deepEqual(
       PUBLIC_STATUS_ORDER.map((s) => PUBLIC_STATUS_MEANINGS[s].code),
       [
-        "LIVE",
-        "VERIFIED",
-        "MODEL",
-        "ESTIMATE",
-        "UNVERIFIED",
-        "NEEDS UPDATE",
-        "PARTNER OFFER",
+        "Aktuální data",
+        "Ověřeno",
+        "Model",
+        "Odhad",
+        "Neověřeno",
+        "Aktualizujeme",
+        "Partner",
       ]
     );
   });
 
-  it("maps STALE → NEEDS UPDATE and PARTNER_QUOTE → PARTNER OFFER", () => {
-    assert.equal(statusBadgeLabel("STALE"), "NEEDS UPDATE");
-    assert.equal(statusBadgeLabel("PARTNER_QUOTE"), "PARTNER OFFER");
+  it("maps STALE → Aktualizujeme and PARTNER_QUOTE → Partner (Czech UI)", () => {
+    assert.equal(statusBadgeLabel("STALE"), "Aktualizujeme");
+    assert.equal(statusBadgeLabel("PARTNER_QUOTE"), "Partner");
   });
 
   it("each status has a short Czech explanation", () => {

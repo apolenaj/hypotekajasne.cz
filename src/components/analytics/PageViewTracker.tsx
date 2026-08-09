@@ -2,7 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { track, trackCanonical } from "@/lib/analytics/track";
+import { track } from "@/lib/analytics/track";
+import { trackEventOnce } from "@/lib/analytics/track-event";
 
 function referrerHost(): string | undefined {
   try {
@@ -19,7 +20,7 @@ function isHomePath(path: string): boolean {
 
 /**
  * Fires page_view on client navigations (App Router).
- * Homepage also fires homepage_view for dashboard KPIs.
+ * Homepage also fires homepage_view once per session (no duplicate page_view).
  * Consent-gated inside track() — no vendor calls here.
  */
 export function PageViewTracker() {
@@ -34,13 +35,13 @@ export function PageViewTracker() {
     const base = {
       path: pathname,
       referrer_host: referrerHost(),
-      funnel_id: "moje_moznosti_north_star",
+      funnel_id: "phase4_conversion",
     };
 
     track("page_view", base);
 
     if (isHomePath(pathname)) {
-      trackCanonical("homepage_view", "page_view", {
+      trackEventOnce("homepage_view", `homepage_view:${pathname}`, {
         ...base,
         path: pathname,
       });

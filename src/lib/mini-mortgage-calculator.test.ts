@@ -1,32 +1,39 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
-  matchMiniTeaserOffers,
+  buildSazbyHref,
+  computeMiniMortgage,
   miniMortgageCtaLabel,
+  MINI_MORTGAGE_DEFAULTS,
 } from "@/lib/mini-mortgage-calculator";
 
-describe("mini mortgage teaser CTA", () => {
-  it("uses neutral CTA without invented bank offer counts", () => {
-    const match = matchMiniTeaserOffers(5);
-    assert.ok(match.count >= 3);
-    assert.equal(match.lowestRatePercent, 4.19);
-    assert.equal(miniMortgageCtaLabel(match), "Zjistit moje možnosti");
-    assert.equal(miniMortgageCtaLabel(), "Zjistit moje možnosti");
+describe("mini mortgage calculator", () => {
+  it("uses model rate for payment and derives LTV / loan", () => {
+    const result = computeMiniMortgage({
+      propertyPriceCzk: 6_000_000,
+      ownFundsCzk: 1_200_000,
+      termYears: 30,
+      purpose: "purchase",
+      fixationMonths: 36,
+    });
+    assert.equal(result.loanAmountCzk, 4_800_000);
+    assert.equal(result.ltvPct, 80);
+    assert.equal(result.annualRatePercent, MINI_MORTGAGE_DEFAULTS.annualRatePercent);
+    assert.ok(result.monthlyPaymentCzk > 0);
   });
 
-  it("keeps teaser matching available for internal demos", () => {
-    const match = matchMiniTeaserOffers(3.5);
-    assert.equal(match.count, 0);
-    assert.equal(miniMortgageCtaLabel(match), "Zjistit moje možnosti");
-  });
-
-  it("uses Czech plural counts only inside match helper", () => {
-    const one = matchMiniTeaserOffers(4.0);
-    assert.equal(one.count, 1);
-    assert.equal(one.lowestRatePercent, 4.19);
-
-    const few = matchMiniTeaserOffers(4.2);
-    assert.equal(few.count, 2);
-    assert.equal(few.lowestRatePercent, 4.19);
+  it("CTA stays neutral and sazby href carries funnel context", () => {
+    assert.equal(miniMortgageCtaLabel(), "Spočítat hypotéku");
+    const result = computeMiniMortgage({
+      propertyPriceCzk: 5_000_000,
+      ownFundsCzk: 1_250_000,
+      termYears: 25,
+      purpose: "refinance",
+      fixationMonths: 36,
+    });
+    const href = buildSazbyHref(result);
+    assert.ok(href.includes("purpose=refinance"));
+    assert.ok(href.includes("fixationMonths=36"));
+    assert.ok(href.includes("ltv=75"));
   });
 });

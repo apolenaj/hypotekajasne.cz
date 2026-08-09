@@ -74,7 +74,7 @@ describe("analytics taxonomy", () => {
 
   it("has unique event names and stable count", () => {
     assert.equal(ANALYTICS_EVENTS.length, new Set(ANALYTICS_EVENTS).size);
-    assert.equal(ANALYTICS_EVENTS.length, 56);
+    assert.equal(ANALYTICS_EVENTS.length, 70);
   });
 
   it("EVENT_DICTIONARY covers core conversion events", () => {
@@ -133,12 +133,13 @@ describe("analytics taxonomy", () => {
 describe("analytics attribution", () => {
   it("sanitizes UTM values — alphanumeric only, max 64 chars", () => {
     const parsed = parseUtmFromLocation(
-      "?utm_source=Google_Ads&utm_medium=cpc&utm_campaign=spring-2026&utm_content=ignored"
+      "?utm_source=Google_Ads&utm_medium=cpc&utm_campaign=spring-2026&utm_content=hero_a&utm_term=hypoteka"
     );
     assert.equal(parsed.utm_source, "google_ads");
     assert.equal(parsed.utm_medium, "cpc");
     assert.equal(parsed.utm_campaign, "spring-2026");
-    assert.equal((parsed as { utm_content?: string }).utm_content, undefined);
+    assert.equal(parsed.utm_content, "hero_a");
+    assert.equal(parsed.utm_term, "hypoteka");
   });
 
   it("rejects unsafe UTM injection patterns", () => {
@@ -191,7 +192,12 @@ describe("funnel dashboard spec", () => {
     assert.ok(FUNNEL_DASHBOARD_SPEC.privacyNote.includes("raw incomes"));
     assert.ok(
       FUNNEL_DASHBOARD_SPEC.recommendedWidgets.some((n) =>
-        n.includes("kpi_calculator_completion_rate")
+        n.includes("calculator_complete")
+      )
+    );
+    assert.ok(
+      FUNNEL_DASHBOARD_SPEC.recommendedWidgets.some((n) =>
+        n.includes("lead_success")
       )
     );
   });

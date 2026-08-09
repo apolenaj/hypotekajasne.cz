@@ -16,12 +16,12 @@ export const NUMBER_PIPELINE_STEPS = [
   {
     id: "compute",
     title: "Výpočet / model",
-    text: "Kde je potřeba, spočítáme anuitu, LTV, scénář. Výsledek modelu vždy zůstane označený jako MODEL — ne jako LIVE nabídka.",
+    text: "Kde je potřeba, spočítáme anuitu, LTV, scénář. Výsledek modelu vždy zůstane označený jako Model — ne jako ověřená nabídka banky.",
   },
   {
     id: "verifiedAt",
     title: "Datum ověření",
-    text: "Uložíme, kdy jsme údaj naposledy ověřili. Po překročení freshness okna přejde LIVE na NEEDS UPDATE.",
+    text: "Uložíme, kdy jsme údaj naposledy ověřili. Po překročení freshness okna přejde stav na Aktualizujeme.",
   },
   {
     id: "display",

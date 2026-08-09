@@ -1,31 +1,48 @@
 "use client";
 
 import { CockpitHero } from "@/components/home/CockpitHero";
-import { HomeDecisionLab } from "@/components/home/HomeDecisionLab";
-import { HomeJourney } from "@/components/home/HomeJourney";
-import { HomeIntents } from "@/components/home/HomeIntents";
-import { HomeTrustBlock } from "@/components/home/HomeTrustBlock";
+import { HomeSituationSelector } from "@/components/home/HomeSituationSelector";
 import { HomeHowItWorks } from "@/components/home/HomeHowItWorks";
-import { HomeWhyDecision } from "@/components/home/HomeWhyDecision";
-import { LiveDataTrustBar } from "@/components/home/LiveDataTrustBar";
+import { HomeTeamStrip } from "@/components/home/HomeTeamStrip";
 import { HomeFinalCta } from "@/components/home/HomeFinalCta";
+import { PublishedRatesPanel } from "@/components/mortgage-market/PublishedRatesPanel";
+import { RpsnEducationBlock } from "@/components/mortgage-market/RpsnEducationBlock";
+import type { GetMortgageOffersResult } from "@/lib/mortgage-market/offers";
+
+const DEFAULT_QUERY = {
+  purpose: "purchase" as const,
+  fixationMonths: 36,
+  ltv: 75,
+};
+
+type HomeExperienceProps = {
+  initialOffers: GetMortgageOffersResult | null;
+};
 
 /**
- * Veřejná marketingová homepage (/).
- * Personalizovaný dashboard je na /dashboard — kořen se nepřepíná.
+ * Launch homepage — short conversion journey.
+ * Personalizovaný dashboard zůstává na /dashboard.
  */
-export function HomeExperience() {
+export function HomeExperience({ initialOffers }: HomeExperienceProps) {
   return (
     <>
       <CockpitHero />
-      <HomeDecisionLab />
-      <HomeJourney />
-      <HomeIntents />
-      <HomeTrustBlock />
+      <HomeSituationSelector />
+      <PublishedRatesPanel
+        initialResult={initialOffers}
+        initialQuery={DEFAULT_QUERY}
+        headingId="home-rates-heading"
+      />
+      <RpsnEducationBlock />
       <HomeHowItWorks />
-      <HomeWhyDecision />
-      <LiveDataTrustBar />
-      <HomeFinalCta />
+      <HomeTeamStrip />
+      <HomeFinalCta
+        journeyMetadata={{
+          purpose: DEFAULT_QUERY.purpose,
+          fixationMonths: DEFAULT_QUERY.fixationMonths,
+          ltv: DEFAULT_QUERY.ltv,
+        }}
+      />
     </>
   );
 }

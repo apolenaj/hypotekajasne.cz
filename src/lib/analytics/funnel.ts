@@ -46,6 +46,10 @@ export const FUNNEL_STAGES: FunnelStage[] = [
       "onboarding_started",
       "moznosti_started",
       "calculator_started",
+      "calculator_start",
+      "situation_select",
+      "rate_results_view",
+      "decision_funnel_start",
       "prescore_started",
       "passport_started",
       "investment_pass_started",
@@ -68,6 +72,9 @@ export const FUNNEL_STAGES: FunnelStage[] = [
       "onboarding_completed",
       "moznosti_completed",
       "calculator_completed",
+      "calculator_complete",
+      "rate_detail_open",
+      "decision_funnel_complete",
       "result_viewed",
       "prescore_completed",
       "passport_completed",
@@ -88,6 +95,7 @@ export const FUNNEL_STAGES: FunnelStage[] = [
       "lead_form_submitted_success",
       "lead_form_submitted",
       "lead_submitted",
+      "lead_success",
       "premium_cta_clicked",
       "analysis_checkout_started",
       "specialist_cta_clicked",
@@ -121,6 +129,63 @@ export const FUNNEL_STAGES: FunnelStage[] = [
     entryEvents: ["conversion_confirmed"],
   },
 ];
+
+/**
+ * Phase 4 conversion funnel (homepage → calc → rates → lead).
+ * Use these events to compute start / complete / engagement / lead rates.
+ */
+export const PHASE4_CONVERSION_FUNNEL = {
+  id: "phase4_conversion",
+  label: "Homepage → kalkulačka → sazby → lead",
+  steps: [
+    {
+      id: "homepage",
+      label: "Homepage view",
+      events: ["homepage_view"] as AnalyticsEventName[],
+    },
+    {
+      id: "calculator_start",
+      label: "Calculator start",
+      events: ["calculator_start", "calculator_started"] as AnalyticsEventName[],
+    },
+    {
+      id: "calculator_complete",
+      label: "Calculator complete",
+      events: [
+        "calculator_complete",
+        "calculator_completed",
+      ] as AnalyticsEventName[],
+    },
+    {
+      id: "rate_results",
+      label: "Rate results",
+      events: ["rate_results_view"] as AnalyticsEventName[],
+    },
+    {
+      id: "rate_detail",
+      label: "Rate detail",
+      events: ["rate_detail_open"] as AnalyticsEventName[],
+    },
+    {
+      id: "lead_form",
+      label: "Lead form view",
+      events: ["lead_form_view", "lead_form_started"] as AnalyticsEventName[],
+    },
+    {
+      id: "lead_submit",
+      label: "Lead submit",
+      events: ["lead_submit"] as AnalyticsEventName[],
+    },
+    {
+      id: "lead_success",
+      label: "Lead success",
+      events: [
+        "lead_success",
+        "lead_form_submitted_success",
+      ] as AnalyticsEventName[],
+    },
+  ],
+} as const;
 
 /** North-star funnel — primary product path to measure weekly. */
 export const NORTH_STAR_FUNNEL = {
@@ -179,23 +244,21 @@ export type FunnelDashboardSpec = {
 };
 
 export const FUNNEL_DASHBOARD_SPEC: FunnelDashboardSpec = {
-  version: "2026-07-22.19M",
+  version: "2026-08-09.4",
   currencyDisplay: "CZK",
   privacyNote: KPI_PRIVACY_NOTE,
   northStar: NORTH_STAR_FUNNEL,
   stages: FUNNEL_STAGES,
   kpis: PRODUCT_KPIS,
   recommendedWidgets: [
+    "Phase 4: homepage_view → calculator_start → calculator_complete → rate_results_view → rate_detail_open → lead_form_view → lead_submit → lead_success",
     "North-star: homepage_view → primary_cta_clicked → onboarding_completed → lead_form_submitted",
-    "KPI: kpi_calculator_completion_rate (calculator_completed / calculator_started)",
+    "KPI: calculator completion (calculator_complete / calculator_start)",
+    "KPI: rate engagement (rate_detail_open / rate_results_view)",
+    "KPI: lead-form view rate (lead_form_view / rate_results_view)",
+    "KPI: lead-submit rate (lead_submit / lead_form_view)",
+    "KPI: lead-success conversion (lead_success / lead_submit)",
     "KPI: kpi_lead_conversion (lead_form_submitted / lead_form_started)",
-    "KPI: kpi_qualified_lead_rate (lead_qualified on lead_form_submitted)",
-    "KPI: kpi_investment_xray_completion (property_xray_completed / property_xray_started)",
-    "KPI: kpi_refinancing_activation (refinance_radar_started / page_view on radar)",
-    "KPI: kpi_returning_users_share (visitor_type=returning)",
-    "KPI: kpi_market_compare_lead_conversion (after market_compare_started)",
-    "Onboarding step drop-off (onboarding_step_completed by step)",
-    "Rentgen: property_xray_started → property_xray_completed → premium_cta_clicked",
     "Attribution: events by utm_source / utm_medium / utm_campaign (consent only)",
     "Experiment uplift (hero / CTA / form / preview / majetio)",
   ],

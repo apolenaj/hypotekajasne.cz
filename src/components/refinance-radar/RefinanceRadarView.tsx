@@ -98,8 +98,8 @@ function fmtDate(iso: string | null | undefined) {
 }
 
 function rateStatusLabel(status: string | null | undefined): string {
-  if (status === "LIVE") return "LIVE data";
-  if (status === "STALE") return "Neaktuální údaj";
+  if (status === "LIVE") return "Aktuální data";
+  if (status === "STALE") return "Aktualizujeme";
   if (status === "MODEL") return "Model — ne nabídka banky";
   return "Nedostupné";
 }
@@ -1046,7 +1046,7 @@ export function RefinanceRadarView() {
                 </h2>
                 <p className="mt-2 text-sm text-emerald-50/90">
                   Požádali jste o možnost konzultace. Kontakt probíhá přes
-                  formulář — neautomaticky. Výše jsou MODEL / LIVE reference, ne
+                  formulář — neautomaticky. Výše jsou modelové / aktuální reference, ne
                   závazná nabídka.
                 </p>
                 <div className="mt-5 flex flex-wrap justify-center gap-3">

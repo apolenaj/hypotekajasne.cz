@@ -71,7 +71,7 @@ export function MethodologyDrawer({
                     Metodika dat
                   </p>
                   <p className="mt-0.5 text-xs text-muted-foreground">
-                    LIVE · VERIFIED · MODEL · NEEDS UPDATE · PARTNER OFFER
+                    Aktuální data · Ověřeno · Model · Aktualizujeme · Partner
                   </p>
                 </div>
                 <button
@@ -118,7 +118,7 @@ export function MethodologyDrawer({
                   </h3>
                   <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
                     Čísla označená jako MODEL jsou orientační. Individuální
-                    sazbu, RPSN a schválení určuje banka. LIVE sazby bereme z
+                    sazbu, RPSN a schválení určuje banka. Aktuální sazby bereme z
                     veřejných bankovních zdrojů — stále nejde o závaznou
                     smlouvu.
                   </p>

@@ -28,11 +28,24 @@ export const ANALYTICS_EVENTS = [
   // —— CALCULATORS ——
   "calculator_started",
   "calculator_completed",
+  /** Phase 4 public aliases */
+  "calculator_start",
+  "calculator_complete",
   "result_viewed",
   "specialist_cta_clicked",
   "prescore_started",
   "prescore_completed",
   "financing_option_selected",
+
+  // —— PHASE 4 RATE / SITUATION FUNNEL ——
+  "situation_select",
+  "rate_results_view",
+  "rate_detail_open",
+  "decision_funnel_start",
+  "decision_funnel_complete",
+  "cta_click",
+  "phone_click",
+  "email_click",
 
   // —— COUNTRIES ——
   "market_viewed",
@@ -69,9 +82,14 @@ export const ANALYTICS_EVENTS = [
 
   // —— LEADS ——
   "lead_form_started",
+  "lead_form_view",
   "lead_form_submitted_success",
   "lead_form_submitted",
   "lead_form_error",
+  /** Phase 4 public aliases */
+  "lead_submit",
+  "lead_success",
+  "lead_error",
   /** @deprecated prefer lead_form_submitted_success */
   "lead_submitted",
   "partner_handoff",
@@ -125,11 +143,35 @@ export type AnalyticsPayload = {
   utm_source?: string;
   utm_medium?: string;
   utm_campaign?: string;
+  utm_content?: string;
+  utm_term?: string;
   visitor_type?: "new" | "returning";
   /** Anonymous session id — not lifecycle PII */
   session_id?: string;
   /** Partner-transfer consent path — qualified lead KPI */
   lead_qualified?: boolean;
+
+  // —— Phase 4 conversion funnel (categorical only) ——
+  situation?: string;
+  calculator_type?: string;
+  purpose?: string;
+  fixation_months?: number;
+  term_years?: number;
+  ltv_band?: string;
+  /** Coarse band — never exact CZK (name whitelisted despite "amount") */
+  mortgage_amount_band?: string;
+  property_value_band?: string;
+  matched_offer_count?: number;
+  unspecified_ltv_offer_count?: number;
+  lender_slug?: string;
+  product_slug?: string;
+  pricing_scenario_category?: string;
+  ltv_scope?: string;
+  rate_type?: string;
+  source_page?: string;
+  selected_lender?: string;
+  selected_rate_scenario_category?: string;
+  placement?: string;
 };
 
 const FORBIDDEN_PAYLOAD_KEYS = [
@@ -195,11 +237,18 @@ const FORBIDDEN_EXACT = new Set<string>([
   "iban",
 ]);
 
+/** Explicitly allowed keys that contain otherwise-forbidden substrings (e.g. "amount"). */
+const ALLOWED_PAYLOAD_KEYS = new Set([
+  "mortgage_amount_band",
+  "property_value_band",
+]);
+
 export function assertSafeAnalyticsPayload(
   payload: Record<string, unknown>
 ): asserts payload is AnalyticsPayload {
   for (const key of Object.keys(payload)) {
     const lower = key.toLowerCase();
+    if (ALLOWED_PAYLOAD_KEYS.has(lower)) continue;
     if (FORBIDDEN_EXACT.has(lower)) {
       throw new Error(
         `Analytics payload must not include sensitive key: ${key}`

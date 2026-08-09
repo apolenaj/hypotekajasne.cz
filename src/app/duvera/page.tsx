@@ -60,8 +60,8 @@ export default function DuveraPage() {
           Statusy dat
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          LIVE · VERIFIED · MODEL · ESTIMATE · UNVERIFIED · NEEDS UPDATE ·
-          PARTNER OFFER — každé číslo nese jeden z těchto statusů.
+          Aktuální data · Ověřeno · Model · Odhad · Neověřeno · Aktualizujeme ·
+          Partner — každé číslo nese jeden z těchto statusů.
         </p>
         <ul className="mt-4 grid gap-2 sm:grid-cols-2">
           {PUBLIC_STATUS_ORDER.map((s) => (

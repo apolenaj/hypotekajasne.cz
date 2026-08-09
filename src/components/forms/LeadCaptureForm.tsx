@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Send } from "lucide-react";
 import {
@@ -19,7 +19,9 @@ import {
   isPartnerHandoffLeadSource,
   requiresPartnerTransfer,
 } from "@/lib/consent/records";
-import { track, trackCanonical } from "@/lib/analytics/track";
+import { ltvBand, pricingScenarioCategory } from "@/lib/analytics/bands";
+import { trackCanonical } from "@/lib/analytics/track";
+import { trackEvent, trackEventOnce } from "@/lib/analytics/track-event";
 import {
   isLegalIdentityComplete,
   mustEnforceLegalIdentityForLeadCollection,
@@ -43,13 +45,53 @@ type LeadCaptureFormProps = {
 const fieldClass =
   "h-11 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm outline-none focus:border-deep-teal focus:ring-2 focus:ring-deep-teal/20 aria-[invalid=true]:border-red-400 aria-[invalid=true]:ring-red-200";
 
+function readString(meta: Record<string, unknown> | undefined, key: string) {
+  const v = meta?.[key];
+  return typeof v === "string" && v.trim() ? v : undefined;
+}
+
+function readNumber(meta: Record<string, unknown> | undefined, key: string) {
+  const v = meta?.[key];
+  return typeof v === "number" && Number.isFinite(v) ? v : undefined;
+}
+
+function leadFunnelPayload(
+  source: LeadSource,
+  metadata: Record<string, unknown> | undefined
+) {
+  const path =
+    typeof window !== "undefined" ? window.location.pathname : undefined;
+  const scenarioKey =
+    readString(metadata, "selectedPricingScenario") ??
+    readString(metadata, "pricingScenarioKey");
+  const scenarioCategory =
+    readString(metadata, "selectedRateScenarioCategory") ??
+    (scenarioKey ? pricingScenarioCategory(scenarioKey) : undefined);
+  const ltv = readNumber(metadata, "ltv") ?? readNumber(metadata, "ltvPct");
+
+  return {
+    lead_source: source,
+    source_page: readString(metadata, "sourcePage") ?? path,
+    purpose: readString(metadata, "purpose"),
+    fixation_months: readNumber(metadata, "fixationMonths"),
+    ltv_band: ltv != null ? ltvBand(ltv) : undefined,
+    selected_lender:
+      readString(metadata, "selectedLender") ??
+      readString(metadata, "lenderSlug"),
+    selected_rate_scenario_category: scenarioCategory,
+    calculator_type: readString(metadata, "calculatorType") ?? "mortgage",
+    funnel_id: "phase4_conversion",
+    path,
+  };
+}
+
 export function LeadCaptureForm({
   source,
   country,
   notes,
   metadata,
   title = "Chci nezávaznou konzultaci",
-  subtitle = "Zanechte kontakt — ozveme se do 24 hodin.",
+  subtitle = "Zanechte kontakt — ozveme se k nezávazné konzultaci.",
   redirectOnSuccess = true,
   onSuccess,
   className,
@@ -60,6 +102,8 @@ export function LeadCaptureForm({
   const nameId = useId();
   const emailId = useId();
   const phoneId = useId();
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const metadataRef = useRef(metadata);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -71,29 +115,43 @@ export function LeadCaptureForm({
   const [invalidFields, setInvalidFields] = useState<
     Partial<Record<"name" | "email" | "phone", boolean>>
   >({});
-
-  const [formStarted, setFormStarted] = useState(false);
+  const successOnceRef = useRef(false);
 
   const leadsBlocked =
     mustEnforceLegalIdentityForLeadCollection() && !isLegalIdentityComplete();
 
-  const markFormStarted = () => {
-    if (formStarted) return;
-    setFormStarted(true);
-    track("lead_form_started", {
-      lead_source: source,
-      path: typeof window !== "undefined" ? window.location.pathname : undefined,
-    });
-  };
+  useEffect(() => {
+    metadataRef.current = metadata;
+  }, [metadata]);
+
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        trackEventOnce(
+          "lead_form_view",
+          `lead_form_view:${source}:${typeof window !== "undefined" ? window.location.pathname : ""}`,
+          leadFunnelPayload(source, metadataRef.current)
+        );
+        observer.disconnect();
+      },
+      { threshold: 0.35 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [source]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    const funnel = leadFunnelPayload(source, metadata);
 
     if (leadsBlocked) {
       setError(LEGAL_LEAD_BLOCKED_PUBLIC_MESSAGE);
-      track("lead_form_error", {
-        lead_source: source,
+      trackEvent("lead_error", {
+        ...funnel,
         error_code: "legal_identity_incomplete",
       });
       return;
@@ -121,13 +179,14 @@ export function LeadCaptureForm({
         );
       }
       setError(parts.join(" "));
-      track("lead_form_error", {
-        lead_source: source,
+      trackEvent("lead_error", {
+        ...funnel,
         error_code: Object.keys(nextInvalid).sort().join("+"),
       });
       return;
     }
 
+    trackEvent("lead_submit", funnel);
     setLoading(true);
 
     const payload: LeadPayload = {
@@ -146,28 +205,29 @@ export function LeadCaptureForm({
 
     if (!result.ok) {
       setError(result.error);
-      track("lead_form_error", {
-        lead_source: source,
+      trackEvent("lead_error", {
+        ...funnel,
         error_code: "api_or_network",
       });
       return;
     }
 
-    track("lead_form_submitted_success", {
-      lead_source: source,
-      partner_scope: requiresPartnerTransfer(source)
-        ? consent.partnerTransferScope
-        : "none",
-      funnel_id: "moje_moznosti_north_star",
-    });
-    trackCanonical("lead_form_submitted", "lead_submitted", {
-      lead_source: source,
-      partner_scope: requiresPartnerTransfer(source)
-        ? consent.partnerTransferScope
-        : "none",
-      path: typeof window !== "undefined" ? window.location.pathname : undefined,
-      lead_qualified: Boolean(metadata?.qualified ?? metadata?.lead_qualified),
-    });
+    if (!successOnceRef.current) {
+      successOnceRef.current = true;
+      trackEvent("lead_success", {
+        ...funnel,
+        partner_scope: requiresPartnerTransfer(source)
+          ? consent.partnerTransferScope
+          : "none",
+        lead_qualified: Boolean(metadata?.qualified ?? metadata?.lead_qualified),
+      });
+      trackEventOnce(
+        "decision_funnel_complete",
+        `decision_funnel_complete:${source}`,
+        funnel
+      );
+    }
+
     if (requiresPartnerTransfer(source) && consent.partnerTransferAccepted) {
       trackCanonical("partner_handoff_requested", "partner_handoff", {
         lead_source: source,
@@ -185,6 +245,7 @@ export function LeadCaptureForm({
 
   return (
     <div
+      ref={rootRef}
       className={cn(
         "rounded-2xl border border-deep-teal/15 bg-white/90 p-5 shadow-sm ring-1 ring-gray-900/5",
         compact ? "p-4" : "p-6 lg:p-8",
@@ -219,11 +280,9 @@ export function LeadCaptureForm({
             autoComplete="name"
             value={name}
             onChange={(e) => {
-              markFormStarted();
               setName(e.target.value);
               setInvalidFields((f) => ({ ...f, name: false }));
             }}
-            onFocus={markFormStarted}
             placeholder="Jan Novák"
             aria-invalid={invalidFields.name || undefined}
             aria-describedby={error ? errorId : undefined}

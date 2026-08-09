@@ -1,5 +1,6 @@
 /**
  * Hero mini kalkulačka — tenká vrstva nad sdílenou anuitní matematikou.
+ * Modelová sazba je jen pro orientační splátku — ne bankovní nabídka.
  */
 
 import {
@@ -8,12 +9,16 @@ import {
 } from "@/lib/finance-math/core";
 import { MODEL_FALLBACK_RATE_PERCENT } from "@/lib/rates/model-fallback";
 
+export type MiniMortgagePurpose = "purchase" | "refinance";
+
 export type MiniMortgageInput = {
   propertyPriceCzk: number;
   ownFundsCzk: number;
   termYears: number;
-  /** Modelová sazba p.a. — nikdy LIVE. */
+  /** Modelová sazba p.a. — nikdy bankovní LIVE. */
   annualRatePercent?: number;
+  purpose?: MiniMortgagePurpose;
+  fixationMonths?: number;
 };
 
 export type MiniMortgageResult = {
@@ -22,6 +27,9 @@ export type MiniMortgageResult = {
   monthlyPaymentCzk: number;
   annualRatePercent: number;
   termYears: number;
+  requiredOwnFundsCzk: number;
+  purpose: MiniMortgagePurpose;
+  fixationMonths: number;
 };
 
 export const MINI_MORTGAGE_DEFAULTS = {
@@ -29,59 +37,16 @@ export const MINI_MORTGAGE_DEFAULTS = {
   ownFundsCzk: 1_200_000,
   termYears: 30,
   annualRatePercent: MODEL_FALLBACK_RATE_PERCENT,
+  purpose: "purchase" as MiniMortgagePurpose,
+  fixationMonths: 36,
 } as const;
 
 export const MINI_MORTGAGE_TERM_OPTIONS = [10, 15, 20, 25, 30] as const;
+export const MINI_MORTGAGE_FIXATION_OPTIONS = [24, 36, 60, 84, 120] as const;
 
-/**
- * Modelové / demo nabídky pro teaser CTA — ne aktuální sazby bank.
- * Slouží jen k ilustraci konverzního textu tlačítka.
- */
-export const MINI_MORTGAGE_TEASER_OFFERS = [
-  { id: "teaser-a", label: "Banka A", ratePercent: 4.19 },
-  { id: "teaser-b", label: "Banka B", ratePercent: 4.39 },
-  { id: "teaser-c", label: "Banka C", ratePercent: 4.59 },
-  { id: "teaser-d", label: "Banka D", ratePercent: 4.89 },
-  { id: "teaser-e", label: "Banka E", ratePercent: 5.19 },
-] as const;
-
-export type MiniMortgageTeaserOffer =
-  (typeof MINI_MORTGAGE_TEASER_OFFERS)[number];
-
-/** Nabídka je „lepší nebo blízká“, pokud není o více než 0,30 p.b. nad modelem. */
-export const MINI_TEASER_RATE_TOLERANCE_PP = 0.3;
-
-export type MiniTeaserMatch = {
-  offers: MiniMortgageTeaserOffer[];
-  count: number;
-  lowestRatePercent: number | null;
-};
-
-/** Filtruje demo nabídky podle aktuální modelové sazby uživatele. */
-export function matchMiniTeaserOffers(
-  interestRatePercent: number,
-  tolerancePp: number = MINI_TEASER_RATE_TOLERANCE_PP
-): MiniTeaserMatch {
-  const rate = Number.isFinite(interestRatePercent)
-    ? interestRatePercent
-    : MODEL_FALLBACK_RATE_PERCENT;
-  const offers = MINI_MORTGAGE_TEASER_OFFERS.filter(
-    (o) => o.ratePercent <= rate + tolerancePp
-  )
-    .slice()
-    .sort((a, b) => a.ratePercent - b.ratePercent);
-
-  return {
-    offers,
-    count: offers.length,
-    lowestRatePercent: offers[0]?.ratePercent ?? null,
-  };
-}
-
-/** Text CTA — neutrální, bez fiktivního počtu bankovních nabídek. */
-export function miniMortgageCtaLabel(_match?: MiniTeaserMatch): string {
-  void _match;
-  return "Zjistit moje možnosti";
+/** Text CTA — neutrální. */
+export function miniMortgageCtaLabel(): string {
+  return "Spočítat hypotéku";
 }
 
 /** Anuitní splátka + LTV z ceny a vlastních prostředků. */
@@ -89,6 +54,8 @@ export function computeMiniMortgage(input: MiniMortgageInput): MiniMortgageResul
   const annualRatePercent =
     input.annualRatePercent ?? MODEL_FALLBACK_RATE_PERCENT;
   const termYears = input.termYears > 0 ? input.termYears : 0;
+  const purpose = input.purpose ?? "purchase";
+  const fixationMonths = input.fixationMonths ?? 36;
 
   const price = Number.isFinite(input.propertyPriceCzk)
     ? Math.max(0, input.propertyPriceCzk)
@@ -99,7 +66,7 @@ export function computeMiniMortgage(input: MiniMortgageInput): MiniMortgageResul
 
   const loanAmountCzk = Math.max(0, price - ownFunds);
   const ltvPct =
-    price > 0 ? Math.round(ltvPercent(loanAmountCzk, price)) : 0;
+    price > 0 ? Math.round(ltvPercent(loanAmountCzk, price) * 10) / 10 : 0;
   const monthlyPaymentCzk =
     loanAmountCzk > 0 && termYears > 0
       ? Math.round(
@@ -113,5 +80,20 @@ export function computeMiniMortgage(input: MiniMortgageInput): MiniMortgageResul
     monthlyPaymentCzk,
     annualRatePercent,
     termYears,
+    requiredOwnFundsCzk: Math.min(ownFunds, price),
+    purpose,
+    fixationMonths,
   };
+}
+
+/** Build /sazby query from calculator state. */
+export function buildSazbyHref(result: MiniMortgageResult): string {
+  const params = new URLSearchParams({
+    purpose: result.purpose,
+    fixationMonths: String(result.fixationMonths),
+    ltv: String(Math.round(result.ltvPct)),
+    property: String(Math.round(result.loanAmountCzk + result.requiredOwnFundsCzk)),
+    loan: String(Math.round(result.loanAmountCzk)),
+  });
+  return `/sazby?${params.toString()}`;
 }

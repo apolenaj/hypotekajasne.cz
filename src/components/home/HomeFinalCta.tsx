@@ -1,19 +1,23 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
-import { TrackedCtaLink } from "@/components/analytics/TrackedCtaLink";
-import { routes } from "@/lib/routes";
+import { LeadCaptureForm } from "@/components/forms/LeadCaptureForm";
+import { CTA_CS } from "@/lib/ux/cta";
+
+type HomeFinalCtaProps = {
+  journeyMetadata?: Record<string, unknown>;
+};
 
 /**
- * Závěrečné CTA — stejná primární akce jako hero.
+ * Closing conversion — short lead form with funnel context.
  */
-export function HomeFinalCta() {
+export function HomeFinalCta({ journeyMetadata }: HomeFinalCtaProps) {
   return (
     <section
       aria-labelledby="home-final-cta-heading"
       className="bg-deep-teal text-white"
+      id="poptavka"
     >
-      <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-12 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8 lg:py-14">
+      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-start lg:px-8 lg:py-14">
         <div className="max-w-xl">
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-gold">
             Další krok
@@ -22,29 +26,27 @@ export function HomeFinalCta() {
             id="home-final-cta-heading"
             className="mt-2 font-heading text-2xl font-bold sm:text-3xl"
           >
-            Zjistěte, co si můžete dovolit. Kde koupit.
+            {CTA_CS.discoverSituation}
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-white/75">
-            Začněte orientačním rozpočtem. Nejsme banka a neschvalujeme úvěry.
+            Necháte kontakt. Ozveme se k nezávazné konzultaci. Nejde o schválení
+            úvěru ani o garantovanou sazbu — Hypotéka Jasně není banka.
           </p>
         </div>
-        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-          <TrackedCtaLink
-            href={routes.mojeMoznosti}
-            ctaId="final_moje_moznosti"
-            toolId="moje_moznosti"
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-muted-gold px-5 text-sm font-semibold text-text-dark hover:bg-muted-gold-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-          >
-            Zjistit moje možnosti
-            <ArrowRight className="h-4 w-4" aria-hidden />
-          </TrackedCtaLink>
-          <TrackedCtaLink
-            href={routes.pruvodceInvestora}
-            ctaId="final_porovnat_trhy"
-            className="inline-flex h-11 min-h-11 items-center justify-center rounded-lg border border-white/25 px-5 text-sm font-medium text-white hover:bg-white/5"
-          >
-            Porovnat trhy
-          </TrackedCtaLink>
+
+        <div className="rounded-2xl bg-white p-4 text-text-dark shadow-lg sm:p-6">
+          <LeadCaptureForm
+            source="mortgage_calculator"
+            country="CZ"
+            metadata={{
+              sourcePage: "/",
+              ...journeyMetadata,
+            }}
+            title="Nezávazná poptávka"
+            subtitle="Jméno a telefon nebo e-mail stačí. Čísla z kalkulačky nemusíte vyplňovat znovu."
+            compact
+            className="border-0 bg-transparent p-0 shadow-none"
+          />
         </div>
       </div>
     </section>

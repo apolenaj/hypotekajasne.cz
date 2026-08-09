@@ -6,13 +6,13 @@
 
 /** Statusy dat (DataStatus) — badge text (sjednoceno s Metodikou 2.0) */
 export const DATA_STATUS_LABELS_CS = {
-  LIVE: "LIVE",
-  VERIFIED: "VERIFIED",
-  MODEL: "MODEL",
-  ESTIMATE: "ESTIMATE",
-  UNVERIFIED: "UNVERIFIED",
-  PARTNER_QUOTE: "PARTNER OFFER",
-  STALE: "NEEDS UPDATE",
+  LIVE: "Aktuální data",
+  VERIFIED: "Ověřeno",
+  MODEL: "Model",
+  ESTIMATE: "Odhad",
+  UNVERIFIED: "Neověřeno",
+  PARTNER_QUOTE: "Partner",
+  STALE: "Aktualizujeme",
 } as const;
 
 /** Statusy funkcí (FeatureStatus) */

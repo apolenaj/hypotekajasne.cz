@@ -8,13 +8,16 @@ import { routes } from "@/lib/routes";
 /** Primární verb set — používej konzistentně. */
 export const CTA_CS = {
   discoverOptions: "Zjistit moje možnosti",
+  discoverSituation: "Zjistit možnosti pro moji situaci",
   calculate: "Spočítat",
+  calculateMortgage: "Spočítat hypotéku",
   continue: "Pokračovat",
   saveResult: "Uložit výsledek",
   updateResult: "Aktualizovat výsledek",
   editInputs: "Upravit vstupy",
   send: "Odeslat",
   compareMarkets: "Porovnat trhy",
+  compareRates: "Porovnat sazby",
   openPassport: "Otevřít Finanční pas",
   openDashboard: "Otevřít přehled",
   readiness: "Hypoteční připravenost",
@@ -23,20 +26,21 @@ export const CTA_CS = {
   howCalculated: "Jak jsme to spočítali",
   showAdvanced: "Zobrazit podrobnosti",
   hideAdvanced: "Skrýt podrobnosti",
+  refineCalculation: "Upřesnit výpočet",
   whatNext: "Co mám udělat dál?",
   nextStep: "Další krok",
   expertContact: "Získat přesný výpočet od experta",
   expertContactAlt: "Chci nabídku na míru",
   expertContactLead:
-    "Orientační čísla už znáte. Spojte se s naším expertem pro přesnou kalkulaci a neveřejné slevy z bank.",
+    "Orientační čísla už znáte. Spojte se s naším expertem pro přesnou kalkulaci podle vaší situace.",
 } as const;
 
 export type CtaLabelKey = keyof typeof CTA_CS;
 
 /** Site-wide primary CTA (nav + home). */
 export const PRIMARY_PRODUCT_CTA = {
-  label: CTA_CS.discoverOptions,
-  href: routes.mojeMoznosti,
+  label: CTA_CS.compareRates,
+  href: routes.sazby,
 } as const;
 
 /** Touch-friendly interactive classes (min 44px). */

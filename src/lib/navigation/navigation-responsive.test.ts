@@ -38,7 +38,10 @@ describe("navigation structure", () => {
 
   it("groups contain required children", () => {
     assert.ok(
-      desktopNav.hypoteka.items.some((i) => i.label.includes("půjčit"))
+      desktopNav.hypoteka.items.some((i) => i.label.includes("sazby"))
+    );
+    assert.ok(
+      desktopNav.hypoteka.items.some((i) => i.label.includes("Spočítat"))
     );
     assert.ok(
       desktopNav.investice.items.some((i) => i.label.includes("Analyzovat"))
@@ -68,8 +71,8 @@ describe("navigation structure", () => {
   });
 
   it("CTA variants exist for anonymous and returning users", () => {
-    assert.ok(navCta.default.href.includes("moje-moznosti"));
-    assert.ok(navCta.default.label.includes("možnosti"));
+    assert.ok(navCta.default.href.includes("sazby"));
+    assert.ok(navCta.default.label.includes("sazby"));
     assert.ok(navCta.returning.href.includes("dashboard"));
   });
 

@@ -117,8 +117,8 @@ export default function MetodikaPage() {
             Co znamenají statusy
           </h2>
           <p className="text-sm text-muted-foreground">
-            Sjednocená taxonomie: LIVE · VERIFIED · MODEL · ESTIMATE ·
-            UNVERIFIED · NEEDS UPDATE · PARTNER OFFER.
+            Sjednocená taxonomie: Aktuální data · Ověřeno · Model · Odhad ·
+            Neověřeno · Aktualizujeme · Partner.
           </p>
           <ul className="space-y-3">
             {PUBLIC_STATUS_ORDER.map((s) => (

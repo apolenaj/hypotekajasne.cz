@@ -47,6 +47,8 @@ export const routes = {
     cookies: "/pravni/cookies",
     placenaAnalyza: "/pravni/placena-analyza",
   },
+  /** Verified published bank rates (normalized catalog). */
+  sazby: "/sazby",
   kalkulacky: {
     root: "/kalkulacky",
     koupeVsNajem: "/kalkulacky/koupe-vs-najem",

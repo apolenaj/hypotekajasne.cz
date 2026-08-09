@@ -5,6 +5,7 @@ import { Mail, Phone } from "lucide-react";
 import { BrandWordmark } from "@/components/brand/BrandWordmark";
 import { LegalOperatorIdentity } from "@/components/legal/LegalOperatorIdentity";
 import { useCookieConsent } from "@/components/consent/CookieConsentProvider";
+import { trackEvent } from "@/lib/analytics/track-event";
 import { SITE_DOMAIN_LABEL } from "@/lib/brand";
 import { financialPartner } from "@/config/legal";
 import { footerLinks, siteContact } from "@/lib/mock-data";
@@ -83,6 +84,15 @@ export function Footer() {
               <li>
                 <a
                   href={siteContact.emailHref}
+                  onClick={() => {
+                    trackEvent("email_click", {
+                      source_page:
+                        typeof window !== "undefined"
+                          ? window.location.pathname
+                          : undefined,
+                      placement: "footer",
+                    });
+                  }}
                   className="inline-flex items-center gap-2 transition-colors hover:text-deep-teal"
                 >
                   <Mail className="h-4 w-4 shrink-0" />
@@ -93,6 +103,15 @@ export function Footer() {
                 <li>
                   <a
                     href={siteContact.phoneHref}
+                    onClick={() => {
+                      trackEvent("phone_click", {
+                        source_page:
+                          typeof window !== "undefined"
+                            ? window.location.pathname
+                            : undefined,
+                        placement: "footer",
+                      });
+                    }}
                     className="inline-flex items-center gap-2 transition-colors hover:text-deep-teal"
                   >
                     <Phone className="h-4 w-4 shrink-0" />

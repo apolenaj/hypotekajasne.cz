@@ -7,51 +7,52 @@ import type { DataDomain, DataStatus } from "@/lib/data/types";
 
 /**
  * Sjednocená veřejná taxonomie statusů (PROMPT 13).
- * Interní enum: STALE ↔ NEEDS UPDATE, PARTNER_QUOTE ↔ PARTNER OFFER.
+ * Interní enum: STALE ↔ Aktualizujeme, PARTNER_QUOTE ↔ Partner.
+ * Veřejné labely jsou česky — bez anglických LIVE / MODEL badge textů.
  */
 export const PUBLIC_STATUS_MEANINGS: Record<
   DataStatus,
   { code: string; label: string; description: string }
 > = {
   LIVE: {
-    code: "LIVE",
-    label: "LIVE",
+    code: "Aktuální data",
+    label: "Aktuální data",
     description:
       "Údaj právě načtený z definovaného živého zdroje (např. sazby z webů bank). Stále nejde o závaznou nabídku — banka schvaluje individuálně.",
   },
   VERIFIED: {
-    code: "VERIFIED",
-    label: "VERIFIED",
+    code: "Ověřeno",
+    label: "Ověřeno",
     description:
       "Ověřeno proti primárnímu nebo autoritativnímu externímu zdroji (regulátor, centrální banka, katastr, daňová správa). Soubor bez odkazu na autoritu sám o sobě není důkazem.",
   },
   MODEL: {
-    code: "MODEL",
-    label: "MODEL",
+    code: "Model",
+    label: "Model",
     description:
       "Výsledek modelu nebo kalkulace z explicitních předpokladů. Není živá kotace banky ani nabídka konkrétní nemovitosti.",
   },
   ESTIMATE: {
-    code: "ESTIMATE",
-    label: "ESTIMATE",
+    code: "Odhad",
+    label: "Odhad",
     description:
       "Odborný nebo datový odhad s nižší jistotou. Užitečný pro orientaci, ne jako oficiální údaj.",
   },
   UNVERIFIED: {
-    code: "UNVERIFIED",
-    label: "UNVERIFIED",
+    code: "Neověřeno",
+    label: "Neověřeno",
     description:
       "Informace, kterou nemáme dostatečně podloženou externí autoritou. Zobrazujeme ji jen s jasným varováním.",
   },
   STALE: {
-    code: "NEEDS UPDATE",
-    label: "NEEDS UPDATE",
+    code: "Aktualizujeme",
+    label: "Aktualizujeme",
     description:
       "Údaj je starší, neúplný nebo čeká na novou kontrolu zdroje. Čísla si nevymýšlíme — dokud není aktualizace, uvidíte toto upozornění.",
   },
   PARTNER_QUOTE: {
-    code: "PARTNER OFFER",
-    label: "PARTNER OFFER",
+    code: "Partner",
+    label: "Partner",
     description:
       "Údaj od partnera, ověřený provozovatelem. Nejde o veřejný ceník všech bank ani o schválení úvěru.",
   },
@@ -88,15 +89,15 @@ export const PUBLIC_METHODOLOGY_BLURBS = {
   predictions:
     "Scénáře růstu (konzervativní / střední / dynamický) jsou modelové projekce, ne předpověď budoucnosti ani investiční doporučení.",
   legal:
-    "Právní a daňové přehledy zemí označíme jako VERIFIED jen tehdy, když máme odkaz na autoritu. Jinak ESTIMATE, UNVERIFIED nebo NEEDS UPDATE. Nejsou individuální právní radou.",
+    "Právní a daňové přehledy zemí označíme jako Ověřeno jen tehdy, když máme odkaz na autoritu. Jinak Odhad, Neověřeno nebo Aktualizujeme. Nejsou individuální právní radou.",
   scoring:
     "Osobní investiční průvodce počítá organické skóre 0–100 jako vážený součet shody napříč dimenzemi (kapitál, financování, výnos, riziko, vlastnictví, likvidita, měna, regulace, horizont, účel). Placené partnerství organické skóre nemění — sponzoring musí být označen mimo žebříček.",
   general:
-    "Každé důležité číslo má status (LIVE / VERIFIED / MODEL / ESTIMATE / UNVERIFIED / NEEDS UPDATE / PARTNER OFFER), veřejný zdroj a datum. Soubor bez odkazu na autoritu není důkazem. Model nikdy nevydáváme za aktuální data.",
+    "Každé důležité číslo má status (Aktuální data / Ověřeno / Model / Odhad / Neověřeno / Aktualizujeme / Partner), veřejný zdroj a datum. Soubor bez odkazu na autoritu není důkazem. Model nikdy nevydáváme za aktuální data banky.",
   updateFrequency:
-    "Sazby českých bank kontrolujeme automaticky; pokud dlouho nepřijdou nová data, označíme je jako NEEDS UPDATE. Limity ČNB kontrolujeme manuálně proti oficiální stránce. Modelové hodnoty zůstávají modelem — stárnutím se nestanou LIVE.",
+    "Sazby českých bank kontrolujeme automaticky; pokud dlouho nepřijdou nová data, označíme je jako Aktualizujeme. Limity ČNB kontrolujeme manuálně proti oficiální stránce. Modelové hodnoty zůstávají modelem — stárnutím se nestanou ověřenou sazbou banky.",
   qualityGuide:
-    "LIVE = právě ze živého zdroje; VERIFIED = proti autoritě; MODEL = kalkulace z předpokladů; ESTIMATE = nižší jistota; UNVERIFIED = chybí podklad; NEEDS UPDATE = čeká na obnovu; PARTNER OFFER = údaj od partnera.",
+    "Aktuální data = právě ze živého zdroje; Ověřeno = proti autoritě; Model = kalkulace z předpokladů; Odhad = nižší jistota; Neověřeno = chybí podklad; Aktualizujeme = čeká na obnovu; Partner = údaj od partnera.",
   numberPipelineIntro:
     "Číslo na obrazovce nepadá z tabulky bez kontroly. Prochází stejnými kroky — od zdroje po zobrazení se statusem.",
 } as const;
@@ -120,15 +121,15 @@ export const PUBLIC_DOMAIN_SOURCE: Record<DataDomain, string> = {
 export function publicFreshnessHint(status: DataStatus): string {
   switch (status) {
     case "LIVE":
-      return "Kontrola: pravidelně (řádově dny). Po delší neaktualizaci → NEEDS UPDATE.";
+      return "Kontrola: pravidelně (řádově dny). Po delší neaktualizaci → Aktualizujeme.";
     case "VERIFIED":
       return "Kontrola: manuální revize proti externí autoritě (řádově měsíce).";
     case "PARTNER_QUOTE":
       return "Kontrola: manuálně (řádově dny až týdny).";
     case "MODEL":
-      return "Zůstává modelem — nepřepíná se na LIVE stárnutím.";
+      return "Zůstává modelem — stárnutím se nestane ověřenou sazbou banky.";
     case "ESTIMATE":
-      return "Odhad zůstává odhadem — bez externí autority se nestane VERIFIED.";
+      return "Odhad zůstává odhadem — bez externí autority se nestane ověřeným údajem.";
     case "UNVERIFIED":
       return "Doplňujeme podklad; mezitím neinventujeme jistotu.";
     case "STALE":

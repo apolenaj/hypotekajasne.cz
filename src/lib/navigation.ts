@@ -28,7 +28,9 @@ export const desktopNav = {
     id: "hypoteka",
     label: "Hypotéka",
     items: [
-      { href: routes.kalkulacky.root, label: "Kolik si mohu půjčit" },
+      { href: routes.sazby, label: "Porovnat sazby" },
+      { href: routes.kalkulacky.hypotecniKalkulacka, label: "Spočítat hypotéku" },
+      { href: routes.mojeMoznosti, label: "Moje možnosti" },
       { href: routes.navrhNaMiru, label: "Hypoteční připravenost" },
       { href: routes.refinanceRadar, label: "Hlídač refinancování" },
       { href: routes.financniPas, label: "Finanční pas" },
@@ -144,7 +146,7 @@ export const notebookViceItems: NavLinkItem[] = [
 
 /** Jedno primary CTA webu — stejný verb jako homepage hero. */
 export const navCta = {
-  default: { href: routes.mojeMoznosti, label: "Zjistit moje možnosti" },
+  default: { href: routes.sazby, label: "Porovnat sazby" },
   returning: { href: routes.dashboard, label: "Pokračovat" },
 } as const;
 

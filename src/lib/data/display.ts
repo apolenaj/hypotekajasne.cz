@@ -79,19 +79,19 @@ export function formatDataValue(
 export function statusBadgeLabel(status: DataStatus): string {
   switch (status) {
     case "LIVE":
-      return "LIVE";
+      return "Aktuální data";
     case "VERIFIED":
-      return "VERIFIED";
+      return "Ověřeno";
     case "MODEL":
-      return "MODEL";
+      return "Model";
     case "ESTIMATE":
-      return "ESTIMATE";
+      return "Odhad";
     case "UNVERIFIED":
-      return "UNVERIFIED";
+      return "Neověřeno";
     case "PARTNER_QUOTE":
-      return "PARTNER OFFER";
+      return "Partner";
     case "STALE":
-      return "NEEDS UPDATE";
+      return "Aktualizujeme";
     default:
       return status;
   }
