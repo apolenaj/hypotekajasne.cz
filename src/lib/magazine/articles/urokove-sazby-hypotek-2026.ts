@@ -9,7 +9,6 @@ export const article: MagazineArticle = {
   category: "Makroekonomika",
   clusters: ["hypoteky", "cr", "investicni-analyza", "refinancovani"],
   authorId: "josef-apolenar",
-  reviewerId: "michal-heinzke",
   publishedAt: "2026-07-12",
   updatedAt: "2026-07-12",
   factCheckedAt: "2026-07-12",

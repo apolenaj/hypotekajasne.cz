@@ -127,4 +127,17 @@ describe("Phase 6 Wave 1 — commercial canonicals", () => {
       assert.match(intent, /^(refinance|osvc|foreign_income|investment|american)$/);
     }
   });
+
+  it("does not attribute Wave 1 / SEO landings to Michal as author or reviewer", () => {
+    for (const slug of WAVE1_COMMERCIAL_SLUGS) {
+      const landing = getLanding(slug);
+      assert.ok(landing, slug);
+      assert.equal(landing!.authorId, "redakce-hj", slug);
+      assert.equal(landing!.reviewerId, undefined, slug);
+    }
+    for (const l of SEO_LANDINGS) {
+      assert.notEqual(l.authorId, "michal-heinzke", l.slug);
+      assert.notEqual(l.reviewerId, "michal-heinzke", l.slug);
+    }
+  });
 });

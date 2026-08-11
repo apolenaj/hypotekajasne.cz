@@ -36,6 +36,9 @@ describe("magazine YMYL + architecture", () => {
       assert.ok(a.relatedTools.length >= 1);
       // Person name resolves
       assert.notEqual(getPerson(a.authorId).name, "Neuvedeno");
+      // No false Michal editorial authorship/review without explicit evidence
+      assert.notEqual(a.authorId, "michal-heinzke", a.slug);
+      assert.notEqual(a.reviewerId, "michal-heinzke", a.slug);
     }
   });
 

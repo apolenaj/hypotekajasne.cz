@@ -8,7 +8,7 @@ export const article: MagazineArticle = {
     "Co porovnat 3–6 měsíců před koncem fixace, jaké dokumenty připravit a jak neslibovat úsporu.",
   category: "Refinancování",
   clusters: ["refinancovani", "hypoteky", "cr"],
-  authorId: "michal-heinzke",
+  authorId: "redakce-hj",
   publishedAt: "2026-07-10",
   updatedAt: "2026-07-10",
   factCheckedAt: "2026-07-10",

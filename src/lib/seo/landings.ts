@@ -89,8 +89,7 @@ const SEO_LANDINGS_BASE: SeoLanding[] = [
     lead: "Banky neposuzují jen cenu nemovitosti, ale hlavně, zda vaše příjmy unesou splátky a další závazky. Tento průvodce ukazuje, co modelovat dřív, než začnete vybírat byt.",
     audience:
       "Zaměstnanci a OSVČ, kteří chtějí odhadnout dostupnou splátku před návštěvou banky.",
-    authorId: "michal-heinzke",
-    reviewerId: "josef-apolenar",
+    authorId: "redakce-hj",
     publishedAt: "2026-07-15",
     updatedAt: "2026-07-21",
     sections: [
@@ -167,8 +166,7 @@ const SEO_LANDINGS_BASE: SeoLanding[] = [
     h1: "Hypotéka do 36 let",
     lead: "Věk žadatele ovlivňuje maximální splatnost a někdy i limity LTV. Nejprve pochopte pravidla, pak teprve srovnávejte „akce pro mladé“.",
     audience: "Žadatelé do cca 36 let a páry, kde jeden partner limity posouvá.",
-    authorId: "michal-heinzke",
-    reviewerId: "josef-apolenar",
+    authorId: "redakce-hj",
     publishedAt: "2026-07-15",
     updatedAt: "2026-07-21",
     sections: [
@@ -246,8 +244,7 @@ const SEO_LANDINGS_BASE: SeoLanding[] = [
     lead: "Nejde o morální otázku „vlastnit = vyhrát“. Jde o cash-flow, horizont bydlení, náklady na úvěr a to, co se stane, když sazby nebo ceny půjdou proti vám.",
     audience:
       "Lidé rozhodující se mezi nájmem a první (nebo další) koupí v ČR.",
-    authorId: "josef-apolenar",
-    reviewerId: "michal-heinzke",
+    authorId: "redakce-hj",
     publishedAt: "2026-07-15",
     updatedAt: "2026-07-21",
     sections: [
@@ -320,8 +317,7 @@ const SEO_LANDINGS_BASE: SeoLanding[] = [
     lead: "Zahraniční nákup není „stejná hypotéka v jiné zemi“. Často rozhoduje struktura vlastnictví, měnové riziko a to, zda vůbec existuje lokální úvěr pro nerezidenty.",
     audience:
       "Češi zvažující nákup v EU, SAE, Bali nebo jinde v našem pokrytí trhů.",
-    authorId: "michal-heinzke",
-    reviewerId: "josef-apolenar",
+    authorId: "redakce-hj",
     publishedAt: "2026-07-15",
     updatedAt: "2026-08-11",
     sections: [

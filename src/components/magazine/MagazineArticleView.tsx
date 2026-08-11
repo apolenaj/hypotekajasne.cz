@@ -7,6 +7,7 @@ import {
   getPerson,
   getRelatedArticles,
   getArticlePath,
+  isNamedPerson,
   type MagazineArticle,
 } from "@/lib/magazine";
 import { routes } from "@/lib/routes";
@@ -68,16 +69,21 @@ export function MagazineArticleView({ article }: { article: MagazineArticle }) {
       datePublished: article.publishedAt,
       dateModified: article.updatedAt,
       authorName: author.name,
+      authorType: isNamedPerson(article.authorId) ? "Person" : "Organization",
       ...(reviewer ? { reviewerName: reviewer.name } : {}),
     }),
-    personJsonLd({
-      name: author.name,
-      jobTitle: author.role,
-      description: author.bio,
-      url: author.url,
-    }),
   ];
-  if (reviewer) {
+  if (isNamedPerson(article.authorId)) {
+    jsonLd.push(
+      personJsonLd({
+        name: author.name,
+        jobTitle: author.role,
+        description: author.bio,
+        url: author.url,
+      })
+    );
+  }
+  if (reviewer && article.reviewerId && isNamedPerson(article.reviewerId)) {
     jsonLd.push(
       personJsonLd({
         name: reviewer.name,

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { JsonLdScript } from "@/components/seo/JsonLdScript";
 import { LeadCaptureForm } from "@/components/forms/LeadCaptureForm";
-import { getPerson } from "@/lib/magazine/authors";
+import { getPerson, isNamedPerson } from "@/lib/magazine/authors";
 import { crumbs } from "@/lib/seo/breadcrumbs";
 import {
   articleJsonLd,
@@ -96,16 +96,21 @@ export function SeoLandingView({ landing }: { landing: SeoLanding }) {
       datePublished: landing.publishedAt,
       dateModified: landing.updatedAt,
       authorName: author.name,
+      authorType: isNamedPerson(landing.authorId) ? "Person" : "Organization",
       ...(reviewer ? { reviewerName: reviewer.name } : {}),
     }),
-    personJsonLd({
-      name: author.name,
-      jobTitle: author.role,
-      description: author.bio,
-      url: author.url,
-    }),
   ];
-  if (reviewer) {
+  if (isNamedPerson(landing.authorId)) {
+    jsonLd.push(
+      personJsonLd({
+        name: author.name,
+        jobTitle: author.role,
+        description: author.bio,
+        url: author.url,
+      })
+    );
+  }
+  if (reviewer && landing.reviewerId && isNamedPerson(landing.reviewerId)) {
     jsonLd.push(
       personJsonLd({
         name: reviewer.name,

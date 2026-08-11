@@ -322,6 +322,27 @@ describe("json-ld — no fake reviews", () => {
     });
     assert.equal(a["@type"], "Article");
     assert.equal(a.aggregateRating, undefined);
+    assert.equal((a.author as { "@type": string })["@type"], "Person");
+
+    const editorial = articleJsonLd({
+      headline: "Test",
+      description: "Desc",
+      path: "/temata/refinancovani",
+      imageUrl: "/opengraph-image",
+      datePublished: "2026-01-01",
+      dateModified: "2026-01-02",
+      authorName: "Redakce Hypotéka Jasně",
+      authorType: "Organization",
+    });
+    assert.equal(
+      (editorial.author as { "@type": string; name: string })["@type"],
+      "Organization"
+    );
+    assert.equal(
+      (editorial.author as { name: string }).name,
+      "Redakce Hypotéka Jasně"
+    );
+    assert.equal(editorial.reviewedBy, undefined);
   });
 
   it("course / faq / webapp / video / breadcrumbs types", () => {

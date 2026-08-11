@@ -98,6 +98,8 @@ export function articleJsonLd(input: {
   datePublished: string;
   dateModified: string;
   authorName: string;
+  /** Prefer Organization for editorial desk; Person only for named humans. */
+  authorType?: "Person" | "Organization";
   reviewerName?: string;
 }): JsonLd {
   const article: JsonLd = {
@@ -109,7 +111,7 @@ export function articleJsonLd(input: {
     datePublished: input.datePublished,
     dateModified: input.dateModified,
     author: {
-      "@type": "Person",
+      "@type": input.authorType ?? "Person",
       name: input.authorName,
     },
     publisher: {

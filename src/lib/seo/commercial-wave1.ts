@@ -52,7 +52,7 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
     lead: "Refinancování znamená převod hypotéky k jiné bance nebo novou smlouvu u stávající — ne vždy je to lepší než refixace. Tento průvodce vás provede čísly, náklady a načasováním bez slibů „nejlevnější sazby“.",
     audience:
       "Klienti s běžící hypotékou blízko konce fixace nebo s výrazně vyšší sazbou než aktuální trh.",
-    authorId: "michal-heinzke",
+    authorId: "redakce-hj",
     publishedAt: "2026-07-15",
     updatedAt: "2026-08-11",
     commercialIntent: "refinance",
@@ -228,7 +228,7 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
     lead: "U OSVČ banka neposuzuje fakturovaný obrat, ale příjem, který uzná podle daňové historie a interní metodiky. Připravte dokumenty a realistický strop splátky dřív, než rezervujete nemovitost.",
     audience:
       "OSVČ, freelancery a majitelé jednoosobových živností v ČR s příjmem z podnikání.",
-    authorId: "michal-heinzke",
+    authorId: "redakce-hj",
     publishedAt: "2026-07-15",
     updatedAt: "2026-08-11",
     commercialIntent: "osvc",
@@ -380,7 +380,7 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
     lead: "Máte příjem mimo ČR a kupujete nebo refinancujete nemovitost v Česku? Banky posuzují měnu, stabilitu zaměstnavatele a dokumentaci jinak než u čistě českého příjmu. Tento průvodce vysvětluje obecné principy — ne slib schválení.",
     audience:
       "Zaměstnanci a podnikatelé s příjmem ze zahraničí financující bydlení v ČR.",
-    authorId: "michal-heinzke",
+    authorId: "redakce-hj",
     publishedAt: "2026-07-15",
     updatedAt: "2026-08-11",
     commercialIntent: "foreign_income",
@@ -531,7 +531,7 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
     lead: "Investiční hypotéka není „stejný úvěr s jiným účelem“. ČNB od 1. dubna 2026 doporučuje přísnější limity pro definované investiční úvěry — a banky posuzují nájemní příjem konzervativněji než plat ze zaměstnání.",
     audience:
       "Investoři do nájemního bydlení v ČR a lidé pořizující třetí a další obytnou nemovitost.",
-    authorId: "michal-heinzke",
+    authorId: "redakce-hj",
     publishedAt: "2026-07-15",
     updatedAt: "2026-08-11",
     commercialIntent: "investment",
@@ -677,7 +677,7 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
     lead: "Americká hypotéka v českém prostředí znamená neúčelový úvěr zajištěný nemovitostí — peníze nemusíte prokazatě investovat do bydlení. Jiné riziko, jiné sazby, jiná pravidla než u klasické hypotéky.",
     audience:
       "Vlastníci nemovitosti hledající neúčelové financování zajištěné bytem nebo domem.",
-    authorId: "michal-heinzke",
+    authorId: "redakce-hj",
     publishedAt: "2026-07-15",
     updatedAt: "2026-08-11",
     commercialIntent: "american",
