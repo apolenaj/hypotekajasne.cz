@@ -316,11 +316,14 @@ export const ACADEMY_LESSONS: AcademyLesson[] = [
     ],
     relatedTools: [
       { label: "Průvodce investora", href: routes.pruvodceInvestora },
-      { label: "Kalkulačky", href: routes.kalkulacky.root },
+      {
+        label: "Americká hypotéka — komerční průvodce",
+        href: `${routes.temata}/americka-hypoteka`,
+      },
     ],
     cta: {
-      label: "Prozkoumat financování zahraničí",
-      href: routes.pruvodceInvestora,
+      label: "Otevřít komerční průvodce americkou hypotékou",
+      href: `${routes.temata}/americka-hypoteka`,
     },
   }),
 

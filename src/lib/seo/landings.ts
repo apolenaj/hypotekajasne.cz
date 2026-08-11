@@ -18,6 +18,10 @@
 import { routes, getCountryGuidePath } from "@/lib/routes";
 import { countryOrder } from "@/lib/calculators";
 import { getCountryDossier } from "@/lib/country-dossier";
+import {
+  WAVE1_COMMERCIAL_LANDINGS,
+  type CommercialPageIntent,
+} from "@/lib/seo/commercial-wave1";
 
 export type SeoLandingLink = { label: string; href: string };
 
@@ -57,19 +61,25 @@ export type SeoLanding = {
   relatedAcademy: SeoLandingLink[];
   /** Country dossiers — only on foreign hub */
   relatedCountries?: SeoLandingLink[];
+  /** Phase 6 Wave 1 commercial intent (one winner per intent) */
+  commercialIntent?: CommercialPageIntent;
+  primaryCta?: SeoLandingLink;
+  secondaryCta?: SeoLandingLink;
+  quickAnswer?: { heading: string; bullets: string[] };
+  showLeadCapture?: boolean;
 };
 
 export const SEO_LANDING_HUB = {
   path: "/temata",
   title: "Témata hypoték — přehled průvodců",
   description:
-    "Průvodce hypotékou: příjem, věk do 36 let, OSVČ, investiční hypotéka, refinancování, koupě vs. nájem a zahraničí.",
+    "Průvodce hypotékou: OSVČ, refinancování, investiční a americká hypotéka, zahraniční příjem, koupě vs. nájem a hypotéka v zahraničí.",
 } as const;
 
 const CNB_MACRO =
   "https://www.cnb.cz/cs/financni-stabilita/makroobezretnostni-politika/";
 
-export const SEO_LANDINGS: SeoLanding[] = [
+const SEO_LANDINGS_BASE: SeoLanding[] = [
   {
     slug: "hypoteka-podle-prijmu",
     title: "Hypotéka podle příjmu — DSTI, splátka a reálná dostupnost",
@@ -228,229 +238,6 @@ export const SEO_LANDINGS: SeoLanding[] = [
     ],
   },
   {
-    slug: "investicni-hypoteka",
-    title: "Investiční hypotéka — limity, DSTI a škálování portfolia",
-    description:
-      "Jak se liší financování investice od vlastního bydlení: LTV, DSTI, s.r.o. a rizika. Edukace bez slibu schválení a bez fráze „s.r.o. je záchrana“.",
-    h1: "Investiční hypotéka",
-    lead: "Investiční byt není „stejná hypotéka s jiným účelem“. Banky i regulace často přitahují brzdu dřív — kapacita domácnosti a LTV rozhodují víc než výnos z inzerátu.",
-    audience:
-      "Investoři do nájemního bydlení v ČR a lidé zvažující firemní strukturu.",
-    authorId: "michal-heinzke",
-    reviewerId: "josef-apolenar",
-    publishedAt: "2026-07-15",
-    updatedAt: "2026-07-21",
-    sections: [
-      {
-        id: "rozdil-vuci-bydleni",
-        heading: "Rozdíl oproti vlastnímu bydlení",
-        paragraphs: [
-          "U investice banka obvykle počítá s nižším LTV a přísněji hledí na DSTI. Nájemní příjem nemusí být započten 100 % — interní haircuty se liší banka od banky a produkt od produktu.",
-          "Marketingové „cash-flow pozitivní od prvního dne“ často ignoruje daň, správu, neobsazenost a růst sazeb po fixaci. Modelujte stresový scénář, ne jen nejlepší měsíc z inzerátu.",
-        ],
-      },
-      {
-        id: "sro",
-        heading: "s.r.o. / SPV — možnost, ne záchrana",
-        paragraphs: [
-          "Firemní struktura může otevřít jiné posouzení (např. DSCR projektu), ale přináší náklady, administrativu a jiné ručení. Není automatickým obcházením limitů FO.",
-          "Podrobněji v článku o regulaci investičních hypoték — bez senzacečních slibů. Konzultujte daňového poradce dřív, než zakládáte firmu „kvůli bance“.",
-        ],
-      },
-      {
-        id: "portfolio",
-        heading: "Škálování portfolia",
-        paragraphs: [
-          "Každá další investiční nemovitost snižuje zbývající kapacitu DSTI. Plánujte equity a rezervu dopředu — ne až po rezervaci dalšího bytu.",
-          "Investiční rentgen a osobní investiční průvodce pomáhají srovnat trhy a rizika; neříkají, který byt „musíte koupit“.",
-        ],
-      },
-    ],
-    faqs: [
-      {
-        question: "Zaplatí nájem celou splátku?",
-        answer:
-          "Ne vždy. Modelujte neobsazenost, daň, správu a růst sazeb. Banka navíc nemusí započítat nájem 1:1.",
-      },
-      {
-        question: "Je s.r.o. nutná pro investiční hypotéku?",
-        answer:
-          "Ne. Pro někoho dává smysl později; pro jiného je levnější zpomalit nákupy nebo zvýšit equity. Žádná struktura negarantuje úvěr.",
-      },
-    ],
-    sources: [
-      { label: "ČNB — makroobezřetnostní politika", url: CNB_MACRO },
-      {
-        label: "Článek: Regulace a investiční hypotéky",
-        url: `${routes.clanky}/regulace-investicni-hypoteky-cr`,
-      },
-      { label: "Investiční rentgen", url: routes.investicniRentgen },
-    ],
-    relatedTools: [
-      { label: "Investiční rentgen", href: routes.investicniRentgen },
-      { label: "Osobní investiční průvodce", href: routes.investicniPas },
-    ],
-    relatedArticles: [
-      {
-        label: "Regulace a investiční hypotéky v ČR",
-        href: `${routes.clanky}/regulace-investicni-hypoteky-cr`,
-      },
-    ],
-    relatedAcademy: [
-      { label: "DSTI", href: `${routes.akademie}/dsti` },
-      { label: "RPSN", href: `${routes.akademie}/rpsn` },
-    ],
-  },
-  {
-    slug: "hypoteka-osvc",
-    title: "Hypotéka pro OSVČ — dokládání příjmů a typické překážky",
-    description:
-      "Jak OSVČ dokládají příjem k hypotéce, co banky často požadují a kde selhávají zjednodušené kalkulačky. Bez slibu schválení.",
-    h1: "Hypotéka pro OSVČ",
-    lead: "U OSVČ nerozhoduje „obrat na fakturách“, ale to, co banka uzná jako příjem. Připravte si daňová přiznání a realistický strop splátky dřív, než si zarezervujete nemovitost.",
-    audience: "OSVČ, freelancery a majitele jednoosobových firem v ČR.",
-    authorId: "michal-heinzke",
-    publishedAt: "2026-07-15",
-    updatedAt: "2026-07-21",
-    sections: [
-      {
-        id: "dokladani",
-        heading: "Dokládání příjmu",
-        paragraphs: [
-          "Typicky banka chce daňová přiznání (často 1–2 roky), přehledy ČSSZ/ZP a výpisy z účtu. Paušální výdaje mohou výrazně snížit uznaný příjem oproti cash-flow, které cítíte „v kapse“.",
-          "Nové podnikání nebo výkyvy tržeb zvyšují riziko odmítnutí — i při vysokém obratu v posledních měsících. Konzultujte s hypotečním specialistou dřív, než složíte rezervaci.",
-        ],
-        bullets: [
-          "Spočítejte uznatelný příjem konzervativně.",
-          "Doplňte rezervu na DPH a daňové nedoplatky.",
-          "Společná žádost s partnerem se zaměstnaneckým příjmem může změnit kapacitu.",
-        ],
-      },
-      {
-        id: "priprava",
-        heading: "Příprava před žádostí",
-        paragraphs: [
-          "Uklidněte revolving, doplaťte malé závazky a sjednoťte dokumentaci. Checklist připravenosti ušetří kola s bankou.",
-          "Pokud používáte paušál, ověřte si, jak konkrétní banka přepočítává příjem — obecné kalkulačky to často přestřelí.",
-        ],
-      },
-      {
-        id: "co-necakat",
-        heading: "Co neočekávat od webového modelu",
-        paragraphs: [
-          "Webový odhad není závazná nabídka. Banka má interní výjimky, scoring a aktuální apetit k riziku. Cíl tohoto průvodce je připravit vás na reálné otázky, ne slíbit schválení.",
-        ],
-      },
-    ],
-    faqs: [
-      {
-        question: "Stačí výpis z účtu za 3 měsíce?",
-        answer:
-          "Obvykle ne. Banky chtějí daňovou historii. Výpisy doplňují obraz, ale nenahrazují přiznání.",
-      },
-      {
-        question: "Pomůže s.r.o. místo OSVČ?",
-        answer:
-          "Někdy ano, někdy ne — záleží na účetnictví, zisku a produktu. Není to automatická zkratka ke schválení.",
-      },
-    ],
-    sources: [
-      { label: "Akademie: DSTI", url: `${routes.akademie}/dsti` },
-      { label: "Hypoteční připravenost", url: routes.navrhNaMiru },
-      { label: "Redakční zásady", url: routes.editorialPolicy },
-    ],
-    relatedTools: [
-      { label: "Hypoteční připravenost", href: routes.navrhNaMiru },
-      { label: "Zjistit moje možnosti", href: routes.mojeMoznosti },
-    ],
-    relatedArticles: [
-      {
-        label: "Regulace a investiční hypotéky",
-        href: `${routes.clanky}/regulace-investicni-hypoteky-cr`,
-      },
-    ],
-    relatedAcademy: [
-      { label: "Vzdělávací cesta OSVČ", href: `${routes.akademie}/cesty` },
-    ],
-  },
-  {
-    slug: "refinancovani",
-    title: "Refinancování hypotéky — fixace, poplatky a rozhodovací rámec",
-    description:
-      "Kdy má smysl refinancovat: konec fixace, poplatky, pojištění a srovnání scénářů. Model vs. nabídka banky — bez nátlaku.",
-    h1: "Refinancování hypotéky",
-    lead: "Refinancování není automaticky „výhra“. Spočítejte zbývající fixaci, náklady na změnu a novou splátku — včetně pojištění a poplatků, které marketing často schová.",
-    audience: "Klienti blízko konce fixace nebo s výrazně vyšší sazbou než trh.",
-    authorId: "michal-heinzke",
-    reviewerId: "josef-apolenar",
-    publishedAt: "2026-07-15",
-    updatedAt: "2026-07-21",
-    sections: [
-      {
-        id: "kdy-resit",
-        heading: "Kdy to řešit",
-        paragraphs: [
-          "Nejčastější spouštěč je konec fixace. Některé smlouvy umožňují refinancovat dříve — ověřte podmínky a případné sankce v konkrétní smlouvě, ne v obecném článku.",
-          "Hlídač refinancování pomáhá sledovat termín; rozhodnutí vždy opřete o čísla, ne o FOMO z reklam. Srovnávejte alespoň 2–3 scénáře se stejnými předpoklady.",
-        ],
-      },
-      {
-        id: "co-porovnat",
-        heading: "Co porovnat vedle sazby",
-        paragraphs: [
-          "Poplatky za odhad, katastr, případné pojištění schopnosti splácet, RPSN a délku nové fixace. Nižší sazba při kratší fixaci může být dražší strategie, pokud očekáváte volatilitu.",
-          "Zapomeňte-li na pojištění a poplatky, srovnání „zůstat vs. refinancovat“ lže ve prospěch marketingové sazby.",
-        ],
-        bullets: [
-          "Scénář „zůstat“ vs. „refinancovat“ se stejnými předpoklady.",
-          "Zapomeňte-li na pojištění, srovnání lže.",
-          "Zkontrolujte, zda nová smlouva nezhorší podmínky předčasného splacení.",
-        ],
-      },
-      {
-        id: "timing",
-        heading: "Načasování a dokumenty",
-        paragraphs: [
-          "Odhad, výpisy a potvrzení příjmu připravte dřív, než končí fixace. Tlak na poslední chvíli zvyšuje riziko, že přijmete první nabídku bez srovnání.",
-        ],
-      },
-    ],
-    faqs: [
-      {
-        question: "Musím refinancovat hned, jak klesnou sazby?",
-        answer:
-          "Ne. Záleží na smlouvě, sankcích a celkových nákladech. Modelujte oba scénáře.",
-      },
-      {
-        question: "Stačí porovnat jen úrokovou sazbu?",
-        answer:
-          "Ne. RPSN, pojištění, poplatky a délka fixace často rozhodnou víc než desetina procenta na sazbě.",
-      },
-    ],
-    sources: [
-      {
-        label: "Článek: Refinancování po fixaci — checklist",
-        url: `${routes.clanky}/refinancovani-po-fixaci-checklist`,
-      },
-      { label: "Hlídač refinancování", url: routes.refinanceRadar },
-      { label: "Akademie: Fixace", url: `${routes.akademie}/fixace` },
-    ],
-    relatedTools: [
-      { label: "Hlídač refinancování", href: routes.refinanceRadar },
-      { label: "Zjistit moje možnosti", href: routes.mojeMoznosti },
-    ],
-    relatedArticles: [
-      {
-        label: "Refinancování po fixaci — checklist",
-        href: `${routes.clanky}/refinancovani-po-fixaci-checklist`,
-      },
-    ],
-    relatedAcademy: [
-      { label: "Fixace", href: `${routes.akademie}/fixace` },
-      { label: "RPSN", href: `${routes.akademie}/rpsn` },
-    ],
-  },
-  {
     slug: "koupe-vs-najem",
     title: "Koupě vs. nájem — rozhodovací model, ne ideologie",
     description:
@@ -536,7 +323,7 @@ export const SEO_LANDINGS: SeoLanding[] = [
     authorId: "michal-heinzke",
     reviewerId: "josef-apolenar",
     publishedAt: "2026-07-15",
-    updatedAt: "2026-07-21",
+    updatedAt: "2026-08-11",
     sections: [
       {
         id: "cesty",
@@ -544,6 +331,7 @@ export const SEO_LANDINGS: SeoLanding[] = [
         paragraphs: [
           "Lokální hypotéka (pokud banka půjčí nerezidentovi), české zajištěné financování (úvěr v ČR proti české nemovitosti), platební plán developera, nebo hotovost. Každá cesta má jiné náklady a rizika.",
           "Mapa globálního financování pomáhá srovnat cesty vedle sebe — neříká, která je „nejlepší“.",
+          "Pozor na záměnu záměrů: pokud kupujete v ČR a máte příjem ze zahraničí, patříte na stránku Hypotéka se zahraničním příjmem — ne sem.",
         ],
       },
       {
@@ -586,6 +374,10 @@ export const SEO_LANDINGS: SeoLanding[] = [
         label: "Zahraniční financování a české zajištění",
         href: `${routes.clanky}/zahranicni-financovani-ceske-zajisteni`,
       },
+      {
+        label: "Hypotéka se zahraničním příjmem (jiný záměr)",
+        href: `${routes.temata}/hypoteka-ze-zahranicniho-prijmu`,
+      },
     ],
     relatedAcademy: [
       {
@@ -601,6 +393,11 @@ export const SEO_LANDINGS: SeoLanding[] = [
       };
     }),
   },
+];
+
+export const SEO_LANDINGS: SeoLanding[] = [
+  ...SEO_LANDINGS_BASE,
+  ...WAVE1_COMMERCIAL_LANDINGS,
 ];
 
 export function getAllLandingSlugs(): string[] {

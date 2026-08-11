@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { MojeMoznostiWizard } from "@/components/moje-moznosti/MojeMoznostiWizard";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { getStaticPageSeo } from "@/lib/seo/pages";
@@ -20,7 +21,15 @@ export default function MojeMoznostiPage() {
           />
         </div>
       </div>
-      <MojeMoznostiWizard />
+      <Suspense
+        fallback={
+          <div className="mx-auto max-w-2xl px-4 py-12 text-sm text-muted-foreground">
+            Načítám diagnostiku…
+          </div>
+        }
+      >
+        <MojeMoznostiWizard />
+      </Suspense>
     </>
   );
 }

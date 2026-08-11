@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { JsonLdScript } from "@/components/seo/JsonLdScript";
+import { LeadCaptureForm } from "@/components/forms/LeadCaptureForm";
 import { getPerson } from "@/lib/magazine/authors";
 import { crumbs } from "@/lib/seo/breadcrumbs";
 import {
@@ -48,12 +49,43 @@ function LinkList({
   );
 }
 
+function CtaRow({
+  primary,
+  secondary,
+}: {
+  primary?: { label: string; href: string };
+  secondary?: { label: string; href: string };
+}) {
+  if (!primary && !secondary) return null;
+  return (
+    <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+      {primary ? (
+        <Link
+          href={primary.href}
+          className="inline-flex h-11 min-h-11 items-center justify-center rounded-xl bg-deep-teal px-5 text-sm font-bold text-white transition hover:bg-deep-teal/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal focus-visible:ring-offset-2"
+        >
+          {primary.label}
+        </Link>
+      ) : null}
+      {secondary ? (
+        <Link
+          href={secondary.href}
+          className="inline-flex h-11 min-h-11 items-center justify-center rounded-xl border border-deep-teal/40 bg-white px-5 text-sm font-semibold text-deep-teal transition hover:bg-deep-teal/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal focus-visible:ring-offset-2"
+        >
+          {secondary.label}
+        </Link>
+      ) : null}
+    </div>
+  );
+}
+
 export function SeoLandingView({ landing }: { landing: SeoLanding }) {
   const author = getPerson(landing.authorId);
   const reviewer = landing.reviewerId
     ? getPerson(landing.reviewerId)
     : null;
   const path = getLandingPath(landing.slug);
+  const pageIntent = landing.commercialIntent;
 
   const jsonLd: JsonLd[] = [
     articleJsonLd({
@@ -104,7 +136,7 @@ export function SeoLandingView({ landing }: { landing: SeoLanding }) {
       <header className="border-b border-border">
         <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
           <p className="text-xs font-bold uppercase tracking-wide text-deep-teal">
-            Průvodce tématem
+            {pageIntent ? "Komerční průvodce" : "Průvodce tématem"}
           </p>
           <h1 className="mt-2 font-heading text-3xl font-bold tracking-tight text-text-dark sm:text-4xl">
             {landing.h1}
@@ -116,19 +148,45 @@ export function SeoLandingView({ landing }: { landing: SeoLanding }) {
             <span className="font-medium text-text-dark">Pro koho:</span>{" "}
             {landing.audience}
           </p>
+          <CtaRow
+            primary={landing.primaryCta}
+            secondary={landing.secondaryCta}
+          />
           <p className="mt-4 text-xs text-muted-foreground">
             Autor: {author.name}
             {reviewer ? <> · Odborná kontrola: {reviewer.name}</> : null}
             <br />
             Publikace {formatDate(landing.publishedAt)} · Aktualizace{" "}
             {formatDate(landing.updatedAt)}
+            <br />
+            Provozovatel platformy: HEINZKE &amp; partneři s.r.o. · projekt
+            Hypotéka Jasně
           </p>
         </div>
       </header>
 
       <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+        {landing.quickAnswer ? (
+          <section
+            className="mb-10 rounded-2xl border border-deep-teal/20 bg-[#f7f8f7] p-5"
+            aria-labelledby="quick-answer"
+          >
+            <h2
+              id="quick-answer"
+              className="font-heading text-lg font-bold text-text-dark"
+            >
+              {landing.quickAnswer.heading}
+            </h2>
+            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground">
+              {landing.quickAnswer.bullets.map((b) => (
+                <li key={b}>{b}</li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
         <div className="space-y-8">
-          {landing.sections.map((section) => (
+          {landing.sections.map((section, index) => (
             <section key={section.id} aria-labelledby={section.id}>
               <h2
                 id={section.id}
@@ -150,6 +208,14 @@ export function SeoLandingView({ landing }: { landing: SeoLanding }) {
                     <li key={b}>{b}</li>
                   ))}
                 </ul>
+              ) : null}
+              {pageIntent && index === 2 ? (
+                <div className="mt-6">
+                  <CtaRow
+                    primary={landing.primaryCta}
+                    secondary={landing.secondaryCta}
+                  />
+                </div>
               ) : null}
             </section>
           ))}
@@ -222,13 +288,51 @@ export function SeoLandingView({ landing }: { landing: SeoLanding }) {
         <LinkList title="Související články" items={landing.relatedArticles} />
         <LinkList title="Akademie" items={landing.relatedAcademy} />
 
+        {landing.showLeadCapture ? (
+          <section
+            id="poptavka"
+            className="mt-12 scroll-mt-24 rounded-2xl border border-border bg-[#f7f8f7] p-5 sm:p-6"
+            aria-labelledby="landing-lead-heading"
+          >
+            <h2
+              id="landing-lead-heading"
+              className="font-heading text-xl font-bold text-text-dark"
+            >
+              Zjistit možnosti pro moji situaci
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Nezávazná poptávka. Nejde o schválení úvěru ani závaznou nabídku
+              banky. Kontext stránky předáme jen jako bezpečná metadata.
+            </p>
+            <div className="mt-5">
+              <LeadCaptureForm
+                source="lead_gen"
+                compact
+                title="Nezávazná poptávka"
+                subtitle="Jméno a kontakt stačí — detaily dořešíme spolu."
+                metadata={{
+                  sourcePage: path,
+                  page_intent: pageIntent ?? landing.slug,
+                  purpose:
+                    pageIntent === "refinance"
+                      ? "refinance"
+                      : pageIntent === "investment"
+                        ? "investment"
+                        : undefined,
+                }}
+              />
+            </div>
+          </section>
+        ) : null}
+
         <p className="mt-12 rounded-lg border border-border bg-[#f7f8f7] px-4 py-3 text-xs text-muted-foreground">
           Informační obsah Hypotéka Jasně — nejsme banka. Modelové výpočty
           nejsou nabídkou úvěru. Před rozhodnutím ověřte aktuální podmínky u
           odborníka.{" "}
           <Link href={routes.metodika} className="text-deep-teal underline">
             Metodika
-          </Link>{"."}
+          </Link>
+          .
         </p>
       </div>
     </article>

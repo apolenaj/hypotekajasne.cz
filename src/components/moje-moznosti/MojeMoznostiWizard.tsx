@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   ArrowRight,
@@ -27,6 +28,7 @@ import { clearReadiness } from "@/lib/mortgage-readiness/storage";
 import {
   INTENT_OPTIONS,
   INCOME_TYPE_OPTIONS,
+  type IncomeTypeId,
   type MortgageIntent,
 } from "@/lib/mortgage-readiness/types";
 import { useMortgageRateEngine } from "@/lib/rates";
@@ -47,14 +49,62 @@ const STEPS: { id: StepId; label: string }[] = [
   { id: "result", label: "Výsledek" },
 ];
 
+const INTENT_QUERY: Record<string, MortgageIntent> = {
+  owner_occupied: "owner_occupied",
+  investment: "investment",
+  refinance: "refinance",
+  foreign_purchase: "foreign_purchase",
+};
+
+const INCOME_QUERY: Record<string, IncomeTypeId> = {
+  osvc_pausal: "osvc_pausal",
+  osvc_evidence: "osvc_evidence",
+  employee: "employee",
+};
+
 /**
  * Sjednocený onboarding „Zjistit moje možnosti“.
  * Persistuje FinancialProfileAnswers (stejný SoT jako Finanční pas).
  */
 export function MojeMoznostiWizard() {
+  const searchParams = useSearchParams();
   const { resolved } = useMortgageRateEngine(true);
+
+  const queryBootstrap = useMemo(() => {
+    const intentRaw = searchParams.get("intent");
+    const incomeRaw = searchParams.get("income");
+    const intent =
+      intentRaw && INTENT_QUERY[intentRaw]
+        ? INTENT_QUERY[intentRaw]
+        : undefined;
+    const incomeType =
+      incomeRaw && INCOME_QUERY[incomeRaw]
+        ? INCOME_QUERY[incomeRaw]
+        : intentRaw === "osvc"
+          ? ("osvc_pausal" as IncomeTypeId)
+          : undefined;
+    let hint: string | null = null;
+    if (incomeType?.startsWith("osvc") || intentRaw === "osvc") {
+      hint =
+        "Předvyplněno z průvodce Hypotéka pro OSVČ. Cíl bydlení zvolíte v prvním kroku.";
+    } else if (intentRaw === "foreign_income") {
+      hint =
+        "Situace: příjem ze zahraničí. Zvolte cíl (typicky vlastní bydlení) a v dalším kroku doplňte příjem — banky posuzují zahraniční příjem individuálně.";
+    } else if (intent) {
+      hint = "Předvyplněno z komerčního průvodce.";
+    }
+    return { intent, incomeType, hint };
+  }, [searchParams]);
+
   const [profile, setProfile] = useState<FinancialProfileAnswers>(() => {
-    return loadFinancialProfile() ?? { ...EMPTY_PROFILE };
+    const existing = loadFinancialProfile() ?? { ...EMPTY_PROFILE };
+    return {
+      ...existing,
+      ...(queryBootstrap.intent ? { intent: queryBootstrap.intent } : {}),
+      ...(queryBootstrap.incomeType && !existing.incomeType
+        ? { incomeType: queryBootstrap.incomeType }
+        : {}),
+    };
   });
   const [prefs, setPrefs] = useState<MatchingPreferences>({
     ...EMPTY_MATCHING_PREFS,
@@ -63,9 +113,12 @@ export function MojeMoznostiWizard() {
   const [fundsCzk, setFundsCzk] = useState(() => profile.ownFunds || 0);
   const [liabCzk, setLiabCzk] = useState(() => profile.otherLiabilities || 0);
   const [result, setResult] = useState<MojeMoznostiResult | null>(null);
-  const [stepIndex, setStepIndex] = useState(0);
+  const [stepIndex, setStepIndex] = useState(() =>
+    queryBootstrap.intent ? 1 : 0
+  );
   const [started, setStarted] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const queryHint = queryBootstrap.hint;
 
   // Continue later: obnovit výsledek z lokálního profilu (once on first render).
   if (!hydrated) {
@@ -308,6 +361,11 @@ export function MojeMoznostiWizard() {
             jen ve vašem prohlížeči
           </strong>{". Nejde o schválení banky."}
         </p>
+        {queryHint ? (
+          <p className="mt-3 rounded-xl border border-deep-teal/25 bg-deep-teal/5 px-3 py-2 text-sm text-deep-teal">
+            {queryHint}
+          </p>
+        ) : null}
       </div>
 
       {/* Progress */}

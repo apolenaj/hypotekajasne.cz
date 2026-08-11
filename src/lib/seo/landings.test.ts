@@ -30,6 +30,8 @@ describe("SEO landings — quality first, no thin spam", () => {
       "refinancovani",
       "koupe-vs-najem",
       "hypoteka-v-zahranici",
+      "hypoteka-ze-zahranicniho-prijmu",
+      "americka-hypoteka",
     ]) {
       assert.ok(slugs.has(required), required);
     }
