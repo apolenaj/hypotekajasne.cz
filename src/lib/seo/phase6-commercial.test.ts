@@ -140,4 +140,75 @@ describe("Phase 6 Wave 1 — commercial canonicals", () => {
       assert.notEqual(l.reviewerId, "michal-heinzke", l.slug);
     }
   });
+
+  it("Wave 1 factual content micro-patch guards", () => {
+    const bannedInternal = [
+      "verification_pending",
+      "IMPORT_READY",
+      "pricing_scenario_key",
+      "rate_effect_bp",
+      "source_evidence_id",
+      "normalized",
+      "fallback",
+    ];
+    for (const slug of WAVE1_COMMERCIAL_SLUGS) {
+      const blob = JSON.stringify(getLanding(slug));
+      for (const term of bannedInternal) {
+        assert.equal(
+          blob.includes(term),
+          false,
+          `${slug} must not expose ${term}`
+        );
+      }
+      // HOLD as isolated data-state label (allow Czech words containing hold)
+      assert.equal(/\bHOLD\b/.test(blob), false, `${slug} must not expose HOLD`);
+    }
+
+    const osvc = getLanding("hypoteka-osvc")!;
+    const osvcBlob = JSON.stringify(osvc);
+    assert.equal(osvcBlob.includes("neposuzuje fakturovaný obrat"), false);
+    assert.match(osvcBlob, /vlastní underwriting|vlastní underwriting/i);
+    assert.match(osvcBlob, /Příklady zveřejněných požadavků bank/);
+    assert.match(osvcBlob, /obratov/i);
+    assert.ok(
+      osvc.sources.some((s) => s.url?.includes("kb.cz")),
+      "OSVC primary KB source"
+    );
+
+    const american = getLanding("americka-hypoteka")!;
+    const americanBlob = JSON.stringify(american);
+    assert.equal(americanBlob.includes("purpose=purchase"), false);
+    assert.match(americanBlob, /nejsou sazby americké hypotéky/);
+    assert.match(americanBlob, /právě ověřujeme/);
+    assert.ok(
+      american.sources.some((s) => s.url?.includes("americka-hypoteka")),
+      "American primary product source"
+    );
+    assert.ok(
+      american.sources.some((s) => s.url?.includes("unicreditbank.cz")),
+      "UniCredit non-purpose rate sheet"
+    );
+
+    const investment = getLanding("investicni-hypoteka")!;
+    const investBlob = JSON.stringify(investment);
+    assert.equal(investBlob.includes("přísněji posuzuje DSTI"), false);
+    assert.match(
+      investBlob,
+      /interní test schopnosti splácet|nájemní příjem započítávat konzervativně/
+    );
+    assert.match(investBlob, /DSTI.*deaktivovan/i);
+
+    const foreign = getLanding("hypoteka-ze-zahranicniho-prijmu")!;
+    const foreignBlob = JSON.stringify(foreign);
+    assert.match(
+      foreignBlob,
+      /Konkrétní doklady se liší podle banky, země, měny a typu příjmu/
+    );
+    assert.equal(foreignBlob.includes("Sjednoťte výpisy za delší období (6–12 měsíců)"), false);
+    assert.match(foreignBlob, /Příklady zveřejněných požadavků bank/);
+    assert.ok(
+      foreign.sources.some((s) => s.url?.includes("kb.cz")),
+      "Foreign-income KB methodology source"
+    );
+  });
 });

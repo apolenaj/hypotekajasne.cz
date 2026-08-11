@@ -29,6 +29,19 @@ const CNB_MACRO =
 const CNB_INVESTMENT_PRESS =
   "https://www.cnb.cz/cs/cnb-news/tiskove-zpravy/CNB-doporucuje-prisnejsi-limity-pro-investicni-hypoteky.-Kapitalove-rezervy-se-nemeni/";
 
+const KB_HYPOTHEKA_APPLICATION =
+  "https://www.kb.cz/cs/podpora/pujcky-a-hypoteky/zadost-o-hypoteku";
+const KB_MORTGAGE_METHODOLOGY =
+  "https://www.kb.cz/getmedia/0be647a9-681a-435a-936a-4644c09357fa/KB-Metodika-produkty-HU.pdf";
+const KB_AMERICAN_PRODUCT =
+  "https://www.kb.cz/cs/obcane/pujcky/hypoteky/americka-hypoteka";
+const CS_AMERICAN_PRODUCT =
+  "https://www.csas.cz/cs/osobni-finance/hypoteky/americka-hypoteka";
+const MONETA_AMERICAN_PRODUCT =
+  "https://www.moneta.cz/hypoteky/americka-hypoteka";
+const UC_RATE_SHEET =
+  "https://www.unicreditbank.cz/cs/ostatni/urokove-sazby.html";
+
 const CNB_INVESTMENT_DEFINITION =
   "Investiční hypotékou se rozumí hypoteční úvěr poskytnutý za účelem pořízení třetí a další obytné nemovitosti anebo za účelem pořízení obytné nemovitosti určené k pronájmu.";
 
@@ -223,9 +236,9 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
     slug: "hypoteka-osvc",
     title: "Hypotéka pro OSVČ: příjmy, doklady a možnosti | Hypotéka Jasně",
     description:
-      "Jak OSVČ dokládají příjem k hypotéce: daňové přiznání, paušální výdaje i paušální daň. Typické doklady a co banky posuzují — bez vymyšlených koeficientů.",
+      "Jak OSVČ dokládají příjem k hypotéce: daňové přiznání, paušální výdaje i paušální daň. Metodiky bank se liší — bez vymyšlených koeficientů.",
     h1: "Hypotéka pro OSVČ",
-    lead: "U OSVČ banka neposuzuje fakturovaný obrat, ale příjem, který uzná podle daňové historie a interní metodiky. Připravte dokumenty a realistický strop splátky dřív, než rezervujete nemovitost.",
+    lead: "Banky používají vlastní underwriting. Uznaný příjem OSVČ může vycházet z daňového základu / zisku, daňové historie, historie podnikání, nebo — pokud to banka výslovně umožňuje — z obratové metodiky. Připravte dokumenty a realistický strop splátky dřív, než rezervujete nemovitost.",
     audience:
       "OSVČ, freelancery a majitelé jednoosobových živností v ČR s příjmem z podnikání.",
     authorId: "redakce-hj",
@@ -240,9 +253,9 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
     quickAnswer: {
       heading: "OSVČ a hypotéka v kostce",
       bullets: [
-        "Banka typicky chce daňová přiznání (často 1–2 roky), ne jen výpisy z účtu.",
-        "Paušální výdaje nebo paušální daň snižují uznaný příjem oproti cash-flow.",
-        "Konkrétní koeficienty bank se liší — bez ověřeného zdroje je neuvádíme.",
+        "Metodika uznání příjmu se liší banka od banky — neexistuje jedna univerzální formule.",
+        "Často vstupuje daňová historie; u některých produktů i obratová / transakční metoda.",
+        "Požadované doklady (počet daňových přiznání, výpisy) se liší — ověřte u konkrétní banky.",
         "Diagnostika na /moje-moznosti pomůže s orientací, ne se schválením.",
       ],
     },
@@ -258,38 +271,51 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
       },
       {
         id: "jak-dokladat-prijem",
-        heading: "Jak se dokládá příjem",
+        heading: "Jak se dokládá a uznává příjem",
         paragraphs: [
-          "Typicky banka chce daňová přiznání za poslední roky, přehledy ČSSZ a zdravotní pojišťovny, výpisy z podnikatelského účtu a potvrzení o bezdlužnosti. U nového podnikání chybí historie — banka posuzuje riziko přísněji.",
-          "Uznaný příjem často vychází z daňového základu nebo zisku z podnikání, ne z hrubého obratu na fakturách. Co cítíte „v kapse“, může být po paušálech výrazně nižší.",
+          "Banky používají vlastní underwriting. Podle banky a doložené situace může uznaný příjem OSVČ vycházet z daňového základu / zisku, daňové historie, historie podnikání, obratové / transakční metodiky tam, kde ji banka výslovně umožňuje, nebo z jiné zveřejněné metodiky.",
+          "Hrubý obrat na fakturách proto není automaticky „příjem pro splátky“. Zároveň ale neplatí absolutní tvrzení, že banka obrat nikdy neposuzuje — záleží na produktu a metodice.",
+        ],
+      },
+      {
+        id: "priklady-bank",
+        heading: "Příklady zveřejněných požadavků bank",
+        paragraphs: [
+          "Komerční banka na stránce Žádost o hypotéku uvádí, že podnikatel dokládá daňové přiznání za poslední 2 roky (zaměstnanec formulářem Potvrzení o příjmu). Jde o požadavek konkrétní banky — ne o univerzální pravidlo trhu.",
+          "Ve veřejné Metodice hypotečních úvěrů KB banka popisuje výpočet čistého příjmu z podnikání (kalkulačka DP / paušální daň) a ve vybraných případech i obratovou metodu s výpisy z podnikatelského účtu (např. výpisy za poslední 3 měsíce plus výpis za 6. měsíc před žádostí u paušální daně). Koeficienty a přesné přepočty bez aktuálního ověření u banky neuvádíme.",
+        ],
+        bullets: [
+          "KB (veřejná podpora): daňové přiznání podnikatele za poslední 2 roky.",
+          "KB (metodika): daňový základ / paušální daň; ve vybraných případech obratová metoda.",
+          "Jiná banka může chtít jiný počet let DP nebo jiné výpisy — ověřte primární zdroj.",
         ],
       },
       {
         id: "danove-rezimy",
         heading: "Daňové přiznání vs. výdajový paušál vs. paušální daň",
         paragraphs: [
-          "U skutečných výdajů banka pracuje s účetním ziskem. U výdajového paušálu se daňový základ snižuje podle zákonných paušálních sazeb — banka pak často uzná nižší příjem, než ukazuje obrat.",
-          "U paušální daně platí specifická pravidla pro výši uznávaného příjmu podle pásma. Konkrétní koeficienty a přepočty se liší banka od banky — bez aktuálního ověřeného primárního důkazu je neuvádíme.",
+          "U skutečných výdajů banka často pracuje s účetním ziskem. U výdajového paušálu se daňový základ snižuje podle zákonných paušálních sazeb — uznaný příjem pak může být výrazně nižší než cash-flow.",
+          "U paušální daně mají banky specifická pravidla. Konkrétní koeficienty a přepočty se liší banka od banky — bez aktuálního ověřeného primárního důkazu je neuvádíme.",
         ],
         bullets: [
-          "Nejdřív zjistěte, co banka uzná z vašeho daňového režimu.",
+          "Nejdřív zjistěte, co konkrétní banka uzná z vašeho daňového režimu.",
           "Modelujte konzervativně — ne podle nejlepšího měsíce.",
-          "Společná žádost může výrazně změnit DSTI.",
+          "Společná žádost může změnit kapacitu splátek (interní test banky).",
         ],
       },
       {
         id: "historie-podnikani",
         heading: "Historie podnikání a stabilita",
         paragraphs: [
-          "Většina bank preferuje alespoň jeden uzavřený daňový rok; u některých produktů dva. Výkyvy tržeb, nová živnost nebo přechod z zaměstnání zvyšují nejistotu posouzení.",
+          "Banky často preferují uzavřené daňové období; počet let a přísnost se liší produkt od produktu. Výkyvy tržeb, nová živnost nebo přechod z zaměstnání zvyšují nejistotu posouzení.",
           "Pokud plánujete hypotéku, stabilizujte cash-flow a dokumentaci dřív, než podáte žádost. Náhlý nárůst fakturace těsně před žádostí nemusí banku přesvědčit.",
         ],
       },
       {
         id: "typicke-doklady",
-        heading: "Typické doklady (obecný přehled)",
+        heading: "Doklady — obecně, ne univerzálně",
         paragraphs: [
-          "Daňová přiznání včetně příloh, potvrzení o podání, přehledy pojistného, výpisy z účtu (obvykle 6–12 měsíců), doklad totožnosti a standardní hypotéční dokumenty k nemovitosti.",
+          "Často se objevují daňová přiznání včetně příloh, doklad o zaplacení daně / bezdlužnosti, přehledy pojistného, výpisy z podnikatelského účtu a standardní dokumenty k nemovitosti. Přesný seznam a délka historie výpisů se liší podle banky — neplatí jedno univerzální „6–12 měsíců výpisů“ ani „vždy dvě přiznání“ pro celý trh.",
           "Banka může požadovat i smlouvy s hlavními odběrateli nebo potvrzení o délce spolupráce — záleží na oboru a riziku. Seznam si ověřte u konkrétní banky.",
         ],
       },
@@ -297,7 +323,7 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
         id: "spoluzadatel",
         heading: "Spolužadatel a kombinace příjmů",
         paragraphs: [
-          "Partner se zaměstnaneckým příjmem často zvýší kapacitu úvěru — banka posuzuje domácnost dohromady. Naopak závazky partnera snižují DSTI stejně jako vaše.",
+          "Partner se zaměstnaneckým příjmem často zvýší kapacitu úvěru — banka posuzuje domácnost dohromady. Naopak závazky partnera snižují kapacitu stejně jako vaše.",
           "Společná žádost není automatická výhra: oba musíte projít scoringem a dokumentací.",
         ],
       },
@@ -305,8 +331,8 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
         id: "co-banky-posuzuji",
         heading: "Co banky posuzují — ověřená fakta vs. nejistota",
         paragraphs: [
-          "Fakt: banka pracuje s daňovou historií, závazky, LTV a scoringem. Makroobezřetnostní rámec ČNB (LTV, DTI, DSTI) se vztahuje na standardní hypotéky stejně jako u zaměstnanců.",
-          "Bez konkrétní banky nejisté: přesný přepočet paušálních výdajů, haircut u obratu, výjimky pro mladé podnikatele nebo specifická odvětví. Tyto parametry se mění a liší produkt od produktu.",
+          "Fakt: banka pracuje s doloženým příjmem dle své metodiky, závazky, LTV a scoringem. Makroobezřetnostní rámec ČNB (LTV; DTI/DSTI dle aktuálního nastavení) se vztahuje na standardní hypotéky stejně jako u zaměstnanců — stav DTI/DSTI ověřte u ČNB.",
+          "Bez konkrétní banky nejisté: přesný přepočet paušálních výdajů, podmínky obratové metody, výjimky pro mladé podnikatele nebo specifická odvětví. Tyto parametry se mění a liší produkt od produktu.",
         ],
       },
       {
@@ -322,12 +348,12 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
       {
         question: "Stačí výpis z účtu za tři měsíce?",
         answer:
-          "Obvykle ne. Banky chtějí daňovou historii. Výpisy doplňují obraz, ale nenahrazují daňová přiznání.",
+          "Záleží na bance a metodice. Některé produkty vyžadují daňovou historii; jinde výpisy doplňují nebo v omezených případech podporují obratovou metodu. Výpisy obvykle nenahrazují daňová přiznání, pokud je banka vyžaduje.",
       },
       {
         question: "Banka uzná celý můj obrat?",
         answer:
-          "Typicky ne. Uznávaný příjem vychází z daňového základu nebo zisku podle metodiky banky. Obrat na faktuře není automaticky příjem pro DSTI.",
+          "Neautomaticky. Uznávaný příjem závisí na metodice banky — daňový základ / zisk, historie, případně obratová metoda tam, kde ji banka výslovně umožňuje. Obrat na faktuře není totéž co uznaný příjem.",
       },
       {
         question: "Pomůže paušální daň?",
@@ -337,15 +363,23 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
       {
         question: "Kolik let podnikání banka chce?",
         answer:
-          "Často alespoň jeden uzavřený rok, u některých produktů dva. U nové živnosti bývá kapacita nižší nebo banka žádost odmítne.",
+          "Liší se produkt od produktu. Některé banky uvádějí konkrétní počet daňových přiznání (např. KB veřejně uvádí 2 roky u podnikatele); jinde stačí jiné nastavení. U nové živnosti bývá kapacita nižší nebo banka žádost odmítne.",
       },
     ],
     sources: [
-      { label: "Metodika dat Hypotéka Jasně", url: routes.metodika },
+      {
+        label: "KB — Žádost o hypotéku (doklady podnikatele)",
+        url: KB_HYPOTHEKA_APPLICATION,
+      },
+      {
+        label: "KB — Metodika hypotečních úvěrů (PDF)",
+        url: KB_MORTGAGE_METHODOLOGY,
+      },
       {
         label: "ČNB — makroobezřetnostní politika",
         url: CNB_MACRO,
       },
+      { label: "Metodika dat Hypotéka Jasně", url: routes.metodika },
       {
         label: "Akademie: cesta OSVČ",
         url: `${routes.akademie}/cesty`,
@@ -396,7 +430,7 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
       heading: "Zahraniční příjem v kostce",
       bullets: [
         "Jde o financování nemovitosti v ČR — ne o koupi v zahraničí (viz /temata/hypoteka-v-zahranici).",
-        "Banka posuzuje měnu příjmu, stabilitu zaměstnavatele a ověřitelnost dokumentů.",
+        "Konkrétní doklady se liší podle banky, země, měny a typu příjmu.",
         "Pravidla pro rezidence a občanství se liší — bez konkrétní banky je neobecňujeme.",
         "Individuální posouzení je normální; webový model je jen orientační.",
       ],
@@ -421,15 +455,23 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
       },
       {
         id: "dokumentace",
-        heading: "Dokumentace a ověřitelnost",
+        heading: "Dokumentace — bankově specifická",
         paragraphs: [
-          "Typicky: pracovní smlouva (překlad), potvrzení o příjmu, výpisy ze zahraničního účtu, daňová přiznání v ČR pokud jste daňovým rezidentem, potvrzení o bezdlužnosti.",
-          "Doklady v cizím jazyce mohou vyžadovat úřední překlad. Banka může chtít kontakt na zaměstnavatele pro ověření — připravte se na delší schvalovací proces.",
+          "Konkrétní doklady se liší podle banky, země, měny a typu příjmu. Neexistuje jeden univerzální seznam „povinný překlad + 6–12 měsíců výpisů + ověření zaměstnavatele + potvrzení o bezdlužnosti“ pro všechny banky.",
+          "Připravte se na delší schvalovací proces a ověřte seznam u konkrétní instituce dřív, než složíte rezervaci.",
+        ],
+      },
+      {
+        id: "priklady-bank-zahranicni",
+        heading: "Příklady zveřejněných požadavků bank",
+        paragraphs: [
+          "Komerční banka ve veřejné Metodice hypotečních úvěrů popisuje zvláštní pravidla pro občany ČR s příjmem ze zahraničí. U „pendlerů“ ze sousedních zemí i u příjmu z ostatních států metodika uvádí např. potvrzení o výši pracovního příjmu, pracovní smlouvu a výpisy z účtu, kam je mzda zasílána, za posledních 6 uplynulých měsíců. U cizojazyčné smlouvy KB uvádí, že nemusí jít o úřední překlad certifikovaným překladatelem — kontrolují se vybrané údaje.",
+          "Stejná metodika také omezuje akceptaci: podnikatelská činnost se zdrojem v zahraničí a další zahraniční příjmy (např. pronájem) standardně neakceptuje. Jde o pravidla KB — jiné banky mohou mít jiné seznamy dokladů i jiné omezení.",
         ],
         bullets: [
-          "Sbírejte dokumenty v originále + překlad.",
-          "Sjednoťte výpisy za delší období (6–12 měsíců).",
-          "U bonusů a provizí počítejte s nižším uznáním.",
+          "KB: specifická kapitola pro příjem ze zahraničí (pendler vs. ostatní státy).",
+          "KB příklad: výpisy 6 měsíců u mzdy ze zahraničí — ne univerzální tržní norma.",
+          "UniCredit veřejně popisuje cizoměnovou hypotéku (příjem v cizí měně / bydliště mimo ČR) a právo na předčasné splacení při výrazném posílení CZK — podmínky ověřte na stránce banky.",
         ],
       },
       {
@@ -437,7 +479,7 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
         heading: "Stabilita zaměstnání a historie",
         paragraphs: [
           "Banka hodnotí délku pracovního poměru, zkušební dobu, typ smlouvy (dočasná vs. na dobu neurčitou) a stabilitu odvětví zaměstnavatele. Časté job-hopping nebo nové zaměstnání zvyšuje riziko odmítnutí.",
-          "U OSVČ se zahraničními klienty platí podobná logika jako u české OSVČ — daňová historie a ověřitelnost příjmů rozhodují.",
+          "U OSVČ se zahraničními klienty platí podobná logika jako u české OSVČ — daňová historie a ověřitelnost příjmů rozhodují, pokud banka takový příjem vůbec akceptuje.",
         ],
       },
       {
@@ -490,12 +532,25 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
           "Ne. Tato stránka je pro příjem ze zahraničí a nemovitost v ČR. Pro nákup v zahraničí viz /temata/hypoteka-v-zahranici.",
       },
       {
+        question: "Musím vždy úřední překlad a 6–12 měsíců výpisů?",
+        answer:
+          "Ne univerzálně. Požadavky se liší banka od banky. Např. KB u cizojazyčné smlouvy uvádí kontrolu vybraných údajů bez nutnosti úředního překladu; u mzdy ze zahraničí v metodice uvádí výpisy za 6 měsíců. Jinde platí jiný seznam.",
+      },
+      {
         question: "Může web slíbit schválení?",
         answer:
           "Ne. Diagnostika a průvodce jsou edukace. Schválení vždy závisí na bance, dokumentaci a scoringu.",
       },
     ],
     sources: [
+      {
+        label: "KB — Metodika hypotečních úvěrů (příjem ze zahraničí)",
+        url: KB_MORTGAGE_METHODOLOGY,
+      },
+      {
+        label: "UniCredit — hypotéka (cizoměnová hypotéka)",
+        url: "https://www.unicreditbank.cz/cs/obcane/hypoteky/hypoteka-nove-penize.html",
+      },
       {
         label: "ČNB — makroobezřetnostní politika",
         url: CNB_MACRO,
@@ -579,8 +634,8 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
         id: "rozdil-vuci-bydleni",
         heading: "Rozdíl oproti hypotéce na vlastní bydlení",
         paragraphs: [
-          "U investice banka typicky uznává nájemní příjem jen částečně (haircut), přísněji posuzuje DSTI a často vyžaduje vyšší akontaci. Marketing „cash-flow od prvního dne“ ignoruje neobsazenost, správu, daň a růst sazeb po fixaci.",
-          "Každá další investiční nemovitost snižuje zbývající kapacitu — plánujte equity dopředu.",
+          "U investice banka používá vlastní interní test schopnosti splácet a může nájemní příjem započítávat konzervativně (částečně / s haircutem). Často vyžaduje vyšší akontaci. Marketing „cash-flow od prvního dne“ ignoruje neobsazenost, správu, daň a růst sazeb po fixaci.",
+          "Plošný regulační limit DSTI ČNB pro běžné hypotéky na vlastní bydlení zůstává deaktivovaný — u investice se proto nespoléhejte na „aktuální DSTI limit ČNB“, ale na interní praxi banky a doporučené LTV/DTI pro investiční úvěry. Každá další investiční nemovitost snižuje zbývající kapacitu — plánujte equity dopředu.",
         ],
       },
       {
@@ -672,7 +727,7 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
     slug: "americka-hypoteka",
     title: "Americká hypotéka: jak funguje a co stojí | Hypotéka Jasně",
     description:
-      "Neúčelový úvěr zajištěný nemovitostí vs. klasická hypotéka: rizika zástavy, LTV a sazby. Transparentně — u části bank sazby americké hypotéky ještě ověřujeme.",
+      "Neúčelový úvěr zajištěný nemovitostí vs. klasická hypotéka: rizika zástavy, LTV a sazby. Produktově specifická data z oficiálních zdrojů bank — bez záměny se sazbami na koupi bydlení.",
     h1: "Americká hypotéka",
     lead: "Americká hypotéka v českém prostředí znamená neúčelový úvěr zajištěný nemovitostí — peníze nemusíte prokazatě investovat do bydlení. Jiné riziko, jiné sazby, jiná pravidla než u klasické hypotéky.",
     audience:
@@ -695,7 +750,7 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
         "Neúčelový úvěr zajištěný nemovitostí — jiný produkt než klasická hypotéka.",
         "Při nesplácení hrozí realizace zástavy — riziko je vyšší než u běžné spotřebitelské půjčky.",
         "LTV a sazby jsou produktově specifické; neplést se sazbami na koupi bydlení.",
-        "U části bank zveřejněné sazby americké hypotéky ještě ověřujeme.",
+        "U části bank sazbu právě ověřujeme — neuvádíme nepodložené srovnání.",
       ],
     },
     showLeadCapture: true,
@@ -712,7 +767,7 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
         id: "vs-klasicka",
         heading: "Rozdíl oproti klasické hypotéce",
         paragraphs: [
-          "Klasická hypotéka na bydlení je účelově vázaná — banka sleduje účel a často přísněji posuzuje LTV i příjem. Americká hypotéka může mít vyšší sazbu, nižší LTV nebo kratší splatnost.",
+          "Klasická hypotéka na bydlení je účelově vázaná — banka sleduje účel a často přísněji posuzuje LTV i příjem. Americká / neúčelová hypotéka může mít vyšší sazbu, nižší LTV nebo kratší splatnost.",
           "Sazby zveřejněné pro koupi bydlení na /sazby nejsou sazby americké hypotéky. Produkt je jiný — neporovnávejte je.",
         ],
       },
@@ -730,11 +785,28 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
         ],
       },
       {
+        id: "priklady-bank-americka",
+        heading: "Příklady zveřejněných podmínek bank",
+        paragraphs: [
+          "Níže jsou ověřené údaje z oficiálních stránek bank (stav kontroly 11. 8. 2026). Nejde o individuální nabídku ani o kompletní srovnávač — jen o to, co banka veřejně uvádí.",
+          "Komerční banka (produktová stránka Americká hypotéka): sazba od 5,59 % p. a., LTV až 70 % ceny nemovitosti, splatnost až 20 let. Reprezentativní příklad na stránce používá pevnou sazbu 5,59 % p. a. s fixací 3 roky.",
+          "MONETA Money Bank (produktová stránka): neúčelový úvěr zajištěný nemovitostí, LTV až 70 % odhadní ceny, výše od 300 000 Kč, splatnost až 20 let; stránka uvádí sazbu od 4,79 % ročně. Konkrétní sazbu dle fixace ověřte v aktuálním úrokovém lístku banky.",
+          "UniCredit Bank na oficiálním sazebníku zveřejňuje samostatný sloupec Hypotéka neúčelová (odlišný od účelové hypotéky): např. fixace 2 roky od 5,09 %, 3 roky od 5,19 %, 5 let od 5,59 % — sazby platí při pojištění schopnosti splácet a aktivitě na účtu dle podmínek banky.",
+          "Česká spořitelna na produktové stránce uvádí LTV až 70 % odhadní ceny a splatnost až 20 let. Konkrétní zveřejněnou sazbu této banky pro americkou hypotéku právě ověřujeme — neuvádíme ji jako srovnatelnou nabídku.",
+        ],
+        bullets: [
+          "KB: od 5,59 % p. a.; LTV až 70 %; splatnost až 20 let.",
+          "MONETA: od 4,79 % p. a. (headline); LTV až 70 %; splatnost až 20 let.",
+          "UniCredit: samostatná neúčelová sazba dle fixace (viz sazebník).",
+          "ČS: LTV/splatnost zveřejněny; sazbu právě ověřujeme.",
+        ],
+      },
+      {
         id: "ltv-a-sazby",
         heading: "LTV a sazby — produktově specifické",
         paragraphs: [
-          "LTV u americké hypotéky bývá nižší než u standardní hypotéky na bydlení — typicky záleží na lokalitě, typu nemovitosti a bonitě. Konkrétní limity bez ověřeného primárního zdroje u dané banky neuvádíme.",
-          "Zveřejněné sazby americké hypotéky jsou produktově specifické. U části bank ještě probíhá ověření — transparentně: „U části bank zveřejněné sazby americké hypotéky ještě ověřujeme.“ Některé záznamy mohou mít status verification_pending.",
+          "LTV u americké / neúčelové hypotéky bývá nižší než u standardní hypotéky na bydlení. Konkrétní limity bereme jen z oficiálního zdroje banky — neinferujeme je ze sazeb na koupi.",
+          "U části bank sazbu právě ověřujeme. Dokud nemáme dostatečně doloženou produktově specifickou sazbu, neuveřejňujeme falešné srovnání ani sazby z klasické hypotéky na bydlení.",
         ],
       },
       {
@@ -783,15 +855,31 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
       {
         question: "Jaké LTV banka poskytne?",
         answer:
-          "Záleží na bance, nemovitosti a bonitě. Bez konkrétní nabídky neplánujte optimisticky — u americké hypotéky bývá LTV nižší než u bydlení.",
+          "Záleží na bance, nemovitosti a bonitě. Některé banky veřejně uvádějí např. až 70 % (KB, MONETA, ČS) — bez individuální nabídky neplánujte optimisticky.",
       },
       {
         question: "Máte sazby všech bank?",
         answer:
-          "Ne. U části bank zveřejněné sazby americké hypotéky ještě ověřujeme. Status verification_pending u některých záznamů znamená, že data ještě nejsou ready pro srovnání.",
+          "Ne. U části bank sazbu právě ověřujeme. Zveřejňujeme jen to, co je doložené oficiálním zdrojem konkrétní banky — nikdy sazby z klasické hypotéky na bydlení.",
       },
     ],
     sources: [
+      {
+        label: "KB — Americká hypotéka (produktová stránka)",
+        url: KB_AMERICAN_PRODUCT,
+      },
+      {
+        label: "MONETA — Americká hypotéka",
+        url: MONETA_AMERICAN_PRODUCT,
+      },
+      {
+        label: "UniCredit — úrokové sazby (Hypotéka neúčelová)",
+        url: UC_RATE_SHEET,
+      },
+      {
+        label: "ČS — Americká hypotéka",
+        url: CS_AMERICAN_PRODUCT,
+      },
       {
         label: "Akademie: Americká hypotéka",
         url: `${routes.akademie}/americka-hypoteka`,
