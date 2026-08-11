@@ -70,12 +70,12 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
     updatedAt: "2026-08-11",
     commercialIntent: "refinance",
     primaryCta: {
-      label: "Porovnat zveřejněné sazby pro refinancování",
+      label: "Prověřit refinancování",
       href: `${routes.sazby}?purpose=refinance`,
     },
     secondaryCta: {
-      label: "Spočítat splátku",
-      href: routes.kalkulacky.hypotecniKalkulacka,
+      label: "Nezávazná poptávka",
+      href: "#poptavka",
     },
     quickAnswer: {
       heading: "Refinancování v kostce",
@@ -246,10 +246,13 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
     updatedAt: "2026-08-11",
     commercialIntent: "osvc",
     primaryCta: {
-      label: "Spustit diagnostiku",
-      href: `${routes.mojeMoznosti}?income=osvc_pausal`,
+      label: "Prověřit hypotéku pro OSVČ",
+      href: "#poptavka",
     },
-    secondaryCta: { label: "Ověřené sazby", href: routes.sazby },
+    secondaryCta: {
+      label: "Spustit diagnostiku",
+      href: `${routes.mojeMoznosti}?intent=osvc`,
+    },
     quickAnswer: {
       heading: "OSVČ a hypotéka v kostce",
       bullets: [
@@ -339,7 +342,7 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
         id: "dalsi-krok",
         heading: "Další krok: diagnostika",
         paragraphs: [
-          "Orientační diagnostika na /moje-moznosti s parametrem income=osvc_pausal vám pomůže seřadit priority — dokumenty, rezervu splátky, LTV. Výsledek není schválení úvěru.",
+          "Orientační diagnostika na /moje-moznosti?intent=osvc vám pomůže seřadit priority — dokumenty, rezervu splátky, LTV. Typ daňového režimu zvolíte v diagnostice. Výsledek není schválení úvěru.",
           "Až budete mít realistický strop splátky, dává smysl porovnat ověřené sazby na /sazby a připravit se na konkrétní banku.",
         ],
       },
@@ -389,10 +392,10 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
     relatedTools: [
       {
         label: "Diagnostika OSVČ",
-        href: `${routes.mojeMoznosti}?income=osvc_pausal`,
+        href: `${routes.mojeMoznosti}?intent=osvc`,
       },
       { label: "Ověřené sazby", href: routes.sazby },
-      { label: "Hypoteční kalkulačka", href: routes.kalkulacky.hypotecniKalkulacka },
+      { label: "Nezávazná poptávka", href: "#poptavka" },
     ],
     relatedArticles: [
       {
@@ -419,12 +422,12 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
     updatedAt: "2026-08-11",
     commercialIntent: "foreign_income",
     primaryCta: {
-      label: "Zjistit možnosti pro moji situaci",
+      label: "Prověřit hypotéku se zahraničním příjmem",
       href: "#poptavka",
     },
     secondaryCta: {
       label: "Orientační diagnostika",
-      href: routes.mojeMoznosti,
+      href: `${routes.mojeMoznosti}?intent=foreign_income`,
     },
     quickAnswer: {
       heading: "Zahraniční příjem v kostce",
@@ -562,9 +565,12 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
       },
     ],
     relatedTools: [
-      { label: "Orientační diagnostika", href: routes.mojeMoznosti },
+      {
+        label: "Orientační diagnostika",
+        href: `${routes.mojeMoznosti}?intent=foreign_income`,
+      },
       { label: "Ověřené sazby", href: routes.sazby },
-      { label: "Hypoteční kalkulačka", href: routes.kalkulacky.hypotecniKalkulacka },
+      { label: "Nezávazná poptávka", href: "#poptavka" },
     ],
     relatedArticles: [
       {
@@ -591,12 +597,12 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
     updatedAt: "2026-08-11",
     commercialIntent: "investment",
     primaryCta: {
-      label: "Spustit Investiční rentgen",
-      href: routes.investicniRentgen,
+      label: "Prověřit financování investice",
+      href: "#poptavka",
     },
     secondaryCta: {
-      label: "Zjistit možnosti",
-      href: "#poptavka",
+      label: "Spustit Investiční rentgen",
+      href: routes.investicniRentgen,
     },
     quickAnswer: {
       heading: "Investiční hypotéka v kostce",
@@ -737,12 +743,12 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
     updatedAt: "2026-08-11",
     commercialIntent: "american",
     primaryCta: {
-      label: "Zjistit možnosti pro moji situaci",
+      label: "Prověřit americkou hypotéku",
       href: "#poptavka",
     },
     secondaryCta: {
-      label: "Hypoteční kalkulačka (orientační)",
-      href: routes.kalkulacky.hypotecniKalkulacka,
+      label: "Příklady zveřejněných podmínek",
+      href: "#priklady-bank-americka",
     },
     quickAnswer: {
       heading: "Americká hypotéka v kostce",
@@ -776,7 +782,7 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
         heading: "Rizika zástavy nemovitosti",
         paragraphs: [
           "Nesplácíte-li úvěr, banka může realizovat zástavu. Riziko ztráty nemovitosti je reálné — neúčelový úvěr proto nesmí být brán jako „levnější kontokorent“.",
-          "Modelujte splátku včetně růstu sazby po fixaci a mějte rezervu. Kalkulačka na webu je orientační — americká hypotéka může mít jiné parametry.",
+          "Modelujte splátku včetně růstu sazby po fixaci a mějte rezervu. Orientační splátkové nástroje na webu vycházejí z klasické hypotéky — u americké hypotéky berte zveřejněné produktové podmínky banky, ne obecný model.",
         ],
         bullets: [
           "Zástava = vážné riziko, ne formalita.",
@@ -837,7 +843,7 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
         id: "dalsi-krok",
         heading: "Další krok",
         paragraphs: [
-          "Spočítejte orientační splátku v kalkulačce, pak projděte diagnostiku možností. U americké hypotéky je individuální posouzení banky obzvlášť důležité — web vám pomůže s rámcem, ne se smlouvou.",
+          "Spočítejte si rezervu a srovnejte zveřejněné podmínky bank výše. U americké hypotéky je individuální posouzení banky obzvlášť důležité — web vám pomůže s rámcem, ne se smlouvou.",
         ],
       },
     ],
@@ -893,10 +899,11 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
     ],
     relatedTools: [
       {
-        label: "Hypoteční kalkulačka",
-        href: routes.kalkulacky.hypotecniKalkulacka,
+        label: "Příklady zveřejněných podmínek",
+        href: "#priklady-bank-americka",
       },
-      { label: "Zjistit moje možnosti", href: routes.mojeMoznosti },
+      { label: "Nezávazná poptávka", href: "#poptavka" },
+      { label: "Akademie: Americká hypotéka", href: `${routes.akademie}/americka-hypoteka` },
     ],
     relatedArticles: [
       {

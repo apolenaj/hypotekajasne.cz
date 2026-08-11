@@ -77,23 +77,30 @@ export function MojeMoznostiWizard() {
       intentRaw && INTENT_QUERY[intentRaw]
         ? INTENT_QUERY[intentRaw]
         : undefined;
+    // Explicit income=* only — never assume osvc_pausal from generic intent=osvc.
     const incomeType =
       incomeRaw && INCOME_QUERY[incomeRaw]
         ? INCOME_QUERY[incomeRaw]
-        : intentRaw === "osvc"
-          ? ("osvc_pausal" as IncomeTypeId)
-          : undefined;
+        : undefined;
+    const commercialPageIntent =
+      intentRaw === "osvc" ||
+      intentRaw === "foreign_income" ||
+      intentRaw === "refinance" ||
+      intentRaw === "investment" ||
+      intentRaw === "american"
+        ? intentRaw
+        : null;
     let hint: string | null = null;
-    if (incomeType?.startsWith("osvc") || intentRaw === "osvc") {
+    if (intentRaw === "osvc") {
       hint =
-        "Předvyplněno z průvodce Hypotéka pro OSVČ. Cíl bydlení zvolíte v prvním kroku.";
+        "Situace: hypotéka pro OSVČ. Zvolte cíl bydlení a v doplnění typ příjmu (výdajový paušál, daňová evidence, nebo „nejsem si jistý“) — nepředpokládáme paušál automaticky.";
     } else if (intentRaw === "foreign_income") {
       hint =
         "Situace: příjem ze zahraničí. Zvolte cíl (typicky vlastní bydlení) a v dalším kroku doplňte příjem — banky posuzují zahraniční příjem individuálně.";
     } else if (intent) {
       hint = "Předvyplněno z komerčního průvodce.";
     }
-    return { intent, incomeType, hint };
+    return { intent, incomeType, commercialPageIntent, hint };
   }, [searchParams]);
 
   const [profile, setProfile] = useState<FinancialProfileAnswers>(() => {
@@ -431,6 +438,38 @@ export function MojeMoznostiWizard() {
               Stačí tři čísla pro orientační rozpočet a připravenost. Proč:
               příjem a závazky ovlivní splátkovou kapacitu, vlastní zdroje LTV.
             </p>
+            {queryBootstrap.commercialPageIntent === "osvc" ? (
+              <label className="block text-sm">
+                <span className="font-medium text-text-dark">
+                  Typ příjmu OSVČ (volitelné)
+                </span>
+                <select
+                  value={profile.incomeType ?? ""}
+                  onChange={(e) =>
+                    patch({
+                      incomeType: (e.target.value ||
+                        null) as FinancialProfileAnswers["incomeType"],
+                    })
+                  }
+                  className="mt-1.5 h-11 w-full rounded-lg border border-border bg-white px-3 outline-none focus-visible:ring-2 focus-visible:ring-deep-teal"
+                >
+                  <option value="">Nejsem si jistý / zvolím později</option>
+                  {INCOME_TYPE_OPTIONS.filter(
+                    (o) =>
+                      o.id === "osvc_pausal" ||
+                      o.id === "osvc_evidence" ||
+                      o.id === "other"
+                  ).map((o) => (
+                    <option key={o.id} value={o.id}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+                <span className="mt-1 block text-xs text-muted-foreground">
+                  Nepředvyplňujeme paušál — zvolte režim podle vaší situace.
+                </span>
+              </label>
+            ) : null}
             <label className="block text-sm">
               <span className="font-medium text-text-dark">
                 Čistý příjem domácnosti / měs.

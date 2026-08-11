@@ -45,11 +45,11 @@ export type IncomeTypeId =
 
 export const INCOME_TYPE_OPTIONS: { id: IncomeTypeId; label: string }[] = [
   { id: "employee", label: "Zaměstnanec (HPP)" },
-  { id: "osvc_pausal", label: "OSVČ — paušál" },
-  { id: "osvc_evidence", label: "OSVČ — daňová evidence" },
+  { id: "osvc_pausal", label: "OSVČ — výdajový paušál / paušální daň" },
+  { id: "osvc_evidence", label: "OSVČ — skutečné výdaje / daňová evidence" },
   { id: "sro", label: "Příjem ze S.R.O." },
-  { id: "rental", label: "Příjmy z nájmu" },
-  { id: "other", label: "Jiné" },
+  { id: "rental", label: "Příjem z pronájmu" },
+  { id: "other", label: "Jiný / nejsem si jistý" },
 ];
 
 export type ReadinessAnswers = {

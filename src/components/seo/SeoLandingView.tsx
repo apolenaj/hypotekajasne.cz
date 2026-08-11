@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { JsonLdScript } from "@/components/seo/JsonLdScript";
 import { LeadCaptureForm } from "@/components/forms/LeadCaptureForm";
+import { LandingCtaRow } from "@/components/seo/LandingCtaRow";
 import { getPerson, isNamedPerson } from "@/lib/magazine/authors";
 import { crumbs } from "@/lib/seo/breadcrumbs";
 import {
@@ -46,36 +47,6 @@ function LinkList({
         ))}
       </ul>
     </section>
-  );
-}
-
-function CtaRow({
-  primary,
-  secondary,
-}: {
-  primary?: { label: string; href: string };
-  secondary?: { label: string; href: string };
-}) {
-  if (!primary && !secondary) return null;
-  return (
-    <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-      {primary ? (
-        <Link
-          href={primary.href}
-          className="inline-flex h-11 min-h-11 items-center justify-center rounded-xl bg-deep-teal px-5 text-sm font-bold text-white transition hover:bg-deep-teal/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal focus-visible:ring-offset-2"
-        >
-          {primary.label}
-        </Link>
-      ) : null}
-      {secondary ? (
-        <Link
-          href={secondary.href}
-          className="inline-flex h-11 min-h-11 items-center justify-center rounded-xl border border-deep-teal/40 bg-white px-5 text-sm font-semibold text-deep-teal transition hover:bg-deep-teal/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal focus-visible:ring-offset-2"
-        >
-          {secondary.label}
-        </Link>
-      ) : null}
-    </div>
   );
 }
 
@@ -153,9 +124,16 @@ export function SeoLandingView({ landing }: { landing: SeoLanding }) {
             <span className="font-medium text-text-dark">Pro koho:</span>{" "}
             {landing.audience}
           </p>
-          <CtaRow
+          <LandingCtaRow
             primary={landing.primaryCta}
             secondary={landing.secondaryCta}
+            pageIntent={pageIntent}
+            placement="hero"
+            supportCopy={
+              pageIntent
+                ? "Nezávazně · stačí jméno a kontakt"
+                : undefined
+            }
           />
           <p className="mt-4 text-xs text-muted-foreground">
             Autor: {author.name}
@@ -216,9 +194,11 @@ export function SeoLandingView({ landing }: { landing: SeoLanding }) {
               ) : null}
               {pageIntent && index === 2 ? (
                 <div className="mt-6">
-                  <CtaRow
+                  <LandingCtaRow
                     primary={landing.primaryCta}
                     secondary={landing.secondaryCta}
+                    pageIntent={pageIntent}
+                    placement="mid_article"
                   />
                 </div>
               ) : null}
@@ -303,11 +283,22 @@ export function SeoLandingView({ landing }: { landing: SeoLanding }) {
               id="landing-lead-heading"
               className="font-heading text-xl font-bold text-text-dark"
             >
-              Zjistit možnosti pro moji situaci
+              {pageIntent === "refinance"
+                ? "Prověřit refinancování"
+                : pageIntent === "osvc"
+                  ? "Prověřit hypotéku pro OSVČ"
+                  : pageIntent === "foreign_income"
+                    ? "Prověřit hypotéku se zahraničním příjmem"
+                    : pageIntent === "investment"
+                      ? "Prověřit financování investice"
+                      : pageIntent === "american"
+                        ? "Prověřit americkou hypotéku"
+                        : "Zjistit možnosti pro moji situaci"}
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Nezávazná poptávka. Nejde o schválení úvěru ani závaznou nabídku
-              banky. Kontext stránky předáme jen jako bezpečná metadata.
+              Nezávazně · stačí jméno a kontakt. Nejde o schválení úvěru ani
+              závaznou nabídku banky. Kontext stránky předáme jen jako bezpečná
+              metadata.
             </p>
             <div className="mt-5">
               <LeadCaptureForm

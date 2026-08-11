@@ -172,6 +172,10 @@ export type AnalyticsPayload = {
   selected_lender?: string;
   selected_rate_scenario_category?: string;
   placement?: string;
+  /** Phase 6 commercial intent — categorical only */
+  page_intent?: string;
+  cta_destination?: string;
+  cta_placement?: string;
 };
 
 const FORBIDDEN_PAYLOAD_KEYS = [

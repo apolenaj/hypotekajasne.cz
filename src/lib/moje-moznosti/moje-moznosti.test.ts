@@ -59,4 +59,17 @@ describe("moje-moznosti", () => {
     assert.equal(form.phone, "");
     assert.ok(Number(form.capital) >= 1_000_000);
   });
+
+  it("does not force osvc_pausal from generic intent=osvc query", async () => {
+    const src = await import("node:fs").then((fs) =>
+      fs.readFileSync("src/components/moje-moznosti/MojeMoznostiWizard.tsx", "utf8")
+    );
+    assert.match(src, /intentRaw === "osvc"/);
+    assert.match(src, /never assume osvc_pausal/);
+    assert.equal(
+      /intentRaw === "osvc"\s*\?\s*\("osvc_pausal"/.test(src),
+      false
+    );
+    assert.match(src, /foreign_income/);
+  });
 });

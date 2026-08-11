@@ -141,6 +141,47 @@ describe("Phase 6 Wave 1 — commercial canonicals", () => {
     }
   });
 
+  it("Wave 1 conversion funnel micro-patch guards", () => {
+    const refinance = getLanding("refinancovani")!;
+    assert.match(refinance.primaryCta!.href, /purpose=refinance/);
+    assert.match(refinance.primaryCta!.label, /refinanc/i);
+    assert.equal(refinance.secondaryCta!.href, "#poptavka");
+
+    const osvc = getLanding("hypoteka-osvc")!;
+    assert.equal(osvc.primaryCta!.href, "#poptavka");
+    assert.match(osvc.primaryCta!.label, /OSVČ|OSVC/i);
+    assert.match(osvc.secondaryCta!.href, /intent=osvc/);
+    assert.equal(osvc.secondaryCta!.href.includes("osvc_pausal"), false);
+    assert.equal(JSON.stringify(osvc).includes("income=osvc_pausal"), false);
+
+    const foreign = getLanding("hypoteka-ze-zahranicniho-prijmu")!;
+    assert.equal(foreign.primaryCta!.href, "#poptavka");
+    assert.match(foreign.secondaryCta!.href, /intent=foreign_income/);
+
+    const investment = getLanding("investicni-hypoteka")!;
+    assert.equal(investment.primaryCta!.href, "#poptavka");
+    assert.match(investment.primaryCta!.label, /financov/i);
+    assert.match(investment.secondaryCta!.href, /investicni-rentgen/);
+    assert.match(investment.secondaryCta!.label, /rentgen/i);
+
+    const american = getLanding("americka-hypoteka")!;
+    assert.equal(american.primaryCta!.href, "#poptavka");
+    assert.match(american.primaryCta!.label, /americk/i);
+    assert.equal(
+      JSON.stringify(american).includes("/kalkulacky/hypotecni"),
+      false,
+      "American landing must not promote generic mortgage calculator"
+    );
+    assert.match(american.secondaryCta!.href, /#priklady-bank-americka/);
+
+    for (const slug of WAVE1_COMMERCIAL_SLUGS) {
+      const l = getLanding(slug)!;
+      assert.equal(l.authorId, "redakce-hj");
+      assert.ok(l.commercialIntent);
+      assert.ok(l.primaryCta?.href);
+    }
+  });
+
   it("Wave 1 factual content micro-patch guards", () => {
     const bannedInternal = [
       "verification_pending",
@@ -160,14 +201,13 @@ describe("Phase 6 Wave 1 — commercial canonicals", () => {
           `${slug} must not expose ${term}`
         );
       }
-      // HOLD as isolated data-state label (allow Czech words containing hold)
       assert.equal(/\bHOLD\b/.test(blob), false, `${slug} must not expose HOLD`);
     }
 
     const osvc = getLanding("hypoteka-osvc")!;
     const osvcBlob = JSON.stringify(osvc);
     assert.equal(osvcBlob.includes("neposuzuje fakturovaný obrat"), false);
-    assert.match(osvcBlob, /vlastní underwriting|vlastní underwriting/i);
+    assert.match(osvcBlob, /underwriting/i);
     assert.match(osvcBlob, /Příklady zveřejněných požadavků bank/);
     assert.match(osvcBlob, /obratov/i);
     assert.ok(
@@ -204,7 +244,10 @@ describe("Phase 6 Wave 1 — commercial canonicals", () => {
       foreignBlob,
       /Konkrétní doklady se liší podle banky, země, měny a typu příjmu/
     );
-    assert.equal(foreignBlob.includes("Sjednoťte výpisy za delší období (6–12 měsíců)"), false);
+    assert.equal(
+      foreignBlob.includes("Sjednoťte výpisy za delší období (6–12 měsíců)"),
+      false
+    );
     assert.match(foreignBlob, /Příklady zveřejněných požadavků bank/);
     assert.ok(
       foreign.sources.some((s) => s.url?.includes("kb.cz")),

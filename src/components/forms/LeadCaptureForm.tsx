@@ -72,6 +72,7 @@ function leadFunnelPayload(
   return {
     lead_source: source,
     source_page: readString(metadata, "sourcePage") ?? path,
+    page_intent: readString(metadata, "page_intent"),
     purpose: readString(metadata, "purpose"),
     fixation_months: readNumber(metadata, "fixationMonths"),
     ltv_band: ltv != null ? ltvBand(ltv) : undefined,
