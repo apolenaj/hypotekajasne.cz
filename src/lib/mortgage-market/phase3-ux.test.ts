@@ -159,6 +159,26 @@ describe("Phase 3 UX — labels", () => {
     assert.equal(scenarioLabelCs(without), "bez pojištění");
   });
 
+  it("KB conditional label is Zvýhodněná sazba od; matrix is Minimální sazba dle sazebníku", () => {
+    const result = getMortgageOffers(catalog, {
+      lenderSlug: "komercni-banka",
+      fixationMonths: 36,
+      ltv: 75,
+      includeLtvUnspecified: true,
+      nowMs: NOW,
+    });
+    const matrix = result.offers.find((o) => o.nominalInterestRate === 5.24)!;
+    const conditional = result.unspecifiedLtvOffers.find(
+      (o) =>
+        o.nominalInterestRate === 5.19 &&
+        o.pricingScenarioKey === "product_page_advertised_from_conditional"
+    )!;
+    assert.equal(scenarioLabelCs(matrix), "Minimální sazba dle sazebníku");
+    assert.equal(scenarioLabelCs(conditional), "Zvýhodněná sazba od");
+    assert.equal(ltvScopeLabelCs(conditional).isPersonalizedMatch, false);
+    assert.match(ltvScopeLabelCs(conditional).headline, /neuvedeno/i);
+  });
+
   it("NULL rate effect stays null in public label", () => {
     assert.equal(conditionEffectLabelCs(null), null);
     assert.equal(conditionEffectLabelCs(undefined), null);

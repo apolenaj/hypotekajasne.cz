@@ -168,12 +168,46 @@ describe("getMortgageOffers — UniCredit / KB LTV boundaries", () => {
       lenderSlug: "komercni-banka",
       fixationMonths: 36,
       ltv: 85,
+      includeLtvUnspecified: true,
       nowMs: NOW,
     });
     assert.deepEqual(
       at85.offers.map((o) => o.nominalInterestRate),
       [5.64]
     );
+    assert.ok(
+      at85.offers.every(
+        (o) =>
+          o.claimsPersonalizedLtvMatch === true &&
+          o.pricingScenarioKey.includes("minimum_rate")
+      )
+    );
+    assert.ok(
+      at85.unspecifiedLtvOffers.some(
+        (o) =>
+          o.nominalInterestRate === 5.19 &&
+          o.pricingScenarioKey === "product_page_advertised_from_conditional" &&
+          o.claimsPersonalizedLtvMatch === false &&
+          o.fixationMonths == null
+      )
+    );
+    assert.ok(
+      !at85.offers.some((o) => o.nominalInterestRate === 5.19)
+    );
+
+    const conditional = catalog.rates.find(
+      (r) => r.id === "kb-product-page-advertised-from-5-19"
+    );
+    assert.ok(conditional);
+    assert.equal(conditional.fixationMonths, null);
+    assert.equal(conditional.ltvMin, null);
+    assert.equal(conditional.ltvMax, null);
+    assert.equal(conditional.rateType, "advertised_from");
+    const conds = catalog.conditions.filter(
+      (c) => c.rateVariantId === conditional.id && c.isActive
+    );
+    assert.ok(conds.length >= 4);
+    assert.ok(conds.every((c) => c.rateEffectBp == null));
 
     assert.ok(
       !catalog.rates.some(
