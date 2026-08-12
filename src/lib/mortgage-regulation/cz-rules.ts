@@ -84,7 +84,7 @@ export const CZ_REGULATION_PERIODS: CzRegulationPeriod[] = [
       dstiStatus: "deactivated",
     },
     notes:
-      "Investiční / další obytné: LTV max. 70 %, DTI 7. Vlastní bydlení: LTV 80 % (do 36 let 90 % jen při známém věku).",
+      "Investiční / další obytné: ČNB doporučuje obezřetnější horní hranici LTV 70 % a DTI 7 (od 1. 4. 2026). Vlastní bydlení: LTV 80 % (do 36 let 90 % jen při známém věku).",
   },
 ];
 

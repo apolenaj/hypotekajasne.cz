@@ -1,4 +1,8 @@
 import type { NextConfig } from "next";
+import {
+  CSP_REPORT_ONLY_VALUE,
+  SECURITY_HEADERS,
+} from "./src/lib/security/headers";
 
 const nextConfig: NextConfig = {
   async redirects() {
@@ -7,6 +11,23 @@ const nextConfig: NextConfig = {
         source: "/prověrka-nemovitosti",
         destination: "/proverka-nemovitosti",
         permanent: true,
+      },
+    ];
+  },
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          ...SECURITY_HEADERS.map((h) => ({
+            key: h.key,
+            value: h.value,
+          })),
+          {
+            key: "Content-Security-Policy-Report-Only",
+            value: CSP_REPORT_ONLY_VALUE,
+          },
+        ],
       },
     ];
   },

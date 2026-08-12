@@ -88,7 +88,7 @@ export const swotAnalysisCzData: SwotAnalysisSection[] = [
     items: [
       {
         subtitle: "Zpřísnění limitů ČNB",
-        text: "Od dubna 2026 platí pro investiční hypotéky přísný limit max 70 % LTV a DTI 7, což výrazně omezuje pákový efekt pro menší investory.",
+        text: "Od dubna 2026 ČNB doporučuje poskytovatelům u definovaných investičních hypoték obezřetnější horní hranici LTV 70 % a DTI 7, což může omezit pákový efekt pro menší investory.",
       },
       {
         subtitle: "Úrokové a refixační riziko",

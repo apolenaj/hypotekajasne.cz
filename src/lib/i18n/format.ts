@@ -40,6 +40,7 @@ export function formatDate(
   const d = typeof isoOrDate === "string" ? new Date(isoOrDate) : isoOrDate;
   if (Number.isNaN(d.getTime())) return String(isoOrDate);
   return new Intl.DateTimeFormat(LOCALE_TAG[locale], {
+    timeZone: "Europe/Prague",
     year: "numeric",
     month: style === "long" ? "long" : "numeric",
     day: "numeric",
@@ -53,6 +54,7 @@ export function formatDateTime(
   const d = typeof isoOrDate === "string" ? new Date(isoOrDate) : isoOrDate;
   if (Number.isNaN(d.getTime())) return String(isoOrDate);
   return new Intl.DateTimeFormat(LOCALE_TAG[locale], {
+    timeZone: "Europe/Prague",
     dateStyle: "short",
     timeStyle: "short",
   }).format(d);

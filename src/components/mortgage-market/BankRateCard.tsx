@@ -46,7 +46,9 @@ function ScenarioRow({ offer }: { offer: MortgageOffer }) {
 
 function OfferDetails({ offer }: { offer: MortgageOffer }) {
   const ltv = ltvScopeLabelCs(offer);
-  const fresh = publicFreshnessLabel(offer.freshness, offer.checkedAt);
+  const fresh = publicFreshnessLabel(offer.freshness, offer.checkedAt, {
+    sourceUrl: offer.evidence?.sourceUrl,
+  });
   return (
     <div className="space-y-3 text-sm text-muted-foreground">
       <dl className="grid gap-2 sm:grid-cols-2">
@@ -140,6 +142,19 @@ function OfferDetails({ offer }: { offer: MortgageOffer }) {
         {offer.evidence ? (
           <p className="mt-1">
             Zdroj: {sourceTypeLabelCs(offer.evidence.sourceType)}
+            {offer.evidence.sourceUrl ? (
+              <>
+                {" · "}
+                <a
+                  href={offer.evidence.sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-deep-teal underline underline-offset-2"
+                >
+                  Otevřít oficiální zdroj
+                </a>
+              </>
+            ) : null}
           </p>
         ) : null}
         <p className="mt-2 text-muted-foreground">
@@ -159,7 +174,9 @@ export function BankRateCard({
   const panelId = useId();
   const [open, setOpen] = useState(false);
   const primary = group.scenarios[0]!;
-  const fresh = publicFreshnessLabel(primary.freshness, primary.checkedAt);
+  const fresh = publicFreshnessLabel(primary.freshness, primary.checkedAt, {
+    sourceUrl: primary.evidence?.sourceUrl,
+  });
   const ltv = ltvScopeLabelCs(primary);
   const pair = isInsuranceScenarioPair(group);
   const secondary = pair

@@ -10,6 +10,7 @@ import type {
   GetMortgageOffersResult,
   MortgageOffer,
 } from "@/lib/mortgage-market/offers";
+import { LEAD_FORM_FRICTION_ABOVE } from "@/lib/leads-form-copy";
 import { CTA_CS } from "@/lib/ux/cta";
 
 type SazbyExperienceProps = {
@@ -130,7 +131,7 @@ export function SazbyExperience({
             country="CZ"
             metadata={metadata}
             title="Nezávazná poptávka"
-            subtitle="Jméno a kontakt stačí — čísla z výpočtu už máme v kontextu."
+            subtitle={LEAD_FORM_FRICTION_ABOVE}
             compact
           />
         </div>

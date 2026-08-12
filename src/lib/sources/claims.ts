@@ -51,7 +51,7 @@ export const CRITICAL_PROVENANCE_CLAIMS: ProvenanceClaimLink[] = [
   },
   {
     id: "claim.ltv.cnb.investment",
-    claimLabel: "LTV investiční hypotéky (70 %)",
+    claimLabel: "ČNB doporučení LTV investiční hypotéky (70 %)",
     domain: "ltv",
     country: "cz",
     status: "VERIFIED",

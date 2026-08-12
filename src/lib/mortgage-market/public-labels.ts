@@ -5,6 +5,7 @@
 
 import type { MortgageOffer } from "@/lib/mortgage-market/offers";
 import type { RateFreshness } from "@/lib/rates/mortgage-rate-freshness";
+import { formatAuditDateCs } from "@/lib/i18n/audit-date";
 
 export function formatRatePercentCs(rate: number): string {
   return rate.toLocaleString("cs-CZ", {
@@ -14,22 +15,38 @@ export function formatRatePercentCs(rate: number): string {
 }
 
 export function formatCheckedDateCs(iso: string | null | undefined): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (!Number.isFinite(d.getTime())) return "";
-  return d.toLocaleDateString("cs-CZ");
+  return formatAuditDateCs(iso, "numeric");
 }
 
-/** Public freshness — never “LIVE” merely because a row exists. */
+export function hasPublicPrimaryEvidenceUrl(
+  sourceUrl: string | null | undefined
+): boolean {
+  if (!sourceUrl) return false;
+  try {
+    const u = new URL(sourceUrl);
+    return u.protocol === "https:" && u.hostname.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Public freshness — never “LIVE” / “Ověřeno” without a primary source URL.
+ * Fresh rows without evidence URL are shown as updating, not verified.
+ */
 export function publicFreshnessLabel(
   freshness: Exclude<RateFreshness, "fallback">,
-  checkedAt: string | null | undefined
+  checkedAt: string | null | undefined,
+  options?: { sourceUrl?: string | null }
 ): { short: string; detail: string } {
   const date = formatCheckedDateCs(checkedAt);
-  if (freshness === "stale") {
+  const evidenced = hasPublicPrimaryEvidenceUrl(options?.sourceUrl);
+  if (freshness === "stale" || !evidenced) {
     return {
       short: "Aktualizujeme",
-      detail: date ? `Aktualizujeme · naposledy ověřeno ${date}` : "Aktualizujeme",
+      detail: date
+        ? `Aktualizujeme · naposledy zkontrolováno ${date}`
+        : "Aktualizujeme",
     };
   }
   return {

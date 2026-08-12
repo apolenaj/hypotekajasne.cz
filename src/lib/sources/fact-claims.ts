@@ -69,7 +69,7 @@ const CZ_FACT_CLAIMS: FactClaim[] = [
   {
     id: "cz.cnb.ltv.investment",
     claim:
-      "Pro investiční hypotéky ČNB doporučuje LTV maximálně 70 % (od 1. 4. 2026).",
+      "Pro investiční hypotéky ČNB doporučuje poskytovatelům obezřetnější horní hranici LTV 70 % a DTI 7 (od 1. 4. 2026).",
     value: CNB_LIMITS.investment.ltvMax,
     jurisdiction: "cz",
     sourceName: "Česká národní banka — makroobezřetnostní politika",

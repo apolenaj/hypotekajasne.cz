@@ -51,7 +51,7 @@ export const countryHubData: Record<string, CountryHubData> = {
       market:
         "Trh tažený omezenou výstavbou a poptávkou po nájmu ve velkých městech; regionální rozdíly ve výnosech i likviditě.",
       financing:
-        "Vlastní bydlení: LTV obvykle do 80 % (do 36 let až 90 %). Investiční hypotéky: ČNB od 4/2026 doporučuje LTV max. 70 % a DTI 7. DTI/DSTI nejsou plošně povinné — banky je často sledují interně.",
+        "Vlastní bydlení: LTV obvykle do 80 % (do 36 let až 90 %). Investiční hypotéky: ČNB od 4/2026 doporučuje poskytovatelům u definovaných investičních hypoték obezřetnější horní hranici LTV 70 % a DTI 7. DTI/DSTI nejsou plošně povinné — banky je často sledují interně.",
       process:
         "Rezervační smlouva → úschova → kupní smlouva → návrh na vklad do katastru (obvykle jednotky týdnů).",
       risks:

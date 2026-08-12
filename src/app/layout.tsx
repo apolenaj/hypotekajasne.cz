@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
+import { headers } from "next/headers";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Providers } from "@/components/Providers";
@@ -22,18 +23,26 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = rootMetadata;
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const h = await headers();
+  const lang = h.get("x-hj-locale") === "en" ? "en" : "cs";
+
   return (
-    <html lang="cs" className={`${inter.variable} ${playfair.variable} h-full antialiased`}>
+    <html
+      lang={lang}
+      className={`${inter.variable} ${playfair.variable} h-full antialiased`}
+    >
       <body className="flex min-h-full max-w-full min-w-0 flex-col font-sans">
         <JsonLdScript data={[organizationJsonLd(), webSiteJsonLd()]} />
         <Providers>
           <Navbar />
-          <main className="min-w-0 flex-1 pb-[var(--cookie-banner-pad,0px)]">{children}</main>
+          <main className="min-w-0 flex-1 pb-[var(--cookie-banner-pad,0px)]">
+            {children}
+          </main>
           <Footer />
         </Providers>
       </body>

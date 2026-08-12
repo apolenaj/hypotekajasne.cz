@@ -20,6 +20,27 @@ export type PublicChangelogEntry = {
  */
 export const PUBLIC_CHANGELOG: PublicChangelogEntry[] = [
   {
+    date: "2026-08-12",
+    area: "Sazby a důkazy",
+    summary:
+      "Doplnili jsme oficiální odkazy ke zveřejněným sazbám Air Bank, UniCredit a MONETA. Sazba bez dohledatelného primárního zdroje se veřejně neoznačuje jako ověřená.",
+    href: routes.sazby,
+  },
+  {
+    date: "2026-08-11",
+    area: "Komerční průvodci",
+    summary:
+      "Upravili jsme konverzní CTA na pěti tématických stránkách (refinancování, OSVČ, zahraniční příjem, investiční a americká hypotéka) a sjednotili jsme formulářové copy s povinnými poli.",
+    href: routes.temata,
+  },
+  {
+    date: "2026-08-09",
+    area: "Sazby bank",
+    summary:
+      "Aktualizace KB (matice 5,24 % / 5,64 % podle LTV; podmíněná sazba 5,19 % odděleně) a České spořitelny (matice 4,94 %; 5,09 % zůstává na HOLD).",
+    href: routes.sazby,
+  },
+  {
     date: "2026-07-21",
     area: "Zdroje údajů",
     summary:

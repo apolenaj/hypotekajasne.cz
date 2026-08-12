@@ -355,10 +355,10 @@ export const financingDetailsData: Record<string, FinancingDetail[]> = {
       id: "invest-cz",
       title: "Investiční hypotéka (Koupě na pronájem)",
       shortDesc:
-        "Od 1. 4. 2026 ČNB doporučuje u investičních hypoték LTV max. 70 % a DTI 7.",
+        "Od 1. 4. 2026 ČNB doporučuje poskytovatelům u definovaných investičních hypoték obezřetnější horní hranici LTV 70 % a DTI 7.",
       rates: "Kolem 4.8 % p.a.",
       howItWorks:
-        "Pro investiční hypotéky (typicky třetí a další obytná nemovitost nebo koupě na pronájem) ČNB doporučuje LTV maximálně 70 % a limit DTI 7. Banky obvykle chtějí alespoň 30 % vlastních zdrojů. U vlastního bydlení zůstávají DTI a DSTI deaktivované.",
+        "ČNB doporučuje poskytovatelům u definovaných investičních hypoték obezřetnější horní hranici LTV 70 % a DTI 7, s účinností doporučení od 1. dubna 2026. Banky obvykle chtějí alespoň 30 % vlastních zdrojů. U vlastního bydlení zůstávají DTI a DSTI deaktivované.",
       idealFor:
         "Investory, kterým banka umí započítat budoucí očekávané nájemné do bonity.",
       advantages: ["Lze využít k nákupu činžovních domů či portfolia bytů."],

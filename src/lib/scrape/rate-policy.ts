@@ -1,20 +1,23 @@
 /**
  * Politika sazeb (bez cheerio) — bezpečné pro client i server.
  *
- * KB (ověřeno 2026-08 na https://www.kb.cz/cs/obcane/pujcky/hypoteky/hypoteka):
- * - Inzerovaná „od“ sazba 5,14 % p.a. je podmíněná mj. životním + majetkovým
- *   pojištěním u Komerční pojišťovny, příjmy na účet KB a PENB A/B.
- * - Fallback níže slouží jen když scrape selže / DOM se změní.
+ * Scraper fallback ONLY — not the mortgage-market SoT used on /sazby.
+ * Mortgage-market baseline (Phase 6):
+ * - KB 36m LTV75 personalized matrix 5.24; LTV85 5.64
+ * - KB product-page conditional advertised-from 5.19 (not matrix)
+ *
+ * Legacy scraper “insider” fallback below tracks the conditional product-page
+ * advertised-from package when DOM scrape fails. Do not confuse with matrix.
  */
 
 /**
- * Fallback KB — primární inzerovaná sazba „s pojištěním“ (balíček podmínek).
- * Web KB neuvádí samostatnou sazbu bez pojištění; historicky 2× 0,1 p.b.
- * (životní + nemovitost u KP) → odhad bez pojištění = +0,20 p.b.
+ * Scraper-only KB fallback when live scrape fails.
+ * Aligns with current product-page conditional advertised-from package (~5.19),
+ * not the LTV matrix (5.24 / 5.64).
  */
 export const KB_INSIDER_RATES = {
-  rateWithInsurance: 5.14,
-  rateWithoutInsurance: 5.34,
+  rateWithInsurance: 5.19,
+  rateWithoutInsurance: 5.39,
 } as const;
 
 /**

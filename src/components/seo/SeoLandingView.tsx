@@ -3,6 +3,10 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { JsonLdScript } from "@/components/seo/JsonLdScript";
 import { LeadCaptureForm } from "@/components/forms/LeadCaptureForm";
 import { LandingCtaRow } from "@/components/seo/LandingCtaRow";
+import {
+  LEAD_FORM_FRICTION_ABOVE,
+  LEAD_FORM_FRICTION_SHORT,
+} from "@/lib/leads-form-copy";
 import { getPerson, isNamedPerson } from "@/lib/magazine/authors";
 import { crumbs } from "@/lib/seo/breadcrumbs";
 import {
@@ -131,7 +135,7 @@ export function SeoLandingView({ landing }: { landing: SeoLanding }) {
             placement="hero"
             supportCopy={
               pageIntent
-                ? "Nezávazně · stačí jméno a kontakt"
+                ? LEAD_FORM_FRICTION_SHORT
                 : undefined
             }
           />
@@ -296,7 +300,7 @@ export function SeoLandingView({ landing }: { landing: SeoLanding }) {
                         : "Zjistit možnosti pro moji situaci"}
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Nezávazně · stačí jméno a kontakt. Nejde o schválení úvěru ani
+              {LEAD_FORM_FRICTION_SHORT}. Nejde o schválení úvěru ani
               závaznou nabídku banky. Kontext stránky předáme jen jako bezpečná
               metadata.
             </p>
@@ -305,7 +309,7 @@ export function SeoLandingView({ landing }: { landing: SeoLanding }) {
                 source="lead_gen"
                 compact
                 title="Nezávazná poptávka"
-                subtitle="Jméno a kontakt stačí — detaily dořešíme spolu."
+                subtitle={LEAD_FORM_FRICTION_ABOVE}
                 metadata={{
                   sourcePage: path,
                   page_intent: pageIntent ?? landing.slug,

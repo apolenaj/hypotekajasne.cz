@@ -10,6 +10,7 @@ import {
   TRACKED_CZ_BANKS_COUNT,
   TRACKED_MARKETS_COUNT,
 } from "@/lib/destination-metrics";
+import { formatAuditDateCs } from "@/lib/i18n/audit-date";
 import {
   rateUiBadgeLabel,
   useMortgageRateEngine,
@@ -84,9 +85,9 @@ export function LiveDataTrustBar({ className }: { className?: string }) {
               {loading
                 ? "…"
                 : resolved.lastVerifiedAt
-                  ? new Date(resolved.lastVerifiedAt).toLocaleDateString("cs-CZ")
+                  ? formatAuditDateCs(resolved.lastVerifiedAt)
                   : rates.updatedAt
-                    ? new Date(rates.updatedAt).toLocaleDateString("cs-CZ")
+                    ? formatAuditDateCs(rates.updatedAt)
                     : "—"}
             </p>
           </li>

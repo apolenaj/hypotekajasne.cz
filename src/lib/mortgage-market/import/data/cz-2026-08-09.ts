@@ -82,25 +82,33 @@ const EV_AIR = ev(
   "ev-air-bank-rates-2026-03-27",
   "air-bank",
   "Air Bank official mortgage rate publication (valid from 2026-03-27)",
-  "Air Bank hypotéka — sazby"
+  "Air Bank hypotéka — sazby",
+  "https://www.airbank.cz/co-vas-nejvic-zajima/urokove-sazby-u-hypoteky/",
+  "official_lender_web"
 );
 const EV_MONETA = ev(
   "ev-moneta-rates-2026-07-23",
   "moneta",
   "MONETA Money Bank official rate sheet (valid from 2026-07-23)",
-  "MONETA sazebník hypoték"
+  "MONETA sazebník hypoték",
+  "https://www.moneta.cz/dokumenty-ke-stazeni/sazebniky",
+  "official_lender_web"
 );
 const EV_MONETA_RPSN = ev(
   "ev-moneta-representative-example",
   "moneta",
   "MONETA Money Bank official representative RPSN example (primary audit)",
-  "MONETA reprezentativní příklad"
+  "MONETA reprezentativní příklad",
+  "https://www.moneta.cz/hypoteky/hypoteka",
+  "official_lender_web"
 );
 const EV_UC = ev(
   "ev-unicredit-purpose-rates",
   "unicredit",
   "UniCredit Bank official purpose-mortgage advertised rates (primary audit)",
-  "UniCredit účelová hypotéka — sazby"
+  "UniCredit účelová hypotéka — sazby",
+  "https://www.unicreditbank.cz/cs/obcane/hypoteky/hypoteka-nove-penize.html",
+  "official_lender_web"
 );
 const EV_CS = ev(
   "ev-cs-oznameni-urokovych-sazeb",
@@ -145,13 +153,17 @@ const EV_RB = ev(
   "ev-rb-product-pages",
   "raiffeisenbank",
   "Raiffeisenbank official product / eligibility pages (primary audit)",
-  "Raiffeisenbank hypotéky — produkty"
+  "Raiffeisenbank hypotéky — produkty",
+  "https://www.rb.cz/osobni/hypoteky",
+  "official_lender_web"
 );
 const EV_RB_LOWER_PAYMENT = ev(
   "ev-rb-hypoteka-s-nizsi-splatkou-example",
   "raiffeisenbank",
   "Raiffeisenbank — Hypotéka s nižší splátkou official representative example",
-  "RB Hypotéka s nižší splátkou — reprezentativní příklad"
+  "RB Hypotéka s nižší splátkou — reprezentativní příklad",
+  "https://www.rb.cz/osobni/hypoteky/nabidka-hypotek/hypoteka-s-nizsi-splatkou",
+  "official_lender_web"
 );
 
 export const CZ_2026_08_09_EVIDENCE: ImportEvidence[] = [

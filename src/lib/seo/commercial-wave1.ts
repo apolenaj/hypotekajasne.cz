@@ -587,7 +587,7 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
     slug: "investicni-hypoteka",
     title: "Investiční hypotéka: pravidla, LTV a výpočet | Hypotéka Jasně",
     description:
-      "Co je investiční hypotéka podle ČNB, limity LTV 70 % a DTI 7 od dubna 2026 a jak modelovat investici. Vazba na Investiční rentgen — bez slibů schválení.",
+      "Co je investiční hypotéka podle ČNB, doporučení LTV 70 % a DTI 7 od dubna 2026 a jak modelovat investici. Vazba na Investiční rentgen — bez slibů schválení.",
     h1: "Investiční hypotéka",
     lead: "Investiční hypotéka není „stejný úvěr s jiným účelem“. ČNB od 1. dubna 2026 doporučuje přísnější limity pro definované investiční úvěry — a banky posuzují nájemní příjem konzervativněji než plat ze zaměstnání.",
     audience:
@@ -608,7 +608,7 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
       heading: "Investiční hypotéka v kostce",
       bullets: [
         `ČNB definice: „${CNB_INVESTMENT_DEFINITION}"`,
-        "Od 1. 4. 2026: LTV max. 70 % a DTI max. 7 u investičních hypoték dle definice ČNB.",
+        "Od 1. 4. 2026: ČNB doporučuje poskytovatelům u definovaných investičních hypoték obezřetnější horní hranici LTV 70 % a DTI 7 (nejde o zákonný strop pro vlastní bydlení).",
         "Vlastní bydlení: LTV 80 % (do 36 let za podmínek 90 %) — DTI/DSTI pro standardní FO deaktivovaná.",
         "Investiční rentgen pomáhá modelovat scénář — ne garantuje úvěr.",
       ],
@@ -625,13 +625,13 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
       },
       {
         id: "limity-2026",
-        heading: "LTV 70 % a DTI 7 od 1. dubna 2026",
+        heading: "Doporučení ČNB od 1. dubna 2026",
         paragraphs: [
-          "Od 1. dubna 2026 ČNB doporučuje u investičních hypoték podle výše uvedené definice maximální LTV 70 % a DTI 7. Kapitalové rezervy bank se podle tiskové zprávy nemění.",
+          "ČNB doporučuje poskytovatelům u definovaných investičních hypoték obezřetnější horní hranici LTV 70 % a DTI 7, s účinností doporučení od 1. dubna 2026. Kapitalové rezervy bank se podle tiskové zprávy nemění. Nejde o zákonný strop LTV pro vlastní bydlení.",
           "Pro standardní hypotéku na vlastní bydlení zůstávají doporučené limity LTV 80 % (u žadatelů do 36 let za určitých podmínek až 90 %). Makroobezřetnostní limity DTI a DSTI pro běžné hypotéky fyzických osob na vlastní bydlení zůstávají deaktivované — stav ověřte u primárního zdroje ČNB.",
         ],
         bullets: [
-          "Investiční účel dle ČNB → LTV 70 %, DTI 7 (od 4/2026).",
+          "Investiční účel dle ČNB → doporučená obezřetnější horní hranice LTV 70 % a DTI 7 (od 4/2026).",
           "Vlastní bydlení → jiný rámec LTV; DTI/DSTI deaktivovaná pro standardní FO.",
           "Primární zdroj: tisková zpráva a makroobezřetnostní politika ČNB.",
         ],

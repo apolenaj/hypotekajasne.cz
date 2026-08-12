@@ -5,6 +5,7 @@ import {
   rateUiBadgeClass,
   rateUiBadgeLabel,
 } from "@/lib/rates/resolve-engine";
+import { formatAuditDateCs } from "@/lib/i18n/audit-date";
 import { formatRate } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
@@ -16,7 +17,7 @@ export function RateProvenanceBanner({
   className?: string;
 }) {
   const verifiedLabel = resolved.lastVerifiedAt
-    ? new Date(resolved.lastVerifiedAt).toLocaleDateString("cs-CZ")
+    ? formatAuditDateCs(resolved.lastVerifiedAt)
     : null;
 
   return (

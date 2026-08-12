@@ -41,7 +41,7 @@ export const DATA_CATALOG: DataCatalogEntry[] = [
   {
     id: "rate.cz.kb.insider",
     domain: "rates",
-    label: "KB fallback 5.14 % / 5.34 % (od sazba s pojištěním)",
+    label: "KB scraper fallback (product-page conditional ~5.19 %; not LTV matrix 5.24/5.64)",
     usedIn: ["src/lib/scrape/bank-scrapers.ts"],
     canonicalModule: "src/lib/scrape/rate-policy.ts#KB_INSIDER_RATES",
     legacyOrigin: "Manuální tržní údaj od provozovatele",
@@ -125,7 +125,7 @@ export const DATA_CATALOG: DataCatalogEntry[] = [
   {
     id: "ltv.cnb.investment",
     domain: "ltv",
-    label: "ČNB LTV investiční max 70 %",
+    label: "ČNB doporučení LTV investiční 70 % (od 1. 4. 2026)",
     usedIn: ["src/lib/cnb-limits.ts"],
     canonicalModule: "src/lib/data/static-regulatory.ts",
     legacyOrigin: "src/lib/cnb-limits.ts",
@@ -267,7 +267,7 @@ export const DATA_CATALOG: DataCatalogEntry[] = [
   {
     id: "banks.cz.domestic_list",
     domain: "banks",
-    label: "Seznam 6 českých bank v nabídkách",
+    label: "Seznam českých bank v nabídkách (mortgage-market katalog + scrapery)",
     usedIn: ["src/lib/banking.ts", "src/lib/scrape/bank-ids.ts"],
     canonicalModule: "src/lib/banking.ts + bank-ids.ts",
     legacyOrigin: "Hardcoded product list; rates LIVE",

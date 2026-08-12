@@ -185,11 +185,20 @@ describe("Phase 3 UX — labels", () => {
     assert.equal(conditionEffectLabelCs(-10), "sleva 0,1 p.b.");
   });
 
-  it("freshness mapping avoids LIVE wording", () => {
-    const fresh = publicFreshnessLabel("fresh", "2026-08-09T00:00:00.000Z");
+  it("freshness mapping avoids LIVE wording and requires source URL for Ověřeno", () => {
+    const freshNoUrl = publicFreshnessLabel(
+      "fresh",
+      "2026-08-09T00:00:00.000Z"
+    );
+    assert.equal(freshNoUrl.short, "Aktualizujeme");
+    const fresh = publicFreshnessLabel("fresh", "2026-08-09T00:00:00.000Z", {
+      sourceUrl: "https://www.example-bank.test/rates",
+    });
     assert.match(fresh.short, /Ověřeno/);
     assert.ok(!fresh.short.includes("LIVE"));
-    const stale = publicFreshnessLabel("stale", "2026-07-01T00:00:00.000Z");
+    const stale = publicFreshnessLabel("stale", "2026-07-01T00:00:00.000Z", {
+      sourceUrl: "https://www.example-bank.test/rates",
+    });
     assert.equal(stale.short, "Aktualizujeme");
   });
 

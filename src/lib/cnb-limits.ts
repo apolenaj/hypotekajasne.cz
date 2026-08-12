@@ -7,6 +7,10 @@ import {
   evaluateCzMortgageRegulation,
   resolveCzPeriod,
 } from "@/lib/mortgage-regulation";
+import {
+  CNB_INVESTMENT_RECOMMENDATION_CS,
+  CNB_OWN_HOUSING_LTV_CS,
+} from "@/lib/mortgage-regulation/cnb-public-copy";
 
 export type MortgagePurpose = "owner_occupied" | "investment";
 
@@ -17,14 +21,12 @@ export const CNB_LIMITS = {
   ownerOccupied: {
     ltvStandard: current.ownerOccupied.ltvStandard,
     ltvYoungUnder36: current.ownerOccupied.ltvYoungUnder36,
-    note:
-      "Pro vlastní bydlení ČNB ponechává horní hranici LTV 80 % (u žadatelů do 36 let až 90 % — jen pokud je věk znám). Ukazatele DTI a DSTI zůstávají deaktivované — banky je mohou používat interně, ale nejde o plošně povinné limity ČNB.",
+    note: `${CNB_OWN_HOUSING_LTV_CS} Ukazatele DTI a DSTI zůstávají deaktivované — banky je mohou používat interně, ale nejde o plošně povinné limity ČNB.`,
   },
   investment: {
     ltvMax: current.investment.ltvMax,
     dtiMax: current.investment.dtiMax ?? 7,
-    note:
-      "Pro investiční hypotéky ČNB doporučuje LTV maximálně 70 % a limit DTI 7 (od 1. 4. 2026). Týká se typicky třetí a další obytné nemovitosti nebo nemovitosti určené k pronájmu.",
+    note: CNB_INVESTMENT_RECOMMENDATION_CS,
   },
 } as const;
 
@@ -41,7 +43,7 @@ export const MORTGAGE_PURPOSE_OPTIONS: {
   {
     value: "investment",
     label: "Investiční nemovitost k pronájmu",
-    description: `Doporučení ČNB od 4/2026: LTV max. ${CNB_LIMITS.investment.ltvMax} %, DTI ${CNB_LIMITS.investment.dtiMax}.`,
+    description: CNB_INVESTMENT_RECOMMENDATION_CS,
   },
 ];
 

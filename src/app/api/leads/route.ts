@@ -7,6 +7,11 @@ import {
   LEAD_SOURCE_LABELS,
   type LeadPayload,
 } from "@/lib/leads";
+import {
+  logLeadOps,
+  notifyLeadOperatorsBestEffort,
+  readSafePageIntent,
+} from "@/lib/leads-ops";
 import type { FormConsentRecord } from "@/lib/consent/records";
 import type { PartnerTransferScope } from "@/lib/legal/consent-versions";
 import { isMortgagePartnerHandoffReady } from "@/lib/legal/partner-config";
@@ -239,7 +244,16 @@ export async function POST(request: Request) {
     };
 
     const supabase = getSupabaseAdmin();
-    let { error } = await supabase.from("leads").insert(rowWithRetention);
+    const pageIntent = readSafePageIntent(
+      payload.metadata as Record<string, unknown> | undefined
+    );
+
+    let insertedId: string | null = null;
+    let { data, error } = await supabase
+      .from("leads")
+      .insert(rowWithRetention)
+      .select("id")
+      .single();
 
     // Fallback if retention migration not applied yet — still store consent in metadata.
     if (
@@ -249,10 +263,20 @@ export async function POST(request: Request) {
       console.warn(
         "Supabase leads retention columns missing — inserting base row. Apply supabase/leads_retention.sql."
       );
-      ({ error } = await supabase.from("leads").insert(baseRow));
+      ({ data, error } = await supabase
+        .from("leads")
+        .insert(baseRow)
+        .select("id")
+        .single());
     }
 
     if (error) {
+      logLeadOps({
+        event: "lead_insert_error",
+        source: payload.source,
+        pageIntent,
+        errorCode: error.code ?? "insert_failed",
+      });
       console.error("Supabase leads insert error:", error.message);
       return NextResponse.json(
         {
@@ -263,8 +287,33 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json({ ok: true });
+    insertedId = typeof data?.id === "string" ? data.id : null;
+    if (insertedId) {
+      logLeadOps({
+        event: "lead_insert_ok",
+        leadId: insertedId,
+        source: payload.source,
+        pageIntent,
+      });
+      // Notification must not block or undo DB success.
+      void notifyLeadOperatorsBestEffort({
+        leadId: insertedId,
+        source: payload.source,
+        pageIntent,
+      });
+    }
+
+    return NextResponse.json({
+      ok: true,
+      leadId: insertedId,
+      // Public-neutral SLA — no invented response-time promise.
+      nextStep: "Ozveme se co nejdříve.",
+    });
   } catch (err) {
+    logLeadOps({
+      event: "lead_insert_error",
+      errorCode: "unhandled",
+    });
     console.error("API /api/leads:", err);
     return NextResponse.json(
       { error: "Interní chyba při ukládání leadu." },

@@ -1,6 +1,7 @@
 "use client";
 
 import { LeadCaptureForm } from "@/components/forms/LeadCaptureForm";
+import { LEAD_FORM_FRICTION_ABOVE } from "@/lib/leads-form-copy";
 import { CTA_CS } from "@/lib/ux/cta";
 
 type HomeFinalCtaProps = {
@@ -29,8 +30,9 @@ export function HomeFinalCta({ journeyMetadata }: HomeFinalCtaProps) {
             {CTA_CS.discoverSituation}
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-white/75">
-            Necháte kontakt. Ozveme se k nezávazné konzultaci. Nejde o schválení
-            úvěru ani o garantovanou sazbu — Hypotéka Jasně není banka.
+            Necháte kontakt. Ozveme se co nejdříve k nezávazné konzultaci.
+            Nejde o schválení úvěru ani o garantovanou sazbu — Hypotéka Jasně
+            není banka.
           </p>
         </div>
 
@@ -43,7 +45,7 @@ export function HomeFinalCta({ journeyMetadata }: HomeFinalCtaProps) {
               ...journeyMetadata,
             }}
             title="Nezávazná poptávka"
-            subtitle="Jméno a telefon nebo e-mail stačí. Čísla z kalkulačky nemusíte vyplňovat znovu."
+            subtitle={LEAD_FORM_FRICTION_ABOVE}
             compact
             className="border-0 bg-transparent p-0 shadow-none"
           />
