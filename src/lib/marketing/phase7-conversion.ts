@@ -40,7 +40,7 @@ export function buildPhase7UtmCampaign(input: {
   variant?: string;
 }): string {
   const country = input.country ?? "cz";
-  const parts = [
+  const parts: string[] = [
     country,
     input.funnel,
     input.channel,
