@@ -7,10 +7,10 @@ import {
   LEAD_SOURCE_LABELS,
   type LeadPayload,
 } from "@/lib/leads";
+import { sanitizeLeadAttribution } from "@/lib/leads-attribution";
 import {
   logLeadOps,
   notifyLeadOperatorsBestEffort,
-  readSafePageIntent,
 } from "@/lib/leads-ops";
 import type { FormConsentRecord } from "@/lib/consent/records";
 import type { PartnerTransferScope } from "@/lib/legal/consent-versions";
@@ -169,6 +169,11 @@ export async function POST(request: Request) {
       marketingConsent,
     });
 
+    const attribution = sanitizeLeadAttribution(
+      payload.metadata as Record<string, unknown> | undefined
+    );
+    const pageIntent = attribution.page_intent;
+
     const consentMeta = {
       consent: payload.consent,
       privacy_notice_version: payload.consent.policyVersion,
@@ -214,7 +219,7 @@ export async function POST(request: Request) {
       country: payload.country ?? null,
       notes: composedNotes,
       metadata: {
-        ...(payload.metadata ?? {}),
+        ...attribution.metadata,
         source_label: sourceLabel,
         submitted_at: nowIso,
         user_agent:
@@ -223,8 +228,40 @@ export async function POST(request: Request) {
       },
     };
 
-    // First-class retention / consent columns (requires leads_retention.sql).
+    // First-class retention / consent / lifecycle columns (additive migrations).
     const rowWithRetention = {
+      ...baseRow,
+      updated_at: nowIso,
+      last_interaction_at: nowIso,
+      retention_until: retentionUntil?.toISOString() ?? null,
+      privacy_notice_version: payload.consent.policyVersion,
+      deleted_at: null,
+      legal_hold: false,
+      active_case: false,
+      marketing_consent: marketingConsent,
+      marketing_consent_at: marketingConsent
+        ? payload.consent.consentedAt
+        : null,
+      marketing_consent_withdrawn_at: null,
+      marketing_consent_version: marketingConsent
+        ? payload.consent.policyVersion
+        : null,
+      lifecycle_status: "new",
+      page_intent: pageIntent,
+      utm_source: attribution.utm_source,
+      utm_medium: attribution.utm_medium,
+      utm_campaign: attribution.utm_campaign,
+      utm_content: attribution.utm_content,
+      utm_term: attribution.utm_term,
+      landing_path: attribution.landing_path,
+      revenue_status: "unknown",
+      revenue_currency: "CZK",
+      expected_revenue_amount: null,
+      realized_revenue_amount: null,
+      realized_at: null,
+    };
+
+    const rowWithRetentionOnly = {
       ...baseRow,
       updated_at: nowIso,
       last_interaction_at: nowIso,
@@ -244,9 +281,6 @@ export async function POST(request: Request) {
     };
 
     const supabase = getSupabaseAdmin();
-    const pageIntent = readSafePageIntent(
-      payload.metadata as Record<string, unknown> | undefined
-    );
 
     let insertedId: string | null = null;
     let { data, error } = await supabase
@@ -255,7 +289,21 @@ export async function POST(request: Request) {
       .select("id")
       .single();
 
-    // Fallback if retention migration not applied yet — still store consent in metadata.
+    // Fallback chain: lifecycle columns may be missing before Phase 6.2 SQL.
+    if (
+      error &&
+      /column|schema cache|does not exist/i.test(error.message)
+    ) {
+      console.warn(
+        "Supabase leads lifecycle/revenue columns missing — retrying retention row. Apply supabase/leads_lifecycle_revenue.sql."
+      );
+      ({ data, error } = await supabase
+        .from("leads")
+        .insert(rowWithRetentionOnly)
+        .select("id")
+        .single());
+    }
+
     if (
       error &&
       /column|schema cache|does not exist/i.test(error.message)

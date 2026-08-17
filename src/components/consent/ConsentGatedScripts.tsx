@@ -1,15 +1,25 @@
 "use client";
 
 import Script from "next/script";
+import { useEffect } from "react";
 import { useCookieConsent } from "@/components/consent/CookieConsentProvider";
+import { pushConsentModeUpdate } from "@/lib/consent/consent-mode";
 
 /**
  * Načte analytiku / marketing skripty až po consent.
  * Bez Measurement ID / Pixel ID se nenačítá nic (bezpečný default).
- * Chyby skriptů nesmí shodit React strom — proto next/script + defensive guards.
+ * Consent Mode defaults are denied in ConsentDefaultsScript; this updates + loads GA.
  */
 export function ConsentGatedScripts() {
   const { ready, analyticsAllowed, marketingAllowed } = useCookieConsent();
+
+  useEffect(() => {
+    if (!ready) return;
+    pushConsentModeUpdate({
+      analytics: analyticsAllowed,
+      marketing: marketingAllowed,
+    });
+  }, [ready, analyticsAllowed, marketingAllowed]);
 
   if (!ready) return null;
 
@@ -40,8 +50,14 @@ try {
   window.dataLayer = window.dataLayer || [];
   function gtag(){window.dataLayer.push(arguments);}
   window.gtag = gtag;
+  gtag('consent', 'update', {
+    analytics_storage: 'granted',
+    ad_storage: ${marketingAllowed ? "'granted'" : "'denied'"},
+    ad_user_data: ${marketingAllowed ? "'granted'" : "'denied'"},
+    ad_personalization: ${marketingAllowed ? "'granted'" : "'denied'"}
+  });
   gtag('js', new Date());
-  gtag('config', ${JSON.stringify(gaId)}, { anonymize_ip: true });
+  gtag('config', ${JSON.stringify(gaId)}, { anonymize_ip: true, send_page_view: true });
 } catch (e) {
   console.warn('[analytics] gtag init failed', e);
 }

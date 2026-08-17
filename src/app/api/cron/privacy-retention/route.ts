@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { runPrivacyRetentionCleanup } from "@/lib/legal/retention-cleanup";
+import {
+  retentionResultPublicJson,
+  runPrivacyRetentionCleanup,
+} from "@/lib/legal/retention-cleanup";
 import { privacyRetention } from "@/lib/legal/privacy-retention";
 
 export const runtime = "nodejs";
@@ -27,11 +30,15 @@ function authorize(request: Request): boolean {
 
 /**
  * Scheduled retention cleanup.
- * Logs aggregate counts only — no personal data.
+ * Logs aggregate counts only — no personal data / no secret.
  *
  * Safe preview (no writes):
  *   GET /api/cron/privacy-retention?dryRun=true
  *   Authorization: Bearer $CRON_SECRET
+ *
+ * Controlled synthetic-only delete (manual ops):
+ *   GET /api/cron/privacy-retention?onlyLeadId=<uuid>
+ *   Lead must carry metadata.test_marker matching phase_6_2_*
  */
 export async function GET(request: Request) {
   if (!authorize(request)) {
@@ -46,35 +53,35 @@ export async function GET(request: Request) {
     });
   }
 
-  const dryRun =
-    new URL(request.url).searchParams.get("dryRun") === "true";
+  const url = new URL(request.url);
+  const dryRun = url.searchParams.get("dryRun") === "true";
+  const onlyLeadId = url.searchParams.get("onlyLeadId")?.trim() || undefined;
 
   try {
     const supabase = getSupabaseAdmin();
-    const result = await runPrivacyRetentionCleanup(supabase, { dryRun });
+    const result = await runPrivacyRetentionCleanup(supabase, {
+      dryRun,
+      onlyLeadId,
+    });
     console.info("[privacy-retention]", {
+      runId: result.runId,
       dryRun: result.dryRun,
+      cutoffIso: result.cutoffIso,
       scanned: result.scanned,
       anonymized: result.anonymized,
       skipped: result.skipped,
       technicalLogsDeleted: result.technicalLogsDeleted,
       technicalLogsWouldDelete: result.technicalLogsWouldDelete,
-      candidateCount: result.candidateIds.length,
+      candidateCount: result.candidateCount,
       errorCount: result.errors.length,
+      status: result.errors.length === 0 ? "ok" : "error",
     });
-    return NextResponse.json({
-      ok: result.errors.length === 0,
-      dryRun: result.dryRun,
-      scanned: result.scanned,
-      anonymized: result.anonymized,
-      skipped: result.skipped,
-      technicalLogsDeleted: result.technicalLogsDeleted,
-      technicalLogsWouldDelete: result.technicalLogsWouldDelete,
-      candidateIds: result.candidateIds,
-      errors: result.errors.slice(0, 5),
+    return NextResponse.json(retentionResultPublicJson(result));
+  } catch {
+    console.error("[privacy-retention] failed", {
+      status: "error",
+      errorCategory: "unhandled",
     });
-  } catch (err) {
-    console.error("[privacy-retention] failed", err);
     return NextResponse.json(
       { error: "Retention cleanup failed" },
       { status: 500 }

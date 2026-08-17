@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Providers } from "@/components/Providers";
+import { ConsentDefaultsScript } from "@/components/consent/ConsentDefaultsScript";
 import { JsonLdScript } from "@/components/seo/JsonLdScript";
 import { organizationJsonLd, webSiteJsonLd } from "@/lib/seo/json-ld";
 import { rootMetadata } from "@/lib/seo/metadata";
@@ -37,6 +38,7 @@ export default async function RootLayout({
       className={`${inter.variable} ${playfair.variable} h-full antialiased`}
     >
       <body className="flex min-h-full max-w-full min-w-0 flex-col font-sans">
+        <ConsentDefaultsScript />
         <JsonLdScript data={[organizationJsonLd(), webSiteJsonLd()]} />
         <Providers>
           <Navbar />
