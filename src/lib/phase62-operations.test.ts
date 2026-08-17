@@ -424,11 +424,12 @@ describe("Phase 6.2 — lead attribution + ops", () => {
       return new Response("{}", { status: 200 });
     }) as typeof fetch;
 
-    process.env.LEAD_OPS_RECIPIENT_EMAIL = "ops@example.com";
+    process.env.LEAD_OPS_RECIPIENT_EMAIL = "josef.apolenar@gmail.com";
     delete process.env.RESEND_API_KEY;
     delete process.env.NOTIFY_EMAIL_PROVIDER_API_KEY;
     delete process.env.LEAD_OPS_FROM_EMAIL;
     delete process.env.NOTIFY_EMAIL_FROM;
+    delete process.env.RESEND_EMAIL_DOMAIN;
     delete process.env.LEAD_OPS_WEBHOOK_URL;
 
     try {
@@ -465,9 +466,11 @@ describe("Phase 6.2 — lead attribution + ops", () => {
       return new Response("fail", { status: 500 });
     }) as typeof fetch;
 
-    process.env.LEAD_OPS_RECIPIENT_EMAIL = "ops@example.com";
+    process.env.LEAD_OPS_RECIPIENT_EMAIL = "josef.apolenar@gmail.com";
     process.env.RESEND_API_KEY = "re_test_key";
-    process.env.LEAD_OPS_FROM_EMAIL = "noreply@example.com";
+    process.env.LEAD_OPS_FROM_EMAIL =
+      "Hypotéka Jasně <leady@notify.hypotekajasne.cz>";
+    process.env.RESEND_EMAIL_DOMAIN = "notify.hypotekajasne.cz";
     delete process.env.LEAD_OPS_WEBHOOK_URL;
 
     try {
@@ -494,6 +497,43 @@ describe("Phase 6.2 — lead attribution + ops", () => {
       delete process.env.LEAD_OPS_RECIPIENT_EMAIL;
       delete process.env.RESEND_API_KEY;
       delete process.env.LEAD_OPS_FROM_EMAIL;
+      delete process.env.RESEND_EMAIL_DOMAIN;
+    }
+  });
+
+  it("email notify stores Resend message id on HTTP success", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response(JSON.stringify({ id: "re_msg_test_123" }), {
+        status: 200,
+      })) as typeof fetch;
+
+    process.env.LEAD_OPS_RECIPIENT_EMAIL = "josef.apolenar@gmail.com";
+    process.env.RESEND_API_KEY = "re_test_key";
+    process.env.LEAD_OPS_FROM_EMAIL =
+      "Hypotéka Jasně <leady@notify.hypotekajasne.cz>";
+    process.env.RESEND_EMAIL_DOMAIN = "notify.hypotekajasne.cz";
+    delete process.env.LEAD_OPS_WEBHOOK_URL;
+
+    try {
+      const result = await notifyLeadOperatorsBestEffort({
+        leadId: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+        source: "landing",
+        pageIntent: "refinance",
+        createdAt: "2026-08-17T12:00:00.000Z",
+        name: "PHASE62",
+        email: "phase62@example.com",
+        testMarker: "phase_6_2_resend_unit",
+      });
+      assert.equal(result.emailDelivered, true);
+      assert.equal(result.providerMessageId, "re_msg_test_123");
+      assert.equal(result.emailHttpStatus, 200);
+    } finally {
+      globalThis.fetch = originalFetch;
+      delete process.env.LEAD_OPS_RECIPIENT_EMAIL;
+      delete process.env.RESEND_API_KEY;
+      delete process.env.LEAD_OPS_FROM_EMAIL;
+      delete process.env.RESEND_EMAIL_DOMAIN;
     }
   });
 

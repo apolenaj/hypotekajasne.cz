@@ -30,6 +30,8 @@ export type LeadOpsLog = {
   toStatus?: string;
   channel?: "email" | "webhook";
   provider?: string;
+  /** Resend message id — technical only. */
+  providerMessageId?: string;
 };
 
 export function logLeadOps(entry: LeadOpsLog): void {
@@ -115,6 +117,8 @@ export type LeadNotifyResult = {
   emailDelivered: boolean;
   webhookDelivered: boolean;
   emailErrorCode?: string;
+  providerMessageId?: string;
+  emailHttpStatus?: number;
 };
 
 function isTestLead(marker: string | null | undefined): boolean {
@@ -148,6 +152,8 @@ export async function notifyLeadOperatorsBestEffort(
   let emailDelivered = false;
   let emailErrorCode: string | undefined;
   let emailAttempted = false;
+  let providerMessageId: string | undefined;
+  let emailHttpStatus: number | undefined;
 
   const gap = describeLeadOpsEmailProviderGap();
   if (!gap.recipientConfigured && !process.env.LEAD_OPS_WEBHOOK_URL?.trim()) {
@@ -197,8 +203,10 @@ export async function notifyLeadOperatorsBestEffort(
           });
         }
         const result = await sendLeadOpsEmail(emailPayload);
+        emailHttpStatus = result.status;
         if (result.delivered) {
           emailDelivered = true;
+          providerMessageId = result.providerMessageId;
           logLeadOps({
             event: "lead_notify_ok",
             leadId: input.leadId,
@@ -208,6 +216,7 @@ export async function notifyLeadOperatorsBestEffort(
             provider: result.provider,
             attempt,
             status: result.status,
+            providerMessageId: result.providerMessageId,
           });
           break;
         }
@@ -299,6 +308,8 @@ export async function notifyLeadOperatorsBestEffort(
     emailDelivered,
     webhookDelivered,
     emailErrorCode,
+    providerMessageId,
+    emailHttpStatus,
   };
 }
 

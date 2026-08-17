@@ -35,7 +35,7 @@ lead_submit (client)
 |------|--------|
 | Business owner | Michal Heinzke (qualified leads forwarded by Josef) |
 | Technical recipient | `LEAD_OPS_RECIPIENT_EMAIL` (server-only; Production = Josef’s inbox) |
-| E-mail provider | Resend HTTP API — requires `RESEND_API_KEY` + `LEAD_OPS_FROM_EMAIL` (or `NOTIFY_EMAIL_FROM`) |
+| E-mail provider | Resend HTTP API — requires `RESEND_API_KEY` + `LEAD_OPS_FROM_EMAIL` + `RESEND_EMAIL_DOMAIN` |
 | Optional webhook | `LEAD_OPS_WEBHOOK_URL` (HTTPS only; must not be an e-mail address) |
 | Failure | Structured `[lead_ops]` error (no PII); lead row remains |
 | Recovery | One automatic retry per channel; retry never creates a second lead |

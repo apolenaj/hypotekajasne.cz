@@ -353,8 +353,8 @@ export async function POST(request: Request) {
           ? attribution.metadata.source_path
           : "") ||
         "";
-      // Notification must not block or undo DB success.
-      void notifyLeadOperatorsBestEffort({
+      // Await notify so audit metadata can be stored; failure must not undo insert.
+      const notify = await notifyLeadOperatorsBestEffort({
         leadId: insertedId,
         source: payload.source,
         pageIntent,
@@ -366,6 +366,33 @@ export async function POST(request: Request) {
         message: payload.notes,
         testMarker,
       });
+
+      try {
+        const notifyAudit = {
+          channel: "email" as const,
+          provider: "resend" as const,
+          status: notify.emailDelivered
+            ? "accepted"
+            : notify.emailErrorCode
+              ? "error"
+              : "skipped",
+          provider_message_id: notify.providerMessageId ?? null,
+          http_status: notify.emailHttpStatus ?? null,
+          attempts: notify.attempts,
+          at: new Date().toISOString(),
+        };
+        await supabase
+          .from("leads")
+          .update({
+            metadata: {
+              ...baseRow.metadata,
+              notify_audit: notifyAudit,
+            },
+          })
+          .eq("id", insertedId);
+      } catch {
+        // Audit patch is best-effort; never fail the lead response.
+      }
     }
 
     return NextResponse.json({
