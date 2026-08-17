@@ -20,6 +20,11 @@ import {
   readSafePageIntent,
 } from "@/lib/leads-ops";
 import {
+  buildLeadOpsEmailSubject,
+  buildLeadOpsEmailText,
+  describeLeadOpsEmailProviderGap,
+} from "@/lib/leads-ops-email";
+import {
   CONSENT_DEFAULTS_INLINE_SCRIPT,
   CONSENT_MODE_DEFAULT_DENIED,
 } from "@/lib/consent/consent-mode";
@@ -360,11 +365,15 @@ describe("Phase 6.2 — lead attribution + ops", () => {
     }) as typeof fetch;
 
     process.env.LEAD_OPS_WEBHOOK_URL = "https://example.test/hooks/leads";
+    delete process.env.LEAD_OPS_RECIPIENT_EMAIL;
     try {
       const result = await notifyLeadOperatorsBestEffort({
         leadId: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
         source: "landing",
         pageIntent: "refinance",
+        createdAt: "2026-08-17T12:00:00.000Z",
+        name: "Test",
+        email: "test@example.com",
       });
       assert.equal(result.attempted, true);
       assert.equal(result.delivered, false);
@@ -377,6 +386,114 @@ describe("Phase 6.2 — lead attribution + ops", () => {
     } finally {
       globalThis.fetch = originalFetch;
       delete process.env.LEAD_OPS_WEBHOOK_URL;
+    }
+  });
+
+  it("email subjects and body fields match Phase 6.2 contract", () => {
+    assert.equal(
+      buildLeadOpsEmailSubject("refinance", false),
+      "[Hypotéka Jasně] Nový lead – refinance"
+    );
+    assert.equal(
+      buildLeadOpsEmailSubject("osvc", true),
+      "[TEST PHASE 6.2] Nový lead – osvc"
+    );
+    const text = buildLeadOpsEmailText({
+      leadId: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+      createdAt: "2026-08-17T12:00:00.000Z",
+      pageIntent: "refinance",
+      name: "PHASE62",
+      email: "phase62@example.com",
+      phone: "+420777000001",
+      landingPage: "/temata/refinancovani",
+      message: "optional note",
+      isTest: true,
+    });
+    assert.match(text, /Lead ID:/);
+    assert.match(text, /Business owner: Michal Heinzke/);
+    assert.match(text, /Message: optional note/);
+    assert.equal(text.includes("gclid"), false);
+    assert.equal(text.includes("cookie"), false);
+  });
+
+  it("email notify skips send when Resend keys missing (recipient set)", async () => {
+    const originalFetch = globalThis.fetch;
+    let calls = 0;
+    globalThis.fetch = (async () => {
+      calls += 1;
+      return new Response("{}", { status: 200 });
+    }) as typeof fetch;
+
+    process.env.LEAD_OPS_RECIPIENT_EMAIL = "ops@example.com";
+    delete process.env.RESEND_API_KEY;
+    delete process.env.NOTIFY_EMAIL_PROVIDER_API_KEY;
+    delete process.env.LEAD_OPS_FROM_EMAIL;
+    delete process.env.NOTIFY_EMAIL_FROM;
+    delete process.env.LEAD_OPS_WEBHOOK_URL;
+
+    try {
+      const gap = describeLeadOpsEmailProviderGap();
+      assert.equal(gap.recipientConfigured, true);
+      assert.equal(gap.ready, false);
+      assert.ok(gap.missing.includes("RESEND_API_KEY (or NOTIFY_EMAIL_PROVIDER_API_KEY)"));
+
+      const result = await notifyLeadOperatorsBestEffort({
+        leadId: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+        source: "landing",
+        pageIntent: "refinance",
+        createdAt: "2026-08-17T12:00:00.000Z",
+        name: "PHASE62",
+        email: "phase62@example.com",
+        testMarker: "phase_6_2_email_unit",
+      });
+      assert.equal(result.emailDelivered, false);
+      assert.equal(result.emailErrorCode, "email_provider_not_configured");
+      assert.equal(calls, 0);
+    } finally {
+      globalThis.fetch = originalFetch;
+      delete process.env.LEAD_OPS_RECIPIENT_EMAIL;
+    }
+  });
+
+  it("email notify retries same leadId via Resend without creating a second lead", async () => {
+    const bodies: string[] = [];
+    let calls = 0;
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async (_url: RequestInfo | URL, init?: RequestInit) => {
+      calls += 1;
+      bodies.push(String(init?.body ?? ""));
+      return new Response("fail", { status: 500 });
+    }) as typeof fetch;
+
+    process.env.LEAD_OPS_RECIPIENT_EMAIL = "ops@example.com";
+    process.env.RESEND_API_KEY = "re_test_key";
+    process.env.LEAD_OPS_FROM_EMAIL = "noreply@example.com";
+    delete process.env.LEAD_OPS_WEBHOOK_URL;
+
+    try {
+      const result = await notifyLeadOperatorsBestEffort({
+        leadId: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+        source: "landing",
+        pageIntent: "refinance",
+        createdAt: "2026-08-17T12:00:00.000Z",
+        name: "PHASE62",
+        email: "phase62@example.com",
+        phone: "+420777000001",
+        landingPage: "/temata/refinancovani",
+        testMarker: "phase_6_2_email_unit",
+      });
+      assert.equal(result.attempted, true);
+      assert.equal(result.emailDelivered, false);
+      assert.equal(result.attempts, 2);
+      assert.equal(calls, 2);
+      assert.equal(bodies[0], bodies[1]);
+      assert.match(bodies[0]!, /aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee/);
+      assert.match(bodies[0]!, /\[TEST PHASE 6\.2\] Nový lead – refinance/);
+    } finally {
+      globalThis.fetch = originalFetch;
+      delete process.env.LEAD_OPS_RECIPIENT_EMAIL;
+      delete process.env.RESEND_API_KEY;
+      delete process.env.LEAD_OPS_FROM_EMAIL;
     }
   });
 

@@ -7,7 +7,8 @@ lead_submit (client)
 → POST /api/leads (validation + consent + sanitized attribution)
 → Supabase insert (`leads`) with retention, page_intent, lifecycle=new
 → structured [lead_ops] log (leadId only, no PII)
-→ optional LEAD_OPS_WEBHOOK_URL notify (timeout + 1 retry; never undoes DB success)
+→ best-effort notify: LEAD_OPS_RECIPIENT_EMAIL via Resend (when keys set)
+  and/or optional LEAD_OPS_WEBHOOK_URL (timeout + 1 retry; never undoes DB success)
 → JSON { ok, leadId, nextStep }
 → client lead_success / lead_error analytics (after consent)
 → privacy retention cron `/api/cron/privacy-retention` (vercel.json)
@@ -32,14 +33,16 @@ lead_submit (client)
 
 | Item | Status |
 |------|--------|
-| Channel | Optional internal webhook via `LEAD_OPS_WEBHOOK_URL` (URL must not be logged) |
-| Failure | Structured `[lead_ops]` error; lead row remains |
-| Recovery | One automatic retry + ops can re-notify manually using stored `leadId` |
-| Ops owner | **Not invented in code** — business decision (see manual gates) |
+| Business owner | Michal Heinzke (qualified leads forwarded by Josef) |
+| Technical recipient | `LEAD_OPS_RECIPIENT_EMAIL` (server-only; Production = Josef’s inbox) |
+| E-mail provider | Resend HTTP API — requires `RESEND_API_KEY` + `LEAD_OPS_FROM_EMAIL` (or `NOTIFY_EMAIL_FROM`) |
+| Optional webhook | `LEAD_OPS_WEBHOOK_URL` (HTTPS only; must not be an e-mail address) |
+| Failure | Structured `[lead_ops]` error (no PII); lead row remains |
+| Recovery | One automatic retry per channel; retry never creates a second lead |
 
 ## Manual launch gates (not claimed PASS without operator check)
 
-1. **Ops owner / inbox** — document who monitors new leads (Supabase table and/or webhook target). Public copy stays “Ozveme se co nejdříve”.
+1. **Outbound e-mail provider keys** — set `RESEND_API_KEY` + verified `LEAD_OPS_FROM_EMAIL` (do not invent a new paid provider without approval).
 2. **Production cron** — confirm Vercel Cron + `CRON_SECRET`; dry-run `GET /api/cron/privacy-retention?dryRun=true` returns OK (counts only, no PII).
 3. **GA4 DebugView / Realtime** — confirm funnel events arrive after analytics consent.
 4. **Apply SQL** — `supabase/leads_lifecycle_revenue.sql` on production before relying on lifecycle columns / report view.

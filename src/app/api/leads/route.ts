@@ -343,11 +343,28 @@ export async function POST(request: Request) {
         source: payload.source,
         pageIntent,
       });
+      const testMarkerRaw = attribution.metadata?.test_marker;
+      const testMarker =
+        typeof testMarkerRaw === "string" ? testMarkerRaw : null;
+      const landingPage =
+        attribution.landing_path ||
+        payload.consent.sourcePath ||
+        (typeof attribution.metadata?.source_path === "string"
+          ? attribution.metadata.source_path
+          : "") ||
+        "";
       // Notification must not block or undo DB success.
       void notifyLeadOperatorsBestEffort({
         leadId: insertedId,
         source: payload.source,
         pageIntent,
+        createdAt: nowIso,
+        name: payload.name,
+        email: payload.email,
+        phone: payload.phone,
+        landingPage,
+        message: payload.notes,
+        testMarker,
       });
     }
 

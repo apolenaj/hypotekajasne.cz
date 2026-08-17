@@ -3,6 +3,13 @@
  * No PII in structured logs. Notification is best-effort after DB success.
  */
 
+import {
+  describeLeadOpsEmailProviderGap,
+  sendLeadOpsEmail,
+  type LeadOpsEmailPayload,
+} from "@/lib/leads-ops-email";
+import { isSyntheticRetentionMarker } from "@/lib/leads-attribution";
+
 export type LeadOpsLog = {
   event:
     | "lead_insert_ok"
@@ -21,6 +28,8 @@ export type LeadOpsLog = {
   attempt?: number;
   fromStatus?: string;
   toStatus?: string;
+  channel?: "email" | "webhook";
+  provider?: string;
 };
 
 export function logLeadOps(entry: LeadOpsLog): void {
@@ -47,6 +56,7 @@ export function readSafePageIntent(
 
 const WEBHOOK_TIMEOUT_MS = 4_000;
 const WEBHOOK_MAX_ATTEMPTS = 2;
+const EMAIL_MAX_ATTEMPTS = 2;
 
 async function postWebhookOnce(
   webhook: string,
@@ -84,70 +94,212 @@ async function postWebhookOnce(
   }
 }
 
-/**
- * Notification channel is optional (LEAD_OPS_WEBHOOK_URL).
- * DB insert success must not depend on notification delivery.
- * Retries the same payload (same leadId) — never creates a second lead.
- */
-export async function notifyLeadOperatorsBestEffort(input: {
+export type LeadNotifyInput = {
   leadId: string;
   source: string;
   pageIntent: string | null;
-}): Promise<{ attempted: boolean; delivered: boolean; attempts: number }> {
-  const webhook = process.env.LEAD_OPS_WEBHOOK_URL?.trim();
-  if (!webhook) {
+  createdAt: string;
+  name: string;
+  email: string;
+  phone?: string;
+  landingPage?: string;
+  message?: string;
+  /** From sanitized metadata.test_marker — never logged as free text beyond isTest. */
+  testMarker?: string | null;
+};
+
+export type LeadNotifyResult = {
+  attempted: boolean;
+  delivered: boolean;
+  attempts: number;
+  emailDelivered: boolean;
+  webhookDelivered: boolean;
+  emailErrorCode?: string;
+};
+
+function isTestLead(marker: string | null | undefined): boolean {
+  return isSyntheticRetentionMarker(marker);
+}
+
+/**
+ * Best-effort notify after DB insert.
+ * Prefer e-mail via LEAD_OPS_RECIPIENT_EMAIL (+ Resend keys).
+ * Optional LEAD_OPS_WEBHOOK_URL remains a separate channel (not an e-mail address).
+ * DB insert success must not depend on notification delivery.
+ * Retries the same leadId — never creates a second lead.
+ */
+export async function notifyLeadOperatorsBestEffort(
+  input: LeadNotifyInput
+): Promise<LeadNotifyResult> {
+  const isTest = isTestLead(input.testMarker);
+  const emailPayload: LeadOpsEmailPayload = {
+    leadId: input.leadId,
+    createdAt: input.createdAt,
+    pageIntent: input.pageIntent,
+    name: input.name,
+    email: input.email,
+    phone: input.phone?.trim() || "",
+    landingPage: input.landingPage?.trim() || "",
+    message: input.message?.trim() || undefined,
+    isTest,
+  };
+
+  let attempts = 0;
+  let emailDelivered = false;
+  let emailErrorCode: string | undefined;
+  let emailAttempted = false;
+
+  const gap = describeLeadOpsEmailProviderGap();
+  if (!gap.recipientConfigured && !process.env.LEAD_OPS_WEBHOOK_URL?.trim()) {
     logLeadOps({
       event: "lead_notify_skipped",
       leadId: input.leadId,
       source: input.source,
       pageIntent: input.pageIntent,
+      errorCode: "no_notification_channel",
     });
-    return { attempted: false, delivered: false, attempts: 0 };
+    return {
+      attempted: false,
+      delivered: false,
+      attempts: 0,
+      emailDelivered: false,
+      webhookDelivered: false,
+      emailErrorCode: "no_notification_channel",
+    };
   }
 
-  const body = JSON.stringify({
-    type: "lead_created",
-    leadId: input.leadId,
-    source: input.source,
-    pageIntent: input.pageIntent,
-  });
-
-  let attempts = 0;
-  for (let attempt = 1; attempt <= WEBHOOK_MAX_ATTEMPTS; attempt += 1) {
-    attempts = attempt;
-    if (attempt > 1) {
+  if (gap.recipientConfigured) {
+    if (!gap.ready) {
+      emailAttempted = false;
+      emailErrorCode = "email_provider_not_configured";
       logLeadOps({
-        event: "lead_notify_retry",
+        event: "lead_notify_error",
         leadId: input.leadId,
         source: input.source,
         pageIntent: input.pageIntent,
-        attempt,
+        channel: "email",
+        provider: "resend",
+        errorCode: emailErrorCode,
       });
+    } else {
+      for (let attempt = 1; attempt <= EMAIL_MAX_ATTEMPTS; attempt += 1) {
+        attempts = Math.max(attempts, attempt);
+        emailAttempted = true;
+        if (attempt > 1) {
+          logLeadOps({
+            event: "lead_notify_retry",
+            leadId: input.leadId,
+            source: input.source,
+            pageIntent: input.pageIntent,
+            channel: "email",
+            provider: "resend",
+            attempt,
+          });
+        }
+        const result = await sendLeadOpsEmail(emailPayload);
+        if (result.delivered) {
+          emailDelivered = true;
+          logLeadOps({
+            event: "lead_notify_ok",
+            leadId: input.leadId,
+            source: input.source,
+            pageIntent: input.pageIntent,
+            channel: "email",
+            provider: result.provider,
+            attempt,
+            status: result.status,
+          });
+          break;
+        }
+        emailErrorCode = result.errorCode;
+        logLeadOps({
+          event: "lead_notify_error",
+          leadId: input.leadId,
+          source: input.source,
+          pageIntent: input.pageIntent,
+          channel: "email",
+          provider: result.provider,
+          status: result.status,
+          errorCode: result.errorCode,
+          attempt,
+        });
+        if (!result.attempted) break;
+      }
     }
-    const result = await postWebhookOnce(webhook, body, attempt);
-    if (result.ok) {
+  }
+
+  let webhookDelivered = false;
+  const webhook = process.env.LEAD_OPS_WEBHOOK_URL?.trim();
+  if (webhook) {
+    // Never treat an e-mail address as webhook URL.
+    if (/^mailto:/i.test(webhook) || (!/^https?:\/\//i.test(webhook) && webhook.includes("@"))) {
       logLeadOps({
-        event: "lead_notify_ok",
+        event: "lead_notify_error",
         leadId: input.leadId,
         source: input.source,
         pageIntent: input.pageIntent,
-        attempt,
-        status: result.status,
+        channel: "webhook",
+        errorCode: "webhook_invalid_url",
       });
-      return { attempted: true, delivered: true, attempts };
+    } else {
+      const body = JSON.stringify({
+        type: "lead_created",
+        leadId: input.leadId,
+        source: input.source,
+        pageIntent: input.pageIntent,
+      });
+
+      for (let attempt = 1; attempt <= WEBHOOK_MAX_ATTEMPTS; attempt += 1) {
+        attempts = Math.max(attempts, attempt);
+        if (attempt > 1) {
+          logLeadOps({
+            event: "lead_notify_retry",
+            leadId: input.leadId,
+            source: input.source,
+            pageIntent: input.pageIntent,
+            channel: "webhook",
+            attempt,
+          });
+        }
+        const result = await postWebhookOnce(webhook, body, attempt);
+        if (result.ok) {
+          webhookDelivered = true;
+          logLeadOps({
+            event: "lead_notify_ok",
+            leadId: input.leadId,
+            source: input.source,
+            pageIntent: input.pageIntent,
+            channel: "webhook",
+            attempt,
+            status: result.status,
+          });
+          break;
+        }
+        logLeadOps({
+          event: "lead_notify_error",
+          leadId: input.leadId,
+          source: input.source,
+          pageIntent: input.pageIntent,
+          channel: "webhook",
+          status: result.status,
+          errorCode: result.errorCode,
+          attempt,
+        });
+      }
     }
-    logLeadOps({
-      event: "lead_notify_error",
-      leadId: input.leadId,
-      source: input.source,
-      pageIntent: input.pageIntent,
-      status: result.status,
-      errorCode: result.errorCode,
-      attempt,
-    });
   }
 
-  return { attempted: true, delivered: false, attempts };
+  const attempted = emailAttempted || Boolean(webhook) || Boolean(emailErrorCode);
+  const delivered = emailDelivered || webhookDelivered;
+
+  return {
+    attempted,
+    delivered,
+    attempts,
+    emailDelivered,
+    webhookDelivered,
+    emailErrorCode,
+  };
 }
 
 /** Ops API auth: LEAD_OPS_API_SECRET or CRON_SECRET via Bearer. */
