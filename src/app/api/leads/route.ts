@@ -360,7 +360,7 @@ export async function POST(request: Request) {
         pageIntent,
         createdAt: nowIso,
         name: payload.name,
-        email: payload.email,
+        email: payload.email || "—",
         phone: payload.phone,
         landingPage,
         message: payload.notes,
