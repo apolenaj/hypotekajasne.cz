@@ -292,6 +292,7 @@ describe("phase4 analytics abstraction", () => {
     } as import("@/lib/analytics/events").AnalyticsPayload);
     assert.equal(mapped.event, "lead_success");
     assert.equal(mapped.payload.selected_lender, "moneta");
+    assert.equal(mapped.payload.funnel_id, "phase7_conversion");
     assert.equal(
       (mapped.payload as { email?: string }).email,
       undefined

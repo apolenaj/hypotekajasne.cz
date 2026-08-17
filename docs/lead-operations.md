@@ -48,8 +48,15 @@ lead_submit (client)
 4. **Apply SQL** — `supabase/leads_lifecycle_revenue.sql` on production before relying on lifecycle columns / report view.
 5. **Optional** — set `LEAD_OPS_API_SECRET` (or reuse `CRON_SECRET`) for ops lifecycle/report routes.
 
-## Synthetic test leads
+## Phase 7 marketing launch (controlled)
 
-Use marker `phase_6_2_<timestamp>` in `metadata.test_marker`, verify `page_intent`, then delete only that row
-(`scripts/delete-phase62-synthetic-lead.ts`). Controlled retention test may use
-`?onlyLeadId=<uuid>` only when the row carries a synthetic marker.
+See:
+
+- `docs/phase7-measurement.md`
+- `docs/phase7-google-ads-draft.md`
+- `docs/phase7-social-14d.md`
+- `docs/phase7-retargeting.md`
+- `docs/phase7-budget-launch.md`
+- `docs/phase7-lead-ops-handoff.md`
+
+Paid campaigns remain **DRAFT** until budget + GA4 Realtime confirmation.

@@ -10,6 +10,7 @@ import {
   type AnalyticsPayload,
 } from "@/lib/analytics/events";
 import { track, type TrackResult } from "@/lib/analytics/track";
+import { buildPhase7AdConversionPayload } from "@/lib/marketing/phase7-conversion";
 
 /** Phase 4 primary conversion events. */
 export const PHASE4_EVENTS = [
@@ -112,21 +113,35 @@ export function trackEvent(
   return result;
 }
 
-/** Future Phase 7 hook: map lead_success → ad conversion destinations. */
+/** Phase 7: map lead_success → ad conversion destinations (no PII). */
 export function mapLeadSuccessForAdConversions(
   payload: AnalyticsPayload
 ): { event: "lead_success"; payload: AnalyticsPayload } {
+  const safe = buildPhase7AdConversionPayload({
+    ...payload,
+    page_intent: payload.page_intent,
+    source_page: payload.source_page,
+    landing_path: payload.path ?? payload.source_page,
+    cta_destination: payload.cta_destination,
+    cta_placement: payload.cta_placement,
+    funnel_id: payload.funnel_id ?? "phase7_conversion",
+    purpose: payload.purpose,
+    utm_source: payload.utm_source,
+    utm_medium: payload.utm_medium,
+    utm_campaign: payload.utm_campaign,
+    utm_content: payload.utm_content,
+    utm_term: payload.utm_term,
+  });
   return {
     event: "lead_success",
     payload: {
-      source_page: payload.source_page,
-      purpose: payload.purpose,
+      ...safe,
       calculator_type: payload.calculator_type,
       selected_lender: payload.selected_lender,
       selected_rate_scenario_category: payload.selected_rate_scenario_category,
       ltv_band: payload.ltv_band,
       fixation_months: payload.fixation_months,
-      funnel_id: payload.funnel_id ?? "phase4_conversion",
+      funnel_id: safe.funnel_id ?? "phase7_conversion",
     },
   };
 }

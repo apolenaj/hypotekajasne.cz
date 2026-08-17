@@ -25,6 +25,7 @@
     "test:seo": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/seo/seo.test.ts src/lib/seo/landings.test.ts src/lib/seo/phase6-commercial.test.ts src/lib/phase61-hardening.test.ts src/lib/phase62-operations.test.ts",
     "test:phase61": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/phase61-hardening.test.ts",
     "test:phase62": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/phase62-operations.test.ts",
+    "test:phase7": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/marketing/phase7-conversion.test.ts",
     "test:analytics": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/analytics/analytics.test.ts src/lib/analytics/phase4-analytics.test.ts",
     "test:copilot": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/copilot/copilot.test.ts",
     "test:financial-passport": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/financial-passport/financial-passport.test.ts",
