@@ -104,9 +104,9 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
   },
   {
     path: routes.dekujeme,
-    title: "Poptávku jsme přijali | Hypotéka Jasně",
+    title: "Děkujeme | Hypotéka Jasně",
     description:
-      "Vaši poptávku jsme přijali. Ozveme se k nezávazné konzultaci. Hypotéka Jasně není banka.",
+      "Potvrzení po odeslání poptávky, nebo obecná děkovací stránka. Hypotéka Jasně není banka.",
     noIndex: true,
   },
   {

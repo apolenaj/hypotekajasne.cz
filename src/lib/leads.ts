@@ -4,6 +4,12 @@
  */
 
 import type { FormConsentRecord } from "@/lib/consent/records";
+import {
+  clearLeadIdempotencyKey,
+  getOrCreateLeadIdempotencyKey,
+  markLeadThankYou,
+  normalizeLeadIdempotencyKey,
+} from "@/lib/leads-idempotency";
 
 export const LEAD_SOURCES = [
   "investment_passport",
@@ -53,11 +59,16 @@ export type LeadPayload = {
    * marketingAccepted se nikdy neodvozuje z pouhého odeslání.
    */
   consent: FormConsentRecord;
+  /**
+   * Client-generated UUID for duplicate/retry protection.
+   * Never derived from PII. Optional — submitLead fills it.
+   */
+  idempotencyKey?: string;
 };
 
 export type LeadSubmitResult =
-  | { ok: true }
-  | { ok: false; error: string };
+  | { ok: true; leadId?: string | null; replayed?: boolean }
+  | { ok: false; error: string; status?: number };
 
 export function isLeadSource(value: string): value is LeadSource {
   return (LEAD_SOURCES as readonly string[]).includes(value);
@@ -71,11 +82,18 @@ export function buildThankYouPath(source: LeadSource): string {
 export async function submitLead(
   payload: LeadPayload
 ): Promise<LeadSubmitResult> {
+  const idempotencyKey =
+    normalizeLeadIdempotencyKey(payload.idempotencyKey) ??
+    getOrCreateLeadIdempotencyKey(payload.source);
+
   try {
     const res = await fetch("/api/leads", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        ...payload,
+        idempotencyKey,
+      }),
     });
 
     if (!res.ok) {
@@ -84,11 +102,28 @@ export async function submitLead(
       } | null;
       return {
         ok: false,
-        error: data?.error || "Odeslání se nezdařilo. Zkuste to prosím znovu.",
+        status: res.status,
+        error:
+          data?.error ||
+          (res.status === 429
+            ? "Příliš mnoho pokusů. Zkuste to prosím za chvíli."
+            : "Odeslání se nezdařilo. Zkuste to prosím znovu."),
       };
     }
 
-    return { ok: true };
+    const data = (await res.json().catch(() => null)) as {
+      leadId?: string | null;
+      replayed?: boolean;
+    } | null;
+
+    clearLeadIdempotencyKey(payload.source);
+    markLeadThankYou(payload.source);
+
+    return {
+      ok: true,
+      leadId: data?.leadId ?? null,
+      replayed: data?.replayed === true,
+    };
   } catch {
     return {
       ok: false,

@@ -7,11 +7,19 @@ import {
   LEAD_SOURCE_LABELS,
   type LeadPayload,
 } from "@/lib/leads";
+import { normalizeLeadIdempotencyKey } from "@/lib/leads-idempotency";
 import { sanitizeLeadAttribution } from "@/lib/leads-attribution";
 import {
   logLeadOps,
   notifyLeadOperatorsBestEffort,
 } from "@/lib/leads-ops";
+import {
+  consumeLeadApiRateLimit,
+  extractLeadRateClientMaterial,
+  hashLeadRateClientId,
+  LEAD_RATE_LIMIT_MAX,
+  LEAD_RATE_LIMIT_WINDOW_SECONDS,
+} from "@/lib/leads-rate-limit";
 import type { FormConsentRecord } from "@/lib/consent/records";
 import type { PartnerTransferScope } from "@/lib/legal/consent-versions";
 import { isMortgagePartnerHandoffReady } from "@/lib/legal/partner-config";
@@ -56,7 +64,7 @@ function parseConsent(raw: unknown): FormConsentRecord | null {
 
 function normalizePayload(
   body: unknown
-): { payload: LeadPayload } | { error: string } {
+): { payload: LeadPayload; idempotencyKey: string | null } | { error: string } {
   if (!body || typeof body !== "object") {
     return { error: "Neplatné tělo požadavku." };
   }
@@ -72,6 +80,9 @@ function normalizePayload(
     data.metadata && typeof data.metadata === "object"
       ? (data.metadata as Record<string, unknown>)
       : undefined;
+  const idempotencyKey = normalizeLeadIdempotencyKey(
+    data.idempotencyKey ?? data.idempotency_key
+  );
 
   if (!isLeadSource(source)) {
     return {
@@ -120,6 +131,7 @@ function normalizePayload(
   }
 
   return {
+    idempotencyKey,
     payload: {
       name: source === "newsletter" && name === "—" ? "Newsletter" : name,
       // DB sloupec email je NOT NULL — bez e-mailu uložíme značku
@@ -130,8 +142,31 @@ function normalizePayload(
       notes,
       metadata,
       consent: consentCheck.consent,
+      ...(idempotencyKey ? { idempotencyKey } : {}),
     },
   };
+}
+
+async function findLeadByIdempotencyKey(
+  supabase: ReturnType<typeof getSupabaseAdmin>,
+  key: string
+): Promise<string | null> {
+  const { data, error } = await supabase
+    .from("leads")
+    .select("id")
+    .eq("idempotency_key", key)
+    .maybeSingle();
+  if (error || !data || typeof data.id !== "string") return null;
+  return data.id;
+}
+
+function isUniqueViolation(error: { code?: string; message?: string }): boolean {
+  return (
+    error.code === "23505" ||
+    /duplicate key|unique constraint|idempotency_key/i.test(
+      error.message ?? ""
+    )
+  );
 }
 
 export async function POST(request: Request) {
@@ -143,14 +178,85 @@ export async function POST(request: Request) {
       );
     }
 
-    const raw = await request.json();
+    let raw: unknown;
+    try {
+      raw = await request.json();
+    } catch {
+      return NextResponse.json(
+        { error: "Neplatné tělo požadavku." },
+        { status: 400 }
+      );
+    }
+
     const normalized = normalizePayload(raw);
 
     if ("error" in normalized) {
       return NextResponse.json({ error: normalized.error }, { status: 400 });
     }
 
-    const { payload } = normalized;
+    const { payload, idempotencyKey } = normalized;
+    const supabase = getSupabaseAdmin();
+
+    // Distributed rate limit (hashed client id only).
+    const clientHash = hashLeadRateClientId(
+      extractLeadRateClientMaterial(request)
+    );
+    if (clientHash) {
+      const rate = await consumeLeadApiRateLimit(supabase, clientHash);
+      if (rate.skipped) {
+        // Additive migration not applied yet — do not block legitimate leads.
+        // Apply supabase/leads_idempotency_rate_limit.sql to enable enforcement.
+        logLeadOps({
+          event: "lead_insert_error",
+          source: payload.source,
+          errorCode: rate.errorCode ?? "rate_limit_unavailable",
+        });
+      } else if (!rate.allowed) {
+        logLeadOps({
+          event: "lead_insert_error",
+          source: payload.source,
+          errorCode: "rate_limited",
+        });
+        return NextResponse.json(
+          {
+            error:
+              "Příliš mnoho pokusů. Zkuste to prosím za chvíli.",
+          },
+          {
+            status: 429,
+            headers: {
+              "Retry-After": String(
+                rate.retryAfterSeconds || LEAD_RATE_LIMIT_WINDOW_SECONDS
+              ),
+              "X-RateLimit-Limit": String(LEAD_RATE_LIMIT_MAX),
+            },
+          }
+        );
+      }
+    }
+
+    // Idempotent replay: same key → same lead, no duplicate insert/notify.
+    if (idempotencyKey) {
+      const existingId = await findLeadByIdempotencyKey(
+        supabase,
+        idempotencyKey
+      );
+      if (existingId) {
+        logLeadOps({
+          event: "lead_insert_ok",
+          leadId: existingId,
+          source: payload.source,
+          errorCode: "idempotent_replay",
+        });
+        return NextResponse.json({
+          ok: true,
+          leadId: existingId,
+          replayed: true,
+          nextStep: "Ozveme se co nejdříve.",
+        });
+      }
+    }
+
     const sourceLabel = LEAD_SOURCE_LABELS[payload.source];
     const composedNotes = [
       `Zdroj: ${sourceLabel}`,
@@ -218,6 +324,7 @@ export async function POST(request: Request) {
       source: payload.source,
       country: payload.country ?? null,
       notes: composedNotes,
+      ...(idempotencyKey ? { idempotency_key: idempotencyKey } : {}),
       metadata: {
         ...attribution.metadata,
         source_label: sourceLabel,
@@ -280,14 +387,35 @@ export async function POST(request: Request) {
         : null,
     };
 
-    const supabase = getSupabaseAdmin();
-
     let insertedId: string | null = null;
     let { data, error } = await supabase
       .from("leads")
       .insert(rowWithRetention)
       .select("id")
       .single();
+
+    // Race: parallel insert with same key → unique violation → replay.
+    if (error && idempotencyKey && isUniqueViolation(error)) {
+      const existingId = await findLeadByIdempotencyKey(
+        supabase,
+        idempotencyKey
+      );
+      if (existingId) {
+        logLeadOps({
+          event: "lead_insert_ok",
+          leadId: existingId,
+          source: payload.source,
+          pageIntent,
+          errorCode: "idempotent_race",
+        });
+        return NextResponse.json({
+          ok: true,
+          leadId: existingId,
+          replayed: true,
+          nextStep: "Ozveme se co nejdříve.",
+        });
+      }
+    }
 
     // Fallback chain: lifecycle columns may be missing before Phase 6.2 SQL.
     if (
@@ -306,6 +434,25 @@ export async function POST(request: Request) {
 
     if (
       error &&
+      idempotencyKey &&
+      isUniqueViolation(error)
+    ) {
+      const existingId = await findLeadByIdempotencyKey(
+        supabase,
+        idempotencyKey
+      );
+      if (existingId) {
+        return NextResponse.json({
+          ok: true,
+          leadId: existingId,
+          replayed: true,
+          nextStep: "Ozveme se co nejdříve.",
+        });
+      }
+    }
+
+    if (
+      error &&
       /column|schema cache|does not exist/i.test(error.message)
     ) {
       console.warn(
@@ -314,6 +461,43 @@ export async function POST(request: Request) {
       ({ data, error } = await supabase
         .from("leads")
         .insert(baseRow)
+        .select("id")
+        .single());
+    }
+
+    if (error && idempotencyKey && isUniqueViolation(error)) {
+      const existingId = await findLeadByIdempotencyKey(
+        supabase,
+        idempotencyKey
+      );
+      if (existingId) {
+        return NextResponse.json({
+          ok: true,
+          leadId: existingId,
+          replayed: true,
+          nextStep: "Ozveme se co nejdříve.",
+        });
+      }
+    }
+
+    // Idempotency column missing: strip and retry once (pre-migration compat).
+    if (
+      error &&
+      idempotencyKey &&
+      /idempotency_key|column|schema cache|does not exist/i.test(
+        error.message
+      )
+    ) {
+      const { idempotency_key: _drop, ...withoutKey } = rowWithRetention as {
+        idempotency_key?: string;
+      } & typeof rowWithRetention;
+      void _drop;
+      console.warn(
+        "Supabase leads.idempotency_key missing — inserting without key. Apply supabase/leads_idempotency_rate_limit.sql."
+      );
+      ({ data, error } = await supabase
+        .from("leads")
+        .insert(withoutKey)
         .select("id")
         .single());
     }
@@ -398,6 +582,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       ok: true,
       leadId: insertedId,
+      replayed: false,
       // Public-neutral SLA — no invented response-time promise.
       nextStep: "Ozveme se co nejdříve.",
     });
