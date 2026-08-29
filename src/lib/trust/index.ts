@@ -7,6 +7,7 @@ import {
   legalOperator,
   projectFounder,
 } from "@/config/legal";
+import { getCooperationWordingNeutral } from "@/lib/legal/regulatory-texts";
 
 export type EcosystemActorId =
   | "hypoteka_jasne"
@@ -25,6 +26,8 @@ export type EcosystemActor = {
   dataYouGive: string;
 };
 
+const cooperationNeutral = getCooperationWordingNeutral("cs");
+
 export const ECOSYSTEM_ACTORS: EcosystemActor[] = [
   {
     id: "hypoteka_jasne",
@@ -41,7 +44,7 @@ export const ECOSYSTEM_ACTORS: EcosystemActor[] = [
     id: "operator",
     name: legalOperator.companyName,
     shortRole: "Provozovatel platformy a odborná hypoteční část",
-    whatTheyDo: `${financialPartner.cooperationWording} Jednatelem a hypotečním specialistou je ${financialPartner.representative}.`,
+    whatTheyDo: `${cooperationNeutral} Jednatelem a hypotečním specialistou je ${financialPartner.representative}.`,
     whatTheyDont:
       "Neschvaluje úvěr. Schválení úvěru vždy provádí banka po vlastním posouzení.",
     dataYouGive:
@@ -49,14 +52,14 @@ export const ECOSYSTEM_ACTORS: EcosystemActor[] = [
   },
   {
     id: "insia",
-    name: financialPartner.network,
-    shortRole: "Síť / partner pro související finanční distribuci",
+    name: "Možná partnerská spolupráce",
+    shortRole: "Další subjekty (po ověření)",
     whatTheyDo:
-      "Prostřednictvím spolupráce s INSIA je zajišťována související finanční distribuce.",
+      "Platforma může spolupracovat s dalšími subjekty v oblasti hypoteček — podrobnosti uvádíme po ověření.",
     whatTheyDont:
       "Není totéž co značka Hypotéka Jasně ani banka schvalující úvěr.",
     dataYouGive:
-      "Z úvodního formuláře osobní údaje INSIA nedostává. Předání by vyžadovalo samostatný, výslovný souhlas pro konkrétního příjemce.",
+      "Z úvodního formuláře osobní údaje třetí strany nedostávají. Předání by vyžadovalo samostatný, výslovný souhlas pro konkrétního příjemce.",
   },
   {
     id: "bank",

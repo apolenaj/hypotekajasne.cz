@@ -67,7 +67,7 @@ export const CZ_REGULATION_PERIODS: CzRegulationPeriod[] = [
     id: "cz-from-2026-04",
     validFrom: "2026-04-01",
     validTo: null,
-    source: "ČNB — makroobezřetnostní doporučení (od 1. 4. 2026)",
+    source: "Doporučení ČNB pro investiční hypotéky (od 1. 4. 2026)",
     sourceUrl: CNB_MACRO_URL,
     verifiedAt: "2026-07-21",
     ownerOccupied: {

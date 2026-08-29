@@ -1,17 +1,22 @@
 /**
- * Responsive navigation structure & overflow guards (static + unit).
+ * Responsive navigation structure, coverage audit & overflow guards.
  */
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
+  collectPrimaryNavigationHrefs,
   desktopNav,
   getViceItemsForBreakpoint,
+  hypotekyNavItems,
+  isMortgageFocusedPath,
+  isNavItemActive,
+  LEGACY_NAV_RELOCATION,
   mobileNavGroups,
-  notebookViceItems,
   navCta,
 } from "@/lib/navigation";
+import { routes } from "@/lib/routes";
 
 const ROOT = join(process.cwd(), "src");
 
@@ -20,84 +25,147 @@ export const NAV_BREAKPOINTS = [
   320, 360, 375, 390, 430, 768, 820, 1024, 1280, 1366, 1440, 1536, 1920, 2560,
 ] as const;
 
-describe("navigation structure", () => {
-  it("desktop top-level stays compact (short labels only)", () => {
+/** Původní interní href z navigace před zjednodušením (audit mapy). */
+const LEGACY_INTERNAL_HREFS = [
+  routes.dashboard,
+  routes.sazby,
+  routes.kalkulacky.hypotecniKalkulacka,
+  routes.mojeMoznosti,
+  routes.navrhNaMiru,
+  routes.refinanceRadar,
+  routes.financniPas,
+  routes.pruvodceInvestora,
+  routes.investicniPas,
+  routes.investicniRentgen,
+  routes.investicniRentgenPorovnani,
+  routes.portfolio,
+  routes.sledovani,
+  routes.dueDiligence,
+  routes.akademie,
+  `${routes.akademie}/cesty`,
+  routes.metodika,
+  routes.duvera,
+  routes.oNas,
+  routes.clanky,
+  routes.marketPulse,
+  routes.alertCenter,
+  routes.documentVault,
+  routes.dealRoom,
+  routes.offerStrategy,
+  routes.globalFinancing,
+  routes.copilot,
+  routes.reportEngine,
+  routes.kontakt,
+  routes.faq,
+];
+
+describe("navigation structure — hypoteční hierarchie", () => {
+  it("desktop top-level prioritizes kalkulačka, sazby, hypotéky", () => {
     const topLabels = [
-      desktopNav.overview.label,
-      desktopNav.hypoteka.label,
-      desktopNav.investice.label,
-      desktopNav.trhy.label,
-      desktopNav.akademie.label,
-      desktopNav.vice.label,
+      desktopNav.kalkulacka.label,
+      desktopNav.sazby.label,
+      desktopNav.hypoteky.label,
+      desktopNav.jakToFunguje.label,
+      desktopNav.oNas.label,
+      desktopNav.dalsiSluzby.label,
     ];
     for (const label of topLabels) {
       assert.ok(label.length <= 14, `top label too long: ${label}`);
-      assert.ok(!label.includes("Zjistit,"), "legacy long primary removed");
     }
+    assert.equal(desktopNav.kalkulacka.href, routes.kalkulacky.hypotecniKalkulacka);
+    assert.equal(desktopNav.sazby.href, routes.sazby);
+    assert.equal(desktopNav.jakToFunguje.href, routes.metodika);
   });
 
-  it("groups contain required children", () => {
+  it("hypotéky dropdown covers purchase, refinance, OSVČ and foreign income", () => {
+    const labels = hypotekyNavItems.map((i) => i.label);
+    assert.ok(labels.some((l) => l.includes("Koupě")));
+    assert.ok(labels.some((l) => l.includes("Refinancování")));
+    assert.ok(labels.some((l) => l.includes("OSVČ")));
+    assert.ok(labels.some((l) => l.includes("zahraničí")));
     assert.ok(
-      desktopNav.hypoteka.items.some((i) => i.label.includes("sazby"))
+      hypotekyNavItems.some((i) => i.href.includes("purpose=purchase"))
     );
-    assert.ok(
-      desktopNav.hypoteka.items.some((i) => i.label.includes("Spočítat"))
-    );
-    assert.ok(
-      desktopNav.investice.items.some((i) => i.label.includes("Analyzovat"))
-    );
-    assert.equal(desktopNav.trhy.items.length >= 8, true);
-    assert.ok(desktopNav.vice.items.some((i) => i.href.includes("metodika")));
-    assert.ok(desktopNav.vice.items.some((i) => i.href.includes("duvera")));
+    assert.ok(hypotekyNavItems.some((i) => i.href.includes("/temata/refinancovani")));
   });
 
-  it("notebook Více includes Akademie; xl Více does not duplicate top Akademie", () => {
-    const notebook = getViceItemsForBreakpoint(1024);
-    const xl = getViceItemsForBreakpoint(1280);
-    assert.ok(notebook.some((i) => i.label === "Akademie"));
-    assert.ok(!xl.some((i) => i.label === "Akademie"));
-    assert.ok(notebookViceItems.length > xl.length);
+  it("investice a AI nástroje jsou pod Další služby, ne v top baru hypotéky", () => {
+    const dalsi = desktopNav.dalsiSluzby.items.map((i) => i.label);
+    assert.ok(dalsi.some((l) => l.includes("Investiční")));
+    assert.ok(dalsi.some((l) => l.includes("AI průvodce")));
+    assert.ok(dalsi.some((l) => l.includes("Můj přehled")));
+    const hypoteky = desktopNav.hypoteky.items.map((i) => i.label);
+    assert.ok(!hypoteky.some((l) => l.includes("Investiční pas")));
+    assert.ok(!hypoteky.some((l) => l.includes("AI průvodce")));
   });
 
-  it("mobile accordion covers all major groups", () => {
+  it("mobile accordion mirrors desktop groups", () => {
     const ids = mobileNavGroups.map((g) => g.id);
-    assert.deepEqual(ids, [
-      "hypoteka",
-      "investice",
-      "trhy",
-      "akademie",
-      "vice",
-    ]);
+    assert.deepEqual(ids, ["hypoteky", "o-nas", "dalsi-sluzby"]);
+    assert.equal(
+      mobileNavGroups[0]!.items.length,
+      desktopNav.hypoteky.items.length
+    );
   });
 
-  it("CTA variants exist for anonymous and returning users", () => {
-    assert.ok(navCta.default.href.includes("sazby"));
-    assert.ok(navCta.default.label.includes("sazby"));
+  it("CTA is Spočítat hypotéku for anonymous users", () => {
+    assert.equal(navCta.default.label, "Spočítat hypotéku");
+    assert.equal(navCta.default.href, routes.kalkulacky.hypotecniKalkulacka);
     assert.ok(navCta.returning.href.includes("dashboard"));
   });
 
-  it("keeps marketing home at / and dashboard at /dashboard", () => {
-    const homePage = readFileSync(
-      join(process.cwd(), "src/app/page.tsx"),
-      "utf8"
+  it("mortgage-focused paths hide Další služby in desktop nav only", () => {
+    assert.equal(isMortgageFocusedPath("/sazby"), true);
+    assert.equal(isMortgageFocusedPath("/temata/refinancovani"), true);
+    assert.equal(isMortgageFocusedPath("/kalkulacky/hypotecni"), true);
+    assert.equal(isMortgageFocusedPath("/pruvodce-investora"), false);
+    assert.equal(isMortgageFocusedPath("/copilot"), false);
+  });
+
+  it("active state matches path and query (purchase sazby)", () => {
+    assert.equal(
+      isNavItemActive(
+        `${routes.sazby}?purpose=purchase`,
+        routes.sazby,
+        "?purpose=purchase"
+      ),
+      true
     );
-    const dashPage = readFileSync(
-      join(process.cwd(), "src/app/dashboard/page.tsx"),
-      "utf8"
+    assert.equal(
+      isNavItemActive(
+        `${routes.sazby}?purpose=purchase`,
+        routes.sazby,
+        "?purpose=refinance"
+      ),
+      false
     );
-    const homeExp = readFileSync(
-      join(process.cwd(), "src/components/home/HomeExperience.tsx"),
-      "utf8"
+    assert.equal(
+      isNavItemActive(routes.temata + "/hypoteka-osvc", "/temata/hypoteka-osvc"),
+      true
     );
-    assert.ok(homePage.includes("HomeExperience"));
-    assert.ok(!homePage.includes("HomeDashboard"));
-    assert.ok(dashPage.includes("HomeDashboard"));
-    assert.ok(dashPage.includes("routes.dashboard"));
-    assert.ok(homeExp.includes("CockpitHero"));
-    assert.ok(!homeExp.includes("HomeDashboard"));
-    assert.ok(!homeExp.includes("Finanční pas"));
-    assert.equal(desktopNav.overview.href, "/dashboard");
-    assert.equal(desktopNav.overview.label, "Můj přehled");
+  });
+});
+
+describe("navigation coverage — žádná stránka nezmizí", () => {
+  it("všechny původní interní href zůstávají v navigaci", () => {
+    const covered = new Set(collectPrimaryNavigationHrefs());
+    for (const href of LEGACY_INTERNAL_HREFS) {
+      const path = href.split("?")[0]!;
+      assert.ok(
+        covered.has(path),
+        `missing legacy href in nav: ${href}`
+      );
+    }
+  });
+
+  it("legacy relocation map covers every former top-level group", () => {
+    const legacyTop = ["Můj přehled", "Hypotéka", "Investice", "Trhy", "Akademie", "Více"];
+    for (const label of legacyTop) {
+      assert.ok(
+        LEGACY_NAV_RELOCATION.some((r) => r.legacyLabel === label || r.legacyLocation.includes(label)),
+        `missing relocation entry for ${label}`
+      );
+    }
   });
 });
 
@@ -112,43 +180,28 @@ describe("navbar overflow guards (static source)", () => {
     assert.ok(!navbar.includes("w-screen"));
   });
 
-  it("desktop nav starts at xl and is single-row flex", () => {
+  it("desktop nav starts at xl with accessible dropdowns", () => {
     assert.ok(navbar.includes("xl:flex"));
     assert.ok(navbar.includes('aria-label="Hlavní navigace"'));
-    assert.ok(navbar.includes("xl:hidden"));
-    assert.ok(
-      !navbar.includes("hidden h-20 w-full items-center justify-between gap-8")
-    );
+    assert.ok(navbar.includes('role="menu"'));
+    assert.ok(navbar.includes("isNavItemActive"));
+    assert.ok(navbar.includes("isMortgageFocusedPath"));
   });
 
-  it("mobile drawer uses focus trap with 44px touch targets", () => {
+  it("mobile drawer is closable without horizontal scroll", () => {
     assert.ok(navbar.includes('role="dialog"'));
     assert.ok(navbar.includes("useFocusTrap"));
+    assert.ok(navbar.includes("overflow-x-hidden"));
+    assert.ok(navbar.includes('aria-label="Zavřít menu"'));
     assert.ok(navbar.includes("min-h-11"));
-    assert.ok(navbar.includes("h-11 w-11"));
-  });
-
-  it("header is sticky with high z-index and max-w-full", () => {
-    assert.ok(navbar.includes("sticky top-0"));
-    assert.ok(navbar.includes("z-50"));
-    assert.ok(navbar.includes("max-w-full"));
   });
 
   it("breakpoint matrix is documented for QA", () => {
     assert.equal(NAV_BREAKPOINTS.length, 14);
-    assert.equal(NAV_BREAKPOINTS[0], 320);
-    assert.equal(NAV_BREAKPOINTS[NAV_BREAKPOINTS.length - 1], 2560);
-    // Policy: <1280 hamburger (+ notebook Více helper), >=1280 desktop groups
     for (const w of NAV_BREAKPOINTS) {
       if (w < 1280) {
-        assert.ok(true, `${w}: mobile/tablet drawer`);
-        if (w >= 1024) {
-          const items = getViceItemsForBreakpoint(w);
-          assert.ok(items.some((i) => i.label === "Akademie"), `${w}: notebook`);
-        }
-      } else {
         const items = getViceItemsForBreakpoint(w);
-        assert.ok(!items.some((i) => i.label === "Akademie"), `${w}: xl`);
+        assert.ok(items.length > 0, `${w}: secondary nav items`);
       }
     }
   });

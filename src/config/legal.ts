@@ -54,6 +54,8 @@ export function withSentencePeriod(text: string): string {
   return /[.!?…]$/.test(t) ? t : `${t}.`;
 }
 
+const COOPERATION_NEUTRAL_CS = `${legalOperator.companyName.replace(/[.!?…]+$/, "")} provozuje platformu ${legalOperator.brand}. V oblasti hypoteček může spolupracovat s dalšími subjekty — podrobnosti uvádíme po ověření.`;
+
 export const financialPartner = {
   company: legalOperator.companyName,
   representative: legalOperator.representative,
@@ -63,10 +65,11 @@ export const financialPartner = {
   /**
    * Neutrální zákaznické znění — bez konkrétního ČNB statusu,
    * dokud není ověřen (viz INTERNAL poznámka výše).
+   * Stejný text jako getCooperationWordingNeutral("cs") v regulatory-texts.ts
    */
-  cooperationWording: `Zprostředkování hypotečních a souvisejících finančních služeb zajišťuje ${legalOperator.companyName} ve spolupráci se společností INSIA.`,
-  platformWording: `Platformu ${legalOperator.brand} provozuje ${withSentencePeriod(legalOperator.companyName)} Zprostředkování hypotečních a souvisejících finančních služeb je zajišťováno ve spolupráci se společností INSIA.`,
-  michalDescription: `Michal zajišťuje odbornou část související s hypotečním financováním a individuálním řešením klientských případů prostřednictvím ${legalOperator.companyName}, která spolupracuje se sítí INSIA.`,
+  cooperationWording: COOPERATION_NEUTRAL_CS,
+  platformWording: `${legalOperator.brand} je informační a kontaktní platforma provozovaná společností ${withSentencePeriod(legalOperator.companyName)} ${COOPERATION_NEUTRAL_CS}`,
+  michalDescription: `Michal zajišťuje odbornou část související s hypotečním financováním a individuálním řešením klientských případů prostřednictvím ${legalOperator.companyName}.`,
 } as const;
 
 /** @deprecated Prefer legalOperator — retained for adapters. */

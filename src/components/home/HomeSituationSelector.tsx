@@ -11,42 +11,42 @@ const SITUATIONS = [
     situation: "purchase",
     label: "Kupuji bydlení",
     href: `${routes.sazby}?purpose=purchase`,
-    hint: "Spočítat splátku a porovnat zveřejněné sazby",
+    hint: "Spočítat splátku a porovnat zveřejněné sazby pro koupi",
   },
   {
     id: "refinance",
     situation: "refinance",
     label: "Refinancuji hypotéku",
     href: `${routes.temata}/refinancovani`,
-    hint: "Postup, náklady a zveřejněné sazby pro refinancování",
-  },
-  {
-    id: "investment",
-    situation: "investment",
-    label: "Investiční nemovitost",
-    href: `${routes.temata}/investicni-hypoteka`,
-    hint: "Pravidla ČNB, LTV a Investiční rentgen",
+    hint: "Postup, náklady a sazby pro refinancování stávajícího úvěru",
   },
   {
     id: "osvc",
     situation: "osvc",
     label: "Jsem OSVČ",
     href: `${routes.temata}/hypoteka-osvc`,
-    hint: "Příjmy, doklady a další krok diagnostiky",
+    hint: "Příjmy, doklady a další krok diagnostiky pro podnikatele",
   },
   {
     id: "foreign",
     situation: "foreign_income",
     label: "Mám příjem ze zahraničí",
     href: `${routes.temata}/hypoteka-ze-zahranicniho-prijmu`,
-    hint: "Dokumentace a posouzení zahraničního příjmu",
+    hint: "Dokumentace a posouzení zahraničního příjmu u bank",
+  },
+  {
+    id: "investment",
+    situation: "investment",
+    label: "Investuji do nemovitosti",
+    href: `${routes.temata}/investicni-hypoteka`,
+    hint: "Rozdíl proti vlastnímu bydlení a doporučení ČNB pro investiční hypotéky",
   },
   {
     id: "american",
     situation: "american",
-    label: "Americká hypotéka",
+    label: "Zajímá mě americká hypotéka",
     href: `${routes.temata}/americka-hypoteka`,
-    hint: "Neúčelový úvěr zajištěný nemovitostí",
+    hint: "Neúčelový úvěr se zástavou nemovitosti — rizika a typické limity",
   },
 ] as const;
 
@@ -62,21 +62,21 @@ export function HomeSituationSelector() {
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
         <div className="max-w-2xl">
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-deep-teal">
-            Začněte zde
+            Situace
           </p>
           <h2
             id="home-situation-heading"
             className="mt-2 font-heading text-2xl font-bold tracking-tight text-text-dark sm:text-3xl"
           >
-            Co právě řešíte?
+            S čím vám pomůžeme
           </h2>
           <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-            Vyberte situaci — navedeme vás na nejbližší užitečný postup. Ne všechny
-            cesty mají automatické párování bank.
+            Vyberte situaci — navedeme vás na nejbližší užitečný postup a
+            relevantní sazby nebo průvodce.
           </p>
         </div>
 
-        <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-6 grid gap-3 sm:grid-cols-2">
           {SITUATIONS.map((s) => (
             <li key={s.id}>
               <Link

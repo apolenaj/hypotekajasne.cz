@@ -185,21 +185,25 @@ describe("Phase 3 UX — labels", () => {
     assert.equal(conditionEffectLabelCs(-10), "sleva 0,1 p.b.");
   });
 
-  it("freshness mapping avoids LIVE wording and requires source URL for Ověřeno", () => {
+  it("freshness mapping uses 72h window and requires source URL for Ověřeno", () => {
+    const now = Date.parse("2026-08-09T12:00:00.000Z");
     const freshNoUrl = publicFreshnessLabel(
       "fresh",
-      "2026-08-09T00:00:00.000Z"
+      "2026-08-09T00:00:00.000Z",
+      { nowMs: now }
     );
-    assert.equal(freshNoUrl.short, "Aktualizujeme");
+    assert.equal(freshNoUrl.short, "Sazbu právě ověřujeme");
     const fresh = publicFreshnessLabel("fresh", "2026-08-09T00:00:00.000Z", {
       sourceUrl: "https://www.example-bank.test/rates",
+      nowMs: now,
     });
     assert.match(fresh.short, /Ověřeno/);
     assert.ok(!fresh.short.includes("LIVE"));
-    const stale = publicFreshnessLabel("stale", "2026-07-01T00:00:00.000Z", {
+    const stale = publicFreshnessLabel("fresh", "2026-08-01T00:00:00.000Z", {
       sourceUrl: "https://www.example-bank.test/rates",
+      nowMs: now,
     });
-    assert.equal(stale.short, "Aktualizujeme");
+    assert.equal(stale.short, "Sazbu právě ověřujeme");
   });
 
   it("public data badges are Czech (no English LIVE/MODEL/NEEDS UPDATE)", () => {

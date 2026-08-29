@@ -9,7 +9,7 @@ export const REGULATORY_CHANGELOG: RegulatoryChangelogEntry[] = [
     id: "cnb-2026-04-investment-ltv",
     countryId: "cz",
     effectiveDate: "2026-04-01",
-    title: "ČNB — doporučení LTV 70 % / DTI 7 u investičních hypoték",
+    title: "Doporučení ČNB pro investiční hypotéky (LTV 70 % / DTI 7)",
     summary:
       "Makroobezřetnostní doporučení pro investiční úvěry: obezřetnější horní hranice LTV 70 % a DTI 7 od 1. 4. 2026. Týká se typicky třetí a další obytné nemovitosti nebo nemovitosti určené k pronájmu — nejde o zákonný strop pro vlastní bydlení.",
     source: "Česká národní banka",

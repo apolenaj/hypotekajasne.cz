@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import { headers } from "next/headers";
+import { Suspense } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Providers } from "@/components/Providers";
@@ -14,12 +15,18 @@ const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin", "latin-ext"],
   display: "swap",
+  weight: ["400", "500", "600"],
+  preload: true,
+  adjustFontFallback: true,
 });
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
   subsets: ["latin", "latin-ext"],
   display: "swap",
+  weight: ["700"],
+  preload: false,
+  adjustFontFallback: true,
 });
 
 export const metadata: Metadata = rootMetadata;
@@ -41,7 +48,9 @@ export default async function RootLayout({
         <ConsentDefaultsScript />
         <JsonLdScript data={[organizationJsonLd(), webSiteJsonLd()]} />
         <Providers>
-          <Navbar />
+          <Suspense fallback={null}>
+            <Navbar />
+          </Suspense>
           <main className="min-w-0 flex-1 pb-[var(--cookie-banner-pad,0px)]">
             {children}
           </main>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Scale } from "lucide-react";
 import { LegalOperatorIdentity } from "@/components/legal/LegalOperatorIdentity";
+import { RegulatoryBlock } from "@/components/legal/RegulatoryBlock";
 import {
   CONSENT_POLICY_VERSION,
   COOKIE_POLICY_VERSION,
@@ -93,19 +94,23 @@ function OperatorBlock({ heading }: { heading?: string }) {
 
 function RegulatedBoundariesBox() {
   return (
-    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm leading-relaxed text-amber-950">
-      <p className="font-bold">{REGULATED_BOUNDARIES.title}</p>
-      <ul className="mt-2 list-disc space-y-1 pl-5">
-        {REGULATED_BOUNDARIES.statements.map((s) => (
-          <li key={s}>{s}</li>
-        ))}
-      </ul>
-      <p className="mt-3">
-        Role v ekosystému:{" "}
-        <Link href={routes.duvera} className="font-semibold underline">
-          Centrum důvěry
-        </Link>{"."}
-      </p>
+    <div className="space-y-4">
+      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm leading-relaxed text-amber-950">
+        <p className="font-bold">{REGULATED_BOUNDARIES.title}</p>
+        <ul className="mt-2 list-disc space-y-1 pl-5">
+          {REGULATED_BOUNDARIES.statements.map((s) => (
+            <li key={s}>{s}</li>
+          ))}
+        </ul>
+        <p className="mt-3">
+          Role v ekosystému:{" "}
+          <Link href={routes.duvera} className="font-semibold underline">
+            Centrum důvěry
+          </Link>
+          .
+        </p>
+      </div>
+      <RegulatoryBlock />
     </div>
   );
 }
@@ -212,8 +217,8 @@ function GdprContent() {
           </ul>
         ) : (
           <p className="text-sm">
-            INSIA, banka, Majetio ani realitní partner z úvodního formuláře
-            osobní údaje nedostávají. Samostatný správce by se zde uváděl jen
+            Banka, Majetio ani realitní partner z úvodního formuláře osobní
+            údaje nedostávají. Samostatný správce by se zde uváděl jen
             při skutečném, výslovně odsouhlaseném předání konkrétnímu příjemci.
             Přehled obchodních rolí:{" "}
             <Link href={routes.partneri} className="text-deep-teal underline">

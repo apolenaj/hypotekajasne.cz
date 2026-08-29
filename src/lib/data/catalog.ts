@@ -238,7 +238,7 @@ export const DATA_CATALOG: DataCatalogEntry[] = [
       "src/components/calculators/CalculatorDisclaimer.tsx",
       "src/components/sections/LegalView.tsx",
     ],
-    canonicalModule: "src/components/calculators/CalculatorDisclaimer.tsx",
+    canonicalModule: "src/lib/legal/regulatory-texts.ts",
     legacyOrigin: "Editorial",
     defaultStatus: "VERIFIED",
     unit: "text",

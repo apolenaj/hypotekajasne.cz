@@ -117,8 +117,9 @@ export type ReadinessResult = {
   modelDisclaimer: string;
 };
 
-export const MODEL_DISCLAIMER =
-  "Algoritmický orientační model – finální posouzení provádí banka/partner.";
+import { CALCULATOR_DISCLAIMER } from "@/lib/legal/regulatory-texts";
+
+export const MODEL_DISCLAIMER = CALCULATOR_DISCLAIMER.cs;
 
 export const FOREIGN_COUNTRY_OPTIONS = [
   "SAE (Dubaj)",

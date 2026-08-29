@@ -47,6 +47,10 @@ export const ANALYTICS_EVENTS = [
   "phone_click",
   "email_click",
 
+  // —— MINI MORTGAGE CALCULATOR ——
+  "mortgage_calculation_completed",
+  "mortgage_rates_cta_clicked",
+
   // —— COUNTRIES ——
   "market_viewed",
   "market_compared",

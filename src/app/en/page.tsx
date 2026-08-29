@@ -4,6 +4,12 @@ import { buildPageMetadata } from "@/lib/seo/metadata";
 import { t } from "@/lib/i18n/messages";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { crumbs } from "@/lib/seo/breadcrumbs";
+import { RegulatoryBlock } from "@/components/legal/RegulatoryBlock";
+import {
+  CALCULATOR_DISCLAIMER,
+  RATES_DISCLAIMER,
+  rt,
+} from "@/lib/legal/regulatory-texts";
 import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = buildPageMetadata({
@@ -52,14 +58,13 @@ export default function EnglishHubPage() {
               foreign property markets.
             </li>
             <li>
-              Not a bank and not a licensed credit intermediary — see Trust
-              Center on the Czech site.
+              Not a bank. {rt("en", CALCULATOR_DISCLAIMER)}
             </li>
-            <li>
-              Calculators and scores are models, not binding bank offers.
-            </li>
+            <li>{rt("en", RATES_DISCLAIMER)}</li>
           </ul>
         </section>
+
+        <RegulatoryBlock locale="en" className="mt-10" />
 
         <section className="mt-10" aria-labelledby="en-next-heading">
           <h2 id="en-next-heading" className="font-heading text-xl font-semibold text-text-dark">

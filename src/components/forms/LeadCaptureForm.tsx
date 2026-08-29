@@ -27,6 +27,7 @@ import {
   mustEnforceLegalIdentityForLeadCollection,
   LEGAL_LEAD_BLOCKED_PUBLIC_MESSAGE,
 } from "@/config/legal";
+import { buildLeadFormIntakeDisclosure } from "@/lib/legal/regulatory-texts";
 import { cn } from "@/lib/utils";
 
 type LeadCaptureFormProps = {
@@ -36,6 +37,7 @@ type LeadCaptureFormProps = {
   metadata?: Record<string, unknown>;
   title?: string;
   subtitle?: string;
+  submitLabel?: string;
   redirectOnSuccess?: boolean;
   onSuccess?: () => void;
   className?: string;
@@ -67,7 +69,10 @@ function leadFunnelPayload(
   const scenarioCategory =
     readString(metadata, "selectedRateScenarioCategory") ??
     (scenarioKey ? pricingScenarioCategory(scenarioKey) : undefined);
-  const ltv = readNumber(metadata, "ltv") ?? readNumber(metadata, "ltvPct");
+  const ltv =
+    readNumber(metadata, "exactLtv") ??
+    readNumber(metadata, "ltv") ??
+    readNumber(metadata, "ltvPct");
 
   return {
     lead_source: source,
@@ -93,6 +98,7 @@ export function LeadCaptureForm({
   metadata,
   title = "Chci nezávaznou konzultaci",
   subtitle = "Zanechte kontakt — ozveme se k nezávazné konzultaci.",
+  submitLabel = "Odeslat poptávku",
   redirectOnSuccess = true,
   onSuccess,
   className,
@@ -257,6 +263,9 @@ export function LeadCaptureForm({
       {subtitle && (
         <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
       )}
+      <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+        {buildLeadFormIntakeDisclosure("cs")}
+      </p>
       {leadsBlocked ? (
         <p
           role="alert"
@@ -372,7 +381,7 @@ export function LeadCaptureForm({
           ) : (
             <Send className="h-4 w-4" aria-hidden />
           )}
-          {loading ? "Odesílám…" : "Odeslat poptávku"}
+          {loading ? "Odesílám…" : submitLabel}
         </button>
       </form>
     </div>

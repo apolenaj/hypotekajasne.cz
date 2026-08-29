@@ -1,11 +1,10 @@
 "use client";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { CookieConsentProvider } from "@/components/consent/CookieConsentProvider";
+import { DeferredAnalyticsMount } from "@/components/analytics/DeferredAnalyticsMount";
 import { CookieConsentBanner } from "@/components/consent/CookieConsentBanner";
+import { CookieConsentProvider } from "@/components/consent/CookieConsentProvider";
 import { ConsentGatedScripts } from "@/components/consent/ConsentGatedScripts";
-import { PageViewTracker } from "@/components/analytics/PageViewTracker";
-import { AnalyticsAttributionBootstrap } from "@/components/analytics/AnalyticsAttributionBootstrap";
 import { LegalDevIncompleteBanner } from "@/components/legal/LegalDevIncompleteBanner";
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -13,8 +12,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <TooltipProvider delay={200}>
       <CookieConsentProvider>
         <LegalDevIncompleteBanner />
-        <AnalyticsAttributionBootstrap />
-        <PageViewTracker />
+        <DeferredAnalyticsMount />
         {children}
         <CookieConsentBanner />
         <ConsentGatedScripts />

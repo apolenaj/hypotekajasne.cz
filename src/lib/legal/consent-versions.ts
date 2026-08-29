@@ -3,11 +3,20 @@
  * Při změně textu ZVYŠTE verzi; staré záznamy zůstávají auditovatelné.
  */
 
+import { buildLeadFormIntakeDisclosure } from "@/lib/legal/regulatory-texts";
 import {
   isMortgagePartnerHandoffReady,
   getPrimaryMortgagePartner,
 } from "@/lib/legal/partner-config";
-import { getLegalIdentityConfig, legalOperator } from "@/config/legal";
+import {
+  getLegalIdentityConfig,
+  legalOperator,
+  withSentencePeriod,
+} from "@/config/legal";
+
+function legalNameInline(name: string): string {
+  return name.trim().replace(/[.!?…]+$/, "");
+}
 
 export const CONSENT_POLICY_VERSION = "2026-08-07.8" as const;
 export const COOKIE_POLICY_VERSION = "2026-08-07.2" as const;
@@ -206,11 +215,9 @@ export function buildPartnerTransferCheckboxLabel(
 /** Krátké shrnutí u formuláře — bez handoff / „předání provozovateli“ jazyka. */
 export function buildConsentContextSummary(): string {
   const cfg = getLegalIdentityConfig();
-  const spravce = cfg.dataControllerName;
   return [
-    sentenceFragment("Správce údajů z formuláře", spravce),
-    "Účel: vyřízení poptávky / konzultace.",
-    "Hypotéka Jasně není banka a neschvaluje úvěry.",
+    buildLeadFormIntakeDisclosure("cs"),
+    `Správce údajů: ${withSentencePeriod(legalNameInline(cfg.dataControllerName ?? legalOperator.companyName))}`,
   ].join(" ");
 }
 

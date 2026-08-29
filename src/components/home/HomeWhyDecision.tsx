@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { financialPartner, legalOperator } from "@/config/legal";
+import { legalOperator, withSentencePeriod } from "@/config/legal";
 import { routes } from "@/lib/routes";
 
 /**
@@ -36,10 +36,9 @@ export function HomeWhyDecision() {
               řešit produkt nebo konzultaci.
             </p>
             <p>
-              Pokud požádáte o individuální konzultaci, odbornou hypoteční část
-              zajišťuje {legalOperator.companyName} ve spolupráci se společností{" "}
-              {financialPartner.network}. Schválení úvěru vždy provádí banka po
-              vlastním posouzení.
+              Pokud požádáte o individuální konzultaci, kontaktuje vás tým
+              provozovatele {withSentencePeriod(legalOperator.companyName)}{" "}
+              Schválení úvěru vždy provádí banka po vlastním posouzení.
             </p>
             <p>
               <Link

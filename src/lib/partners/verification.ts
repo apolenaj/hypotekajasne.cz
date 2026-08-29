@@ -9,7 +9,8 @@ import {
   isMortgagePartnerIdentityVerified,
   type MortgagePartner,
 } from "@/lib/legal/partner-config";
-import { financialPartner, legalOperator } from "@/config/legal";
+import { legalOperator } from "@/config/legal";
+import { buildLeadFormIntakeDisclosure, getPlatformWordingNeutral } from "@/lib/legal/regulatory-texts";
 
 export type PartnerVerificationStatus =
   | "VERIFIED"
@@ -130,32 +131,33 @@ export function getPartnerClaimLabels(
   switch (v.verificationStatus) {
     case "VERIFIED": {
       const who = v.name ?? legalOperator.companyName;
+      const operator = legalOperator.companyName.replace(/[.!?…]+$/, "");
       return {
         badgeLabel: "Ověřený partner",
         roleLabel: "Ověřený hypoteční partner",
         consultCta: `Konzultace s ověřeným partnerem`,
-        connectBlurb: `${financialPartner.platformWording} Nejsme banka.`,
-        leadIntakeDisclosure: `Při souhlasu s předáním předáme kontakt ověřenému partnerovi (${who}). Hypotéka Jasně není banka; konzultace je nezávazná.`,
+        connectBlurb: `${getPlatformWordingNeutral("cs")} Nejsme banka.`,
+        leadIntakeDisclosure: `Údaje z formuláře přijímá provozovatel platformy ${operator}. Po souhlasu s předáním je můžeme předat společnosti ${who}, která vás kontaktuje ohledně nezávazné konzultace. ${legalOperator.brand} není banka a neschvaluje úvěry.`,
         thankYouHandoff: `${who} se vám ozve ohledně nezávazné konzultace — obvykle do 24 hodin. Hypotéka Jasně není banka.`,
       };
     }
     case "PENDING":
       return {
         badgeLabel: "Konzultace přes provozovatele",
-        roleLabel: `${legalOperator.companyName} (ve spolupráci s ${financialPartner.network})`,
+        roleLabel: legalOperator.companyName,
         consultCta: "Nezávazná konzultace",
-        connectBlurb: `${financialPartner.platformWording} Nejsme banka.`,
-        leadIntakeDisclosure: `Údaje z formuláře použije provozovatel platformy ${legalOperator.companyName} k vyřízení poptávky. ${legalOperator.brand} není banka.`,
+        connectBlurb: `${getPlatformWordingNeutral("cs")} Nejsme banka.`,
+        leadIntakeDisclosure: buildLeadFormIntakeDisclosure("cs"),
         thankYouHandoff:
           "Ozveme se vám ohledně nezávazné konzultace — obvykle do 24 hodin. Hypotéka Jasně není banka.",
       };
     default:
       return {
         badgeLabel: "Provozovatel platformy",
-        roleLabel: `${legalOperator.companyName} (ve spolupráci s ${financialPartner.network})`,
+        roleLabel: legalOperator.companyName,
         consultCta: "Nezávazná konzultace",
-        connectBlurb: `${financialPartner.platformWording} Nejsme banka.`,
-        leadIntakeDisclosure: `Údaje z formuláře použije provozovatel platformy ${legalOperator.companyName} k vyřízení poptávky. ${legalOperator.brand} není banka.`,
+        connectBlurb: `${getPlatformWordingNeutral("cs")} Nejsme banka.`,
+        leadIntakeDisclosure: buildLeadFormIntakeDisclosure("cs"),
         thankYouHandoff:
           "Ozveme se vám ohledně nezávazné konzultace — obvykle do 24 hodin. Hypotéka Jasně není banka.",
       };

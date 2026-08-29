@@ -149,6 +149,11 @@
     display: none;
   }
 
+  .home-below-fold {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 420px;
+  }
+
   /* Homepage cockpit — jemné reveal animace */
   .home-reveal {
     animation: home-reveal-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;

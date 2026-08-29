@@ -39,8 +39,8 @@ export type CtaLabelKey = keyof typeof CTA_CS;
 
 /** Site-wide primary CTA (nav + home). */
 export const PRIMARY_PRODUCT_CTA = {
-  label: CTA_CS.compareRates,
-  href: routes.sazby,
+  label: CTA_CS.calculateMortgage,
+  href: routes.kalkulacky.hypotecniKalkulacka,
 } as const;
 
 /** Touch-friendly interactive classes (min 44px). */

@@ -14,6 +14,7 @@ import {
   legalOperator,
   projectFounder,
 } from "@/config/legal";
+import { getPlatformWordingNeutral } from "@/lib/legal/regulatory-texts";
 import { siteContact } from "@/lib/mock-data";
 import { buildThankYouPath, submitLead } from "@/lib/leads";
 
@@ -139,7 +140,7 @@ export function ContactView() {
             </div>
 
             <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm leading-relaxed text-amber-950">
-              {financialPartner.platformWording}
+              {getPlatformWordingNeutral("cs")}
             </div>
           </div>
 

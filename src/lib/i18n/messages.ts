@@ -31,7 +31,7 @@ export const messages: Record<Locale, MessageTree> = {
       name: "Hypotéka Jasně",
       tagline: "Co si můžete dovolit. Kde koupit. Jak financovat.",
       description:
-        "Informační platforma: hypoteční data ČR, srovnání trhů, kalkulačky a handoff na ověřeného partnera (pokud je zveřejněn) — ne banka.",
+        "Informační platforma: hypoteční data ČR, srovnání trhů, kalkulačky — ne banka. Konečné podmínky úvěru stanoví banka po individuálním posouzení.",
     },
     nav: {
       trust: "Centrum důvěry",
@@ -50,7 +50,7 @@ export const messages: Record<Locale, MessageTree> = {
       name: "Hypotéka Jasně",
       tagline: "What you can afford. Where to buy. How to finance.",
       description:
-        "Czech information platform: mortgage data, market comparisons and calculators — not a bank. Licensed advice via partners.",
+        "Czech information platform: mortgage data, market comparisons and calculators — not a bank. Final loan terms are determined by the bank following an individual assessment.",
     },
     nav: {
       trust: "Trust & methodology",

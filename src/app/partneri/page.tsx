@@ -8,6 +8,7 @@ import {
   projectFounder,
 } from "@/config/legal";
 import { COMPENSATION_DISCLOSURE } from "@/lib/legal/partner-config";
+import { getCooperationWordingNeutral } from "@/lib/legal/regulatory-texts";
 import { routes } from "@/lib/routes";
 
 export const metadata = getStaticPageSeo("/partneri");
@@ -26,8 +27,8 @@ const ROLE_BLOCKS = [
     body: "Jednatel společnosti a hypoteční specialista.",
   },
   {
-    title: financialPartner.network,
-    body: "Síť / partner, prostřednictvím které je zajišťována související finanční distribuce.",
+    title: "Možná partnerská spolupráce",
+    body: "Platforma může spolupracovat s dalšími subjekty — podrobnosti uvádíme po ověření.",
   },
   {
     title: "Banka",
@@ -59,7 +60,7 @@ export default function PartneriPage() {
           {financialPartner.specialistTitle}
         </p>
         <p className="mt-3 text-sm leading-relaxed text-text-dark">
-          {financialPartner.cooperationWording}
+          {getCooperationWordingNeutral("cs")}
         </p>
       </section>
 

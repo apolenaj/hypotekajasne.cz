@@ -1,15 +1,15 @@
 const STEPS = [
   {
-    title: "Zadáte situaci",
-    text: "Cena, vlastní prostředky, účel a fixace — bez zbytečných detailů na začátku.",
+    title: "Zadáte základní údaje",
+    text: "Cena nemovitosti, vlastní prostředky, splatnost a fixace — bez zbytečných detailů na začátku.",
   },
   {
-    title: "Uvidíte výpočet a sazby",
-    text: "Orientační splátka z modelu a zvlášť ověřené zveřejněné sazby bank.",
+    title: "Uvidíte splátku a sazby",
+    text: "Orientační měsíční splátka z modelu a zvlášť ověřené zveřejněné sazby bank včetně data a zdroje.",
   },
   {
-    title: "Požádáte o možnosti",
-    text: "Necháte kontakt. Provozovatel platformy s vámi situaci probere nezávazně.",
+    title: "Požádáte o nezávazné srovnání",
+    text: "Když budete chtít, necháte kontakt — hypoteční specialista s vámi projde reálné možnosti.",
   },
 ] as const;
 
@@ -43,7 +43,7 @@ export function HomeHowItWorks() {
           {STEPS.map((step, i) => (
             <li
               key={step.title}
-              className="rounded-xl border border-border bg-[#f7f8f7] p-5"
+              className="home-below-fold rounded-xl border border-border bg-[#f7f8f7] p-5"
             >
               <span className="font-heading text-2xl font-bold text-muted-gold">
                 {i + 1}

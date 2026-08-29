@@ -6,7 +6,11 @@
  * Bez ověření: veřejný web nesmí tvrdit, že identita je zveřejněna / ověřena.
  */
 
-import { financialPartner, legalOperator } from "@/config/legal";
+import { legalOperator } from "@/config/legal";
+import { getCooperationWordingNeutral } from "@/lib/legal/regulatory-texts";
+import {
+  getValidatedPartnerEnv,
+} from "@/lib/legal/partner-env-validation";
 
 export type MortgagePartnerJerrsStatus =
   | "LIVE"
@@ -58,16 +62,11 @@ export const COMPENSATION_DISCLOSURE =
  * Volitelně: LEGAL_PARTNER_LICENCE_SUMMARY, LEGAL_PARTNER_ROLE, LEGAL_PARTNER_SCOPE
  */
 export function getMortgagePartners(): MortgagePartner[] {
-  const legalName = envOrNull(
-    "LEGAL_PARTNER_LEGAL_NAME",
-    "NEXT_PUBLIC_LEGAL_PARTNER_LEGAL_NAME"
-  );
-  const ico = envOrNull("LEGAL_PARTNER_ICO", "NEXT_PUBLIC_LEGAL_PARTNER_ICO");
-  const jerrsVerificationUrl = envOrNull(
-    "LEGAL_PARTNER_JERRS_URL",
-    "NEXT_PUBLIC_LEGAL_PARTNER_JERRS_URL"
-  );
-  const verified = Boolean(legalName && ico && jerrsVerificationUrl);
+  const validated = getValidatedPartnerEnv();
+  const verified = validated.valid;
+  const legalName = verified ? validated.legalName : null;
+  const ico = verified ? validated.ico : null;
+  const jerrsVerificationUrl = verified ? validated.jerrsVerificationUrl : null;
   const statusOverride = envOrNull(
     "LEGAL_PARTNER_JERRS_STATUS",
     "NEXT_PUBLIC_LEGAL_PARTNER_JERRS_STATUS"
@@ -89,11 +88,11 @@ export function getMortgagePartners(): MortgagePartner[] {
         "NEXT_PUBLIC_LEGAL_PARTNER_LICENCE_SUMMARY"
       ) ??
       "Poskytuje službu v rozsahu své registrace u dohledového orgánu. Hypotéka Jasně není touto osobou.")
-    : financialPartner.cooperationWording;
+    : getCooperationWordingNeutral("cs");
   const role = verified
     ? (envOrNull("LEGAL_PARTNER_ROLE", "NEXT_PUBLIC_LEGAL_PARTNER_ROLE") ??
       "Zprostředkování spotřebitelských úvěrů / hypoték dle registrace")
-    : `${legalOperator.companyName} — provozovatel platformy (spolupráce s ${financialPartner.network})`;
+    : `${legalOperator.companyName} — provozovatel platformy`;
   const scope =
     envOrNull("LEGAL_PARTNER_SCOPE", "NEXT_PUBLIC_LEGAL_PARTNER_SCOPE") ??
     "Individuální konzultace, příprava podkladů, komunikace s bankami. Nezahrnuje závazné schválení úvěru.";
@@ -120,7 +119,7 @@ export function getPrimaryMortgagePartner(): MortgagePartner {
 /** Veřejný zobrazovaný název — nikdy falešná ČNB licence. */
 export function partnerPublicDisplayName(p: MortgagePartner): string {
   if (p.legalName && p.jerrsStatus === "LIVE") return p.legalName;
-  return `${legalOperator.companyName} (ve spolupráci s ${financialPartner.network})`;
+  return legalOperator.companyName;
 }
 
 export function isMortgagePartnerIdentityVerified(
@@ -147,7 +146,7 @@ export function partnerJerrsPublicLabel(
 ): string {
   if (status === "LIVE") return "Ověřeno ve veřejném registru";
   if (status === "COMING_SOON") return "Připravujeme";
-  return "Spolupráce s INSIA";
+  return "Možná spolupráce s dalšími subjekty";
 }
 
 export type PartnerConfigAudit = {

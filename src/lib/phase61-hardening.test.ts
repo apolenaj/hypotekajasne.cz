@@ -68,7 +68,8 @@ describe("Phase 6.1 — form copy matches required fields", () => {
 describe("Phase 6.1 — evidence sourceUrl invariant", () => {
   it("IMPORT_READY primary evidence used by active rates has https sourceUrl", () => {
     const catalog = catalogFromImportManifest(CZ_2026_08_09_MANIFEST);
-    const now = Date.parse("2026-08-12T12:00:00.000Z");
+    // Within the 72h public freshness window of the import snapshot.
+    const now = Date.parse("2026-08-09T12:00:00.000Z");
     const result = getMortgageOffers(catalog as MortgageMarketCatalog, {
       purpose: "purchase",
       fixationMonths: 36,
@@ -87,6 +88,7 @@ describe("Phase 6.1 — evidence sourceUrl invariant", () => {
       );
       const label = publicFreshnessLabel(freshness, offer.checkedAt, {
         sourceUrl: offer.evidence?.sourceUrl,
+        nowMs: now,
       });
       assert.match(label.short, /Ověřeno/);
     }

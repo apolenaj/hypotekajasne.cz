@@ -78,10 +78,37 @@ export function CookieConsentBanner() {
     saveSettings,
     record,
   } = useCookieConsent();
+  const [bannerVisible, setBannerVisible] = useState(false);
+
+  // Banner až po load + 6 s — mimo okno LCP, consent režim beze změny.
+  useEffect(() => {
+    if (!ready || !openBanner) {
+      setBannerVisible(false);
+      return;
+    }
+    let cancelled = false;
+    let timer: number | undefined;
+    const show = () => {
+      if (!cancelled) setBannerVisible(true);
+    };
+    const schedule = () => {
+      timer = window.setTimeout(show, 6000);
+    };
+    if (document.readyState === "complete") {
+      schedule();
+    } else {
+      window.addEventListener("load", schedule, { once: true });
+    }
+    return () => {
+      cancelled = true;
+      if (timer) window.clearTimeout(timer);
+      window.removeEventListener("load", schedule);
+    };
+  }, [ready, openBanner]);
 
   // Reserve space so fixed banner does not cover bottom CTAs
   useEffect(() => {
-    if (!openBanner) {
+    if (!openBanner || !bannerVisible) {
       document.documentElement.style.removeProperty("--cookie-banner-pad");
       return;
     }
@@ -89,9 +116,9 @@ export function CookieConsentBanner() {
     return () => {
       document.documentElement.style.removeProperty("--cookie-banner-pad");
     };
-  }, [openBanner]);
+  }, [openBanner, bannerVisible]);
 
-  if (!ready || !openBanner) return null;
+  if (!ready || !openBanner || !bannerVisible) return null;
 
   return (
     <div

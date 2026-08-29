@@ -16,7 +16,8 @@ import {
   type TeamMember,
 } from "@/lib/trust";
 import { routes } from "@/lib/routes";
-import { financialPartner, legalOperator } from "@/config/legal";
+import { legalOperator } from "@/config/legal";
+import { getCooperationWordingNeutral } from "@/lib/legal/regulatory-texts";
 
 const pillars = [
   {
@@ -104,7 +105,7 @@ export function AboutUsView() {
           <p className="mx-auto max-w-3xl text-lg leading-relaxed font-light text-emerald-50/90 md:text-xl">
             Jsme digitální platforma provozovaná společností{" "}
             {legalOperator.companyName} Nejsme banka.{" "}
-            {financialPartner.cooperationWording} Schválení úvěru vždy provádí
+            {getCooperationWordingNeutral("cs")} Schválení úvěru vždy provádí
             banka po vlastním posouzení. Detail rolí v{" "}
             <Link href={routes.duvera} className="underline decoration-white/40">
               Centru důvěry
@@ -120,7 +121,7 @@ export function AboutUsView() {
             Kdo co dělá
           </h2>
           <p className="mx-auto mt-2 max-w-2xl text-center text-sm text-muted-foreground">
-            Hypotéka Jasně ≠ provozovatel ≠ INSIA ≠ banka ≠ Majetio ≠ makléř.
+            Hypotéka Jasně ≠ provozovatel ≠ partner ≠ banka ≠ Majetio ≠ makléř.
           </p>
           <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {ECOSYSTEM_ACTORS.map((a) => (
@@ -290,10 +291,9 @@ export function AboutUsView() {
             <strong className="font-semibold text-gray-900">
               {legalOperator.companyName}
             </strong>{" "}
-            je provozovatel a zajišťuje odbornou hypoteční část ve spolupráci s{" "}
-            <strong className="font-semibold text-gray-900">
-              {financialPartner.network}
-            </strong>{". Schválení úvěru vždy provádí banka po vlastním posouzení. "}
+            je provozovatel a zajišťuje odbornou hypoteční část.{" "}
+            {getCooperationWordingNeutral("cs")}{" "}
+            Schválení úvěru vždy provádí banka po vlastním posouzení.{" "}
             Makléř/developer prodává.{" "}
             <Link href={routes.partneri} className="text-deep-teal underline">
               Partneři a role

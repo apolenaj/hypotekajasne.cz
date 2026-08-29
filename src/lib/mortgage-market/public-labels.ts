@@ -5,6 +5,7 @@
 
 import type { MortgageOffer } from "@/lib/mortgage-market/offers";
 import type { RateFreshness } from "@/lib/rates/mortgage-rate-freshness";
+import { isPublicRateWithinFreshWindow } from "@/lib/rates/mortgage-rate-freshness";
 import { formatAuditDateCs } from "@/lib/i18n/audit-date";
 
 export function formatRatePercentCs(rate: number): string {
@@ -31,22 +32,26 @@ export function hasPublicPrimaryEvidenceUrl(
 }
 
 /**
- * Public freshness — never “LIVE” / “Ověřeno” without a primary source URL.
- * Fresh rows without evidence URL are shown as updating, not verified.
+ * Public freshness badge — delegates 72h window to centralized freshness helper.
+ * Never “Ověřeno” without a primary HTTPS source URL.
  */
 export function publicFreshnessLabel(
   freshness: Exclude<RateFreshness, "fallback">,
   checkedAt: string | null | undefined,
-  options?: { sourceUrl?: string | null }
+  options?: { sourceUrl?: string | null; nowMs?: number }
 ): { short: string; detail: string } {
   const date = formatCheckedDateCs(checkedAt);
   const evidenced = hasPublicPrimaryEvidenceUrl(options?.sourceUrl);
-  if (freshness === "stale" || !evidenced) {
+  const nowMs = options?.nowMs ?? Date.now();
+  const withinPublicWindow =
+    evidenced && isPublicRateWithinFreshWindow(checkedAt, nowMs);
+
+  if (!withinPublicWindow || !evidenced) {
     return {
-      short: "Aktualizujeme",
+      short: "Sazbu právě ověřujeme",
       detail: date
-        ? `Aktualizujeme · naposledy zkontrolováno ${date}`
-        : "Aktualizujeme",
+        ? `Sazbu právě ověřujeme · naposledy zkontrolováno ${date}`
+        : "Sazbu právě ověřujeme",
     };
   }
   return {

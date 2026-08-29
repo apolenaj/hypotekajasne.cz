@@ -22,6 +22,11 @@ import {
 } from "@/lib/seo/landings";
 import { formatDate as formatDateLocale } from "@/lib/i18n/format";
 import { routes } from "@/lib/routes";
+import {
+  CALCULATOR_DISCLAIMER,
+  PLATFORM_NEUTRAL_FALLBACK,
+  rt,
+} from "@/lib/legal/regulatory-texts";
 
 function formatDate(iso: string): string {
   return formatDateLocale(iso, "cs", "long");
@@ -326,9 +331,7 @@ export function SeoLandingView({ landing }: { landing: SeoLanding }) {
         ) : null}
 
         <p className="mt-12 rounded-lg border border-border bg-[#f7f8f7] px-4 py-3 text-xs text-muted-foreground">
-          Informační obsah Hypotéka Jasně — nejsme banka. Modelové výpočty
-          nejsou nabídkou úvěru. Před rozhodnutím ověřte aktuální podmínky u
-          odborníka.{" "}
+          {rt("cs", PLATFORM_NEUTRAL_FALLBACK)} {rt("cs", CALCULATOR_DISCLAIMER)}{" "}
           <Link href={routes.metodika} className="text-deep-teal underline">
             Metodika
           </Link>

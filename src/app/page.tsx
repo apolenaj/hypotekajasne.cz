@@ -1,37 +1,50 @@
 import type { Metadata } from "next";
 import { HomeExperience } from "@/components/home/HomeExperience";
-import { getMortgageOffersFromSupabase } from "@/lib/mortgage-market/offers.server";
-import { getCz20260809Catalog } from "@/lib/mortgage-market/catalog-from-manifest";
-import { getMortgageOffers } from "@/lib/mortgage-market/offers";
+import { JsonLdScript } from "@/components/seo/JsonLdScript";
+import { HOME_FAQ_ITEMS } from "@/lib/faq/home-items";
+import { getCachedHomeOffers } from "@/lib/mortgage-market/home-offers.server";
+import { parseMortgageJourneyParams } from "@/lib/mortgage-rates/mortgage-journey-context";
+import { faqPageJsonLd } from "@/lib/seo/json-ld";
 import { rootMetadata } from "@/lib/seo/metadata";
 
 export const metadata: Metadata = rootMetadata;
 
-export const dynamic = "force-dynamic";
+/** ISR — homepage offers refresh hourly; improves TTFB vs force-dynamic. */
+export const revalidate = 3600;
 
-async function loadHomeOffers() {
-  const query = {
-    countryCode: "CZ",
-    purpose: "purchase",
-    fixationMonths: 36,
-    ltv: 75,
-    includeLtvUnspecified: true,
-  } as const;
-
-  try {
-    const live = await getMortgageOffersFromSupabase(query);
-    if (live) return live;
-  } catch {
-    // Fall through to manifest mirror for build/dev without service role.
+function flattenSearchParams(
+  raw: Record<string, string | string[] | undefined>
+): Record<string, string> {
+  const flat: Record<string, string> = {};
+  for (const [key, value] of Object.entries(raw)) {
+    if (value == null) continue;
+    flat[key] = Array.isArray(value) ? (value[0] ?? "") : value;
   }
-
-  return getMortgageOffers(getCz20260809Catalog(), {
-    ...query,
-    nowMs: Date.parse("2026-08-09T12:00:00.000Z"),
-  });
+  return flat;
 }
 
-export default async function Home() {
-  const initialOffers = await loadHomeOffers();
-  return <HomeExperience initialOffers={initialOffers} />;
+type HomeProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function Home({ searchParams }: HomeProps) {
+  const raw = await searchParams;
+  const serverJourney = parseMortgageJourneyParams(flattenSearchParams(raw));
+  const initialOffers = await getCachedHomeOffers();
+  return (
+    <>
+      <JsonLdScript
+        data={faqPageJsonLd(
+          HOME_FAQ_ITEMS.map((item) => ({
+            question: item.q,
+            answer: item.a,
+          }))
+        )}
+      />
+      <HomeExperience
+        initialOffers={initialOffers}
+        serverJourney={serverJourney}
+      />
+    </>
+  );
 }

@@ -20,9 +20,9 @@ function read(rel: string): string {
 
 describe("CTA nomenclature", () => {
   it("keeps one primary product CTA aligned with nav", () => {
-    assert.equal(PRIMARY_PRODUCT_CTA.label, CTA_CS.compareRates);
-    assert.equal(navCta.default.label, CTA_CS.compareRates);
-    assert.ok(navCta.default.href.includes("sazby"));
+    assert.equal(PRIMARY_PRODUCT_CTA.label, CTA_CS.calculateMortgage);
+    assert.equal(navCta.default.label, CTA_CS.calculateMortgage);
+    assert.ok(navCta.default.href.includes("hypotecni"));
   });
 
   it("uses touch-friendly primary class (min-h-11)", () => {

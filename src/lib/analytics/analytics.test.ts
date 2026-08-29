@@ -74,7 +74,7 @@ describe("analytics taxonomy", () => {
 
   it("has unique event names and stable count", () => {
     assert.equal(ANALYTICS_EVENTS.length, new Set(ANALYTICS_EVENTS).size);
-    assert.equal(ANALYTICS_EVENTS.length, 70);
+    assert.equal(ANALYTICS_EVENTS.length, 72);
   });
 
   it("EVENT_DICTIONARY covers core conversion events", () => {

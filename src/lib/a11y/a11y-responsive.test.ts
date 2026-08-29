@@ -143,7 +143,7 @@ describe("mobile overflow guards", () => {
 describe("critical surfaces exist for QA matrix", () => {
   it("homepage, calculators, rentgen, akademie, trust components present", () => {
     const required = [
-      "components/home/CockpitHero.tsx",
+      "components/home/CockpitHeroShell.tsx",
       "components/layout/Navbar.tsx",
       "components/layout/Footer.tsx",
       "components/property-rentgen/RentgenToolIsland.tsx",

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { TrackedCtaLink } from "@/components/analytics/TrackedCtaLink";
+import { Suspense, useCallback, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { FormattedMoneyInput } from "@/components/ui/FormattedMoneyInput";
 import { Label } from "@/components/ui/label";
 import {
@@ -9,18 +9,31 @@ import {
   mortgageAmountBand,
   propertyValueBand,
 } from "@/lib/analytics/bands";
-import { trackEvent } from "@/lib/analytics/track-event";
+import { trackEvent, trackEventOnce } from "@/lib/analytics/track-event";
 import { formatCurrency } from "@/lib/calculators";
 import {
   buildSazbyHref,
   computeMiniMortgage,
-  miniMortgageCtaLabel,
+  formatExactLtvCs,
+  formatLtvBandLabel,
+  MINI_MORTGAGE_CTA,
   MINI_MORTGAGE_DEFAULTS,
   MINI_MORTGAGE_FIXATION_OPTIONS,
   MINI_MORTGAGE_TERM_OPTIONS,
+  miniMortgageLtvPct,
+  validateMiniMortgageInput,
   type MiniMortgagePurpose,
+  type MiniMortgageResult,
 } from "@/lib/mini-mortgage-calculator";
-import { routes } from "@/lib/routes";
+import {
+  journeyContextToMiniMortgageInput,
+} from "@/lib/mortgage-rates/mortgage-journey-summary";
+import {
+  parseMortgageJourneyParams,
+  type MortgageJourneyParseResult,
+} from "@/lib/mortgage-rates/mortgage-journey-context";
+import { MiniMortgageCalculatorSkeleton } from "@/components/home/MiniMortgageCalculatorSkeleton";
+import { getCalculatorDisclaimer } from "@/components/calculators/CalculatorDisclaimer";
 import { CTA_CS } from "@/lib/ux/cta";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +42,12 @@ const fieldControlClassName = cn(
   "text-base text-text-dark outline-none transition-colors",
   "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
   "[color-scheme:light]"
+);
+
+const primaryButtonClassName = cn(
+  "mt-6 flex h-11 min-h-11 w-full items-center justify-center rounded-lg px-3 text-center text-sm font-semibold",
+  "transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal focus-visible:ring-offset-2",
+  "disabled:cursor-not-allowed disabled:opacity-55"
 );
 
 function MoneyField({
@@ -66,50 +85,132 @@ function parseInterestRate(raw: string): number | null {
   return Math.min(25, Math.max(0, value));
 }
 
-export function MiniMortgageCalculator() {
-  const [propertyPrice, setPropertyPrice] = useState<number>(
-    MINI_MORTGAGE_DEFAULTS.propertyPriceCzk
-  );
-  const [ownFunds, setOwnFunds] = useState<number>(
-    MINI_MORTGAGE_DEFAULTS.ownFundsCzk
-  );
-  const [termYears, setTermYears] = useState<number>(
-    MINI_MORTGAGE_DEFAULTS.termYears
-  );
-  const [purpose, setPurpose] = useState<MiniMortgagePurpose>(
-    MINI_MORTGAGE_DEFAULTS.purpose
-  );
-  const [fixationMonths, setFixationMonths] = useState<number>(
-    MINI_MORTGAGE_DEFAULTS.fixationMonths
-  );
-  const [interestRate, setInterestRate] = useState<number>(
-    MINI_MORTGAGE_DEFAULTS.annualRatePercent
-  );
-  const [rateDraft, setRateDraft] = useState(
-    () => String(MINI_MORTGAGE_DEFAULTS.annualRatePercent).replace(".", ",")
-  );
-  const [advancedOpen, setAdvancedOpen] = useState(false);
-  const startedRef = useRef(false);
-  const lastCompleteKeyRef = useRef<string | null>(null);
+function calculationDedupeKey(result: MiniMortgageResult): string {
+  return [
+    result.purpose,
+    result.fixationMonths,
+    result.termYears,
+    result.propertyPriceCzk,
+    result.loanAmountCzk,
+    result.annualRatePercent,
+  ].join("|");
+}
 
-  const result = useMemo(
-    () =>
-      computeMiniMortgage({
-        propertyPriceCzk: propertyPrice,
-        ownFundsCzk: ownFunds,
-        termYears,
-        annualRatePercent: interestRate,
-        purpose,
-        fixationMonths,
-      }),
+function mortgageCalculationAnalyticsPayload(result: MiniMortgageResult) {
+  return {
+    calculator_type: "mortgage",
+    tool_id: "mortgage_calculator",
+    purpose: result.purpose,
+    fixation_months: result.fixationMonths,
+    term_years: result.termYears,
+    ltv_band: ltvBand(miniMortgageLtvPct(result)),
+    mortgage_amount_band: mortgageAmountBand(result.loanAmountCzk),
+    property_value_band: propertyValueBand(result.propertyPriceCzk),
+    funnel_id: "phase4_conversion",
+  };
+}
+
+type CalculatorBootstrap = {
+  propertyPrice: number;
+  ownFunds: number;
+  termYears: number;
+  purpose: MiniMortgagePurpose;
+  fixationMonths: number;
+  interestRate: number;
+  rateDraft: string;
+  hasCalculated: boolean;
+  committedResult: MiniMortgageResult | null;
+};
+
+function bootstrapFromJourney(
+  journey: MortgageJourneyParseResult | null | undefined
+): CalculatorBootstrap {
+  const defaults: CalculatorBootstrap = {
+    propertyPrice: MINI_MORTGAGE_DEFAULTS.propertyPriceCzk,
+    ownFunds: MINI_MORTGAGE_DEFAULTS.ownFundsCzk,
+    termYears: MINI_MORTGAGE_DEFAULTS.termYears,
+    purpose: MINI_MORTGAGE_DEFAULTS.purpose,
+    fixationMonths: MINI_MORTGAGE_DEFAULTS.fixationMonths,
+    interestRate: MINI_MORTGAGE_DEFAULTS.annualRatePercent,
+    rateDraft: String(MINI_MORTGAGE_DEFAULTS.annualRatePercent).replace(".", ","),
+    hasCalculated: false,
+    committedResult: null,
+  };
+  if (!journey || journey.fromDefaults || journey.paramErrors.length > 0) {
+    return defaults;
+  }
+  const input = journeyContextToMiniMortgageInput(journey.context);
+  const result = computeMiniMortgage(input);
+  const rate = input.annualRatePercent ?? MINI_MORTGAGE_DEFAULTS.annualRatePercent;
+  return {
+    propertyPrice: input.propertyPriceCzk,
+    ownFunds: input.ownFundsCzk,
+    termYears: input.termYears,
+    purpose: input.purpose ?? MINI_MORTGAGE_DEFAULTS.purpose,
+    fixationMonths: input.fixationMonths ?? MINI_MORTGAGE_DEFAULTS.fixationMonths,
+    interestRate: rate,
+    rateDraft: rate.toFixed(2).replace(".", ","),
+    hasCalculated: true,
+    committedResult: result,
+  };
+}
+
+function MiniMortgageCalculatorCore({
+  bootstrap,
+}: {
+  bootstrap: CalculatorBootstrap;
+}) {
+  const router = useRouter();
+  const [propertyPrice, setPropertyPrice] = useState<number>(bootstrap.propertyPrice);
+  const [ownFunds, setOwnFunds] = useState<number>(bootstrap.ownFunds);
+  const [termYears, setTermYears] = useState<number>(bootstrap.termYears);
+  const [purpose, setPurpose] = useState<MiniMortgagePurpose>(bootstrap.purpose);
+  const [fixationMonths, setFixationMonths] = useState<number>(
+    bootstrap.fixationMonths
+  );
+  const [interestRate, setInterestRate] = useState<number>(bootstrap.interestRate);
+  const [rateDraft, setRateDraft] = useState(bootstrap.rateDraft);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [hasCalculated, setHasCalculated] = useState(bootstrap.hasCalculated);
+  const [committedResult, setCommittedResult] = useState<MiniMortgageResult | null>(
+    bootstrap.committedResult
+  );
+  const [isCalculating, setIsCalculating] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
+
+  const startedRef = useRef(false);
+  const ratesClickGuardRef = useRef(false);
+
+  const input = useMemo(
+    () => ({
+      propertyPriceCzk: propertyPrice,
+      ownFundsCzk: ownFunds,
+      termYears,
+      annualRatePercent: interestRate,
+      purpose,
+      fixationMonths,
+    }),
     [propertyPrice, ownFunds, termYears, interestRate, purpose, fixationMonths]
   );
+
+  const preview = useMemo(() => computeMiniMortgage(input), [input]);
+  const validation = useMemo(() => validateMiniMortgageInput(input), [input]);
+  const display = hasCalculated && committedResult ? committedResult : preview;
+  const exactLtv = display.exactLtv;
+  const ltvHigh = exactLtv != null && exactLtv > 80;
+  const rateDisplay = display.annualRatePercent.toFixed(2).replace(".", ",");
+
+  const resetCalculation = useCallback(() => {
+    setHasCalculated(false);
+    setCommittedResult(null);
+  }, []);
 
   const markInteracted = () => {
     if (startedRef.current) return;
     startedRef.current = true;
     trackEvent("calculator_start", {
       calculator_type: "mortgage",
+      tool_id: "mortgage_calculator",
       purpose,
       fixation_months: fixationMonths,
       term_years: termYears,
@@ -117,45 +218,66 @@ export function MiniMortgageCalculator() {
     });
   };
 
-  useEffect(() => {
-    if (!startedRef.current) return;
-    if (!Number.isFinite(result.monthlyPaymentCzk) || result.loanAmountCzk <= 0) {
+  const onInputChange = <T,>(setter: (value: T) => void, value: T) => {
+    markInteracted();
+    resetCalculation();
+    setter(value);
+  };
+
+  const handleCalculate = async () => {
+    if (!validation.valid || isCalculating || isNavigating) return;
+    setIsCalculating(true);
+    try {
+      const result = computeMiniMortgage(input);
+      setCommittedResult(result);
+      setHasCalculated(true);
+
+      const payload = mortgageCalculationAnalyticsPayload(result);
+      trackEventOnce(
+        "mortgage_calculation_completed",
+        `mortgage_calculation_completed:${calculationDedupeKey(result)}`,
+        payload
+      );
+      trackEventOnce(
+        "calculator_complete",
+        `calculator_complete:${calculationDedupeKey(result)}`,
+        payload
+      );
+    } finally {
+      setIsCalculating(false);
+    }
+  };
+
+  const handleViewRates = () => {
+    if (!hasCalculated || !committedResult || isNavigating || ratesClickGuardRef.current) {
       return;
     }
-    const payload = {
-      calculator_type: "mortgage",
-      purpose,
-      fixation_months: fixationMonths,
-      term_years: termYears,
-      ltv_band: ltvBand(result.ltvPct),
-      mortgage_amount_band: mortgageAmountBand(result.loanAmountCzk),
-      property_value_band: propertyValueBand(propertyPrice),
-      funnel_id: "phase4_conversion",
-    };
-    const key = [
-      payload.purpose,
-      payload.fixation_months,
-      payload.term_years,
-      payload.ltv_band,
-      payload.mortgage_amount_band,
-      payload.property_value_band,
-    ].join("|");
-    if (lastCompleteKeyRef.current === key) return;
-    lastCompleteKeyRef.current = key;
-    trackEvent("calculator_complete", payload);
-  }, [
-    result.loanAmountCzk,
-    result.ltvPct,
-    result.monthlyPaymentCzk,
-    purpose,
-    fixationMonths,
-    termYears,
-    propertyPrice,
-  ]);
+    ratesClickGuardRef.current = true;
+    setIsNavigating(true);
 
-  const sazbyHref = buildSazbyHref(result);
-  const rateDisplay = interestRate.toFixed(2).replace(".", ",");
-  const ltvHigh = result.ltvPct > 80;
+    const payload = mortgageCalculationAnalyticsPayload(committedResult);
+    trackEventOnce(
+      "mortgage_rates_cta_clicked",
+      `mortgage_rates_cta_clicked:${calculationDedupeKey(committedResult)}`,
+      {
+        ...payload,
+        cta_id: "mini_mortgage_view_rates",
+        cta_destination: "sazby",
+      }
+    );
+    trackEvent("cta_click", {
+      cta_id: "mini_mortgage_view_rates",
+      path: typeof window !== "undefined" ? window.location.pathname : undefined,
+      ...payload,
+    });
+
+    router.push(buildSazbyHref(committedResult));
+  };
+
+  const primaryDisabled =
+    !validation.valid || isCalculating || isNavigating;
+  const ratesDisabled =
+    !hasCalculated || !committedResult || isNavigating || isCalculating;
 
   return (
     <article
@@ -184,10 +306,9 @@ export function MiniMortgageCalculator() {
             <select
               id="mini-mortgage-purpose"
               value={purpose}
-              onChange={(e) => {
-                markInteracted();
-                setPurpose(e.target.value as MiniMortgagePurpose);
-              }}
+              onChange={(e) =>
+                onInputChange(setPurpose, e.target.value as MiniMortgagePurpose)
+              }
               className={fieldControlClassName}
             >
               <option value="purchase">Koupě</option>
@@ -204,10 +325,9 @@ export function MiniMortgageCalculator() {
             <select
               id="mini-mortgage-fixation"
               value={fixationMonths}
-              onChange={(e) => {
-                markInteracted();
-                setFixationMonths(Number(e.target.value));
-              }}
+              onChange={(e) =>
+                onInputChange(setFixationMonths, Number(e.target.value))
+              }
               className={fieldControlClassName}
             >
               {MINI_MORTGAGE_FIXATION_OPTIONS.map((m) => (
@@ -223,19 +343,13 @@ export function MiniMortgageCalculator() {
           id="mini-mortgage-price"
           label="Cena nemovitosti"
           value={propertyPrice}
-          onChange={(next) => {
-            markInteracted();
-            setPropertyPrice(next);
-          }}
+          onChange={(next) => onInputChange(setPropertyPrice, next)}
         />
         <MoneyField
           id="mini-mortgage-equity"
           label="Vlastní prostředky"
           value={ownFunds}
-          onChange={(next) => {
-            markInteracted();
-            setOwnFunds(next);
-          }}
+          onChange={(next) => onInputChange(setOwnFunds, next)}
         />
 
         <div className="min-w-0 space-y-1.5">
@@ -248,10 +362,7 @@ export function MiniMortgageCalculator() {
           <select
             id="mini-mortgage-term"
             value={termYears}
-            onChange={(e) => {
-              markInteracted();
-              setTermYears(Number(e.target.value));
-            }}
+            onChange={(e) => onInputChange(setTermYears, Number(e.target.value))}
             className={fieldControlClassName}
           >
             {MINI_MORTGAGE_TERM_OPTIONS.map((y) => (
@@ -291,6 +402,7 @@ export function MiniMortgageCalculator() {
                   value={rateDraft}
                   onChange={(e) => {
                     markInteracted();
+                    resetCalculation();
                     const next = e.target.value;
                     setRateDraft(next);
                     const parsed = parseInterestRate(next);
@@ -318,71 +430,153 @@ export function MiniMortgageCalculator() {
                 id="mini-mortgage-rate-hint"
                 className="text-[11px] text-muted-foreground"
               >
-                Jen pro odhad splátky. Bankovní sazby jsou zvlášť níže / na stránce
-                sazeb.
+                Jen pro odhad splátky. Bankovní sazby zobrazíte po výpočtu.
               </p>
             </div>
           ) : null}
         </div>
       </div>
 
+      {!validation.valid && validation.reason ? (
+        <p id="mini-mortgage-validation" className="mt-4 text-xs text-amber-900" role="alert">
+          {validation.reason}
+        </p>
+      ) : null}
+
       <hr className="my-5 border-border/80" />
 
-      <div className="space-y-3">
+      <div
+        className="space-y-3"
+        aria-live="polite"
+        aria-atomic="true"
+        aria-busy={isCalculating}
+      >
         <div className="min-w-0">
           <p className="text-xs font-semibold text-muted-foreground">
             Orientační měsíční splátka
           </p>
-          <p className="mt-1 break-words font-heading text-2xl font-bold tabular-nums tracking-tight text-text-dark sm:text-3xl">
-            {formatCurrency(result.monthlyPaymentCzk, "CZK")}
-          </p>
+          {hasCalculated && committedResult ? (
+            <p className="mt-1 break-words font-heading text-2xl font-bold tabular-nums tracking-tight text-text-dark sm:text-3xl">
+              {formatCurrency(committedResult.monthlyPaymentCzk, "CZK")}
+            </p>
+          ) : (
+            <p className="mt-1 text-sm text-muted-foreground">
+              Zadejte údaje a klikněte na „{MINI_MORTGAGE_CTA.calculate}“.
+            </p>
+          )}
         </div>
 
-        <p className="break-words text-sm text-muted-foreground">
-          Hypotéka{" "}
-          <span className="font-semibold tabular-nums text-text-dark">
-            {formatCurrency(result.loanAmountCzk, "CZK")}
-          </span>
-          <span aria-hidden> • </span>
-          LTV{" "}
-          <span className="font-semibold tabular-nums text-text-dark">
-            {result.ltvPct}&nbsp;%
-          </span>
-        </p>
+        {hasCalculated && committedResult ? (
+          <>
+            <p className="break-words text-sm text-muted-foreground">
+              Hypotéka{" "}
+              <span className="font-semibold tabular-nums text-text-dark">
+                {formatCurrency(committedResult.loanAmountCzk, "CZK")}
+              </span>
+              <span aria-hidden> • </span>
+              LTV{" "}
+              <span className="font-semibold tabular-nums text-text-dark">
+                {exactLtv != null ? `${formatExactLtvCs(exactLtv)}\u00a0%` : "—"}
+              </span>
+              {committedResult.ltvBand != null ? (
+                <>
+                  <span aria-hidden> · </span>
+                  <span className="text-muted-foreground">
+                    pásmo {formatLtvBandLabel(committedResult.ltvBand)}
+                  </span>
+                </>
+              ) : null}
+            </p>
 
-        <p
-          className={cn(
-            "text-xs leading-relaxed",
-            ltvHigh ? "text-amber-800" : "text-muted-foreground"
-          )}
-        >
-          {ltvHigh
-            ? "Vyšší podíl úvěru — podmínky bank mohou být přísnější."
-            : "Orientační podíl úvěru k ceně nemovitosti."}
-        </p>
+            <p
+              className={cn(
+                "text-xs leading-relaxed",
+                ltvHigh ? "text-amber-800" : "text-muted-foreground"
+              )}
+            >
+              {ltvHigh
+                ? "Vyšší podíl úvěru — podmínky bank mohou být přísnější."
+                : "Orientační podíl úvěru k ceně nemovitosti."}
+            </p>
+          </>
+        ) : null}
       </div>
 
-      <TrackedCtaLink
-        href={sazbyHref}
-        ctaId="hero_mini_calc_spocitat"
-        toolId="mortgage_calculator"
-        className="mt-6 flex h-11 min-h-11 w-full items-center justify-center rounded-lg bg-muted-gold px-3 text-center text-sm font-semibold text-text-dark transition-colors hover:bg-muted-gold-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal focus-visible:ring-offset-2"
-      >
-        {miniMortgageCtaLabel()}
-      </TrackedCtaLink>
-
-      <TrackedCtaLink
-        href={routes.sazby}
-        ctaId="hero_mini_calc_porovnat_sazby"
-        className="mt-2 flex h-11 min-h-11 w-full items-center justify-center rounded-lg border border-border bg-white px-3 text-center text-sm font-semibold text-text-dark transition-colors hover:border-deep-teal/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal"
-      >
-        {CTA_CS.compareRates}
-      </TrackedCtaLink>
+      {!hasCalculated ? (
+        <button
+          type="button"
+          className={cn(
+            primaryButtonClassName,
+            "bg-muted-gold text-text-dark hover:bg-muted-gold-light"
+          )}
+          disabled={primaryDisabled}
+          aria-busy={isCalculating}
+          aria-describedby={
+            !validation.valid ? "mini-mortgage-validation" : undefined
+          }
+          onClick={() => void handleCalculate()}
+        >
+          {isCalculating ? "Počítám…" : MINI_MORTGAGE_CTA.calculate}
+          <span className="sr-only">
+            {isCalculating
+              ? "Probíhá výpočet orientační splátky."
+              : "Spočítá orientační měsíční splátku z modelové sazby."}
+          </span>
+        </button>
+      ) : (
+        <button
+          type="button"
+          className={cn(
+            primaryButtonClassName,
+            "bg-muted-gold text-text-dark hover:bg-muted-gold-light"
+          )}
+          disabled={ratesDisabled}
+          aria-busy={isNavigating}
+          onClick={handleViewRates}
+        >
+          {isNavigating ? "Otevírám sazby…" : MINI_MORTGAGE_CTA.viewRates}
+          <span className="sr-only">
+            {isNavigating
+              ? "Načítám stránku se sazbami pro váš výpočet."
+              : "Otevře stránku sazeb se zachovanými parametry výpočtu."}
+          </span>
+        </button>
+      )}
 
       <p className="mt-3 text-center text-[10px] leading-snug text-muted-foreground">
-        Splátka z modelové sazby {rateDisplay}&nbsp;% — nejde o nabídku banky.
-        Zveřejněné sazby bank zobrazíme samostatně.
+        {getCalculatorDisclaimer("cs")}
+        {hasCalculated
+          ? " Sazby bank otevřete tlačítkem výše."
+          : " Po výpočtu zobrazíte sazby pro stejné parametry."}
       </p>
     </article>
+  );
+}
+
+function MiniMortgageCalculatorUrlLoader() {
+  const searchParams = useSearchParams();
+  const bootstrap = useMemo(() => {
+    const raw = Object.fromEntries(searchParams.entries());
+    return bootstrapFromJourney(parseMortgageJourneyParams(raw));
+  }, [searchParams]);
+  return <MiniMortgageCalculatorCore bootstrap={bootstrap} />;
+}
+
+export type MiniMortgageCalculatorProps = {
+  /** Server-parsed journey removes Suspense/useSearchParams from the hero critical path. */
+  serverJourney?: MortgageJourneyParseResult | null;
+};
+
+export function MiniMortgageCalculator(props: MiniMortgageCalculatorProps = {}) {
+  const { serverJourney } = props;
+  if (serverJourney !== undefined) {
+    return (
+      <MiniMortgageCalculatorCore bootstrap={bootstrapFromJourney(serverJourney)} />
+    );
+  }
+  return (
+    <Suspense fallback={<MiniMortgageCalculatorSkeleton />}>
+      <MiniMortgageCalculatorUrlLoader />
+    </Suspense>
   );
 }

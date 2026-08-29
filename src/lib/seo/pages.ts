@@ -350,7 +350,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     path: routes.partneri,
     title: "Partneři",
     description:
-      "Provozovatel HEINZKE & partneři s.r.o., spolupráce s INSIA a role banky — schválení úvěru vždy provádí banka.",
+      "Provozovatel HEINZKE & partneři s.r.o. a role banky — schválení úvěru vždy provádí banka.",
     priority: 0.6,
   },
   {

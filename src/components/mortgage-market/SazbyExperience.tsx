@@ -1,7 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { LeadCaptureForm } from "@/components/forms/LeadCaptureForm";
+import { MortgageCalculationSummary } from "@/components/mortgage-market/MortgageCalculationSummary";
 import { PublishedRatesPanel } from "@/components/mortgage-market/PublishedRatesPanel";
 import { RpsnEducationBlock } from "@/components/mortgage-market/RpsnEducationBlock";
 import { pricingScenarioCategory } from "@/lib/analytics/bands";
@@ -10,26 +12,49 @@ import type {
   GetMortgageOffersResult,
   MortgageOffer,
 } from "@/lib/mortgage-market/offers";
+import { parseMortgageJourneyParams } from "@/lib/mortgage-rates/mortgage-journey-context";
+import type { LtvContext, MortgageJourneyCore } from "@/lib/mortgage-rates/ltv-context";
+import {
+  resolveMortgageJourneySummary,
+  type MortgageJourneySummary,
+} from "@/lib/mortgage-rates/mortgage-journey-summary";
 import { LEAD_FORM_FRICTION_ABOVE } from "@/lib/leads-form-copy";
 import { CTA_CS } from "@/lib/ux/cta";
 
 type SazbyExperienceProps = {
   initialOffers: GetMortgageOffersResult | null;
-  initialQuery: {
-    purpose: "purchase" | "refinance";
-    fixationMonths: number;
-    ltv: number;
-  };
+  initialQuery: MortgageJourneyCore;
+  ltvContext: LtvContext;
+  initialParamErrors?: string[];
+  journeySummary: MortgageJourneySummary;
   journeyMetadata?: Record<string, unknown>;
 };
 
 export function SazbyExperience({
   initialOffers,
   initialQuery,
-  journeyMetadata,
+  ltvContext,
+  initialParamErrors = [],
+  journeySummary: initialSummary,
+  journeyMetadata: initialJourneyMetadata,
 }: SazbyExperienceProps) {
+  const searchParams = useSearchParams();
   const [selected, setSelected] = useState<MortgageOffer | null>(null);
   const funnelStartedRef = useRef(false);
+
+  const journeySummary = useMemo(() => {
+    const raw = Object.fromEntries(searchParams.entries());
+    if (Object.keys(raw).length === 0) return initialSummary;
+    return resolveMortgageJourneySummary(parseMortgageJourneyParams(raw));
+  }, [searchParams, initialSummary]);
+
+  const journeyMetadata = useMemo(() => {
+    const base = { ...initialJourneyMetadata };
+    if (journeySummary.status === "ready") {
+      base.modelMonthlyPayment = journeySummary.modelMonthlyPaymentCzk;
+    }
+    return base;
+  }, [initialJourneyMetadata, journeySummary]);
 
   const metadata = {
     ...journeyMetadata,
@@ -61,9 +86,13 @@ export function SazbyExperience({
         </div>
       </header>
 
+      <MortgageCalculationSummary summary={journeySummary} />
+
       <PublishedRatesPanel
         initialResult={initialOffers}
         initialQuery={initialQuery}
+        initialLtvContext={ltvContext}
+        initialParamErrors={initialParamErrors}
         onSelectOffer={(offer) => {
           setSelected(offer);
           if (!funnelStartedRef.current) {
@@ -103,7 +132,7 @@ export function SazbyExperience({
         aria-labelledby="sazby-lead-heading"
         className="border-b border-border bg-white"
       >
-        <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-12">
+        <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:grid-cols-2 lg:px-8 lg:py-12">
           <div>
             <h2
               id="sazby-lead-heading"

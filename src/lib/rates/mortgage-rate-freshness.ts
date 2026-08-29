@@ -16,6 +16,9 @@ export const RATE_FRESH_MAX_AGE_MS = 8 * DAY_MS;
 /** 8–14 days inclusive → aging (age < 15 days). */
 export const RATE_AGING_MAX_AGE_MS = 15 * DAY_MS;
 
+/** Public /sazby UI — numeric rate only when verified within 72 hours. */
+export const PUBLIC_RATE_FRESH_MAX_AGE_MS = 3 * DAY_MS;
+
 export function ageMsFromIso(
   iso: string | null | undefined,
   nowMs: number = Date.now()
@@ -39,4 +42,14 @@ export function rateFreshnessFromCheckedAt(
   if (age < RATE_FRESH_MAX_AGE_MS) return "fresh";
   if (age < RATE_AGING_MAX_AGE_MS) return "aging";
   return "stale";
+}
+
+/** Whether a checked_at timestamp qualifies for showing a numeric public rate. */
+export function isPublicRateWithinFreshWindow(
+  checkedAt: string | null | undefined,
+  nowMs: number = Date.now()
+): boolean {
+  const age = ageMsFromIso(checkedAt, nowMs);
+  if (age == null) return false;
+  return age <= PUBLIC_RATE_FRESH_MAX_AGE_MS;
 }

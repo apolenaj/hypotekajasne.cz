@@ -13,8 +13,10 @@ import {
   PUBLIC_STATUS_MEANINGS,
   PUBLIC_STATUS_ORDER,
 } from "@/lib/data/public-methodology";
+import { RegulatoryBlock } from "@/components/legal/RegulatoryBlock";
+import { buildRegulatoryPlatformBlock, getCooperationWordingNeutral } from "@/lib/legal/regulatory-texts";
 import { getOperatorIdentity } from "@/lib/legal/operator";
-import { financialPartner, legalOperator } from "@/config/legal";
+import { financialPartner, legalOperator, withSentencePeriod } from "@/config/legal";
 import { routes } from "@/lib/routes";
 
 export const metadata = getStaticPageSeo("/duvera");
@@ -22,13 +24,14 @@ export const metadata = getStaticPageSeo("/duvera");
 export default function DuveraPage() {
   const op = getOperatorIdentity();
   const recent = listPublicChangelog().slice(0, 3);
+  const regulatory = buildRegulatoryPlatformBlock("cs");
 
   return (
     <TrustPageShell
       currentPath="/duvera"
       eyebrow="Důvěryhodnost"
       title="Centrum důvěry"
-      lead={`Do 30 sekund: ${legalOperator.brand} je digitální platforma. Provozovatelem je ${legalOperator.companyName} Jednatelem a hypotečním specialistou je ${financialPartner.representative}. Zprostředkování hypotečních služeb probíhá ve spolupráci s ${financialPartner.network}. Schválení úvěru vždy provádí banka po vlastním posouzení.`}
+      lead={`Do 30 sekund: ${regulatory.platformLine} Provozovatelem je ${withSentencePeriod(legalOperator.companyName)} Jednatelem a hypotečním specialistou je ${financialPartner.representative}. ${getCooperationWordingNeutral("cs")} Schválení úvěru vždy provádí banka po vlastním posouzení.`}
     >
       <section>
         <h2 className="font-heading text-xl font-semibold text-text-dark">
@@ -157,6 +160,8 @@ export default function DuveraPage() {
           </Link>
         </p>
       </section>
+
+      <RegulatoryBlock className="mt-2" />
 
       <section>
         <h2 className="font-heading text-xl font-semibold text-text-dark">

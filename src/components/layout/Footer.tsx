@@ -7,7 +7,7 @@ import { LegalOperatorIdentity } from "@/components/legal/LegalOperatorIdentity"
 import { useCookieConsent } from "@/components/consent/CookieConsentProvider";
 import { trackEvent } from "@/lib/analytics/track-event";
 import { SITE_DOMAIN_LABEL } from "@/lib/brand";
-import { financialPartner } from "@/config/legal";
+import { getRegulatoryFooterLine, getCooperationWordingNeutral } from "@/lib/legal/regulatory-texts";
 import { footerLinks, siteContact } from "@/lib/mock-data";
 
 function CookieSettingsLink() {
@@ -37,7 +37,7 @@ export function Footer() {
               className="text-xs leading-relaxed"
             />
             <p className="text-xs leading-relaxed text-muted-foreground">
-              {financialPartner.cooperationWording}
+              {getCooperationWordingNeutral("cs")}
             </p>
           </div>
 
@@ -135,8 +135,7 @@ export function Footer() {
             Všechna práva vyhrazena.
           </p>
           <p className="max-w-md text-center text-xs text-muted-foreground sm:text-right">
-            Informační platforma — nejsme banka. Schválení úvěru vždy provádí
-            banka po vlastním posouzení.
+            {getRegulatoryFooterLine("cs")}
           </p>
         </div>
       </div>

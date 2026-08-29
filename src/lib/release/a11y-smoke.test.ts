@@ -24,17 +24,13 @@ describe("a11y smoke (static)", () => {
 
   it("home hero has single h1 id and Czech headline", () => {
     const hero = readFileSync(
-      join(ROOT, "components/home/CockpitHero.tsx"),
+      join(ROOT, "components/home/CockpitHeroShell.tsx"),
       "utf8"
     );
     assert.ok(hero.includes("home-hero-heading"));
     assert.ok(hero.includes("<h1"));
     assert.ok(!hero.includes("Decision cockpit"));
-    assert.ok(
-      hero.includes("DecisionSnapshot") ||
-        hero.includes("max-h-[720px]") ||
-        hero.includes("aria-labelledby")
-    );
+    assert.ok(hero.includes("aria-labelledby"));
   });
 
   it("breadcrumbs expose nav aria-label", () => {
@@ -52,8 +48,8 @@ describe("a11y smoke (static)", () => {
     );
     assert.ok(nav.includes("sticky top-0"));
     assert.ok(nav.includes('aria-label="Hlavní navigace"'));
-    assert.ok(nav.includes("desktopNav.hypoteka"));
-    assert.ok(nav.includes("desktopNav.investice"));
+    assert.ok(nav.includes("desktopNav.hypoteky"));
+    assert.ok(nav.includes("desktopNav.dalsiSluzby"));
     assert.ok(nav.includes("min-h-11"));
     assert.ok(nav.includes("useFocusTrap"));
   });

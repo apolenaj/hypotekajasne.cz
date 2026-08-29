@@ -1,46 +1,53 @@
-"use client";
-
-import { CockpitHero } from "@/components/home/CockpitHero";
-import { HomeSituationSelector } from "@/components/home/HomeSituationSelector";
+import { HomeBenefits } from "@/components/home/HomeBenefits";
+import { HomeFaq } from "@/components/home/HomeFaq";
+import { HomeBottomDeferred } from "@/components/home/HomeBottomDeferred";
 import { HomeHowItWorks } from "@/components/home/HomeHowItWorks";
-import { HomeTeamStrip } from "@/components/home/HomeTeamStrip";
-import { HomeFinalCta } from "@/components/home/HomeFinalCta";
-import { PublishedRatesPanel } from "@/components/mortgage-market/PublishedRatesPanel";
-import { RpsnEducationBlock } from "@/components/mortgage-market/RpsnEducationBlock";
+import { CockpitHeroShell } from "@/components/home/CockpitHeroShell";
+import { HomeRatesDeferred } from "@/components/home/HomeRatesDeferred";
 import type { GetMortgageOffersResult } from "@/lib/mortgage-market/offers";
+import type { MortgageJourneyParseResult } from "@/lib/mortgage-rates/mortgage-journey-context";
+import {
+  buildLtvContext,
+  SAZBY_DEFAULT_QUERY,
+} from "@/lib/mortgage-rates/ltv-context";
 
-const DEFAULT_QUERY = {
-  purpose: "purchase" as const,
-  fixationMonths: 36,
-  ltv: 75,
-};
+const DEFAULT_QUERY = SAZBY_DEFAULT_QUERY;
+const DEFAULT_LTV_CONTEXT = buildLtvContext({
+  propertyValueCzk: DEFAULT_QUERY.propertyValueCzk,
+  loanAmountCzk: DEFAULT_QUERY.loanAmountCzk,
+});
 
 type HomeExperienceProps = {
   initialOffers: GetMortgageOffersResult | null;
+  serverJourney: MortgageJourneyParseResult;
 };
 
 /**
- * Launch homepage — short conversion journey.
- * Personalizovaný dashboard zůstává na /dashboard.
+ * Server homepage — hero + statické sekce; těžké interaktivní části až v dohledu.
  */
-export function HomeExperience({ initialOffers }: HomeExperienceProps) {
+export function HomeExperience({
+  initialOffers,
+  serverJourney,
+}: HomeExperienceProps) {
   return (
     <>
-      <CockpitHero />
-      <HomeSituationSelector />
-      <PublishedRatesPanel
-        initialResult={initialOffers}
-        initialQuery={DEFAULT_QUERY}
-        headingId="home-rates-heading"
-      />
-      <RpsnEducationBlock />
+      <CockpitHeroShell serverJourney={serverJourney} />
+      <HomeBenefits />
       <HomeHowItWorks />
-      <HomeTeamStrip />
-      <HomeFinalCta
+      <HomeRatesDeferred
+        initialOffers={initialOffers}
+        initialQuery={DEFAULT_QUERY}
+        initialLtvContext={DEFAULT_LTV_CONTEXT}
+      />
+      <HomeFaq />
+      <HomeBottomDeferred
         journeyMetadata={{
           purpose: DEFAULT_QUERY.purpose,
           fixationMonths: DEFAULT_QUERY.fixationMonths,
-          ltv: DEFAULT_QUERY.ltv,
+          exactLtv: DEFAULT_LTV_CONTEXT.exactLtv,
+          ltvBand: DEFAULT_LTV_CONTEXT.ltvBand,
+          propertyValue: DEFAULT_QUERY.propertyValueCzk,
+          mortgageAmount: DEFAULT_QUERY.loanAmountCzk,
         }}
       />
     </>

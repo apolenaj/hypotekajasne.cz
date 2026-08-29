@@ -1,7 +1,7 @@
 "use client";
 
 import { Shield, ShieldOff } from "lucide-react";
-import { CALCULATOR_DISCLAIMER } from "@/components/calculators/CalculatorDisclaimer";
+import { getCalculatorDisclaimer } from "@/components/calculators/CalculatorDisclaimer";
 import { RpsnDisplay } from "@/components/calculators/RpsnDisplay";
 import { formatRateOrOnRequest } from "@/lib/format-rate";
 import { missingDataLabel } from "@/lib/data/display";
@@ -162,7 +162,7 @@ export function InsuranceRateCards({
         </button>
       </div>
       <p className="text-[11px] leading-relaxed text-gray-400">
-        {CALCULATOR_DISCLAIMER}
+        {getCalculatorDisclaimer()}
       </p>
     </div>
   );

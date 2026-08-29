@@ -29,6 +29,8 @@ export const PHASE4_EVENTS = [
   "phone_click",
   "email_click",
   "cta_click",
+  "mortgage_calculation_completed",
+  "mortgage_rates_cta_clicked",
 ] as const;
 
 export type Phase4EventName = (typeof PHASE4_EVENTS)[number];

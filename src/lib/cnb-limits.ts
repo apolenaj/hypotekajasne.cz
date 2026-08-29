@@ -8,9 +8,10 @@ import {
   resolveCzPeriod,
 } from "@/lib/mortgage-regulation";
 import {
-  CNB_INVESTMENT_RECOMMENDATION_CS,
-  CNB_OWN_HOUSING_LTV_CS,
-} from "@/lib/mortgage-regulation/cnb-public-copy";
+  CNB_INVESTMENT_RECOMMENDATION_BODY,
+  CNB_OWNER_OCCUPIED_BODY,
+  CNB_PURPOSE_DISTINCTION,
+} from "@/lib/legal/regulatory-texts";
 
 export type MortgagePurpose = "owner_occupied" | "investment";
 
@@ -21,12 +22,12 @@ export const CNB_LIMITS = {
   ownerOccupied: {
     ltvStandard: current.ownerOccupied.ltvStandard,
     ltvYoungUnder36: current.ownerOccupied.ltvYoungUnder36,
-    note: `${CNB_OWN_HOUSING_LTV_CS} Ukazatele DTI a DSTI zůstávají deaktivované — banky je mohou používat interně, ale nejde o plošně povinné limity ČNB.`,
+    note: `${CNB_OWNER_OCCUPIED_BODY.cs} ${CNB_PURPOSE_DISTINCTION.cs}`,
   },
   investment: {
     ltvMax: current.investment.ltvMax,
     dtiMax: current.investment.dtiMax ?? 7,
-    note: CNB_INVESTMENT_RECOMMENDATION_CS,
+    note: CNB_INVESTMENT_RECOMMENDATION_BODY.cs,
   },
 } as const;
 
@@ -43,7 +44,7 @@ export const MORTGAGE_PURPOSE_OPTIONS: {
   {
     value: "investment",
     label: "Investiční nemovitost k pronájmu",
-    description: CNB_INVESTMENT_RECOMMENDATION_CS,
+    description: CNB_INVESTMENT_RECOMMENDATION_BODY.cs,
   },
 ];
 

@@ -91,6 +91,8 @@ describe("phase4 analytics abstraction", () => {
         `missing ${e}`
       );
     }
+    assert.ok(ANALYTICS_EVENTS.includes("mortgage_calculation_completed"));
+    assert.ok(ANALYTICS_EVENTS.includes("mortgage_rates_cta_clicked"));
     assert.deepEqual(
       PHASE4_CONVERSION_FUNNEL.steps.map((s) => s.id),
       [

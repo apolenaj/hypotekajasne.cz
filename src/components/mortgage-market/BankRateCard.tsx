@@ -11,44 +11,150 @@ import {
   conditionEffectLabelCs,
   conditionTypeLabelCs,
   fixationLabelCs,
-  formatRatePercentCs,
   ltvScopeLabelCs,
-  publicFreshnessLabel,
   purposeLabelCs,
   rateTypeLabelCs,
   scenarioLabelCs,
   sourceTypeLabelCs,
 } from "@/lib/mortgage-market/public-labels";
+import {
+  resolveBankRatePaymentDisplay,
+  type BankRatePaymentParams,
+} from "@/lib/mortgage-market/bank-rate-monthly-payment";
+import {
+  evaluatePublicRateDisplay,
+  PUBLIC_RATE_VERIFYING_MESSAGE,
+} from "@/lib/mortgage-market/public-rate-display";
 import { cn } from "@/lib/utils";
 
 type BankRateCardProps = {
   group: LenderOfferGroup;
   className?: string;
+  /** Loan + splatnost from validated journey — drives orientační splátka. */
+  paymentParams?: BankRatePaymentParams | null;
   /** Called when user wants to continue with a scenario (lead funnel). */
   onSelectScenario?: (offer: MortgageOffer) => void;
 };
 
-function ScenarioRow({ offer }: { offer: MortgageOffer }) {
+function primaryConditions(offer: MortgageOffer) {
+  const required = offer.conditions.filter((c) => c.isRequired);
+  return required.length > 0 ? required : offer.conditions.slice(0, 3);
+}
+
+function ScenarioRow({
+  offer,
+  paymentParams,
+}: {
+  offer: MortgageOffer;
+  paymentParams?: BankRatePaymentParams | null;
+}) {
+  const display = evaluatePublicRateDisplay(offer);
+  const payment = resolveBankRatePaymentDisplay(offer, paymentParams);
+
   return (
-    <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
-      <p className="font-heading text-2xl font-bold tabular-nums tracking-tight text-text-dark">
-        {formatRatePercentCs(offer.nominalInterestRate)}&nbsp;%
-        <span className="ml-1 text-sm font-semibold text-muted-foreground">
-          p.a.
-        </span>
-      </p>
-      <p className="text-sm text-muted-foreground">
-        {scenarioLabelCs(offer)}
-      </p>
+    <div className="min-w-0 space-y-1.5">
+      <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
+        {payment ? (
+          <p className="font-heading text-2xl font-bold tabular-nums tracking-tight text-text-dark">
+            {payment.rateHeadline}
+          </p>
+        ) : display.showNumeric ? (
+          <p className="font-heading text-2xl font-bold tabular-nums tracking-tight text-text-dark">
+            {display.headline}
+            <span className="ml-1 text-sm font-semibold text-muted-foreground">
+              p.a.
+            </span>
+          </p>
+        ) : (
+          <p className="font-heading text-lg font-bold text-deep-teal">
+            {PUBLIC_RATE_VERIFYING_MESSAGE}
+          </p>
+        )}
+        <p className="text-sm text-muted-foreground">{scenarioLabelCs(offer)}</p>
+      </div>
+      {payment ? (
+        <>
+          <p className="font-heading text-lg font-semibold tabular-nums text-text-dark">
+            {payment.monthlyPaymentLine}
+          </p>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            {payment.disclaimer}
+          </p>
+        </>
+      ) : null}
+    </div>
+  );
+}
+
+function PublicRateMeta({ offer }: { offer: MortgageOffer }) {
+  const display = evaluatePublicRateDisplay(offer);
+  const conditions = primaryConditions(offer);
+  if (display.visibility === "hidden") return null;
+
+  return (
+    <div className="mt-3 space-y-2 text-xs text-muted-foreground">
+      <dl className="grid gap-2 sm:grid-cols-2">
+        <div>
+          <dt className="font-semibold uppercase tracking-wide text-muted-foreground/80">
+            Typ produktu
+          </dt>
+          <dd className="mt-0.5 text-text-dark">
+            {purposeLabelCs(offer.financingPurpose)}
+          </dd>
+        </div>
+        {display.verifiedAtLabel ? (
+          <div>
+            <dt className="font-semibold uppercase tracking-wide text-muted-foreground/80">
+              Poslední ověření
+            </dt>
+            <dd className="mt-0.5 text-text-dark">{display.verifiedAtLabel}</dd>
+          </div>
+        ) : null}
+      </dl>
+
+      {conditions.length > 0 ? (
+        <div>
+          <p className="font-semibold uppercase tracking-wide text-muted-foreground/80">
+            Hlavní podmínky sazby
+          </p>
+          <ul className="mt-1 space-y-1">
+            {conditions.map((c, i) => {
+              const effect = conditionEffectLabelCs(c.rateEffectBp);
+              return (
+                <li key={`${c.conditionType}-${i}`} className="text-text-dark">
+                  <span className="font-medium">
+                    {conditionTypeLabelCs(c.conditionType)}
+                  </span>
+                  {effect ? (
+                    <span className="text-muted-foreground"> · {effect}</span>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ) : null}
+
+      {display.sourceUrl ? (
+        <p>
+          Oficiální zdroj banky:{" "}
+          <a
+            href={display.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-deep-teal underline underline-offset-2"
+          >
+            Otevřít sazebník
+          </a>
+        </p>
+      ) : null}
     </div>
   );
 }
 
 function OfferDetails({ offer }: { offer: MortgageOffer }) {
   const ltv = ltvScopeLabelCs(offer);
-  const fresh = publicFreshnessLabel(offer.freshness, offer.checkedAt, {
-    sourceUrl: offer.evidence?.sourceUrl,
-  });
+  const display = evaluatePublicRateDisplay(offer);
   return (
     <div className="space-y-3 text-sm text-muted-foreground">
       <dl className="grid gap-2 sm:grid-cols-2">
@@ -90,10 +196,11 @@ function OfferDetails({ offer }: { offer: MortgageOffer }) {
           <ul className="mt-1.5 space-y-1.5">
             {offer.conditions.map((c, i) => {
               const effect = conditionEffectLabelCs(c.rateEffectBp);
-              // Prefer Czech labels — skip English audit notes for public UI.
               const publicNote =
                 c.description &&
-                !/[A-Za-z]{4,}/.test(c.description.replace(/[áčďéěíňóřšťúůýžÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ]/g, ""))
+                !/[A-Za-z]{4,}/.test(
+                  c.description.replace(/[áčďéěíňóřšťúůýžÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ]/g, "")
+                )
                   ? c.description
                   : null;
               return (
@@ -138,15 +245,15 @@ function OfferDetails({ offer }: { offer: MortgageOffer }) {
       ) : null}
 
       <div className="border-t border-border/70 pt-3 text-xs">
-        <p className="text-text-dark">{fresh.detail}</p>
+        <p className="text-text-dark">{display.badge}</p>
         {offer.evidence ? (
           <p className="mt-1">
             Zdroj: {sourceTypeLabelCs(offer.evidence.sourceType)}
-            {offer.evidence.sourceUrl ? (
+            {display.sourceUrl ? (
               <>
                 {" · "}
                 <a
-                  href={offer.evidence.sourceUrl}
+                  href={display.sourceUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="font-medium text-deep-teal underline underline-offset-2"
@@ -166,17 +273,50 @@ function OfferDetails({ offer }: { offer: MortgageOffer }) {
   );
 }
 
+function AlternateScenarioLine({
+  offer,
+  paymentParams,
+}: {
+  offer: MortgageOffer;
+  paymentParams?: BankRatePaymentParams | null;
+}) {
+  const display = evaluatePublicRateDisplay(offer);
+  const payment = resolveBankRatePaymentDisplay(offer, paymentParams);
+  if (!display.showNumeric) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        Alternativa: {PUBLIC_RATE_VERIFYING_MESSAGE} · {scenarioLabelCs(offer)}
+      </p>
+    );
+  }
+  return (
+    <div className="text-sm text-muted-foreground">
+      <p>
+        Alternativa:{" "}
+        <span className="font-semibold tabular-nums text-text-dark">
+          {payment?.rateHeadline ?? display.headline}
+        </span>{" "}
+        {scenarioLabelCs(offer)}
+      </p>
+      {payment ? (
+        <p className="mt-0.5 tabular-nums text-text-dark">
+          {payment.monthlyPaymentLine}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 export function BankRateCard({
   group,
   className,
+  paymentParams,
   onSelectScenario,
 }: BankRateCardProps) {
   const panelId = useId();
   const [open, setOpen] = useState(false);
   const primary = group.scenarios[0]!;
-  const fresh = publicFreshnessLabel(primary.freshness, primary.checkedAt, {
-    sourceUrl: primary.evidence?.sourceUrl,
-  });
+  const display = evaluatePublicRateDisplay(primary);
   const ltv = ltvScopeLabelCs(primary);
   const pair = isInsuranceScenarioPair(group);
   const secondary = pair
@@ -205,32 +345,22 @@ export function BankRateCard({
           </p>
         </div>
         <p className="shrink-0 rounded-md bg-deep-teal/10 px-2 py-1 text-[11px] font-semibold text-deep-teal">
-          {fresh.short}
+          {display.badge}
         </p>
       </header>
 
-      <div className="mt-3 space-y-2">
-        <ScenarioRow offer={primary} />
+      <div className="mt-3 space-y-3">
+        <ScenarioRow offer={primary} paymentParams={paymentParams} />
         {secondary && secondary.rateVariantId !== primary.rateVariantId ? (
-          <p className="text-sm text-muted-foreground">
-            Alternativa:{" "}
-            <span className="font-semibold tabular-nums text-text-dark">
-              {formatRatePercentCs(secondary.nominalInterestRate)}&nbsp;%
-            </span>{" "}
-            {scenarioLabelCs(secondary)}
-          </p>
+          <AlternateScenarioLine offer={secondary} paymentParams={paymentParams} />
         ) : null}
         {!pair && group.scenarios.length > 2
           ? group.scenarios.slice(1).map((s) => (
-              <p
+              <AlternateScenarioLine
                 key={s.rateVariantId}
-                className="text-sm text-muted-foreground"
-              >
-                <span className="font-semibold tabular-nums text-text-dark">
-                  {formatRatePercentCs(s.nominalInterestRate)}&nbsp;%
-                </span>{" "}
-                {scenarioLabelCs(s)}
-              </p>
+                offer={s}
+                paymentParams={paymentParams}
+              />
             ))
           : null}
       </div>
@@ -241,6 +371,8 @@ export function BankRateCard({
           Banka v tomto sazebníku neuvádí samostatné cenové pásmo LTV.
         </p>
       ) : null}
+
+      <PublicRateMeta offer={primary} />
 
       <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
         <button
@@ -284,24 +416,26 @@ export function BankRateCard({
       </div>
 
       {open ? (
-        <div
-          id={panelId}
-          className="mt-4 border-t border-border/80 pt-4"
-        >
-          {group.scenarios.map((offer) => (
-            <div
-              key={offer.rateVariantId}
-              className="mb-4 last:mb-0 border-b border-border/50 pb-4 last:border-0 last:pb-0"
-            >
-              {group.scenarios.length > 1 ? (
-                <p className="mb-2 text-sm font-semibold text-text-dark">
-                  {scenarioLabelCs(offer)} ·{" "}
-                  {formatRatePercentCs(offer.nominalInterestRate)}&nbsp;%
-                </p>
-              ) : null}
-              <OfferDetails offer={offer} />
-            </div>
-          ))}
+        <div id={panelId} className="mt-4 border-t border-border/80 pt-4">
+          {group.scenarios.map((offer) => {
+            const scenarioDisplay = evaluatePublicRateDisplay(offer);
+            return (
+              <div
+                key={offer.rateVariantId}
+                className="mb-4 last:mb-0 border-b border-border/50 pb-4 last:border-0 last:pb-0"
+              >
+                {group.scenarios.length > 1 ? (
+                  <p className="mb-2 text-sm font-semibold text-text-dark">
+                    {scenarioLabelCs(offer)}
+                    {scenarioDisplay.showNumeric
+                      ? ` · ${scenarioDisplay.headline}`
+                      : ` · ${PUBLIC_RATE_VERIFYING_MESSAGE}`}
+                  </p>
+                ) : null}
+                <OfferDetails offer={offer} />
+              </div>
+            );
+          })}
         </div>
       ) : null}
     </article>
@@ -321,7 +455,7 @@ export function LenderPendingCard({
         {lenderName}
       </h3>
       <p className="mt-2 text-sm font-medium text-deep-teal">
-        {message ?? "Sazbu právě ověřujeme"}
+        {message ?? PUBLIC_RATE_VERIFYING_MESSAGE}
       </p>
       <p className="mt-1 text-xs text-muted-foreground">
         Zatím nezveřejňujeme ověřenou maloobchodní sazbu. Nejde o modelový odhad.

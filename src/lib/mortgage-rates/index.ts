@@ -45,6 +45,35 @@ export {
   type LtvBandMatchOptions,
 } from "@/lib/mortgage-rates/ltv-band";
 export {
+  buildLeadMetadataFromJourney,
+  buildMortgageJourneyHref,
+  journeyCoreEqual,
+  mergeMarketingFromSearch,
+  MORTGAGE_JOURNEY_FIXATION_OPTIONS,
+  MORTGAGE_JOURNEY_TERM_OPTIONS,
+  parseMortgageJourneyParams,
+  serializeMortgageJourneyParams,
+  type MarketingAttributionParams,
+  type MortgageJourneyContext,
+  type MortgageJourneyCore,
+  type MortgageJourneyParseResult,
+  type MortgageJourneyPurpose,
+} from "@/lib/mortgage-rates/mortgage-journey-context";
+export {
+  buildLtvContext,
+  computeExactLtv,
+  CZ_SUPPORTED_LTV_BAND_UPPER_LIMITS,
+  formatExactLtvCs,
+  formatLtvBandLabel,
+  parseSazbySearchParams,
+  rateFilterLtvFromContext,
+  resolveLtvBandUpperLimit,
+  serializeSazbySearchParams,
+  type LtvContext,
+  type SazbyRatesQuery,
+  SAZBY_DEFAULT_QUERY,
+} from "@/lib/mortgage-rates/ltv-context";
+export {
   planMortgageRateSupersede,
   type SupersedeMortgageRateInput,
   type SupersedeMortgageRatePlan,

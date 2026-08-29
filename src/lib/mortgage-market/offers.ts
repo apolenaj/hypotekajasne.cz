@@ -19,6 +19,7 @@ import {
   rateFreshnessFromCheckedAt,
   type RateFreshness,
 } from "@/lib/rates/mortgage-rate-freshness";
+import { isPubliclyListableMortgageOffer } from "@/lib/mortgage-market/public-rate-display";
 
 export type CatalogLender = {
   id: string;
@@ -348,6 +349,16 @@ function toOffer(
   };
 }
 
+function appendPublicOffer(
+  list: MortgageOffer[],
+  offer: MortgageOffer,
+  nowMs: number
+): void {
+  if (isPubliclyListableMortgageOffer(offer, nowMs)) {
+    list.push(offer);
+  }
+}
+
 /**
  * Select lender offers from a normalized catalog snapshot.
  * Multiple pricing scenarios are returned together (never randomly collapsed).
@@ -443,14 +454,20 @@ export function getMortgageOffers(
         if (query.ltv != null) {
           if (unspecified || fixationUnpublished) {
             if (query.includeLtvUnspecified) {
-              unspecifiedLtvOffers.push(
-                toOffer(catalog, lender, product, rate, false, nowMs)
+              appendPublicOffer(
+                unspecifiedLtvOffers,
+                toOffer(catalog, lender, product, rate, false, nowMs),
+                nowMs
               );
             }
             continue;
           }
           if (!variantMatchesLtv(rate, query.ltv)) continue;
-          offers.push(toOffer(catalog, lender, product, rate, true, nowMs));
+          appendPublicOffer(
+            offers,
+            toOffer(catalog, lender, product, rate, true, nowMs),
+            nowMs
+          );
           matchedAny = true;
           continue;
         }
@@ -458,15 +475,19 @@ export function getMortgageOffers(
         if (fixationUnpublished && query.fixationMonths != null) {
           // No LTV filter but fixation selected — keep conditional "od" visible
           // without claiming it is the selected fixation.
-          unspecifiedLtvOffers.push(
-            toOffer(catalog, lender, product, rate, false, nowMs)
+          appendPublicOffer(
+            unspecifiedLtvOffers,
+            toOffer(catalog, lender, product, rate, false, nowMs),
+            nowMs
           );
           continue;
         }
 
         // No personalized LTV filter — return published scenarios as-is.
-        offers.push(
-          toOffer(catalog, lender, product, rate, false, nowMs)
+        appendPublicOffer(
+          offers,
+          toOffer(catalog, lender, product, rate, false, nowMs),
+          nowMs
         );
         matchedAny = true;
       }
