@@ -16,8 +16,13 @@ import {
   type TeamMember,
 } from "@/lib/trust";
 import { routes } from "@/lib/routes";
-import { legalOperator } from "@/config/legal";
+import {
+  getPlatformOperatorIntroCs,
+  legalOperator,
+  PLATFORM_SAFE_DESCRIPTION_CS,
+} from "@/config/legal";
 import { getCooperationWordingNeutral } from "@/lib/legal/regulatory-texts";
+
 
 const pillars = [
   {
@@ -103,13 +108,12 @@ export function AboutUsView() {
             Lidé a role za Hypotéka Jasně
           </h1>
           <p className="mx-auto max-w-3xl text-lg leading-relaxed font-light text-emerald-50/90 md:text-xl">
-            Jsme digitální platforma provozovaná společností{" "}
-            {legalOperator.companyName} Nejsme banka.{" "}
-            {getCooperationWordingNeutral("cs")} Schválení úvěru vždy provádí
-            banka po vlastním posouzení. Detail rolí v{" "}
+            {getPlatformOperatorIntroCs()} {PLATFORM_SAFE_DESCRIPTION_CS}{" "}
+            {getCooperationWordingNeutral("cs")} Detail rolí v{" "}
             <Link href={routes.duvera} className="underline decoration-white/40">
               Centru důvěry
-            </Link>{"."}
+            </Link>
+            .
           </p>
         </div>
       </div>

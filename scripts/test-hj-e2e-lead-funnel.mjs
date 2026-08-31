@@ -118,7 +118,7 @@ async function testNegativeApi(baseUrl) {
         phone: "+420777000111",
         source: "mortgage_calculator",
         consent: {
-          policyVersion: "2026-08-07.8",
+          policyVersion: "2026-08-31.1",
           privacyAccepted: true,
           partnerTransferAccepted: false,
           partnerTransferScope: "none",
@@ -136,7 +136,7 @@ async function testNegativeApi(baseUrl) {
         phone: "12",
         source: "mortgage_calculator",
         consent: {
-          policyVersion: "2026-08-07.8",
+          policyVersion: "2026-08-31.1",
           privacyAccepted: true,
           partnerTransferAccepted: false,
           partnerTransferScope: "none",
@@ -154,7 +154,7 @@ async function testNegativeApi(baseUrl) {
         phone: "+420777000111",
         source: "mortgage_calculator",
         consent: {
-          policyVersion: "2026-08-07.8",
+          policyVersion: "2026-08-31.1",
           privacyAccepted: false,
           partnerTransferAccepted: false,
           partnerTransferScope: "none",
@@ -415,7 +415,7 @@ async function runBrowserFunnel() {
         idempotencyKey,
         metadata: { test_marker: MARKER },
         consent: {
-          policyVersion: "2026-08-07.8",
+          policyVersion: "2026-08-31.1",
           privacyAccepted: true,
           partnerTransferAccepted: false,
           partnerTransferScope: "none",

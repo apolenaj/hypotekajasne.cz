@@ -29,7 +29,7 @@ export function HomeFinalCta({ journeyMetadata }: HomeFinalCtaProps) {
             Máte orientační čísla — chcete projít možnosti s člověkem?
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-white/80 sm:text-base">
-            Hypoteční specialista s vámi zdarma a nezávazně projde reálné
+            Tým Hypotéka Jasně s vámi zdarma a nezávazně projde reálné
             možnosti podle vaší situace. Nejde o schválení úvěru ani garantovanou
             sazbu — Hypotéka Jasně není banka.
           </p>

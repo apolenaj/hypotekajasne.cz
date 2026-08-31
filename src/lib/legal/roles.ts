@@ -1,12 +1,10 @@
 /**
  * Role v zpracování osobních údajů (GDPR).
  *
- * Počáteční formulář → HEINZKE & partneři s.r.o. (správce).
+ * Počáteční formulář → Hunger killers s.r.o. (správce).
  * To NENÍ předání třetí straně.
  *
- * INTERNAL: Before final commercial launch, verify the exact current
- * regulatory relationship between HEINZKE & partneři s.r.o. and INSIA in
- * the ČNB register. Do not invent ČNB status in public copy.
+ * INTERNAL: Do not invent ČNB intermediary status in public copy.
  */
 
 import { legalOperator } from "@/config/legal";
@@ -29,11 +27,11 @@ export type ProcessingRole = {
 
 /**
  * Always-public architecture: operator as controller + tech processors.
- * Do not merge HEINZKE and INSIA into one privacy entity.
+ * Do not merge the platform operator with an unverified third-party intermediary.
  */
 export const PROCESSING_ROLES: ProcessingRole[] = [
   {
-    id: "heinzke_operator",
+    id: "platform_operator",
     label: legalOperator.companyName,
     roleLabelCs: "správce platformy a údajů z úvodních formulářů",
     gdprRole: "controller",
@@ -52,7 +50,7 @@ export const PROCESSING_ROLES: ProcessingRole[] = [
 
 /**
  * Independent recipients — listed only when enquiry PII is actually transmitted.
- * INSIA / bank / other financial entities are not listed here unless transfer is active.
+ * External financial entities are not listed here unless transfer is active.
  */
 export function getConditionalProcessingRoles(): ProcessingRole[] {
   const roles: ProcessingRole[] = [];
@@ -100,7 +98,7 @@ export function getPublicProcessingRoles(): ProcessingRole[] {
   return [...PROCESSING_ROLES, ...getConditionalProcessingRoles()];
 }
 
-/** Regulované hranice — bez smíchání HEINZKE a INSIA do jedné privacy role. */
+/** Regulované hranice — provozovatel není směšován s neověřeným zprostředkovatelem. */
 export const REGULATED_BOUNDARIES = {
   title: "Regulované hranice",
   statements: getRegulatedBoundaryStatements("cs"),
@@ -111,7 +109,7 @@ export const REGULATED_BOUNDARIES = {
  * Veřejné tvrzení „právně zkontrolováno“ jen přes isLegalTextReviewed() z config/legal.
  */
 export const LEGAL_INTERNAL_REVIEW_NOTE =
-  "Internal: Final legal review required before commercial launch. Do not claim legal sign-off until LEGAL_REVIEWED_BY + LEGAL_LAST_REVIEW_DATE are set after a qualified Czech lawyer review. Before final commercial launch, verify the exact current regulatory relationship between HEINZKE & partneři s.r.o. and INSIA in the ČNB register and replace neutral cooperation wording with the exact legally correct designation if appropriate.";
+  "Internal: Final legal review required before commercial launch. Do not claim legal sign-off until LEGAL_REVIEWED_BY + LEGAL_LAST_REVIEW_DATE are set after a qualified Czech lawyer review. Do not invent ČNB intermediary status; keep partner handoff off until verified.";
 
 /** @deprecated Use LEGAL_INTERNAL_REVIEW_NOTE — do not show to end users. */
 export const LAWYER_REVIEW_NOTICE = LEGAL_INTERNAL_REVIEW_NOTE;

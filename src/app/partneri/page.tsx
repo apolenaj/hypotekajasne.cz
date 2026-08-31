@@ -3,8 +3,8 @@ import Link from "next/link";
 import { TrustPageShell } from "@/components/trust/TrustPageShell";
 import { LegalOperatorIdentity } from "@/components/legal/LegalOperatorIdentity";
 import {
-  financialPartner,
   legalOperator,
+  PLATFORM_SAFE_DESCRIPTION_CS,
   projectFounder,
 } from "@/config/legal";
 import { COMPENSATION_DISCLOSURE } from "@/lib/legal/partner-config";
@@ -23,8 +23,8 @@ const ROLE_BLOCKS = [
     body: `Provozovatel platformy · IČO ${legalOperator.ico}`,
   },
   {
-    title: financialPartner.representative,
-    body: "Jednatel společnosti a hypoteční specialista.",
+    title: projectFounder.displayName,
+    body: projectFounder.role,
   },
   {
     title: "Možná partnerská spolupráce",
@@ -42,7 +42,7 @@ export default function PartneriPage() {
       currentPath="/partneri"
       eyebrow="Centrum důvěry"
       title="Partneři a role"
-      lead={`${legalOperator.brand} je digitální platforma. Provozovatelem je ${legalOperator.companyName} Schválení úvěru vždy provádí banka po vlastním posouzení.`}
+      lead={`${legalOperator.brand} je technologická a informační platforma. Provozovatelem je ${legalOperator.companyName} Schválení úvěru vždy provádí banka po vlastním posouzení.`}
     >
       <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
         {COMPENSATION_DISCLOSURE}
@@ -56,8 +56,10 @@ export default function PartneriPage() {
           <LegalOperatorIdentity variant="compact" showBrandNote showContact />
         </div>
         <p className="mt-4 text-sm text-muted-foreground">
-          Jednatel: {financialPartner.representative} ·{" "}
-          {financialPartner.specialistTitle}
+          Jednatel: {projectFounder.displayName}
+        </p>
+        <p className="mt-3 text-sm leading-relaxed text-text-dark">
+          {PLATFORM_SAFE_DESCRIPTION_CS}
         </p>
         <p className="mt-3 text-sm leading-relaxed text-text-dark">
           {getCooperationWordingNeutral("cs")}
@@ -85,7 +87,8 @@ export default function PartneriPage() {
         <p>
           <strong className="text-text-dark">{projectFounder.name}</strong> —{" "}
           {projectFounder.role}. Stojí za konceptem a vývojem digitální
-          platformy; není provozovatelem ani správcem osobních údajů.
+          platformy; není hypotečním specialistou, finančním poradcem ani
+          regulovaným hypotečním zprostředkovatelem.
         </p>
       </section>
 
@@ -93,10 +96,12 @@ export default function PartneriPage() {
         Role v ekosystému:{" "}
         <Link href={routes.duvera} className="text-deep-teal underline">
           Centrum důvěry
-        </Link>{". Majetio: "}
+        </Link>
+        {". Majetio: "}
         <Link href={routes.oMajetio} className="text-deep-teal underline">
           /o-majetio
-        </Link>{"."}
+        </Link>
+        {"."}
       </p>
     </TrustPageShell>
   );

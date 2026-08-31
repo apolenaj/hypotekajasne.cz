@@ -1,6 +1,6 @@
 import type { MagazinePerson } from "@/lib/magazine/types";
 import { routes } from "@/lib/routes";
-import { financialPartner, projectFounder } from "@/config/legal";
+import { projectFounder } from "@/config/legal";
 
 /**
  * Centrální registr autorů / odborné kontroly (YMYL).
@@ -15,14 +15,6 @@ export const MAGAZINE_PEOPLE: Record<string, MagazinePerson> = {
     bio: projectFounder.description,
     credentials: "Computing Technologies · MBA · Hypotéka Jasně",
     url: `${routes.oNas}#josef-apolenar`,
-  },
-  "michal-heinzke": {
-    id: "michal-heinzke",
-    name: financialPartner.representative,
-    role: `${financialPartner.representativeRole} · ${financialPartner.specialistTitle}`,
-    bio: financialPartner.michalDescription,
-    credentials: "Praxe v oblasti hypoték, úvěrů a pojištění",
-    url: `${routes.oNas}#michal-heinzke`,
   },
   "redakce-hj": {
     id: "redakce-hj",
@@ -47,5 +39,5 @@ export function getPerson(id: string): MagazinePerson {
 
 /** Named human authors eligible for Person JSON-LD (exclude placeholders). */
 export function isNamedPerson(id: string): boolean {
-  return id === "josef-apolenar" || id === "michal-heinzke";
+  return id === "josef-apolenar";
 }

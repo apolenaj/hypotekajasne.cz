@@ -19,7 +19,6 @@ import {
   MODEL_FALLBACK_SOURCE_ID,
 } from "@/lib/rates/model-fallback";
 import { collectLegalProductionIssues } from "@/lib/legal/production-guard";
-import { mustEnforceLegalIdentityForLeadCollection } from "@/config/legal";
 
 const NOW = Date.parse("2026-07-20T12:00:00.000Z");
 
@@ -139,35 +138,31 @@ describe("regression gate — stale/live rate behavior", () => {
 });
 
 describe("regression gate — legal production gate", () => {
-  it("soft mode allows incomplete identity with warnings", () => {
+  it("soft mode warns on handoff/review without hard errors", () => {
     const issues = collectLegalProductionIssues({
       requireOperatorIdentity: false,
       requireIdentityForLeads: false,
       requirePartnerHandoff: false,
     });
     const codes = issues.map((i) => i.code);
-    assert.ok(codes.includes("OPERATOR_IDENTITY_SOFT"));
+    assert.ok(codes.includes("PARTNER_HANDOFF_SOFT"));
+    assert.ok(codes.includes("LEGAL_TEXT_NOT_REVIEWED"));
     assert.ok(!issues.some((i) => i.severity === "error"));
   });
 
-  it("production lead gate fails when identity incomplete (simulated Vercel prod)", () => {
-    const leadGate = mustEnforceLegalIdentityForLeadCollection();
-    if (!leadGate) {
-      // Local dev — gate not enforced; still assert strict path works when forced.
-      const strict = collectLegalProductionIssues({
-        requireOperatorIdentity: true,
-        requireIdentityForLeads: true,
-      });
-      assert.ok(
-        strict.some((i) => i.severity === "error"),
-        "expected error when operator identity forced incomplete"
-      );
-      return;
-    }
+  it("production lead gate passes with complete Hunger killers operator identity", () => {
     const issues = collectLegalProductionIssues({
       requireOperatorIdentity: true,
       requireIdentityForLeads: true,
+      requirePartnerHandoff: false,
     });
-    assert.ok(issues.some((i) => i.severity === "error"));
+    assert.ok(
+      !issues.some(
+        (i) =>
+          i.code === "OPERATOR_IDENTITY_REQUIRED_FOR_LEADS" ||
+          i.code === "OPERATOR_IDENTITY_MISSING"
+      ),
+      "operator identity must be complete for production lead collection"
+    );
   });
 });

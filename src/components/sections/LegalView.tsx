@@ -296,7 +296,7 @@ function CookiesContent() {
         marketingové technologie spouštíme{" "}
         <strong>až po aktivním souhlasu</strong>. Banner nabízí „Přijmout vše“,
         „Odmítnout volitelné“ a „Nastavení“. Preference ukládáme ve vašem
-        prohlížeči (localStorage).
+        prohlížeči (místní úložiště).
       </p>
       <ul className="list-disc space-y-3 pl-5">
         <li>

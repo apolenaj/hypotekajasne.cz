@@ -30,8 +30,8 @@ const errors = issues.filter((i) => i.severity === "error");
 if (errors.length > 0) {
   console.error(
     `\nLegal gate failed (${errors.length} error(s)).\n` +
-      `Canonical HEINZKE office is in src/config/legal.ts (legalOperator).\n` +
-      `Do not set LEGAL_OPERATOR_STREET/CITY/ZIP (caused Pavlovova+Krnov mixes).\n` +
+      `Canonical Hunger killers office is in src/config/legal.ts (legalOperator).\n` +
+      `Do not set LEGAL_OPERATOR_STREET/CITY/ZIP (caused mixed / obsolete addresses).\n` +
       `Optional: LEGAL_OPERATOR_LEGAL_NAME, LEGAL_OPERATOR_ICO, LEGAL_OPERATOR_REGISTER_URL.\n` +
       `See docs/legal-production-checklist.md.\n` +
       `Emergency only: LEGAL_ALLOW_INCOMPLETE_FOR_LEADS=true`

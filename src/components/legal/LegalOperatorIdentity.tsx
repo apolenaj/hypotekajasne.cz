@@ -24,7 +24,7 @@ type LegalOperatorIdentityProps = {
 
 /**
  * Jediný UI zdroj zobrazení provozovatele — čte z centrální legal konfigurace.
- * Adresa vždy z `legalOperator` (Pavlovova / Ostrava), nikdy z env částí.
+ * Adresa vždy z `legalOperator` (Soukenická / Krnov), nikdy z env částí.
  */
 export function LegalOperatorIdentity({
   variant = "full",

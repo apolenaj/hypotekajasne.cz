@@ -81,7 +81,7 @@ describe("claim labels strength", () => {
     for (const re of STRONG_PARTNER_CLAIM_PATTERNS) {
       assert.ok(!re.test(blob), `matched ${re}`);
     }
-    assert.match(labels.leadIntakeDisclosure, /provozovatel platformy|HEINZKE/i);
+    assert.match(labels.leadIntakeDisclosure, /provozovatel platformy|Hunger/i);
     assert.ok(!/licencovan/i.test(labels.badgeLabel));
   });
 

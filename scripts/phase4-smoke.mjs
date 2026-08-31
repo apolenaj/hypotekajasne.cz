@@ -88,7 +88,7 @@ async function main() {
   }
 
   const consent = {
-    policyVersion: "2026-08-07.8",
+    policyVersion: "2026-08-31.1",
     privacyAccepted: true,
     partnerTransferAccepted: false,
     partnerTransferScope: "none",

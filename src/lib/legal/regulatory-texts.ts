@@ -26,8 +26,8 @@ export const INTERMEDIARY_PENDING_MARKER = {
 
 /** Bezpečný veřejný fallback bez neověřeného zprostředkovatele. */
 export const PLATFORM_NEUTRAL_FALLBACK = {
-  cs: "Hypotéka Jasně je informační a kontaktní platforma. Konečné podmínky úvěru stanoví banka po individuálním posouzení.",
-  en: "Hypotéka Jasně is an information and contact platform. Final loan terms are determined by the bank following an individual assessment.",
+  cs: "Hypotéka Jasně je technologická a informační platforma. Není bankou a neposkytuje závazné nabídky úvěrů. Kalkulace a další výstupy jsou orientační. Schválení úvěru a konečné podmínky vždy určuje příslušná banka.",
+  en: "Hypotéka Jasně is a technology and information platform. It is not a bank and does not provide binding loan offers. Calculations and other outputs are indicative. Loan approval and final terms are always determined by the relevant bank.",
 } as const;
 
 export const CALCULATOR_DISCLAIMER = {
@@ -80,8 +80,8 @@ export const COOPERATION_NEUTRAL = {
 } as const;
 
 export const PLATFORM_OPERATOR_LINE = {
-  cs: `${legalOperator.brand} je informační a kontaktní platforma provozovaná společností ${legalOperator.companyName.replace(/[.!?…]+$/, "")}.`,
-  en: `${legalOperator.brand} is an information and contact platform operated by ${legalOperator.companyName.replace(/[.!?…]+$/, "")}.`,
+  cs: `${legalOperator.brand} je technologická a informační platforma provozovaná společností ${legalOperator.companyName.replace(/[.!?…]+$/, "")}.`,
+  en: `${legalOperator.brand} is a technology and information platform operated by ${legalOperator.companyName.replace(/[.!?…]+$/, "")}.`,
 } as const;
 
 export const FORM_DATA_RECIPIENT_NOTE = {

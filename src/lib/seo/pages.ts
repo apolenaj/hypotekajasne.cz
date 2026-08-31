@@ -309,7 +309,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     path: routes.oNas,
     title: "O nás — kdo stojí za Hypotéka Jasně",
     description:
-      "Provozovatel HEINZKE & partneři s.r.o., tým a role na platformě Hypotéka Jasně. Transparentní informační služba — nejsme banka.",
+      "Provozovatel Hunger killers s.r.o., tým a role na platformě Hypotéka Jasně. Transparentní informační služba — nejsme banka.",
     priority: 0.7,
   },
   {
@@ -350,7 +350,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     path: routes.partneri,
     title: "Partneři",
     description:
-      "Provozovatel HEINZKE & partneři s.r.o. a role banky — schválení úvěru vždy provádí banka.",
+      "Provozovatel Hunger killers s.r.o. a role banky — schválení úvěru vždy provádí banka.",
     priority: 0.6,
   },
   {
@@ -385,7 +385,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     path: routes.legal.gdpr,
     title: "Ochrana osobních údajů (GDPR)",
     description:
-      "Správce (HEINZKE), souhlasy a cookies — analytika jen se souhlasem. Úvodní formulář není předáním třetí straně.",
+      "Správce (Hunger killers s.r.o.), souhlasy a cookies — analytika jen se souhlasem. Úvodní formulář není předáním třetí straně.",
     priority: 0.4,
   },
   {

@@ -9,7 +9,7 @@ const STEPS = [
   },
   {
     title: "Požádáte o nezávazné srovnání",
-    text: "Když budete chtít, necháte kontakt — hypoteční specialista s vámi projde reálné možnosti.",
+    text: "Když budete chtít, necháte kontakt — tým Hypotéka Jasně s vámi projde reálné možnosti.",
   },
 ] as const;
 

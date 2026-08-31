@@ -126,7 +126,7 @@ export const footerLinks = {
 /** Kontaktní údaje — adresa vždy z `legalOperator` (Ostrava), nikdy Krnov. */
 export const siteContact = {
   email: legalOperator.email,
-  /** Kontakt projektu (značka) — ne telefon firmy HEINZKE, dokud není explicitně ověřen. */
+  /** Kontakt projektu (značka) — telefon Hypotéka Jasně. */
   phone: "+420 727 814 810",
   phoneHref: "tel:+420727814810",
   emailHref: `mailto:${legalOperator.email}`,

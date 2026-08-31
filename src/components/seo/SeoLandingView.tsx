@@ -27,6 +27,7 @@ import {
   PLATFORM_NEUTRAL_FALLBACK,
   rt,
 } from "@/lib/legal/regulatory-texts";
+import { legalOperator } from "@/config/legal";
 
 function formatDate(iso: string): string {
   return formatDateLocale(iso, "cs", "long");
@@ -151,8 +152,8 @@ export function SeoLandingView({ landing }: { landing: SeoLanding }) {
             Publikace {formatDate(landing.publishedAt)} · Aktualizace{" "}
             {formatDate(landing.updatedAt)}
             <br />
-            Provozovatel platformy: HEINZKE &amp; partneři s.r.o. · projekt
-            Hypotéka Jasně
+            Provozovatel platformy: {legalOperator.companyName} · projekt{" "}
+            {legalOperator.brand}
           </p>
         </div>
       </header>

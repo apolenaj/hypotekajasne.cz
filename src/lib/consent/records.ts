@@ -38,7 +38,7 @@ export const COOKIE_STORAGE_KEY = "hj_cookie_consent_v1";
 
 /**
  * Lead sources that *could* involve a third-party transfer when that transfer
- * is product-activated (never HEINZKE → HEINZKE).
+ * is product-activated (never operator → operator).
  */
 export function isPartnerHandoffLeadSource(source: LeadSource): boolean {
   return (

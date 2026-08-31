@@ -56,9 +56,14 @@ export const PUBLIC_STAGING_PHRASES = [
   "doplňte před publikací",
   "Interní redakční zásady",
   // Legacy operator / partner identity — must never render publicly
-  "Soukenická",
-  "79401",
-  "794 01",
+  "Pavlovova",
+  "10880097",
+  "HEINZKE",
+  "Heinzke",
+  "Michal Heinzke",
+  "85937",
+  "INSIA",
+  "heinzke.cz",
   "Identita partnera nezveřejněna",
   "Identity partnera nezveřejněna",
   "partnerovi až po zveřejnění",
@@ -122,7 +127,7 @@ export function collectLegalProductionIssues(options?: {
       code: "PARTNER_HANDOFF_SOFT",
       severity: "warn",
       message:
-        "Partner handoff zůstává vypnutý, dokud není ověřen přesný ČNB vztah HEINZKE & partneři s.r.o. / INSIA (LEGAL_PARTNER_JERRS_URL). Poptávky přijímá provozovatel platformy.",
+        "Partner handoff zůstává vypnutý, dokud není ověřen přesný ČNB vztah konkrétního partnera (LEGAL_PARTNER_JERRS_URL). Poptávky přijímá provozovatel platformy.",
     });
   }
 

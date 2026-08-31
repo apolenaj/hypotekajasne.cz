@@ -498,7 +498,7 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
         heading: "Proč se banky liší",
         paragraphs: [
           "Každá banka má jiný apetit k riziku, seznam akceptovaných zemí, měn a typů smluv. Co projde u jedné banky, nemusí projít u druhé — není to diskriminace klienta, ale interní pravidla.",
-          "Hypoteční specialista s přístupem k více bankám pomáhá zúžit hledání — webová diagnostika jen orientuje, kam směřovat otázky.",
+          "Odborná konzultace s přístupem k více bankám pomáhá zúžit hledání — webová diagnostika jen orientuje, kam směřovat otázky.",
         ],
       },
       {

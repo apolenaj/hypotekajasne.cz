@@ -1,9 +1,7 @@
 /**
  * Identita provozovatele — tenký adapter nad `src/config/legal.ts`.
  *
- * INTERNAL: Before final commercial launch, verify the exact current
- * regulatory relationship between HEINZKE & partneři s.r.o. and INSIA in
- * the ČNB register.
+ * INTERNAL: Do not invent ČNB intermediary status in public copy.
  */
 
 import {
@@ -93,7 +91,7 @@ export function getOperatorIdentity(): OperatorIdentity {
 }
 
 export function formatOperatorAddress(op: OperatorIdentity): string {
-  // Prefer atomické části sídla — nikdy smíchané Pavlovova+Krnov z env.
+  // Prefer atomické části sídla — nikdy smíchané / zastaralé adresy z env.
   if (op.street && op.city && op.zip) {
     const compact = formatCompactOfficeAddress({
       street: op.street,
@@ -106,7 +104,7 @@ export function formatOperatorAddress(op: OperatorIdentity): string {
   }
   if (
     op.registeredOffice &&
-    !/Krnov|794\s*01|79401/i.test(op.registeredOffice)
+    !/Pavlovova|HEINZKE|10880097|700\s*30/i.test(op.registeredOffice)
   ) {
     return op.registeredOffice;
   }

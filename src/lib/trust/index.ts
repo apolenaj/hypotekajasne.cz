@@ -3,7 +3,6 @@
  */
 
 import {
-  financialPartner,
   legalOperator,
   projectFounder,
 } from "@/config/legal";
@@ -12,7 +11,7 @@ import { getCooperationWordingNeutral } from "@/lib/legal/regulatory-texts";
 export type EcosystemActorId =
   | "hypoteka_jasne"
   | "operator"
-  | "insia"
+  | "possible_partners"
   | "bank"
   | "majetio"
   | "broker_developer";
@@ -43,15 +42,15 @@ export const ECOSYSTEM_ACTORS: EcosystemActor[] = [
   {
     id: "operator",
     name: legalOperator.companyName,
-    shortRole: "Provozovatel platformy a odborná hypoteční část",
-    whatTheyDo: `${cooperationNeutral} Jednatelem a hypotečním specialistou je ${financialPartner.representative}.`,
+    shortRole: "Provozovatel technologické a informační platformy",
+    whatTheyDo: `${cooperationNeutral} Jednatelem je ${projectFounder.displayName}.`,
     whatTheyDont:
-      "Neschvaluje úvěr. Schválení úvěru vždy provádí banka po vlastním posouzení.",
+      "Neschvaluje úvěr a neposkytuje regulované hypoteční zprostředkování. Schválení úvěru vždy provádí banka po vlastním posouzení.",
     dataYouGive:
       "Kontaktní a kontextové údaje z formulářů — přímo jako správci (nejde o předání třetí straně).",
   },
   {
-    id: "insia",
+    id: "possible_partners",
     name: "Možná partnerská spolupráce",
     shortRole: "Další subjekty (po ověření)",
     whatTheyDo:
@@ -101,8 +100,7 @@ export type TeamMember = {
   name: string;
   initials: string;
   role: string;
-  /** Krátký popis role (volitelný odstavec pod rolí) */
-  summary?: string;
+  summary: string;
   responsibilities: string[];
   experience: string[];
   education: string[];
@@ -144,30 +142,6 @@ export const TEAM_MEMBERS: TeamMember[] = [
     photoWidth: 800,
     photoHeight: 800,
     photoAlt: `${projectFounder.name} – ${projectFounder.role}`,
-  },
-  {
-    id: "michal-heinzke",
-    name: financialPartner.representative,
-    initials: "MH",
-    role: `${financialPartner.representativeRole} · ${financialPartner.specialistTitle}`,
-    summary: financialPartner.michalDescription,
-    responsibilities: [
-      "Odborná část hypotečního financování",
-      "Individuální řešení klientských případů",
-      "Kontrola, že webové modely odpovídají běžné bankovní praxi",
-    ],
-    experience: [
-      "Praxe v oblasti hypoték, úvěrů a pojištění",
-      "Zkušenost s metodikami českých bank a dokládáním příjmů",
-    ],
-    education: ["Odborná praxe ve finančních službách"],
-    contentResponsibility:
-      "Spoluodpovídá za věcnou správnost hypotečních vysvětlení na webu. Nejde o slib schválení konkrétní žádosti.",
-    linkedInUrl: null,
-    photoUrl: "/images/team/michal-heinzke.webp",
-    photoWidth: 200,
-    photoHeight: 200,
-    photoAlt: "Michal Heinzke – hypoteční specialista",
   },
 ];
 /** Re-export SoT — jediný zdroj partner identity: `src/lib/legal/partner-config.ts`. */

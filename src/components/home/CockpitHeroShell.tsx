@@ -6,7 +6,7 @@ const heroCopy = (
   <>
     <p className="max-w-xl text-sm leading-relaxed text-white/85 sm:text-base lg:max-w-lg">
       Za dvě minuty uvidíte orientační splátku a veřejně dostupné sazby bank.
-      Pokud chcete, hypoteční specialista s vámi zdarma a nezávazně projde
+      Pokud chcete, tým Hypotéka Jasně s vámi zdarma a nezávazně projde
       reálné možnosti.
     </p>
     <HeroCtaLinksServer />

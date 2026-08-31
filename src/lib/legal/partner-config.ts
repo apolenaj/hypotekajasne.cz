@@ -135,7 +135,7 @@ export function isMortgagePartnerIdentityVerified(
 
 /**
  * Kritický lead handoff na odděleného partnera — jen s ověřenou ČNB/JERRS identitou.
- * Jinak formuláře berou údaje pro provozovatele (HEINZKE & partneři s.r.o.).
+ * Jinak formuláře berou údaje pro provozovatele (Hunger killers s.r.o.).
  */
 export function isMortgagePartnerHandoffReady(): boolean {
   return isMortgagePartnerIdentityVerified();

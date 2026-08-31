@@ -67,31 +67,31 @@ describe("partner / legal SoT", () => {
     assert.equal(p.jerrsVerificationUrl, null);
     assert.equal(p.jerrsStatus, "UNPUBLISHED");
     assert.equal(isMortgagePartnerHandoffReady(), false);
-    assert.match(partnerPublicDisplayName(p), /HEINZKE/i);
+    assert.match(partnerPublicDisplayName(p), /Hunger\s*killers/i);
   });
 
   it("consent copy names controller and enquiry purpose without fake handoff", () => {
     const privacy = buildPrivacyProcessingCheckboxLabel();
-    assert.match(privacy, /HEINZKE/i);
+    assert.match(privacy, /Hunger\s*killers/i);
     assert.match(privacy, /Zásadami ochrany osobních údajů/i);
-    assert.match(privacy, /vyřízení vaší poptávky/i);
-    assert.ok(!/předání údajů společnosti HEINZKE/i.test(privacy));
+    assert.match(privacy, /vyřízení vaší zprávy nebo poptávky/i);
+    assert.ok(!/předání údajů společnosti Hunger/i.test(privacy));
     assert.ok(!/předání.*provozovatel/i.test(privacy));
 
     const summary = buildConsentContextSummary();
     assert.match(summary, /Správce/);
     assert.match(summary, /není banka/);
-    assert.match(summary, /HEINZKE|provozovatel|správce/i);
+    assert.match(summary, /Hunger|provozovatel|správce/i);
     assert.ok(!/předáme kontakt/i.test(summary));
     assert.ok(!/Předání třetímu partnerovi zatím není aktivní/i.test(summary));
 
     const label = buildPartnerTransferCheckboxLabel("mortgage_specialist");
     assert.equal(label, "");
-    assert.ok(!/předání údajů společnosti HEINZKE/i.test(label));
+    assert.ok(!/předání údajů společnosti Hunger/i.test(label));
   });
 
   it("bumped consent policy version", () => {
-    assert.equal(CONSENT_POLICY_VERSION, "2026-08-07.8");
+    assert.equal(CONSENT_POLICY_VERSION, "2026-08-31.1");
   });
 
   it("cookie policy version matches material cookie inventory update", async () => {
@@ -170,8 +170,8 @@ describe("partner / legal SoT", () => {
     assert.equal(ENQUIRY_PROCESSING_LEGAL_BASIS.art6Status, "pending_counsel");
     const notice = buildPrivacyProcessingCheckboxLabel();
     assert.match(notice, /Zásadami ochrany osobních údajů/i);
-    assert.match(notice, /HEINZKE/i);
-    assert.ok(!/předání údajů společnosti HEINZKE/i.test(notice));
+    assert.match(notice, /Hunger\s*killers/i);
+    assert.ok(!/předání údajů společnosti Hunger/i.test(notice));
   });
 
   it("third-party transfer is off until a named independent recipient exists", async () => {
@@ -186,11 +186,11 @@ describe("partner / legal SoT", () => {
     assert.equal(buildPartnerTransferCheckboxLabel("mortgage_specialist"), "");
     assert.equal(buildPartnerTransferCheckboxLabel("majetio"), "");
     assert.ok(
-      !/HEINZKE/i.test(buildPartnerTransferCheckboxLabel("mortgage_specialist"))
+      !/Hunger|HEINZKE/i.test(buildPartnerTransferCheckboxLabel("mortgage_specialist"))
     );
   });
 
-  it("GDPR public roles keep HEINZKE as controller and do not merge INSIA", async () => {
+  it("GDPR public roles keep Hunger killers as controller and do not invent INSIA", async () => {
     const {
       getPublicProcessingRoles,
       getConditionalProcessingRoles,
@@ -199,7 +199,7 @@ describe("partner / legal SoT", () => {
     const publicRoles = getPublicProcessingRoles();
     assert.equal(getConditionalProcessingRoles().length, 0);
     assert.equal(publicRoles.length, PROCESSING_ROLES.length);
-    assert.equal(publicRoles[0]?.id, "heinzke_operator");
+    assert.equal(publicRoles[0]?.id, "platform_operator");
     assert.match(
       publicRoles[0]!.roleLabelCs,
       /správce platformy a údajů z úvodních formulářů/
@@ -295,7 +295,7 @@ describe("production guard", () => {
 });
 
 describe("central legal config", () => {
-  it("isLegalIdentityComplete with HEINZKE operator defaults", async () => {
+  it("isLegalIdentityComplete with Hunger killers operator defaults", async () => {
     const { isLegalIdentityComplete, getLegalIdentityConfig, legalOperator } =
       await import("@/config/legal");
     const cfg = getLegalIdentityConfig();
@@ -304,20 +304,20 @@ describe("central legal config", () => {
     assert.equal(isLegalIdentityComplete(cfg), true);
   });
 
-  it("registered office is atomic Ostrava address, never mixed with Krnov", async () => {
+  it("registered office is atomic Krnov address, never mixed with obsolete Pavlovova", async () => {
     const { getLegalIdentityConfig, formatCompactOfficeAddress, legalOperator } =
       await import("@/config/legal");
     const { formatOperatorAddressCompact, getOperatorIdentity } = await import(
       "@/lib/legal/operator"
     );
     const cfg = getLegalIdentityConfig();
-    assert.equal(cfg.street, "Pavlovova 3048/40");
-    assert.equal(cfg.district, "Zábřeh");
-    assert.equal(cfg.city, "Ostrava");
-    assert.equal(cfg.zip, "700 30");
-    assert.match(cfg.registeredOffice ?? "", /Pavlovova 3048\/40/);
-    assert.match(cfg.registeredOffice ?? "", /700 30 Ostrava/);
-    assert.doesNotMatch(cfg.registeredOffice ?? "", /Krnov|794/);
+    assert.equal(cfg.street, "Soukenická 82/6");
+    assert.equal(cfg.district, "Pod Bezručovým vrchem");
+    assert.equal(cfg.city, "Krnov");
+    assert.equal(cfg.zip, "794 01");
+    assert.match(cfg.registeredOffice ?? "", /Soukenická 82\/6/);
+    assert.match(cfg.registeredOffice ?? "", /794 01 Krnov/);
+    assert.doesNotMatch(cfg.registeredOffice ?? "", /Pavlovova|700\s*30|Zábřeh/);
     const compact = formatOperatorAddressCompact(getOperatorIdentity());
     assert.equal(
       compact,
@@ -328,7 +328,7 @@ describe("central legal config", () => {
         city: legalOperator.city,
       })
     );
-    assert.equal(compact, "Pavlovova 3048/40, Zábřeh, 700 30 Ostrava");
+    assert.equal(compact, "Soukenická 82/6, Pod Bezručovým vrchem, 794 01 Krnov");
   });
 
   it("commercial register line uses correct Czech grammar", async () => {
@@ -342,7 +342,7 @@ describe("central legal config", () => {
     });
     assert.equal(
       line,
-      "Společnost je zapsána v obchodním rejstříku vedeném Krajským soudem v Ostravě, oddíl C, vložka 85937."
+      "Společnost je zapsána v obchodním rejstříku vedeném Krajským soudem v Ostravě, oddíl C, vložka 93063."
     );
     assert.doesNotMatch(line, /zapsaná|vedeném Krajský soud/);
   });

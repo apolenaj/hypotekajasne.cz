@@ -33,7 +33,7 @@ lead_submit (client)
 
 | Item | Status |
 |------|--------|
-| Business owner | Michal Heinzke (qualified leads forwarded by Josef) |
+| Business owner | Bc. Josef Apolenář BSc., MBA |
 | Technical recipient | `LEAD_OPS_RECIPIENT_EMAIL` (server-only; Production = Josef’s inbox) |
 | E-mail provider | Resend HTTP API — requires `RESEND_API_KEY` + `LEAD_OPS_FROM_EMAIL` + `RESEND_EMAIL_DOMAIN` |
 | Optional webhook | `LEAD_OPS_WEBHOOK_URL` (HTTPS only; must not be an e-mail address) |

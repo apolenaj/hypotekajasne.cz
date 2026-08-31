@@ -1,47 +1,46 @@
 /**
  * Centrální právní konfigurace provozovatele.
  *
- * Dočasný provozovatel: HEINZKE & partneři s.r.o.
+ * Provozovatel: Hunger killers s.r.o.
  * Sídlo je ATOMICKÉ — vždy z `legalOperator` níže.
- * Neskládat STREET/CITY/ZIP z env (historicky způsobilo Pavlovova + Krnov).
+ * Neskládat STREET/CITY/ZIP z env (historicky způsobilo smíchané adresy).
  *
  * Env smí přepsat jen neadresní údaje (jméno/IČO/e-mail/registr URL),
- * a to jen pokud neobsahují zastaralé hodnoty (Josef / 19488483 / Krnov…).
+ * a to jen pokud neobsahují zastaralé hodnoty (HEINZKE / 10880097 / Pavlovova…).
  *
  * INTERNAL (never render to users):
- * Before final commercial launch, verify the exact current regulatory
- * relationship between HEINZKE & partneři s.r.o. and INSIA in the ČNB
- * register and replace neutral cooperation wording with the exact legally
- * correct designation if appropriate.
+ * Do not invent ČNB intermediary status. Lead handoff to third parties stays off
+ * until a verified partner identity is configured.
  */
 
 /** Strukturovaná identifikace provozovatele (zdroj pravdy pro UI). */
 export const legalOperator = {
   brand: "Hypotéka Jasně",
-  companyName: "HEINZKE & partneři s.r.o.",
-  ico: "10880097",
-  street: "Pavlovova 3048/40",
-  district: "Zábřeh",
-  city: "Ostrava",
-  zip: "700 30",
+  companyName: "Hunger killers s.r.o.",
+  ico: "19488483",
+  street: "Soukenická 82/6",
+  district: "Pod Bezručovým vrchem",
+  city: "Krnov",
+  zip: "794 01",
   country: "Česká republika",
   court: "Krajský soud v Ostravě",
   registerSection: "C",
-  registerInsert: "85937",
-  representative: "Michal Heinzke",
+  registerInsert: "93063",
+  representative: "Bc. Josef Apolenář BSc., MBA",
   email: "info@hypotekajasne.cz",
+  phone: "+420 727 814 810",
   /** Veřejný výpis OR podle IČO (justice.cz) — bez vymyšlené ČNB licence. */
-  registryUrl: "https://or.justice.cz/ias/ui/rejstrik-$firma?ico=10880097",
+  registryUrl: "https://or.justice.cz/ias/ui/rejstrik-$firma?ico=19488483",
   registryName: "Obchodní rejstřík",
 } as const;
 
 export const projectFounder = {
   name: "Josef Apolenář",
   displayName: "Bc. Josef Apolenář BSc., MBA",
-  role: "Zakladatel projektu Hypotéka Jasně",
-  roleProduct: "Zakladatel a produktový tvůrce Hypotéka Jasně",
+  role: "Jednatel společnosti Hunger killers s.r.o. a zakladatel projektu Hypotéka Jasně",
+  roleProduct: "Jednatel společnosti Hunger killers s.r.o. a zakladatel projektu Hypotéka Jasně",
   description:
-    "Josef stojí za konceptem, produktem a vývojem platformy Hypotéka Jasně. Zaměřuje se na digitální nástroje, kalkulačky, uživatelskou zkušenost a rozvoj platformy.",
+    "Josef stojí za konceptem, produktem a vývojem platformy Hypotéka Jasně. Zaměřuje se na digitální nástroje, kalkulačky, uživatelskou zkušenost a rozvoj platformy. Není hypotečním specialistou, finančním poradcem ani regulovaným hypotečním zprostředkovatelem.",
 } as const;
 
 /**
@@ -56,21 +55,32 @@ export function withSentencePeriod(text: string): string {
 
 const COOPERATION_NEUTRAL_CS = `${legalOperator.companyName.replace(/[.!?…]+$/, "")} provozuje platformu ${legalOperator.brand}. V oblasti hypoteček může spolupracovat s dalšími subjekty — podrobnosti uvádíme po ověření.`;
 
+/**
+ * Veřejné role kolem provozovatele — bez tvrzení o hypotečním zprostředkování.
+ * `representative` = jednatel Hunger killers (Josef).
+ */
 export const financialPartner = {
   company: legalOperator.companyName,
   representative: legalOperator.representative,
-  representativeRole: `Jednatel ${legalOperator.companyName}`,
-  specialistTitle: "Hypoteční specialista",
-  network: "INSIA",
-  /**
-   * Neutrální zákaznické znění — bez konkrétního ČNB statusu,
-   * dokud není ověřen (viz INTERNAL poznámka výše).
-   * Stejný text jako getCooperationWordingNeutral("cs") v regulatory-texts.ts
-   */
+  representativeRole: `Jednatel společnosti ${legalOperator.companyName}`,
   cooperationWording: COOPERATION_NEUTRAL_CS,
-  platformWording: `${legalOperator.brand} je informační a kontaktní platforma provozovaná společností ${withSentencePeriod(legalOperator.companyName)} ${COOPERATION_NEUTRAL_CS}`,
-  michalDescription: `Michal zajišťuje odbornou část související s hypotečním financováním a individuálním řešením klientských případů prostřednictvím ${legalOperator.companyName}.`,
+  platformWording: `${legalOperator.brand} je technologická a informační platforma provozovaná společností ${withSentencePeriod(legalOperator.companyName)} ${COOPERATION_NEUTRAL_CS}`,
 } as const;
+
+/** Regulatorně bezpečný popis platformy (CS). */
+export const PLATFORM_SAFE_DESCRIPTION_CS =
+  "Hypotéka Jasně je technologická a informační platforma. Není bankou a neposkytuje závazné nabídky úvěrů. Kalkulace a další výstupy jsou orientační. Schválení úvěru a konečné podmínky vždy určuje příslušná banka.";
+
+/** Intro věta pro Kontakt / O nás. */
+export function getPlatformOperatorIntroCs(): string {
+  const office = formatCompactOfficeAddress({
+    street: legalOperator.street,
+    district: legalOperator.district,
+    zip: legalOperator.zip,
+    city: legalOperator.city,
+  });
+  return `Provozovatelem technologické a informační platformy ${legalOperator.brand} je ${legalOperator.companyName}, IČO ${legalOperator.ico}, se sídlem ${office}.`;
+}
 
 /** @deprecated Prefer legalOperator — retained for adapters. */
 export type LegalIdentityConfig = {
@@ -115,25 +125,24 @@ function looksLikePlaceholder(value: string | null): boolean {
 }
 
 /**
- * Zastaralé hodnoty předchozího provozovatele / sídla — nikdy nepoužívat ve veřejném UI,
+ * Zastaralé hodnoty předchozího provozovatele — nikdy nepoužívat ve veřejném UI,
  * ani když by je omylem obsahovalo produkční env.
- * Pozn.: „794 01 Krnov“ nesmí být kombinováno s Pavlovova 3048/40.
  */
 const OBSOLETE_OPERATOR_VALUE_RE =
-  /19488483|Soukenická|Hunger\s*killers|Josef\s+Apolen[aá][rř]|Krnov|794\s*01|79401/i;
+  /10880097|Pavlovova|HEINZKE|Heinzke|Michal\s+Heinzke|Zábřeh|700\s*30|85937|INSIA|heinzke\.cz/i;
 
 function isObsoleteOperatorValue(value: string | null): boolean {
   if (!value) return false;
   return OBSOLETE_OPERATOR_VALUE_RE.test(value);
 }
 
-/** Detekce smíchané adresy (např. Pavlovova + Krnov). */
+/** Detekce smíchané nebo zastaralé adresy (např. Pavlovova + Krnov). */
 function isMixedOrInvalidOperatorAddress(value: string | null): boolean {
   if (!value) return false;
   if (isObsoleteOperatorValue(value)) return true;
   const hasPavlovova = /Pavlovova/i.test(value);
-  const hasKrnovOrOldZip = /Krnov|794\s*01|79401/i.test(value);
-  if (hasPavlovova && hasKrnovOrOldZip) return true;
+  const hasKrnov = /Krnov|794\s*01|79401/i.test(value);
+  if (hasPavlovova && hasKrnov) return true;
   return false;
 }
 
@@ -175,8 +184,8 @@ export function formatCompactOfficeAddress(parts: {
   return `${parts.street}, ${parts.zip} ${parts.city}`;
 }
 
-/** Atomické sídlo HEINZKE — vždy z `legalOperator`, nikdy z env částí. */
-function heinzkeRegisteredOfficeParts() {
+/** Atomické sídlo provozovatele — vždy z `legalOperator`, nikdy z env částí. */
+function operatorRegisteredOfficeParts() {
   return {
     street: legalOperator.street,
     district: legalOperator.district,
@@ -189,9 +198,9 @@ function heinzkeRegisteredOfficeParts() {
 /**
  * Sídlo provozovatele = výhradně `legalOperator`.
  * LEGAL_OPERATOR_STREET / CITY / ZIP / DISTRICT / REGISTERED_OFFICE se
- * pro HEINZKE záměrně nepoužívají (zdroj smíchaných adres s Krnov).
+ * záměrně nepoužívají (zdroj smíchaných / zastaralých adres).
  */
-function resolveHeinzkeRegisteredOffice(): {
+function resolveOperatorRegisteredOffice(): {
   street: string;
   district: string;
   zip: string;
@@ -199,7 +208,7 @@ function resolveHeinzkeRegisteredOffice(): {
   country: string;
   registeredOffice: string;
 } {
-  const defaults = heinzkeRegisteredOfficeParts();
+  const defaults = operatorRegisteredOfficeParts();
   return {
     ...defaults,
     registeredOffice: formatRegisteredOffice(defaults),
@@ -210,7 +219,7 @@ function resolveHeinzkeRegisteredOffice(): {
 export function getContactAddressLine(): string {
   return (
     getLegalIdentityConfig().registeredOffice ??
-    formatRegisteredOffice(heinzkeRegisteredOfficeParts())
+    formatRegisteredOffice(operatorRegisteredOfficeParts())
   );
 }
 
@@ -242,7 +251,7 @@ export function getLegalIdentityConfig(): LegalIdentityConfig {
     legalOperator.ico
   );
 
-  const office = resolveHeinzkeRegisteredOffice();
+  const office = resolveOperatorRegisteredOffice();
   const { street, district, zip, city, country, registeredOffice } = office;
 
   const registryName = cleanEnvOrDefault(
@@ -263,13 +272,16 @@ export function getLegalIdentityConfig(): LegalIdentityConfig {
       "NEXT_PUBLIC_LEGAL_OPERATOR_PRIVACY_EMAIL"
     ) ?? contactEmail;
 
-  // Telefon firmy neuvádíme, dokud není explicitně nastaven v env.
   const phoneRaw = envOrNull(
     "LEGAL_OPERATOR_PHONE",
     "NEXT_PUBLIC_LEGAL_OPERATOR_PHONE"
   );
   const phone =
-    phoneRaw && !looksLikePlaceholder(phoneRaw) ? phoneRaw : null;
+    phoneRaw &&
+    !looksLikePlaceholder(phoneRaw) &&
+    !isObsoleteOperatorValue(phoneRaw)
+      ? phoneRaw
+      : legalOperator.phone;
 
   const dpoContact = envOrNull(
     "LEGAL_OPERATOR_DPO_CONTACT",
@@ -423,7 +435,7 @@ export function getLegalDevIncompleteNotice(
   return `[DEV] Legal identity incomplete: ${config.missingRequiredFields.join(", ") || "(unknown)"}. Set LEGAL_OPERATOR_* — see docs/legal-production-checklist.md.`;
 }
 
-/** Komunikační fallback — adresa/e-mail provozovatele (bez telefonu firmy). */
+/** Komunikační fallback — adresa/e-mail provozovatele. */
 export const LEGAL_CONTACT_FALLBACK = {
   email: legalOperator.email,
   street: legalOperator.street,

@@ -7,6 +7,7 @@ import { crumbs } from "@/lib/seo/breadcrumbs";
 import { RegulatoryBlock } from "@/components/legal/RegulatoryBlock";
 import {
   CALCULATOR_DISCLAIMER,
+  PLATFORM_NEUTRAL_FALLBACK,
   RATES_DISCLAIMER,
   rt,
 } from "@/lib/legal/regulatory-texts";
@@ -53,10 +54,7 @@ export default function EnglishHubPage() {
             What this platform is
           </h2>
           <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground">
-            <li>
-              Information and modelling tools for Czech mortgages and selected
-              foreign property markets.
-            </li>
+            <li>{rt("en", PLATFORM_NEUTRAL_FALLBACK)}</li>
             <li>
               Not a bank. {rt("en", CALCULATOR_DISCLAIMER)}
             </li>

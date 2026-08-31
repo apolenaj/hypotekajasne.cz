@@ -74,7 +74,7 @@ export function FormConsentFields({
     state.partnerTransferScope
   );
 
-  /** Named independent recipient only — never HEINZKE → HEINZKE. */
+  /** Named independent recipient only — never operator → operator. */
   const effectiveShowPartnerTransfer =
     showPartnerTransfer && transferActive && Boolean(transferLabel);
 

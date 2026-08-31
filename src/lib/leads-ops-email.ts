@@ -31,7 +31,7 @@ export type LeadOpsEmailSendResult = {
   subjectIsTest?: boolean;
 };
 
-const BUSINESS_OWNER_LINE = "Business owner: Michal Heinzke";
+const BUSINESS_OWNER_LINE = "Business owner: Bc. Josef Apolenář BSc., MBA";
 const EXPECTED_RECIPIENT = "josef.apolenar@gmail.com";
 
 export function buildLeadOpsEmailSubject(

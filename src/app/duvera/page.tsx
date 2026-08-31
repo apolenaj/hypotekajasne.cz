@@ -31,7 +31,7 @@ export default function DuveraPage() {
       currentPath="/duvera"
       eyebrow="Důvěryhodnost"
       title="Centrum důvěry"
-      lead={`Do 30 sekund: ${regulatory.platformLine} Provozovatelem je ${withSentencePeriod(legalOperator.companyName)} Jednatelem a hypotečním specialistou je ${financialPartner.representative}. ${getCooperationWordingNeutral("cs")} Schválení úvěru vždy provádí banka po vlastním posouzení.`}
+      lead={`Do 30 sekund: ${regulatory.platformLine} Provozovatelem je ${withSentencePeriod(legalOperator.companyName)} Jednatelem je ${legalOperator.representative}. ${getCooperationWordingNeutral("cs")}`}
     >
       <section>
         <h2 className="font-heading text-xl font-semibold text-text-dark">

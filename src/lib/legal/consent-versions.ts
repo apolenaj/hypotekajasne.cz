@@ -18,7 +18,7 @@ function legalNameInline(name: string): string {
   return name.trim().replace(/[.!?…]+$/, "");
 }
 
-export const CONSENT_POLICY_VERSION = "2026-08-07.8" as const;
+export const CONSENT_POLICY_VERSION = "2026-08-31.1" as const;
 export const COOKIE_POLICY_VERSION = "2026-08-07.2" as const;
 export const TERMS_VERSION = "2026-07-20.1" as const;
 export const PAID_ANALYSIS_TERMS_VERSION = "2026-07-20.1" as const;
@@ -40,7 +40,7 @@ export const ENQUIRY_PROCESSING_LEGAL_BASIS = {
   publicPurposeLabel: "Vyřízení nezávazné poptávky",
   art6Status: "pending_counsel" as const,
   internalNote:
-    "Initial form → HEINZKE as controller. Not a third-party transfer. Confirm Art. 6 basis with counsel; UI must not fake marketing consent for enquiry processing.",
+    "Initial form → Hunger killers s.r.o. as controller. Not a third-party transfer. Confirm Art. 6 basis with counsel; UI must not fake marketing consent for enquiry processing.",
 } as const;
 
 export type ConsentPurposeId =
@@ -71,7 +71,7 @@ export const CONSENT_PURPOSES: Record<ConsentPurposeId, ConsentPurposeCopy> = {
   privacy_processing: {
     id: "privacy_processing",
     version: CONSENT_POLICY_VERSION,
-    checkboxLabel: `Odesláním formuláře potvrzujete, že jste se seznámil/a se Zásadami ochrany osobních údajů. Údaje použije ${legalOperator.companyName} k vyřízení vaší poptávky.`,
+    checkboxLabel: `Odesláním formuláře potvrzujete, že jste se seznámil/a se Zásadami ochrany osobních údajů. Údaje použije ${legalOperator.companyName} k vyřízení vaší zprávy nebo poptávky.`,
     description: `Zpracování kontaktních a kontextových údajů správcem ${legalOperator.companyName}, IČO ${legalOperator.ico} (provozovatel platformy ${legalOperator.brand}) pro odpověď a vyřízení formuláře / poptávky. Nejde o předání třetí straně, o marketingový souhlas ani o nabídku banky. Formulář zobrazuje seznámení se zásadami — ne fiktivní marketingový souhlas se zpracováním.`,
     required: true,
     uiKind: "privacy_notice",
@@ -137,14 +137,15 @@ export const PARTNER_TRANSFER_SCOPE_LABELS: Record<
   string
 > = getPartnerTransferScopeLabels();
 
-function looksLikeHeinzkeOperator(name: string | null | undefined): boolean {
+/** Same entity as platform operator (or legacy operator) — never a “third party”. */
+function looksLikePlatformOperator(name: string | null | undefined): boolean {
   if (!name?.trim()) return true;
-  return /HEINZKE/i.test(name);
+  return /Hunger\s*killers|19488483|HEINZKE|10880097/i.test(name);
 }
 
 /**
- * Checkbox předání třetí straně — jen když HEINZKE skutečně předává PII
- * jiné nezávislé entitě. HEINZKE sobě = nikdy.
+ * Checkbox předání třetí straně — jen když provozovatel skutečně předává PII
+ * jiné nezávislé entitě. Provozovatel sobě = nikdy.
  *
  * INTERNAL: Majetio / makléř = true až po zapojení reálného PII handoffu
  * (odchozí odkazy na majetio.cz nestačí).
@@ -157,7 +158,7 @@ export function isThirdPartyTransferActive(
   if (scope === "mortgage_specialist") {
     if (!isMortgagePartnerHandoffReady()) return false;
     const partner = getPrimaryMortgagePartner();
-    if (!partner.legalName || looksLikeHeinzkeOperator(partner.legalName)) {
+    if (!partner.legalName || looksLikePlatformOperator(partner.legalName)) {
       return false;
     }
     return true;

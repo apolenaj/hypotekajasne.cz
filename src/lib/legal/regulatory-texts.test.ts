@@ -59,7 +59,7 @@ describe("regulatory-texts", () => {
   it("cooperation wording is neutral in all locales", () => {
     for (const locale of LOCALES) {
       const text = getCooperationWordingNeutral(locale);
-      assert.match(text, /HEINZKE/i);
+      assert.match(text, /Hunger\s*killers/i);
       assert.doesNotMatch(text, /INSIA/i);
       assert.doesNotMatch(text, /licenc/i);
       assert.ok(!containsPublicForbiddenPlaceholder(text));
@@ -87,7 +87,7 @@ describe("regulatory-texts", () => {
   it("lead form disclosure names operator and contact follow-up", () => {
     const cs = buildLeadFormIntakeDisclosure("cs");
     const en = buildLeadFormIntakeDisclosure("en");
-    assert.match(cs, /HEINZKE/i);
+    assert.match(cs, /Hunger\s*killers/i);
     assert.match(cs, /přijímá provozovatel/i);
     assert.match(cs, /kontaktuje/i);
     assert.match(en, /received by/i);
@@ -99,11 +99,11 @@ describe("regulatory-texts", () => {
   it("PLATFORM_NEUTRAL_FALLBACK matches required public copy", () => {
     assert.equal(
       rt("cs", PLATFORM_NEUTRAL_FALLBACK),
-      "Hypotéka Jasně je informační a kontaktní platforma. Konečné podmínky úvěru stanoví banka po individuálním posouzení."
+      "Hypotéka Jasně je technologická a informační platforma. Není bankou a neposkytuje závazné nabídky úvěrů. Kalkulace a další výstupy jsou orientační. Schválení úvěru a konečné podmínky vždy určuje příslušná banka."
     );
     assert.equal(
       rt("en", PLATFORM_NEUTRAL_FALLBACK),
-      "Hypotéka Jasně is an information and contact platform. Final loan terms are determined by the bank following an individual assessment."
+      "Hypotéka Jasně is a technology and information platform. It is not a bank and does not provide binding loan offers. Calculations and other outputs are indicative. Loan approval and final terms are always determined by the relevant bank."
     );
   });
 });

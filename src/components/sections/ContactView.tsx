@@ -10,13 +10,14 @@ import {
 } from "@/components/consent/FormConsentFields";
 import { LegalOperatorIdentity } from "@/components/legal/LegalOperatorIdentity";
 import {
-  financialPartner,
+  getPlatformOperatorIntroCs,
   legalOperator,
+  PLATFORM_SAFE_DESCRIPTION_CS,
   projectFounder,
 } from "@/config/legal";
-import { getPlatformWordingNeutral } from "@/lib/legal/regulatory-texts";
 import { siteContact } from "@/lib/mock-data";
 import { buildThankYouPath, submitLead } from "@/lib/leads";
+
 
 const inputClass =
   "mt-1.5 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20";
@@ -119,6 +120,10 @@ export function ContactView() {
               </a>
             </div>
 
+            <p className="rounded-2xl border border-gray-200 bg-white p-5 text-sm leading-relaxed text-gray-800">
+              {getPlatformOperatorIntroCs()}
+            </p>
+
             <div className="space-y-3 rounded-2xl border border-gray-200 bg-white p-5 text-sm">
               <div>
                 <p className="font-semibold text-gray-900">
@@ -126,21 +131,10 @@ export function ContactView() {
                 </p>
                 <p className="text-deep-teal">{projectFounder.role}</p>
               </div>
-              <div>
-                <p className="font-semibold text-gray-900">
-                  {financialPartner.representative}
-                </p>
-                <p className="text-deep-teal">
-                  {financialPartner.representativeRole}
-                </p>
-                <p className="text-muted-foreground">
-                  {financialPartner.specialistTitle}
-                </p>
-              </div>
             </div>
 
             <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm leading-relaxed text-amber-950">
-              {getPlatformWordingNeutral("cs")}
+              {PLATFORM_SAFE_DESCRIPTION_CS}
             </div>
           </div>
 

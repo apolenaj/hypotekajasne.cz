@@ -45,7 +45,7 @@ No fake reviews, urgency tricks, or guaranteed rates/approvals.
 ### Creative briefs (shared)
 
 - Visual: clean rates UI / calm photography of homes — no “guaranteed %” overlays  
-- Copy tone: informative, HEINZKE as operator, no invented INSIA/CNB status  
+- Copy tone: informative, Hunger killers s.r.o. as operator, no invented CNB status  
 - CTA labels: “Porovnat sazby”, “Nezávazná poptávka”, “Číst průvodce”
 
 ## Paid social (later)

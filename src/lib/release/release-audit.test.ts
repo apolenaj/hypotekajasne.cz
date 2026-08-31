@@ -79,7 +79,7 @@ describe("release audit scanners", () => {
   });
 
   it("analytics taxonomy is non-empty and stable count", () => {
-    assert.equal(ANALYTICS_EVENTS.length, 56);
+    assert.equal(ANALYTICS_EVENTS.length, 72);
     assert.equal(ANALYTICS_EVENTS.length, new Set(ANALYTICS_EVENTS).size);
   });
 
