@@ -112,7 +112,7 @@ export function FormConsentFields({
           <Link href={routes.legal.gdpr} className="text-deep-teal underline">
             Zásadami ochrany osobních údajů
           </Link>{". Údaje použije "}
-          {legalOperator.companyName} k vyřízení vaší poptávky.
+          {legalOperator.companyName} k vyřízení vaší zprávy nebo poptávky.
         </span>
       </label>
 
