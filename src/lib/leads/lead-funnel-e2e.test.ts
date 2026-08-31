@@ -83,4 +83,20 @@ describe("lead funnel E2E regression (safe)", () => {
       key
     );
   });
+
+  it("new consent records stamp Hunger killers controller + current policy version", async () => {
+    const { buildFormConsentRecord } = await import("@/lib/consent/records");
+    const { legalOperator } = await import("@/config/legal");
+    const record = buildFormConsentRecord({
+      privacyAccepted: true,
+      partnerTransferAccepted: false,
+      partnerTransferScope: "none",
+      marketingAccepted: false,
+    });
+    assert.equal(record.policyVersion, CONSENT_POLICY_VERSION);
+    assert.equal(record.dataControllerName, legalOperator.companyName);
+    assert.equal(record.dataControllerIco, legalOperator.ico);
+    assert.match(record.dataControllerName ?? "", /Hunger\s*killers/);
+    assert.equal(record.dataControllerIco, "19488483");
+  });
 });

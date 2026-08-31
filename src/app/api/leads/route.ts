@@ -27,6 +27,7 @@ import {
   canAcceptPersonalLeads,
   LEGAL_LEAD_BLOCKED_PUBLIC_MESSAGE,
 } from "@/lib/legal";
+import { legalOperator } from "@/config/legal";
 import { computeEnquiryRetentionUntil } from "@/lib/legal/privacy-retention";
 
 function getSupabaseAdmin() {
@@ -285,6 +286,10 @@ export async function POST(request: Request) {
       privacy_notice_version: payload.consent.policyVersion,
       privacy_notice_acknowledged: payload.consent.privacyAccepted === true,
       privacy_notice_acknowledged_at: payload.consent.consentedAt,
+      data_controller_name:
+        payload.consent.dataControllerName || legalOperator.companyName,
+      data_controller_ico:
+        payload.consent.dataControllerIco || legalOperator.ico,
       marketing_consent: marketingConsent,
       marketing_consent_at: marketingConsent
         ? payload.consent.consentedAt

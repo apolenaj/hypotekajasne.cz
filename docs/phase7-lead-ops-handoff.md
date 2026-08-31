@@ -4,7 +4,7 @@
 
 1. User submits form → DB insert (`lifecycle_status=new`)  
 2. E-mail to **Josef** (`LEAD_OPS_RECIPIENT_EMAIL`) from `leady@notify.hypotekajasne.cz`  
-3. Josef triages qualified leads internally (manual; no Heinzke/INSIA auto-forward)  
+3. Josef triages qualified leads internally (manual; no third-party auto-forward)  
 4. Do **not** auto-CC Michal
 
 ## Attribution on the lead row

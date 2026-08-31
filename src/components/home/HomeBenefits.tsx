@@ -18,7 +18,7 @@ const BENEFITS: {
   },
   {
     icon: UserRound,
-    title: "Specialista až když chcete vy",
+    title: "Kontakt až když chcete vy",
     text: "Výpočet zvládnete sami bez registrace. Kontakt necháte až po něm — tým Hypotéka Jasně s vámi projde možnosti zdarma a nezávazně.",
   },
 ];

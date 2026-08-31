@@ -69,7 +69,7 @@ export const financialPartner = {
 
 /** Regulatorně bezpečný popis platformy (CS). */
 export const PLATFORM_SAFE_DESCRIPTION_CS =
-  "Hypotéka Jasně je technologická a informační platforma. Není bankou a neposkytuje závazné nabídky úvěrů. Kalkulace a další výstupy jsou orientační. Schválení úvěru a konečné podmínky vždy určuje příslušná banka.";
+  "Hypotéka Jasně je technologická a informační platforma provozovaná společností Hunger killers s.r.o. Není bankou a neposkytuje závazné nabídky úvěrů. Kalkulace a další výstupy jsou orientační. Schválení úvěru a jeho konečné podmínky vždy určuje příslušná banka.";
 
 /** Intro věta pro Kontakt / O nás. */
 export function getPlatformOperatorIntroCs(): string {
@@ -79,7 +79,7 @@ export function getPlatformOperatorIntroCs(): string {
     zip: legalOperator.zip,
     city: legalOperator.city,
   });
-  return `Provozovatelem technologické a informační platformy ${legalOperator.brand} je ${legalOperator.companyName}, IČO ${legalOperator.ico}, se sídlem ${office}.`;
+  return `Provozovatelem platformy ${legalOperator.brand} je ${legalOperator.companyName}, IČO ${legalOperator.ico}, se sídlem ${office}.`;
 }
 
 /** @deprecated Prefer legalOperator — retained for adapters. */

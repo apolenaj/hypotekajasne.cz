@@ -99,11 +99,11 @@ describe("regulatory-texts", () => {
   it("PLATFORM_NEUTRAL_FALLBACK matches required public copy", () => {
     assert.equal(
       rt("cs", PLATFORM_NEUTRAL_FALLBACK),
-      "Hypotéka Jasně je technologická a informační platforma. Není bankou a neposkytuje závazné nabídky úvěrů. Kalkulace a další výstupy jsou orientační. Schválení úvěru a konečné podmínky vždy určuje příslušná banka."
+      "Hypotéka Jasně je technologická a informační platforma provozovaná společností Hunger killers s.r.o. Není bankou a neposkytuje závazné nabídky úvěrů. Kalkulace a další výstupy jsou orientační. Schválení úvěru a jeho konečné podmínky vždy určuje příslušná banka."
     );
     assert.equal(
       rt("en", PLATFORM_NEUTRAL_FALLBACK),
-      "Hypotéka Jasně is a technology and information platform. It is not a bank and does not provide binding loan offers. Calculations and other outputs are indicative. Loan approval and final terms are always determined by the relevant bank."
+      "Hypotéka Jasně is a technology and information platform operated by Hunger killers s.r.o. It is not a bank and does not provide binding loan offers. Calculations and other outputs are indicative. Loan approval and its final terms are always determined by the relevant bank."
     );
   });
 });

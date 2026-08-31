@@ -3,6 +3,7 @@
  */
 
 import type { LeadSource } from "@/lib/leads";
+import { legalOperator } from "@/config/legal";
 import {
   CONSENT_POLICY_VERSION,
   COOKIE_POLICY_VERSION,
@@ -20,6 +21,9 @@ export type FormConsentRecord = {
   consentedAt: string;
   /** UI locale / page path optional */
   sourcePath?: string;
+  /** Správce osobních údajů v okamžiku odeslání (nové leady). */
+  dataControllerName?: string;
+  dataControllerIco?: string;
 };
 
 export type CookieConsentCategories = {
@@ -123,6 +127,9 @@ export function validateFormConsent(
       partnerTransferScope:
         consent.partnerTransferScope || defaultPartnerScope(source),
       consentedAt: consent.consentedAt || new Date().toISOString(),
+      dataControllerName:
+        consent.dataControllerName || legalOperator.companyName,
+      dataControllerIco: consent.dataControllerIco || legalOperator.ico,
     },
   };
 }
@@ -142,5 +149,7 @@ export function buildFormConsentRecord(input: {
     marketingAccepted: input.marketingAccepted,
     consentedAt: new Date().toISOString(),
     sourcePath: input.sourcePath,
+    dataControllerName: legalOperator.companyName,
+    dataControllerIco: legalOperator.ico,
   };
 }

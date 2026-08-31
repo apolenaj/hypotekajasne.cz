@@ -71,7 +71,7 @@ export const CONSENT_PURPOSES: Record<ConsentPurposeId, ConsentPurposeCopy> = {
   privacy_processing: {
     id: "privacy_processing",
     version: CONSENT_POLICY_VERSION,
-    checkboxLabel: `Odesláním formuláře potvrzujete, že jste se seznámil/a se Zásadami ochrany osobních údajů. Údaje použije ${legalOperator.companyName} k vyřízení vaší zprávy nebo poptávky.`,
+    checkboxLabel: `Odesláním formuláře potvrzujete, že jste se seznámil/a se Zásadami ochrany osobních údajů. Údaje použije ${legalOperator.companyName} k vyřízení vaší zprávy nebo poptávky v rozsahu popsaném v těchto zásadách.`,
     description: `Zpracování kontaktních a kontextových údajů správcem ${legalOperator.companyName}, IČO ${legalOperator.ico} (provozovatel platformy ${legalOperator.brand}) pro odpověď a vyřízení formuláře / poptávky. Nejde o předání třetí straně, o marketingový souhlas ani o nabídku banky. Formulář zobrazuje seznámení se zásadami — ne fiktivní marketingový souhlas se zpracováním.`,
     required: true,
     uiKind: "privacy_notice",

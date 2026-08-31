@@ -74,7 +74,7 @@ describe("partner / legal SoT", () => {
     const privacy = buildPrivacyProcessingCheckboxLabel();
     assert.match(privacy, /Hunger\s*killers/i);
     assert.match(privacy, /Zásadami ochrany osobních údajů/i);
-    assert.match(privacy, /vyřízení vaší zprávy nebo poptávky/i);
+    assert.match(privacy, /vyřízení vaší zprávy nebo poptávky v rozsahu popsaném v těchto zásadách/i);
     assert.ok(!/předání údajů společnosti Hunger/i.test(privacy));
     assert.ok(!/předání.*provozovatel/i.test(privacy));
 
