@@ -136,6 +136,22 @@ function isObsoleteOperatorValue(value: string | null): boolean {
   return OBSOLETE_OPERATOR_VALUE_RE.test(value);
 }
 
+/** Env nesmí nahradit firmu jménem fyzické osoby. */
+function isNonCompanyLegalName(value: string | null): boolean {
+  if (!value) return false;
+  if (/Hunger\s*killers/i.test(value)) return false;
+  if (
+    /Josef|Michal|Apolen[aá][rř]/i.test(value) &&
+    !/s\.?\s*r\.?\s*o\.?/i.test(value)
+  ) {
+    return true;
+  }
+  if (!/s\.?\s*r\.?\s*o\.?/i.test(value) && !/\ba\.?\s*s\.?\b/i.test(value)) {
+    return true;
+  }
+  return false;
+}
+
 /** Detekce smíchané nebo zastaralé adresy (např. Pavlovova + Krnov). */
 function isMixedOrInvalidOperatorAddress(value: string | null): boolean {
   if (!value) return false;
@@ -152,6 +168,22 @@ function cleanEnvOrDefault(envKeys: string[], fallback: string): string {
     fromEnv &&
     !looksLikePlaceholder(fromEnv) &&
     !isObsoleteOperatorValue(fromEnv)
+  ) {
+    return fromEnv;
+  }
+  return fallback;
+}
+
+function cleanLegalNameOrDefault(fallback: string): string {
+  const fromEnv = envOrNull(
+    "LEGAL_OPERATOR_LEGAL_NAME",
+    "NEXT_PUBLIC_LEGAL_OPERATOR_LEGAL_NAME"
+  );
+  if (
+    fromEnv &&
+    !looksLikePlaceholder(fromEnv) &&
+    !isObsoleteOperatorValue(fromEnv) &&
+    !isNonCompanyLegalName(fromEnv)
   ) {
     return fromEnv;
   }
@@ -242,10 +274,7 @@ export function formatCommercialRegisterLine(cfg: {
 }
 
 export function getLegalIdentityConfig(): LegalIdentityConfig {
-  const legalName = cleanEnvOrDefault(
-    ["LEGAL_OPERATOR_LEGAL_NAME", "NEXT_PUBLIC_LEGAL_OPERATOR_LEGAL_NAME"],
-    legalOperator.companyName
-  );
+  const legalName = cleanLegalNameOrDefault(legalOperator.companyName);
   const companyId = cleanEnvOrDefault(
     ["LEGAL_OPERATOR_ICO", "NEXT_PUBLIC_LEGAL_OPERATOR_ICO"],
     legalOperator.ico
