@@ -1,9 +1,8 @@
 import { HomeFaq } from "@/components/home/HomeFaq";
-import { HomeBottomDeferred } from "@/components/home/HomeBottomDeferred";
+import { HomeFinalCta } from "@/components/home/HomeFinalCta";
 import { HomeForeignMarkets } from "@/components/home/HomeForeignMarkets";
 import { HomeHowItWorks } from "@/components/home/HomeHowItWorks";
 import { HomeInvestments } from "@/components/home/HomeInvestments";
-import { HomePillars } from "@/components/home/HomePillars";
 import { HomeRentVsMortgage } from "@/components/home/HomeRentVsMortgage";
 import { HomeSituationSelector } from "@/components/home/HomeSituationSelector";
 import { CockpitHeroShell } from "@/components/home/CockpitHeroShell";
@@ -28,6 +27,7 @@ type HomeExperienceProps = {
 
 /**
  * Server homepage — hero + produktové sekce; těžké interaktivní části až v dohledu.
+ * Bez duplicitního bloku „Čtyři oblasti“.
  */
 export function HomeExperience({
   initialOffers,
@@ -37,7 +37,6 @@ export function HomeExperience({
     <>
       <CockpitHeroShell serverJourney={serverJourney} />
       <HomeSituationSelector />
-      <HomePillars />
       <HomeRentVsMortgage />
       <HomeInvestments />
       <HomeForeignMarkets />
@@ -48,16 +47,7 @@ export function HomeExperience({
       />
       <HomeHowItWorks />
       <HomeFaq />
-      <HomeBottomDeferred
-        journeyMetadata={{
-          purpose: DEFAULT_QUERY.purpose,
-          fixationMonths: DEFAULT_QUERY.fixationMonths,
-          exactLtv: DEFAULT_LTV_CONTEXT.exactLtv,
-          ltvBand: DEFAULT_LTV_CONTEXT.ltvBand,
-          propertyValue: DEFAULT_QUERY.propertyValueCzk,
-          mortgageAmount: DEFAULT_QUERY.loanAmountCzk,
-        }}
-      />
+      <HomeFinalCta />
     </>
   );
 }

@@ -196,10 +196,12 @@ describe("navbar overflow guards (static source)", () => {
     assert.ok(!navbar.includes("w-screen"));
   });
 
-  it("desktop nav starts at xl with accessible megamenu", () => {
+  it("desktop nav starts at xl with accessible disclosure megamenu", () => {
     assert.ok(navbar.includes("xl:flex"));
     assert.ok(navbar.includes('aria-label="Hlavní navigace"'));
-    assert.ok(navbar.includes('role="menu"'));
+    assert.ok(navbar.includes("aria-controls={panelId}"));
+    assert.ok(navbar.includes("hidden={!open}"));
+    assert.ok(!navbar.includes('role="menu"'));
     assert.ok(navbar.includes("isNavItemActive"));
     assert.ok(navbar.includes("primaryDesktopGroups"));
     assert.ok(navbar.includes("utilityNavItems"));

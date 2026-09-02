@@ -54,7 +54,7 @@ describe("computeOrientacniBankMonthlyPayment — unit", () => {
     assert.equal(payment, 34_692);
     assert.match(
       formatOrientacniBankMonthlyPaymentLine(payment!),
-      /^Orientační měsíční splátka 34[\s\u00a0]?692[\s\u00a0]?Kč$/
+      /^Orientační splátka: 34[\s\u00a0]?692[\s\u00a0]?Kč\/měs\.$/
     );
   });
 

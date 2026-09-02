@@ -1,74 +1,54 @@
-"use client";
-
 import Link from "next/link";
-import { LeadCaptureForm } from "@/components/forms/LeadCaptureForm";
-import { LEAD_FORM_FRICTION_ABOVE } from "@/lib/leads-form-copy";
-import { CTA_CS } from "@/lib/ux/cta";
+import { CTA_CS, CTA_PRIMARY_ON_DARK_CLASS, CTA_SECONDARY_CLASS } from "@/lib/ux/cta";
 import { routes } from "@/lib/routes";
-
-type HomeFinalCtaProps = {
-  journeyMetadata?: Record<string, unknown>;
-};
+import { cn } from "@/lib/utils";
 
 /**
- * Závěrečné CTA — diagnostika situace + volitelný lead formulář.
+ * Závěrečné CTA — krátká diagnostika, bez lead formuláře.
  */
-export function HomeFinalCta({ journeyMetadata }: HomeFinalCtaProps) {
+export function HomeFinalCta() {
   return (
     <section
       aria-labelledby="home-final-cta-heading"
       className="bg-deep-teal text-white"
       id="poptavka"
     >
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-start lg:px-8 lg:py-16">
-        <div className="max-w-xl">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-gold">
-            Další krok
-          </p>
-          <h2
-            id="home-final-cta-heading"
-            className="mt-2 font-heading text-2xl font-bold leading-tight sm:text-3xl"
-          >
-            {CTA_CS.findSituationSolution}
-          </h2>
-          <p className="mt-3 text-sm leading-relaxed text-white/80 sm:text-base">
-            Vyberte svou situaci, spočítejte možnosti a pokud chcete, tým
-            Hypotéka Jasně s vámi zdarma a nezávazně projde další krok. Nejde o
-            schválení úvěru ani garantovanou sazbu — nejsme banka.
-          </p>
+      <div className="mx-auto max-w-3xl px-4 py-14 text-center sm:px-6 lg:px-8 lg:py-16">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-gold">
+          Další krok
+        </p>
+        <h2
+          id="home-final-cta-heading"
+          className="mt-2 font-heading text-2xl font-bold leading-tight sm:text-3xl"
+        >
+          Najděte řešení pro svou situaci
+        </h2>
+        <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-white/80 sm:text-base">
+          Ať řešíte vlastní bydlení, refinancování nebo investici v Česku či
+          zahraničí, začněte krátkou diagnostikou a zjistěte, které nástroje a
+          informace jsou pro vás relevantní.
+        </p>
+        <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
           <Link
             href={routes.mojeMoznosti}
-            className="mt-6 inline-flex h-11 min-h-11 items-center justify-center rounded-lg bg-muted-gold px-5 text-sm font-semibold text-text-dark transition-colors hover:bg-muted-gold-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-deep-teal"
+            className={cn(CTA_PRIMARY_ON_DARK_CLASS, "w-full sm:w-auto")}
           >
             {CTA_CS.findIdealSolution}
           </Link>
-          <p className="mt-4 text-xs leading-relaxed text-white/60">
-            Provozovatel, zdroje dat, metodika a ochrana osobních údajů jsou v{" "}
-            <Link
-              href={routes.duvera}
-              className="underline underline-offset-2 hover:text-white"
-            >
-              Centru důvěry
-            </Link>
-            .
-          </p>
+          <Link
+            href={routes.kontakt}
+            className={cn(
+              CTA_SECONDARY_CLASS,
+              "w-full border-white/30 bg-white/5 text-white hover:border-white/50 hover:bg-white/10 sm:w-auto"
+            )}
+          >
+            Kontaktovat nás
+          </Link>
         </div>
-
-        <div className="rounded-2xl bg-white p-4 text-text-dark shadow-lg sm:p-6">
-          <LeadCaptureForm
-            source="mortgage_calculator"
-            country="CZ"
-            metadata={{
-              sourcePage: "/",
-              ...journeyMetadata,
-            }}
-            title="Chci nezávazně projít své možnosti"
-            subtitle={LEAD_FORM_FRICTION_ABOVE}
-            submitLabel="Chci nezávazné porovnání"
-            compact
-            className="border-0 bg-transparent p-0 shadow-none"
-          />
-        </div>
+        <p className="mt-5 text-xs leading-relaxed text-white/65 sm:text-[13px]">
+          Nezávazně · kontakt zanecháte pouze tehdy, pokud sami chcete · nejsme
+          banka
+        </p>
       </div>
     </section>
   );

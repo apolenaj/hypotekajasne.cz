@@ -1,11 +1,4 @@
-"use client";
-
-import { HomeFinalCta } from "@/components/home/HomeFinalCta";
-
-export function HomeBottomBlock({
-  journeyMetadata,
-}: {
-  journeyMetadata: Record<string, unknown>;
-}) {
-  return <HomeFinalCta journeyMetadata={journeyMetadata} />;
+/** @deprecated Bottom block no longer defers final CTA — kept for import safety. */
+export function HomeBottomBlock() {
+  return null;
 }

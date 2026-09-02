@@ -108,7 +108,8 @@ describe("Phase 6 Wave 1 — commercial canonicals", () => {
     assert.match(src, /routes\.temata\}\/refinancovani/);
     assert.match(src, /routes\.temata\}\/investicni-hypoteka/);
     assert.match(src, /routes\.temata\}\/hypoteka-osvc/);
-    assert.match(nav, /hypoteka-ze-zahranicniho-prijmu/);
+    assert.match(src, /routes\.temata\}\/hypoteka-ze-zahranicniho-prijmu/);
+    assert.match(src, /hypotecniKalkulacka\}\?purpose=purchase/);
     assert.match(nav, /americka-hypoteka/);
     assert.equal(src.includes("note=american"), false);
     assert.equal(src.includes("intent=osvc"), false);

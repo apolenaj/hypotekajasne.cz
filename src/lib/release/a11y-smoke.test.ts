@@ -50,6 +50,8 @@ describe("a11y smoke (static)", () => {
     assert.ok(nav.includes('aria-label="Hlavní navigace"'));
     assert.ok(nav.includes("primaryDesktopGroups"));
     assert.ok(nav.includes("utilityNavItems"));
+    assert.ok(nav.includes("aria-controls"));
+    assert.ok(nav.includes("hidden={!open}"));
     assert.ok(nav.includes("min-h-11"));
     assert.ok(nav.includes("useFocusTrap"));
   });

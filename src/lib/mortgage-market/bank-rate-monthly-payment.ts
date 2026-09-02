@@ -72,7 +72,7 @@ export function computeOrientacniBankMonthlyPayment(
 export function formatOrientacniBankMonthlyPaymentLine(
   monthlyPaymentCzk: number
 ): string {
-  return `Orientační měsíční splátka ${formatMoney(monthlyPaymentCzk, "CZK")}`;
+  return `Orientační splátka: ${formatMoney(monthlyPaymentCzk, "CZK")}/měs.`;
 }
 
 /**

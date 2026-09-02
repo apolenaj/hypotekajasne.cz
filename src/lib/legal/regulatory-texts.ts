@@ -41,8 +41,8 @@ export const RATES_DISCLAIMER = {
 } as const;
 
 export const BANK_RATE_PAYMENT_NOTE = {
-  cs: "Nezahrnuje individuální posouzení banky, poplatky ani pojištění, pokud nejsou součástí uvedené sazby.",
-  en: "Excludes the bank's individual assessment, fees and insurance unless included in the quoted rate.",
+  cs: "Orientační výpočet pouze z úrokové sazby. Nezahrnuje individuální poplatky, pojištění ani konečné podmínky banky.",
+  en: "Indicative calculation from the interest rate only. Excludes individual fees, insurance and the bank's final terms.",
 } as const;
 
 export const CNB_INVESTMENT_RECOMMENDATION_TITLE = {

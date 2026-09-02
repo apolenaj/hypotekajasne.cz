@@ -74,7 +74,7 @@ function ScenarioRow({
       </div>
       {payment ? (
         <>
-          <p className="font-heading text-lg font-semibold tabular-nums text-text-dark">
+          <p className="break-words font-heading text-lg font-semibold tabular-nums text-text-dark">
             {payment.monthlyPaymentLine}
           </p>
           <p className="text-xs leading-relaxed text-muted-foreground">
@@ -299,7 +299,7 @@ function AlternateScenarioLine({
         {scenarioLabelCs(offer)}
       </p>
       {payment ? (
-        <p className="mt-0.5 tabular-nums text-text-dark">
+        <p className="mt-0.5 break-words tabular-nums text-text-dark">
           {payment.monthlyPaymentLine}
         </p>
       ) : null}

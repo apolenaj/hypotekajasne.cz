@@ -10,8 +10,8 @@ const SITUATIONS = [
     id: "purchase",
     situation: "purchase",
     label: "Kupuji vlastní bydlení",
-    href: `${routes.sazby}?purpose=purchase`,
-    hint: "Spočítat splátku a porovnat zveřejněné sazby pro koupi.",
+    href: `${routes.kalkulacky.hypotecniKalkulacka}?purpose=purchase`,
+    hint: "Spočítat splátku a nastavit parametry pro koupi nemovitosti.",
   },
   {
     id: "rent_vs_buy",
@@ -42,11 +42,18 @@ const SITUATIONS = [
     hint: "Porovnejte podporované trhy, výnosy a financování.",
   },
   {
-    id: "osvc_foreign",
+    id: "osvc",
     situation: "osvc",
-    label: "Jsem OSVČ nebo mám příjem ze zahraničí",
+    label: "Jsem OSVČ",
     href: `${routes.temata}/hypoteka-osvc`,
-    hint: "Doklady, posouzení příjmů a další krok diagnostiky.",
+    hint: "Zjistěte, jak banky posuzují podnikatelské příjmy a jaké doklady mohou požadovat.",
+  },
+  {
+    id: "foreign_income",
+    situation: "foreign_income",
+    label: "Mám příjem ze zahraničí",
+    href: `${routes.temata}/hypoteka-ze-zahranicniho-prijmu`,
+    hint: "Zjistěte, jak banky posuzují zahraničního zaměstnavatele, měnu příjmu a potřebné dokumenty.",
   },
 ] as const;
 
@@ -77,9 +84,14 @@ export function HomeSituationSelector() {
           </p>
         </div>
 
-        <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {SITUATIONS.map((s) => (
-            <li key={s.id}>
+            <li
+              key={s.id}
+              className={cn(
+                s.id === "foreign_income" && "sm:col-span-2 lg:col-span-1 xl:col-span-1"
+              )}
+            >
               <Link
                 href={s.href}
                 onClick={() => {

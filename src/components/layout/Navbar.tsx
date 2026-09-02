@@ -71,16 +71,17 @@ function NavItemLink({
   active?: boolean;
   showDescription?: boolean;
 }) {
-  const content = showDescription && item.description ? (
-    <span className="flex min-w-0 flex-col gap-0.5">
-      <span className="font-medium leading-snug">{item.label}</span>
-      <span className="text-xs font-normal leading-snug text-gray-500">
-        {item.description}
+  const content =
+    showDescription && item.description ? (
+      <span className="flex min-w-0 flex-col gap-0.5">
+        <span className="font-medium leading-snug">{item.label}</span>
+        <span className="text-xs font-normal leading-snug text-gray-500">
+          {item.description}
+        </span>
       </span>
-    </span>
-  ) : (
-    item.label
-  );
+    ) : (
+      item.label
+    );
 
   if (item.external) {
     return (
@@ -90,12 +91,14 @@ function NavItemLink({
         rel="noopener noreferrer"
         className={className}
         onClick={onClick}
-        role="menuitem"
       >
         <span className="inline-flex items-start gap-2">
           {content}
           <span className="sr-only"> (otevře se v novém okně)</span>
-          <ExternalLink className="mt-0.5 h-3.5 w-3.5 shrink-0 opacity-60" aria-hidden />
+          <ExternalLink
+            className="mt-0.5 h-3.5 w-3.5 shrink-0 opacity-60"
+            aria-hidden
+          />
         </span>
       </a>
     );
@@ -106,7 +109,6 @@ function NavItemLink({
       href={item.href}
       className={className}
       onClick={onClick}
-      role="menuitem"
       aria-current={active ? "page" : undefined}
     >
       {content}
@@ -114,20 +116,28 @@ function NavItemLink({
   );
 }
 
-function DesktopMegaMenu({
+/**
+ * Accessible disclosure megamenu (not APG menu).
+ * Panel stays in the DOM so aria-controls always resolves.
+ * Open state is controlled by the parent (one panel at a time).
+ */
+function DesktopDisclosure({
   group,
   pathname,
   search,
+  open,
+  onOpenChange,
 }: {
   group: NavGroup;
   pathname: string;
   search: string;
+  open: boolean;
+  onOpenChange: (next: boolean) => void;
 }) {
-  const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const menuId = useId();
+  const panelRef = useRef<HTMLDivElement>(null);
+  const panelId = useId();
   const groupActive = isNavGroupActive(group, pathname, search);
   const columns = group.columns?.length
     ? group.columns
@@ -135,37 +145,23 @@ function DesktopMegaMenu({
   const colCount = Math.min(3, Math.max(1, columns.length));
 
   const close = useCallback(() => {
-    setOpen(false);
+    onOpenChange(false);
     buttonRef.current?.focus();
-  }, []);
+  }, [onOpenChange]);
 
   useEffect(() => {
     if (!open) return;
 
     const onPointerDown = (event: MouseEvent) => {
       if (!rootRef.current?.contains(event.target as Node)) {
-        setOpen(false);
+        onOpenChange(false);
       }
     };
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
         close();
-        return;
       }
-      if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
-      const links = menuRef.current?.querySelectorAll<HTMLElement>(
-        '[role="menuitem"]'
-      );
-      if (!links?.length) return;
-      event.preventDefault();
-      const list = [...links];
-      const idx = list.indexOf(document.activeElement as HTMLElement);
-      const next =
-        event.key === "ArrowDown"
-          ? list[(idx + 1 + list.length) % list.length]
-          : list[(idx - 1 + list.length) % list.length];
-      next?.focus();
     };
 
     document.addEventListener("mousedown", onPointerDown);
@@ -174,25 +170,21 @@ function DesktopMegaMenu({
       document.removeEventListener("mousedown", onPointerDown);
       document.removeEventListener("keydown", onKeyDown);
     };
-  }, [open, close]);
+  }, [open, close, onOpenChange]);
 
   return (
-    <div
-      ref={rootRef}
-      className="relative shrink-0"
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-    >
+    <div ref={rootRef} className="relative shrink-0">
       <button
         ref={buttonRef}
         type="button"
         aria-expanded={open}
-        aria-haspopup="menu"
-        aria-controls={menuId}
-        onClick={() => setOpen((value) => !value)}
+        aria-controls={panelId}
+        aria-haspopup="true"
+        data-nav-disclosure={group.id}
+        onClick={() => onOpenChange(!open)}
         className={cn(
-          topLinkClass(groupActive),
-          open && "bg-deep-teal/5 text-deep-teal"
+          topLinkClass(groupActive || open),
+          open && "bg-deep-teal/10 text-deep-teal"
         )}
       >
         {group.label}
@@ -205,50 +197,52 @@ function DesktopMegaMenu({
         />
       </button>
 
-      {open ? (
+      <div
+        id={panelId}
+        ref={panelRef}
+        hidden={!open}
+        data-nav-panel={group.id}
+        className={cn(
+          "absolute left-1/2 top-full z-[200] w-[min(36rem,90%)] -translate-x-1/2 pt-1",
+          "xl:left-0 xl:w-auto xl:min-w-[28rem] xl:max-w-[36rem] xl:translate-x-0"
+        )}
+      >
         <div
-          id={menuId}
-          ref={menuRef}
-          role="menu"
-          aria-label={group.label}
-          className="absolute left-1/2 top-full z-[100] w-[min(36rem,90%)] -translate-x-1/2 pt-1 xl:left-0 xl:w-auto xl:min-w-[28rem] xl:max-w-[36rem] xl:translate-x-0"
+          className={cn(
+            "max-h-[min(70vh,32rem)] overflow-y-auto overflow-x-hidden rounded-xl border border-gray-100 bg-white p-3 shadow-lg",
+            colCount === 1 && "w-max min-w-[14rem] max-w-[22rem]",
+            colCount === 2 && "grid grid-cols-2 gap-3",
+            colCount === 3 && "grid grid-cols-3 gap-3"
+          )}
         >
-          <div
-            className={cn(
-              "max-h-[min(70vh,32rem)] overflow-y-auto overflow-x-hidden rounded-xl border border-gray-100 bg-white p-3 shadow-lg",
-              colCount === 1 && "w-max min-w-[14rem] max-w-[22rem]",
-              colCount === 2 && "grid grid-cols-2 gap-3",
-              colCount === 3 && "grid grid-cols-3 gap-3"
-            )}
-          >
-            {columns.map((column, colIdx) => (
-              <div key={column.title ?? `col-${colIdx}`} className="min-w-0">
-                {column.title ? (
-                  <p className="mb-1.5 px-2 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
-                    {column.title}
-                  </p>
-                ) : null}
-                <div className="space-y-0.5">
-                  {column.items.map((item) => (
+          {columns.map((column, colIdx) => (
+            <div key={column.title ?? `col-${colIdx}`} className="min-w-0">
+              {column.title ? (
+                <p className="mb-1.5 px-2 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+                  {column.title}
+                </p>
+              ) : null}
+              <ul className="space-y-0.5">
+                {column.items.map((item) => (
+                  <li key={`${item.href}-${item.label}`}>
                     <NavItemLink
-                      key={`${item.href}-${item.label}`}
                       item={item}
                       showDescription={Boolean(item.description)}
                       active={isNavItemActive(item.href, pathname, search)}
-                      onClick={() => setOpen(false)}
+                      onClick={() => onOpenChange(false)}
                       className={cn(
                         "block rounded-lg px-2.5 py-2 text-sm text-gray-700 transition-colors hover:bg-deep-teal/5 hover:text-deep-teal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal",
                         isNavItemActive(item.href, pathname, search) &&
                           "bg-deep-teal/10 font-semibold text-deep-teal"
                       )}
                     />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
-      ) : null}
+      </div>
     </div>
   );
 }
@@ -278,6 +272,7 @@ function HeaderCta({ className }: { className?: string }) {
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openMobileGroup, setOpenMobileGroup] = useState<string | null>(null);
+  const [openDesktopId, setOpenDesktopId] = useState<string | null>(null);
   const drawerTitleId = useId();
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -302,13 +297,21 @@ export function Navbar() {
     };
   }, [mobileOpen]);
 
+  // Close desktop disclosure on route change
+  useEffect(() => {
+    setOpenDesktopId(null);
+  }, [pathname, search]);
+
   return (
     <header
       data-site-header
-      className="sticky top-0 z-50 w-full max-w-full border-b border-gray-100 bg-white/95 backdrop-blur-md"
+      className="sticky top-0 z-[100] w-full max-w-full overflow-visible border-b border-gray-100 bg-white/95 backdrop-blur-md"
     >
       <div className="mx-auto hidden max-w-7xl items-center justify-end gap-4 px-4 pt-1.5 text-xs text-gray-500 lg:px-6 xl:flex xl:px-8">
-        <nav aria-label="Sekundární navigace" className="flex items-center gap-3">
+        <nav
+          aria-label="Sekundární navigace"
+          className="flex items-center gap-3"
+        >
           {utilityNavItems.map((item) => (
             <Link
               key={item.href}
@@ -320,7 +323,9 @@ export function Navbar() {
                   "font-semibold text-deep-teal"
               )}
               aria-current={
-                isNavItemActive(item.href, pathname, search) ? "page" : undefined
+                isNavItemActive(item.href, pathname, search)
+                  ? "page"
+                  : undefined
               }
             >
               {item.label}
@@ -329,19 +334,24 @@ export function Navbar() {
         </nav>
       </div>
 
-      <div className="mx-auto flex h-14 w-full max-w-7xl min-w-0 items-center gap-2 px-3 sm:h-16 sm:gap-3 sm:px-4 lg:px-6 xl:px-8">
+      <div className="mx-auto flex h-14 w-full max-w-7xl min-w-0 items-center gap-2 overflow-visible px-3 sm:h-16 sm:gap-3 sm:px-4 lg:px-6 xl:px-8">
         <Logo />
 
         <nav
-          className="ml-auto hidden min-w-0 flex-1 items-center justify-center gap-0.5 xl:flex 2xl:gap-1"
+          className="ml-auto hidden min-w-0 flex-1 items-center justify-center gap-0.5 overflow-visible xl:flex 2xl:gap-1"
           aria-label="Hlavní navigace"
+          data-desktop-nav
         >
           {primaryDesktopGroups.map((group) => (
-            <DesktopMegaMenu
+            <DesktopDisclosure
               key={group.id}
               group={group}
               pathname={pathname}
               search={search}
+              open={openDesktopId === group.id}
+              onOpenChange={(next) =>
+                setOpenDesktopId(next ? group.id : null)
+              }
             />
           ))}
         </nav>
@@ -369,7 +379,7 @@ export function Navbar() {
         <div
           ref={drawerRef}
           id="mobile-nav-drawer"
-          className="fixed inset-0 z-[60] xl:hidden"
+          className="fixed inset-0 z-[110] xl:hidden"
           role="dialog"
           aria-modal="true"
           aria-labelledby={drawerTitleId}
@@ -406,7 +416,12 @@ export function Navbar() {
               <div className="space-y-2">
                 {mobileNavGroups.map((group) => {
                   const isOpen = openMobileGroup === group.id;
-                  const groupActive = isNavGroupActive(group, pathname, search);
+                  const groupActive = isNavGroupActive(
+                    group,
+                    pathname,
+                    search
+                  );
+                  const panelId = `mobile-nav-${group.id}`;
                   return (
                     <div
                       key={group.id}
@@ -419,6 +434,7 @@ export function Navbar() {
                           groupActive ? "text-deep-teal" : "text-gray-800"
                         )}
                         aria-expanded={isOpen}
+                        aria-controls={panelId}
                         onClick={() =>
                           setOpenMobileGroup(isOpen ? null : group.id)
                         }
@@ -432,28 +448,30 @@ export function Navbar() {
                           aria-hidden
                         />
                       </button>
-                      {isOpen ? (
-                        <div className="max-h-[min(50vh,20rem)] space-y-0.5 overflow-y-auto overflow-x-hidden border-t border-gray-100 px-2 py-2">
-                          {group.items.map((item) => (
-                            <NavItemLink
-                              key={`${item.href}-${item.label}`}
-                              item={item}
-                              showDescription={Boolean(item.description)}
-                              active={isNavItemActive(
-                                item.href,
-                                pathname,
-                                search
-                              )}
-                              onClick={closeMobile}
-                              className={cn(
-                                "flex min-h-11 w-full max-w-full items-start rounded-lg px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-deep-teal",
-                                isNavItemActive(item.href, pathname, search) &&
-                                  "bg-deep-teal/10 font-semibold text-deep-teal"
-                              )}
-                            />
-                          ))}
-                        </div>
-                      ) : null}
+                      <div
+                        id={panelId}
+                        hidden={!isOpen}
+                        className="max-h-[min(50vh,20rem)] space-y-0.5 overflow-y-auto overflow-x-hidden border-t border-gray-100 px-2 py-2"
+                      >
+                        {group.items.map((item) => (
+                          <NavItemLink
+                            key={`${item.href}-${item.label}`}
+                            item={item}
+                            showDescription={Boolean(item.description)}
+                            active={isNavItemActive(
+                              item.href,
+                              pathname,
+                              search
+                            )}
+                            onClick={closeMobile}
+                            className={cn(
+                              "flex min-h-11 w-full max-w-full items-start rounded-lg px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-deep-teal",
+                              isNavItemActive(item.href, pathname, search) &&
+                                "bg-deep-teal/10 font-semibold text-deep-teal"
+                            )}
+                          />
+                        ))}
+                      </div>
                     </div>
                   );
                 })}

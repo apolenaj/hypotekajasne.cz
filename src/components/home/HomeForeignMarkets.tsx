@@ -3,8 +3,20 @@ import { unifiedDestinations } from "@/lib/unified-destinations";
 import { routes } from "@/lib/routes";
 import { CTA_PRIMARY_CLASS } from "@/lib/ux/cta";
 
-/** Zahraniční trhy — pouze existující podporované destinace. */
+/** Homepage highlight — foreign markets only (no CZ). Full list lives on /pruvodce-investora. */
+const HOMEPAGE_FOREIGN_SLUGS = [
+  "dubaj",
+  "spanelsko",
+  "chorvatsko",
+  "bali",
+] as const;
+
+/** Zahraniční trhy — čtyři zvýrazněné destinace + vstup do kompletního průvodce. */
 export function HomeForeignMarkets() {
+  const markets = HOMEPAGE_FOREIGN_SLUGS.map((slug) =>
+    unifiedDestinations.find((d) => d.slug === slug)
+  ).filter((d): d is (typeof unifiedDestinations)[number] => Boolean(d));
+
   return (
     <section
       aria-labelledby="home-foreign-heading"
@@ -22,14 +34,14 @@ export function HomeForeignMarkets() {
             Investice do nemovitostí v zahraničí
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground sm:text-base">
-            Porovnejte podporované trhy, zjistěte orientační výnosy a náklady,
-            pochopte možnosti financování a rizika jednotlivých zemí. U
-            modelových nebo neúplných dat zůstává označení stavu u daného trhu.
+            Porovnejte vybrané zahraniční trhy, zjistěte orientační výnosy a
+            náklady a pochopte možnosti financování. Kompletní přehled všech
+            podporovaných zemí je v průvodci investora.
           </p>
         </div>
 
         <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {unifiedDestinations.map((m) => (
+          {markets.map((m) => (
             <li key={m.slug}>
               <Link
                 href={`${routes.pruvodceInvestora}/${m.slug}`}
@@ -48,7 +60,7 @@ export function HomeForeignMarkets() {
 
         <div className="mt-8">
           <Link href={routes.pruvodceInvestora} className={CTA_PRIMARY_CLASS}>
-            Prozkoumat zahraniční trhy
+            Prozkoumat všechny zahraniční trhy
           </Link>
         </div>
       </div>
