@@ -113,7 +113,7 @@ describe("unique titles & descriptions", () => {
     assert.notEqual(home.title, sazby.title);
     assert.notEqual(home.title, calc.title);
     assert.notEqual(sazby.title, calc.title);
-    assert.match(home.title, /Kalkulačka|sazby|srovnání/i);
+    assert.match(home.title, /Hypoték|nájem|investic|zahrani/i);
   });
 });
 

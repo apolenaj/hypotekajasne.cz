@@ -98,18 +98,18 @@ describe("Phase 6 Wave 1 — commercial canonicals", () => {
     assert.equal(blob.includes("purpose=purchase"), false);
   });
 
-  it("homepage situation targets match Wave 1 commercial paths", async () => {
-    const src = await import("node:fs").then((fs) =>
-      fs.readFileSync(
-        "src/components/home/HomeSituationSelector.tsx",
-        "utf8"
-      )
+  it("homepage situation + nav keep Wave 1 commercial paths", async () => {
+    const fs = await import("node:fs");
+    const src = fs.readFileSync(
+      "src/components/home/HomeSituationSelector.tsx",
+      "utf8"
     );
+    const nav = fs.readFileSync("src/lib/navigation.ts", "utf8");
     assert.match(src, /routes\.temata\}\/refinancovani/);
-    assert.match(src, /routes\.temata\}\/hypoteka-osvc/);
-    assert.match(src, /routes\.temata\}\/hypoteka-ze-zahranicniho-prijmu/);
     assert.match(src, /routes\.temata\}\/investicni-hypoteka/);
-    assert.match(src, /routes\.temata\}\/americka-hypoteka/);
+    assert.match(src, /routes\.temata\}\/hypoteka-osvc/);
+    assert.match(nav, /hypoteka-ze-zahranicniho-prijmu/);
+    assert.match(nav, /americka-hypoteka/);
     assert.equal(src.includes("note=american"), false);
     assert.equal(src.includes("intent=osvc"), false);
     assert.equal(src.includes("intent=foreign_income"), false);

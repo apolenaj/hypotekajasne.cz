@@ -40,7 +40,7 @@ describe("mini mortgage calculator", () => {
 
   it("CTA labels follow calculate → view rates flow", () => {
     assert.equal(MINI_MORTGAGE_CTA.calculate, "Spočítat splátku");
-    assert.equal(MINI_MORTGAGE_CTA.viewRates, "Zobrazit sazby pro tento výpočet");
+    assert.equal(MINI_MORTGAGE_CTA.viewRates, "Porovnat sazby pro toto zadání");
     assert.equal(miniMortgageCtaLabel(), MINI_MORTGAGE_CTA.calculate);
   });
 

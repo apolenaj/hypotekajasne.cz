@@ -9,57 +9,58 @@ const SITUATIONS = [
   {
     id: "purchase",
     situation: "purchase",
-    label: "Kupuji bydlení",
+    label: "Kupuji vlastní bydlení",
     href: `${routes.sazby}?purpose=purchase`,
-    hint: "Spočítat splátku a porovnat zveřejněné sazby pro koupi",
+    hint: "Spočítat splátku a porovnat zveřejněné sazby pro koupi.",
+  },
+  {
+    id: "rent_vs_buy",
+    situation: "rent_vs_buy",
+    label: "Rozhoduji se mezi nájmem a hypotékou",
+    href: routes.kalkulacky.koupeVsNajem,
+    hint: "Porovnejte dlouhodobé náklady nájmu a vlastního bydlení.",
   },
   {
     id: "refinance",
     situation: "refinance",
-    label: "Refinancuji hypotéku",
+    label: "Chci refinancovat",
     href: `${routes.temata}/refinancovani`,
-    hint: "Postup, náklady a sazby pro refinancování stávajícího úvěru",
-  },
-  {
-    id: "osvc",
-    situation: "osvc",
-    label: "Jsem OSVČ",
-    href: `${routes.temata}/hypoteka-osvc`,
-    hint: "Příjmy, doklady a další krok diagnostiky pro podnikatele",
-  },
-  {
-    id: "foreign",
-    situation: "foreign_income",
-    label: "Mám příjem ze zahraničí",
-    href: `${routes.temata}/hypoteka-ze-zahranicniho-prijmu`,
-    hint: "Dokumentace a posouzení zahraničního příjmu u bank",
+    hint: "Postup, náklady a sazby při konci fixace.",
   },
   {
     id: "investment",
     situation: "investment",
-    label: "Investuji do nemovitosti",
+    label: "Kupuji investiční nemovitost",
     href: `${routes.temata}/investicni-hypoteka`,
-    hint: "Rozdíl proti vlastnímu bydlení a doporučení ČNB pro investiční hypotéky",
+    hint: "Financování investice odděleně od vlastního bydlení.",
   },
   {
-    id: "american",
-    situation: "american",
-    label: "Zajímá mě americká hypotéka",
-    href: `${routes.temata}/americka-hypoteka`,
-    hint: "Neúčelový úvěr se zástavou nemovitosti — rizika a typické limity",
+    id: "foreign",
+    situation: "foreign_markets",
+    label: "Chci investovat v zahraničí",
+    href: routes.pruvodceInvestora,
+    hint: "Porovnejte podporované trhy, výnosy a financování.",
+  },
+  {
+    id: "osvc_foreign",
+    situation: "osvc",
+    label: "Jsem OSVČ nebo mám příjem ze zahraničí",
+    href: `${routes.temata}/hypoteka-osvc`,
+    hint: "Doklady, posouzení příjmů a další krok diagnostiky.",
   },
 ] as const;
 
 /**
- * High-intent situation router — does not claim automated bank matching for all paths.
+ * High-intent situation router — does not claim automated bank matching.
  */
 export function HomeSituationSelector() {
   return (
     <section
+      id="situace"
       aria-labelledby="home-situation-heading"
-      className="border-b border-border bg-white"
+      className="scroll-mt-24 border-b border-border bg-white lg:scroll-mt-28"
     >
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
         <div className="max-w-2xl">
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-deep-teal">
             Situace
@@ -68,15 +69,15 @@ export function HomeSituationSelector() {
             id="home-situation-heading"
             className="mt-2 font-heading text-2xl font-bold tracking-tight text-text-dark sm:text-3xl"
           >
-            S čím vám pomůžeme
+            S čím potřebujete pomoci?
           </h2>
           <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-            Vyberte situaci — navedeme vás na nejbližší užitečný postup a
-            relevantní sazby nebo průvodce.
+            Vyberte situaci — navedeme vás na relevantní výpočet, sazby nebo
+            průvodce.
           </p>
         </div>
 
-        <ul className="mt-6 grid gap-3 sm:grid-cols-2">
+        <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {SITUATIONS.map((s) => (
             <li key={s.id}>
               <Link
@@ -93,14 +94,14 @@ export function HomeSituationSelector() {
                 }}
                 className={cn(
                   "flex h-full min-h-11 flex-col rounded-xl border border-border bg-[#f7f8f7] p-4",
-                  "transition-colors hover:border-deep-teal/40 hover:bg-white",
+                  "transition-colors hover:border-deep-teal/40 hover:bg-white active:bg-deep-teal/5",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal focus-visible:ring-offset-2"
                 )}
               >
                 <span className="font-heading text-base font-semibold text-text-dark">
                   {s.label}
                 </span>
-                <span className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                <span className="mt-1 text-sm leading-relaxed text-muted-foreground">
                   {s.hint}
                 </span>
               </Link>

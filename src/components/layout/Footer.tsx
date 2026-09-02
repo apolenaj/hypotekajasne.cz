@@ -23,12 +23,38 @@ function CookieSettingsLink() {
   );
 }
 
+function FooterColumn({
+  title,
+  links,
+}: {
+  title: string;
+  links: ReadonlyArray<{ href: string; label: string }>;
+}) {
+  return (
+    <div>
+      <h4 className="mb-3 font-semibold text-text-dark">{title}</h4>
+      <ul className="space-y-2">
+        {links.map((link) => (
+          <li key={`${link.href}-${link.label}`}>
+            <Link
+              href={link.href}
+              className="text-sm text-muted-foreground transition-colors hover:text-deep-teal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal"
+            >
+              {link.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export function Footer() {
   return (
     <footer className="border-t border-border bg-white">
       <div className="container mx-auto px-4 py-12 lg:px-8 lg:py-16">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 lg:gap-12">
-          <div className="space-y-4">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 lg:gap-10">
+          <div className="space-y-4 sm:col-span-2 lg:col-span-1 xl:col-span-1">
             <BrandWordmark href="/" showDomain className="text-lg font-semibold" />
             <LegalOperatorIdentity
               variant="compact"
@@ -39,47 +65,6 @@ export function Footer() {
             <p className="text-xs leading-relaxed text-muted-foreground">
               {getCooperationWordingNeutral("cs")}
             </p>
-          </div>
-
-          <div>
-            <h4 className="mb-4 font-semibold text-text-dark">
-              Právní informace
-            </h4>
-            <ul className="space-y-2">
-              {footerLinks.legal.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-muted-foreground transition-colors hover:text-deep-teal"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-              <li>
-                <CookieSettingsLink />
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="mb-4 font-semibold text-text-dark">Společnost</h4>
-            <ul className="space-y-2">
-              {footerLinks.company.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-muted-foreground transition-colors hover:text-deep-teal"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="mb-4 font-semibold text-text-dark">Kontakt</h4>
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li>
                 <a
@@ -117,11 +102,36 @@ export function Footer() {
                     <Phone className="h-4 w-4 shrink-0" />
                     {siteContact.phone}
                   </a>
-                  <p className="mt-1 pl-6 text-[11px] text-muted-foreground/80">
-                    Kontakt projektu Hypotéka Jasně
-                  </p>
                 </li>
               ) : null}
+            </ul>
+          </div>
+
+          <FooterColumn title="Hypotéky" links={footerLinks.hypoteky} />
+          <FooterColumn title="Investice" links={footerLinks.investice} />
+          <FooterColumn title="Zahraničí" links={footerLinks.zahranici} />
+          <FooterColumn title="Nástroje" links={footerLinks.nastroje} />
+          <FooterColumn title="Průvodci" links={footerLinks.pruvodci} />
+          <FooterColumn title="Společnost" links={footerLinks.company} />
+
+          <div>
+            <h4 className="mb-3 font-semibold text-text-dark">
+              Právní informace
+            </h4>
+            <ul className="space-y-2">
+              {footerLinks.legal.map((link) => (
+                <li key={link.label}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-muted-foreground transition-colors hover:text-deep-teal"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <CookieSettingsLink />
+              </li>
             </ul>
           </div>
         </div>

@@ -1,28 +1,29 @@
 const STEPS = [
   {
-    title: "Zadáte základní údaje",
-    text: "Cena nemovitosti, vlastní prostředky, splatnost a fixace — bez zbytečných detailů na začátku.",
+    title: "Vyberete svou situaci",
+    text: "Koupě, refinancování, nájem vs. hypotéka, investice nebo zahraniční trh.",
   },
   {
-    title: "Uvidíte splátku a sazby",
-    text: "Orientační měsíční splátka z modelu a zvlášť ověřené zveřejněné sazby bank včetně data a zdroje.",
+    title: "Spočítáte a porovnáte možnosti",
+    text: "Kalkulačky, sazby bank a investiční modely — s datem ověření a zdrojem.",
   },
   {
-    title: "Požádáte o nezávazné srovnání",
-    text: "Když budete chtít, necháte kontakt — tým Hypotéka Jasně s vámi projde reálné možnosti.",
+    title: "Pokud chcete, požádáte o nezávaznou pomoc",
+    text: "Kontakt necháte až když sami chcete. Nejsme banka a neschvalujeme úvěry.",
   },
 ] as const;
 
 /**
- * Jak Hypotéka Jasně funguje — max 3 kroky.
+ * Jak Hypotéka Jasně funguje — produktové kroky (ne metodika dat).
  */
 export function HomeHowItWorks() {
   return (
     <section
+      id="jak-to-funguje"
       aria-labelledby="home-how-heading"
-      className="border-b border-border bg-white"
+      className="scroll-mt-24 border-b border-border bg-white lg:scroll-mt-28"
     >
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
         <div className="max-w-2xl">
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-deep-teal">
             Jak to funguje
@@ -39,7 +40,7 @@ export function HomeHowItWorks() {
           </p>
         </div>
 
-        <ol className="mt-7 grid gap-4 sm:grid-cols-3">
+        <ol className="mt-8 grid gap-4 sm:grid-cols-3">
           {STEPS.map((step, i) => (
             <li
               key={step.title}

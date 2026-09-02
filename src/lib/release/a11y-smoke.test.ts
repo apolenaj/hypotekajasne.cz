@@ -48,8 +48,8 @@ describe("a11y smoke (static)", () => {
     );
     assert.ok(nav.includes("sticky top-0"));
     assert.ok(nav.includes('aria-label="Hlavní navigace"'));
-    assert.ok(nav.includes("desktopNav.hypoteky"));
-    assert.ok(nav.includes("desktopNav.dalsiSluzby"));
+    assert.ok(nav.includes("primaryDesktopGroups"));
+    assert.ok(nav.includes("utilityNavItems"));
     assert.ok(nav.includes("min-h-11"));
     assert.ok(nav.includes("useFocusTrap"));
   });

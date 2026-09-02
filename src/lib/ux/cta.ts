@@ -9,6 +9,8 @@ import { routes } from "@/lib/routes";
 export const CTA_CS = {
   discoverOptions: "Zjistit moje možnosti",
   discoverSituation: "Zjistit možnosti pro moji situaci",
+  findIdealSolution: "Najít ideální řešení",
+  findSituationSolution: "Najít řešení pro mou situaci",
   calculate: "Spočítat",
   calculateMortgage: "Spočítat hypotéku",
   continue: "Pokračovat",
@@ -37,10 +39,10 @@ export const CTA_CS = {
 
 export type CtaLabelKey = keyof typeof CTA_CS;
 
-/** Site-wide primary CTA (nav + home). */
+/** Site-wide primary CTA (nav + home) — diagnostika situace, ne jen kalkulačka. */
 export const PRIMARY_PRODUCT_CTA = {
-  label: CTA_CS.calculateMortgage,
-  href: routes.kalkulacky.hypotecniKalkulacka,
+  label: CTA_CS.findIdealSolution,
+  href: routes.mojeMoznosti,
 } as const;
 
 /** Touch-friendly interactive classes (min 44px). */

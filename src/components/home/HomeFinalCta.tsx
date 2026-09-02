@@ -1,14 +1,17 @@
 "use client";
 
+import Link from "next/link";
 import { LeadCaptureForm } from "@/components/forms/LeadCaptureForm";
 import { LEAD_FORM_FRICTION_ABOVE } from "@/lib/leads-form-copy";
+import { CTA_CS } from "@/lib/ux/cta";
+import { routes } from "@/lib/routes";
 
 type HomeFinalCtaProps = {
   journeyMetadata?: Record<string, unknown>;
 };
 
 /**
- * Závěrečné CTA — krátký lead formulář s jasným názvem bez falešné urgency.
+ * Závěrečné CTA — diagnostika situace + volitelný lead formulář.
  */
 export function HomeFinalCta({ journeyMetadata }: HomeFinalCtaProps) {
   return (
@@ -26,12 +29,28 @@ export function HomeFinalCta({ journeyMetadata }: HomeFinalCtaProps) {
             id="home-final-cta-heading"
             className="mt-2 font-heading text-2xl font-bold leading-tight sm:text-3xl"
           >
-            Máte orientační čísla — chcete projít možnosti s člověkem?
+            {CTA_CS.findSituationSolution}
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-white/80 sm:text-base">
-            Tým Hypotéka Jasně s vámi zdarma a nezávazně projde reálné
-            možnosti podle vaší situace. Nejde o schválení úvěru ani garantovanou
-            sazbu — Hypotéka Jasně není banka.
+            Vyberte svou situaci, spočítejte možnosti a pokud chcete, tým
+            Hypotéka Jasně s vámi zdarma a nezávazně projde další krok. Nejde o
+            schválení úvěru ani garantovanou sazbu — nejsme banka.
+          </p>
+          <Link
+            href={routes.mojeMoznosti}
+            className="mt-6 inline-flex h-11 min-h-11 items-center justify-center rounded-lg bg-muted-gold px-5 text-sm font-semibold text-text-dark transition-colors hover:bg-muted-gold-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-deep-teal"
+          >
+            {CTA_CS.findIdealSolution}
+          </Link>
+          <p className="mt-4 text-xs leading-relaxed text-white/60">
+            Provozovatel, zdroje dat, metodika a ochrana osobních údajů jsou v{" "}
+            <Link
+              href={routes.duvera}
+              className="underline underline-offset-2 hover:text-white"
+            >
+              Centru důvěry
+            </Link>
+            .
           </p>
         </div>
 
@@ -43,7 +62,7 @@ export function HomeFinalCta({ journeyMetadata }: HomeFinalCtaProps) {
               sourcePage: "/",
               ...journeyMetadata,
             }}
-            title="Chci zdarma prověřit své možnosti"
+            title="Chci nezávazně projít své možnosti"
             subtitle={LEAD_FORM_FRICTION_ABOVE}
             submitLabel="Chci nezávazné porovnání"
             compact

@@ -34,9 +34,9 @@ export type StaticPageSeo = {
 export const STATIC_PAGE_SEO: StaticPageSeo[] = [
   {
     path: "/",
-    title: "Hypotéka Jasně | Kalkulačka, sazby a srovnání hypoték",
+    title: "Hypotéka Jasně | Hypotéky, nájem, investice a zahraničí",
     description:
-      "Spočítejte si hypotéku, porovnejte ověřené zveřejněné sazby bank a pochopte podmínky. Nezávislá informační platforma — nejsme banka.",
+      "Porovnejte hypotéku s nájmem, spočítejte financování a vyhodnoťte investice v Česku i zahraničí. Sazby, data a pomoc na jednom místě.",
     changeFrequency: "daily",
     priority: 1,
   },

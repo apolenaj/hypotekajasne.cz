@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormattedMoneyInput } from "@/components/ui/FormattedMoneyInput";
 import {
@@ -479,6 +480,17 @@ export function PublishedRatesPanel({
                 />
               ))}
             </div>
+          </div>
+        ) : null}
+
+        {variant === "home" ? (
+          <div className="mt-8">
+            <Link
+              href="/sazby"
+              className="inline-flex h-11 min-h-11 items-center justify-center rounded-lg bg-deep-teal px-5 text-sm font-semibold text-white transition-colors hover:bg-deep-teal-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal focus-visible:ring-offset-2"
+            >
+              Zobrazit všechny sazby
+            </Link>
           </div>
         ) : null}
       </div>

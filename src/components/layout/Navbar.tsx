@@ -13,11 +13,13 @@ import {
 import { ChevronDown, ExternalLink, Menu, X } from "lucide-react";
 import { BrandWordmark } from "@/components/brand/BrandWordmark";
 import {
-  desktopNav,
-  isMortgageFocusedPath,
+  isNavGroupActive,
   isNavItemActive,
   mobileNavGroups,
   navCta,
+  primaryDesktopGroups,
+  utilityNavItems,
+  type NavGroup,
   type NavLinkItem,
 } from "@/lib/navigation";
 import { useFocusTrap } from "@/lib/a11y/focus-trap";
@@ -28,7 +30,7 @@ import { cn } from "@/lib/utils";
 const ctaClassName = cn(
   "inline-flex h-10 min-h-10 shrink-0 items-center justify-center rounded-full bg-emerald-800 px-4",
   "text-sm font-bold text-white shadow-md shadow-emerald-900/15",
-  "transition-all hover:bg-emerald-700",
+  "transition-all hover:bg-emerald-700 active:bg-emerald-900",
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2"
 );
 
@@ -61,12 +63,25 @@ function NavItemLink({
   className,
   onClick,
   active,
+  showDescription = false,
 }: {
   item: NavLinkItem;
   className?: string;
   onClick?: () => void;
   active?: boolean;
+  showDescription?: boolean;
 }) {
+  const content = showDescription && item.description ? (
+    <span className="flex min-w-0 flex-col gap-0.5">
+      <span className="font-medium leading-snug">{item.label}</span>
+      <span className="text-xs font-normal leading-snug text-gray-500">
+        {item.description}
+      </span>
+    </span>
+  ) : (
+    item.label
+  );
+
   if (item.external) {
     return (
       <a
@@ -77,10 +92,10 @@ function NavItemLink({
         onClick={onClick}
         role="menuitem"
       >
-        <span className="inline-flex items-center gap-2">
-          {item.label}
+        <span className="inline-flex items-start gap-2">
+          {content}
           <span className="sr-only"> (otevře se v novém okně)</span>
-          <ExternalLink className="h-3.5 w-3.5 shrink-0 opacity-60" aria-hidden />
+          <ExternalLink className="mt-0.5 h-3.5 w-3.5 shrink-0 opacity-60" aria-hidden />
         </span>
       </a>
     );
@@ -94,23 +109,17 @@ function NavItemLink({
       role="menuitem"
       aria-current={active ? "page" : undefined}
     >
-      {item.label}
+      {content}
     </Link>
   );
 }
 
-function DesktopDropdown({
-  label,
-  items,
-  align = "left",
-  className,
+function DesktopMegaMenu({
+  group,
   pathname,
   search,
 }: {
-  label: string;
-  items: NavLinkItem[];
-  align?: "left" | "right";
-  className?: string;
+  group: NavGroup;
   pathname: string;
   search: string;
 }) {
@@ -119,10 +128,11 @@ function DesktopDropdown({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
-
-  const groupActive = items.some((item) =>
-    isNavItemActive(item.href, pathname, search)
-  );
+  const groupActive = isNavGroupActive(group, pathname, search);
+  const columns = group.columns?.length
+    ? group.columns
+    : [{ items: group.items }];
+  const colCount = Math.min(3, Math.max(1, columns.length));
 
   const close = useCallback(() => {
     setOpen(false);
@@ -160,8 +170,6 @@ function DesktopDropdown({
 
     document.addEventListener("mousedown", onPointerDown);
     document.addEventListener("keydown", onKeyDown);
-    const first = menuRef.current?.querySelector<HTMLElement>('[role="menuitem"]');
-    first?.focus();
     return () => {
       document.removeEventListener("mousedown", onPointerDown);
       document.removeEventListener("keydown", onKeyDown);
@@ -171,7 +179,7 @@ function DesktopDropdown({
   return (
     <div
       ref={rootRef}
-      className={cn("relative shrink-0", className)}
+      className="relative shrink-0"
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
     >
@@ -187,7 +195,7 @@ function DesktopDropdown({
           open && "bg-deep-teal/5 text-deep-teal"
         )}
       >
-        {label}
+        {group.label}
         <ChevronDown
           className={cn(
             "ml-1 h-3.5 w-3.5 shrink-0 transition-transform duration-200",
@@ -202,25 +210,41 @@ function DesktopDropdown({
           id={menuId}
           ref={menuRef}
           role="menu"
-          aria-label={label}
-          className={cn(
-            "absolute top-full z-[100] pt-1",
-            align === "right" ? "right-0" : "left-0"
-          )}
+          aria-label={group.label}
+          className="absolute left-1/2 top-full z-[100] w-[min(36rem,90%)] -translate-x-1/2 pt-1 xl:left-0 xl:w-auto xl:min-w-[28rem] xl:max-w-[36rem] xl:translate-x-0"
         >
-          <div className="max-h-[min(70vh,28rem)] w-max min-w-[12.5rem] max-w-[20rem] overflow-y-auto overflow-x-hidden rounded-xl border border-gray-100 bg-white p-1.5 shadow-lg">
-            {items.map((item) => (
-              <NavItemLink
-                key={`${item.href}-${item.label}`}
-                item={item}
-                active={isNavItemActive(item.href, pathname, search)}
-                onClick={() => setOpen(false)}
-                className={cn(
-                  "block rounded-lg px-3 py-2.5 text-sm text-gray-700 transition-colors hover:bg-deep-teal/5 hover:text-deep-teal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal",
-                  isNavItemActive(item.href, pathname, search) &&
-                    "bg-deep-teal/10 font-semibold text-deep-teal"
-                )}
-              />
+          <div
+            className={cn(
+              "max-h-[min(70vh,32rem)] overflow-y-auto overflow-x-hidden rounded-xl border border-gray-100 bg-white p-3 shadow-lg",
+              colCount === 1 && "w-max min-w-[14rem] max-w-[22rem]",
+              colCount === 2 && "grid grid-cols-2 gap-3",
+              colCount === 3 && "grid grid-cols-3 gap-3"
+            )}
+          >
+            {columns.map((column, colIdx) => (
+              <div key={column.title ?? `col-${colIdx}`} className="min-w-0">
+                {column.title ? (
+                  <p className="mb-1.5 px-2 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+                    {column.title}
+                  </p>
+                ) : null}
+                <div className="space-y-0.5">
+                  {column.items.map((item) => (
+                    <NavItemLink
+                      key={`${item.href}-${item.label}`}
+                      item={item}
+                      showDescription={Boolean(item.description)}
+                      active={isNavItemActive(item.href, pathname, search)}
+                      onClick={() => setOpen(false)}
+                      className={cn(
+                        "block rounded-lg px-2.5 py-2 text-sm text-gray-700 transition-colors hover:bg-deep-teal/5 hover:text-deep-teal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal",
+                        isNavItemActive(item.href, pathname, search) &&
+                          "bg-deep-teal/10 font-semibold text-deep-teal"
+                      )}
+                    />
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -258,7 +282,6 @@ export function Navbar() {
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const { pathname, search } = useNavLocation();
-  const mortgageFocused = isMortgageFocusedPath(pathname);
 
   const closeMobile = useCallback(() => {
     setMobileOpen(false);
@@ -270,89 +293,57 @@ export function Navbar() {
     initialFocusRef: closeButtonRef,
   });
 
-  const primaryMobileLinks = [
-    desktopNav.kalkulacka,
-    desktopNav.sazby,
-    desktopNav.jakToFunguje,
-  ];
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [mobileOpen]);
 
   return (
     <header
       data-site-header
       className="sticky top-0 z-50 w-full max-w-full border-b border-gray-100 bg-white/95 backdrop-blur-md"
     >
+      <div className="mx-auto hidden max-w-7xl items-center justify-end gap-4 px-4 pt-1.5 text-xs text-gray-500 lg:px-6 xl:flex xl:px-8">
+        <nav aria-label="Sekundární navigace" className="flex items-center gap-3">
+          {utilityNavItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "rounded px-1 py-0.5 transition-colors hover:text-deep-teal",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal",
+                isNavItemActive(item.href, pathname, search) &&
+                  "font-semibold text-deep-teal"
+              )}
+              aria-current={
+                isNavItemActive(item.href, pathname, search) ? "page" : undefined
+              }
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+      </div>
+
       <div className="mx-auto flex h-14 w-full max-w-7xl min-w-0 items-center gap-2 px-3 sm:h-16 sm:gap-3 sm:px-4 lg:px-6 xl:px-8">
         <Logo />
 
         <nav
-          className="ml-auto hidden min-w-0 flex-1 items-center justify-center gap-1 xl:flex"
+          className="ml-auto hidden min-w-0 flex-1 items-center justify-center gap-0.5 xl:flex 2xl:gap-1"
           aria-label="Hlavní navigace"
         >
-          <Link
-            href={desktopNav.kalkulacka.href}
-            className={topLinkClass(
-              isNavItemActive(desktopNav.kalkulacka.href, pathname, search)
-            )}
-            aria-current={
-              isNavItemActive(desktopNav.kalkulacka.href, pathname, search)
-                ? "page"
-                : undefined
-            }
-          >
-            {desktopNav.kalkulacka.label}
-          </Link>
-
-          <Link
-            href={desktopNav.sazby.href}
-            className={topLinkClass(
-              isNavItemActive(desktopNav.sazby.href, pathname, search)
-            )}
-            aria-current={
-              isNavItemActive(desktopNav.sazby.href, pathname, search)
-                ? "page"
-                : undefined
-            }
-          >
-            {desktopNav.sazby.label}
-          </Link>
-
-          <DesktopDropdown
-            label={desktopNav.hypoteky.label}
-            items={[...desktopNav.hypoteky.items]}
-            pathname={pathname}
-            search={search}
-          />
-
-          <Link
-            href={desktopNav.jakToFunguje.href}
-            className={topLinkClass(
-              isNavItemActive(desktopNav.jakToFunguje.href, pathname, search)
-            )}
-            aria-current={
-              isNavItemActive(desktopNav.jakToFunguje.href, pathname, search)
-                ? "page"
-                : undefined
-            }
-          >
-            {desktopNav.jakToFunguje.label}
-          </Link>
-
-          <DesktopDropdown
-            label={desktopNav.oNas.label}
-            items={[...desktopNav.oNas.items]}
-            pathname={pathname}
-            search={search}
-          />
-
-          {!mortgageFocused ? (
-            <DesktopDropdown
-              label={desktopNav.dalsiSluzby.label}
-              items={[...desktopNav.dalsiSluzby.items]}
-              align="right"
+          {primaryDesktopGroups.map((group) => (
+            <DesktopMegaMenu
+              key={group.id}
+              group={group}
               pathname={pathname}
               search={search}
             />
-          ) : null}
+          ))}
         </nav>
 
         <div className="hidden shrink-0 items-center xl:flex">
@@ -360,7 +351,7 @@ export function Navbar() {
         </div>
 
         <div className="ml-auto flex shrink-0 items-center gap-2 xl:hidden">
-          <HeaderCta className="hidden max-w-[10rem] truncate px-3 text-xs sm:inline-flex" />
+          <HeaderCta className="hidden max-w-[11rem] truncate px-3 text-xs sm:inline-flex" />
           <button
             type="button"
             className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-deep-teal transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal"
@@ -412,32 +403,10 @@ export function Navbar() {
             <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-4 py-4">
               <HeaderCta className="mb-4 w-full max-w-full" />
 
-              <div className="mb-4 space-y-1">
-                {primaryMobileLinks.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={closeMobile}
-                    aria-current={
-                      isNavItemActive(item.href, pathname, search)
-                        ? "page"
-                        : undefined
-                    }
-                    className={cn(
-                      "flex min-h-11 w-full max-w-full items-center rounded-xl px-4 text-sm font-semibold transition-colors",
-                      isNavItemActive(item.href, pathname, search)
-                        ? "bg-deep-teal/10 text-deep-teal"
-                        : "bg-deep-teal/5 text-deep-teal hover:bg-deep-teal/10"
-                    )}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-
               <div className="space-y-2">
                 {mobileNavGroups.map((group) => {
                   const isOpen = openMobileGroup === group.id;
+                  const groupActive = isNavGroupActive(group, pathname, search);
                   return (
                     <div
                       key={group.id}
@@ -445,7 +414,10 @@ export function Navbar() {
                     >
                       <button
                         type="button"
-                        className="flex min-h-11 w-full max-w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold text-gray-800"
+                        className={cn(
+                          "flex min-h-11 w-full max-w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold",
+                          groupActive ? "text-deep-teal" : "text-gray-800"
+                        )}
                         aria-expanded={isOpen}
                         onClick={() =>
                           setOpenMobileGroup(isOpen ? null : group.id)
@@ -466,6 +438,7 @@ export function Navbar() {
                             <NavItemLink
                               key={`${item.href}-${item.label}`}
                               item={item}
+                              showDescription={Boolean(item.description)}
                               active={isNavItemActive(
                                 item.href,
                                 pathname,
@@ -473,7 +446,7 @@ export function Navbar() {
                               )}
                               onClick={closeMobile}
                               className={cn(
-                                "flex min-h-11 w-full max-w-full items-center rounded-lg px-3 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-deep-teal",
+                                "flex min-h-11 w-full max-w-full items-start rounded-lg px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-deep-teal",
                                 isNavItemActive(item.href, pathname, search) &&
                                   "bg-deep-teal/10 font-semibold text-deep-teal"
                               )}

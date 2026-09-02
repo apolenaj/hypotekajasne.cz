@@ -15,6 +15,9 @@ import {
   LEGACY_NAV_RELOCATION,
   mobileNavGroups,
   navCta,
+  primaryDesktopGroups,
+  toolsExtraNavItems,
+  utilityNavItems,
 } from "@/lib/navigation";
 import { routes } from "@/lib/routes";
 
@@ -59,25 +62,30 @@ const LEGACY_INTERNAL_HREFS = [
   routes.faq,
 ];
 
-describe("navigation structure — hypoteční hierarchie", () => {
-  it("desktop top-level prioritizes kalkulačka, sazby, hypotéky", () => {
-    const topLabels = [
-      desktopNav.kalkulacka.label,
-      desktopNav.sazby.label,
-      desktopNav.hypoteky.label,
-      desktopNav.jakToFunguje.label,
-      desktopNav.oNas.label,
-      desktopNav.dalsiSluzby.label,
-    ];
-    for (const label of topLabels) {
-      assert.ok(label.length <= 14, `top label too long: ${label}`);
-    }
+describe("navigation structure — produktové megamenu", () => {
+  it("desktop top-level exposes all product pillars", () => {
+    const labels = primaryDesktopGroups.map((g) => g.label);
+    assert.deepEqual(labels, [
+      "Hypotéky",
+      "Nájem vs. hypotéka",
+      "Investice",
+      "Zahraniční nemovitosti",
+      "Kalkulačky",
+      "Průvodci",
+    ]);
     assert.equal(desktopNav.kalkulacka.href, routes.kalkulacky.hypotecniKalkulacka);
     assert.equal(desktopNav.sazby.href, routes.sazby);
-    assert.equal(desktopNav.jakToFunguje.href, routes.metodika);
+    assert.equal(desktopNav.jakToFunguje.href, "/#jak-to-funguje");
   });
 
-  it("hypotéky dropdown covers purchase, refinance, OSVČ and foreign income", () => {
+  it("utility bar covers O nás, Kontakt, Centrum důvěry", () => {
+    const labels = utilityNavItems.map((i) => i.label);
+    assert.ok(labels.includes("O nás"));
+    assert.ok(labels.includes("Kontakt"));
+    assert.ok(labels.includes("Centrum důvěry"));
+  });
+
+  it("hypotéky megamenu covers purchase, refinance, OSVČ and foreign income", () => {
     const labels = hypotekyNavItems.map((i) => i.label);
     assert.ok(labels.some((l) => l.includes("Koupě")));
     assert.ok(labels.some((l) => l.includes("Refinancování")));
@@ -89,37 +97,45 @@ describe("navigation structure — hypoteční hierarchie", () => {
     assert.ok(hypotekyNavItems.some((i) => i.href.includes("/temata/refinancovani")));
   });
 
-  it("investice a AI nástroje jsou pod Další služby, ne v top baru hypotéky", () => {
-    const dalsi = desktopNav.dalsiSluzby.items.map((i) => i.label);
-    assert.ok(dalsi.some((l) => l.includes("Investiční")));
-    assert.ok(dalsi.some((l) => l.includes("AI průvodce")));
-    assert.ok(dalsi.some((l) => l.includes("Můj přehled")));
+  it("investice a AI nástroje nejsou v Hypotéky; AI je v Další nástroje", () => {
+    const tools = toolsExtraNavItems.map((i) => i.label);
+    assert.ok(tools.some((l) => l.includes("AI průvodce")));
+    assert.ok(tools.some((l) => l.includes("Můj přehled")));
     const hypoteky = desktopNav.hypoteky.items.map((i) => i.label);
     assert.ok(!hypoteky.some((l) => l.includes("Investiční pas")));
     assert.ok(!hypoteky.some((l) => l.includes("AI průvodce")));
+    assert.ok(desktopNav.investice.items.some((i) => i.label.includes("Investiční")));
   });
 
-  it("mobile accordion mirrors desktop groups", () => {
+  it("mobile accordion mirrors product groups plus utility tools", () => {
     const ids = mobileNavGroups.map((g) => g.id);
-    assert.deepEqual(ids, ["hypoteky", "o-nas", "dalsi-sluzby"]);
+    assert.deepEqual(ids, [
+      "hypoteky",
+      "najem",
+      "investice",
+      "zahranici",
+      "kalkulacky",
+      "pruvodci",
+      "o-nas",
+      "nastroje",
+    ]);
     assert.equal(
       mobileNavGroups[0]!.items.length,
       desktopNav.hypoteky.items.length
     );
   });
 
-  it("CTA is Spočítat hypotéku for anonymous users", () => {
-    assert.equal(navCta.default.label, "Spočítat hypotéku");
-    assert.equal(navCta.default.href, routes.kalkulacky.hypotecniKalkulacka);
+  it("CTA is Najít ideální řešení for anonymous users", () => {
+    assert.equal(navCta.default.label, "Najít ideální řešení");
+    assert.equal(navCta.default.href, routes.mojeMoznosti);
     assert.ok(navCta.returning.href.includes("dashboard"));
   });
 
-  it("mortgage-focused paths hide Další služby in desktop nav only", () => {
-    assert.equal(isMortgageFocusedPath("/sazby"), true);
-    assert.equal(isMortgageFocusedPath("/temata/refinancovani"), true);
-    assert.equal(isMortgageFocusedPath("/kalkulacky/hypotecni"), true);
+  it("product pillars stay visible on mortgage paths (no hide)", () => {
+    assert.equal(isMortgageFocusedPath("/sazby"), false);
+    assert.equal(isMortgageFocusedPath("/temata/refinancovani"), false);
+    assert.equal(isMortgageFocusedPath("/kalkulacky/hypotecni"), false);
     assert.equal(isMortgageFocusedPath("/pruvodce-investora"), false);
-    assert.equal(isMortgageFocusedPath("/copilot"), false);
   });
 
   it("active state matches path and query (purchase sazby)", () => {
@@ -180,12 +196,13 @@ describe("navbar overflow guards (static source)", () => {
     assert.ok(!navbar.includes("w-screen"));
   });
 
-  it("desktop nav starts at xl with accessible dropdowns", () => {
+  it("desktop nav starts at xl with accessible megamenu", () => {
     assert.ok(navbar.includes("xl:flex"));
     assert.ok(navbar.includes('aria-label="Hlavní navigace"'));
     assert.ok(navbar.includes('role="menu"'));
     assert.ok(navbar.includes("isNavItemActive"));
-    assert.ok(navbar.includes("isMortgageFocusedPath"));
+    assert.ok(navbar.includes("primaryDesktopGroups"));
+    assert.ok(navbar.includes("utilityNavItems"));
   });
 
   it("mobile drawer is closable without horizontal scroll", () => {
@@ -194,6 +211,7 @@ describe("navbar overflow guards (static source)", () => {
     assert.ok(navbar.includes("overflow-x-hidden"));
     assert.ok(navbar.includes('aria-label="Zavřít menu"'));
     assert.ok(navbar.includes("min-h-11"));
+    assert.ok(navbar.includes('document.body.style.overflow = "hidden"'));
   });
 
   it("breakpoint matrix is documented for QA", () => {

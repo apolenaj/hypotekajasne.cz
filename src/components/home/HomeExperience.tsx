@@ -1,7 +1,11 @@
-import { HomeBenefits } from "@/components/home/HomeBenefits";
 import { HomeFaq } from "@/components/home/HomeFaq";
 import { HomeBottomDeferred } from "@/components/home/HomeBottomDeferred";
+import { HomeForeignMarkets } from "@/components/home/HomeForeignMarkets";
 import { HomeHowItWorks } from "@/components/home/HomeHowItWorks";
+import { HomeInvestments } from "@/components/home/HomeInvestments";
+import { HomePillars } from "@/components/home/HomePillars";
+import { HomeRentVsMortgage } from "@/components/home/HomeRentVsMortgage";
+import { HomeSituationSelector } from "@/components/home/HomeSituationSelector";
 import { CockpitHeroShell } from "@/components/home/CockpitHeroShell";
 import { HomeRatesDeferred } from "@/components/home/HomeRatesDeferred";
 import type { GetMortgageOffersResult } from "@/lib/mortgage-market/offers";
@@ -23,7 +27,7 @@ type HomeExperienceProps = {
 };
 
 /**
- * Server homepage — hero + statické sekce; těžké interaktivní části až v dohledu.
+ * Server homepage — hero + produktové sekce; těžké interaktivní části až v dohledu.
  */
 export function HomeExperience({
   initialOffers,
@@ -32,13 +36,17 @@ export function HomeExperience({
   return (
     <>
       <CockpitHeroShell serverJourney={serverJourney} />
-      <HomeBenefits />
-      <HomeHowItWorks />
+      <HomeSituationSelector />
+      <HomePillars />
+      <HomeRentVsMortgage />
+      <HomeInvestments />
+      <HomeForeignMarkets />
       <HomeRatesDeferred
         initialOffers={initialOffers}
         initialQuery={DEFAULT_QUERY}
         initialLtvContext={DEFAULT_LTV_CONTEXT}
       />
+      <HomeHowItWorks />
       <HomeFaq />
       <HomeBottomDeferred
         journeyMetadata={{

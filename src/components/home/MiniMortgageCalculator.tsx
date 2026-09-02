@@ -451,55 +451,61 @@ function MiniMortgageCalculatorCore({
         aria-atomic="true"
         aria-busy={isCalculating}
       >
-        <div className="min-w-0">
-          <p className="text-xs font-semibold text-muted-foreground">
-            Orientační měsíční splátka
-          </p>
-          {hasCalculated && committedResult ? (
-            <p className="mt-1 break-words font-heading text-2xl font-bold tabular-nums tracking-tight text-text-dark sm:text-3xl">
-              {formatCurrency(committedResult.monthlyPaymentCzk, "CZK")}
+        {hasCalculated && committedResult ? (
+          <>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-muted-foreground">
+                Výše hypotéky
+              </p>
+              <p className="mt-1 break-words font-heading text-xl font-bold tabular-nums tracking-tight text-text-dark sm:text-2xl">
+                {formatCurrency(committedResult.loanAmountCzk, "CZK")}
+              </p>
+            </div>
+
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-muted-foreground">LTV</p>
+              <p className="mt-1 text-sm">
+                <span className="font-semibold tabular-nums text-text-dark">
+                  {exactLtv != null ? `${formatExactLtvCs(exactLtv)}\u00a0%` : "—"}
+                </span>
+                {committedResult.ltvBand != null ? (
+                  <span className="text-muted-foreground">
+                    {" "}
+                    · pásmo {formatLtvBandLabel(committedResult.ltvBand)}
+                  </span>
+                ) : null}
+              </p>
+              <p
+                className={cn(
+                  "mt-1 text-xs leading-relaxed",
+                  ltvHigh ? "text-amber-800" : "text-muted-foreground"
+                )}
+              >
+                {ltvHigh
+                  ? "Vyšší podíl úvěru — podmínky bank mohou být přísnější."
+                  : "Orientační podíl úvěru k ceně nemovitosti."}
+              </p>
+            </div>
+
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-muted-foreground">
+                Orientační měsíční splátka
+              </p>
+              <p className="mt-1 break-words font-heading text-2xl font-bold tabular-nums tracking-tight text-text-dark sm:text-3xl">
+                {formatCurrency(committedResult.monthlyPaymentCzk, "CZK")}
+              </p>
+            </div>
+          </>
+        ) : (
+          <div className="min-w-0">
+            <p className="text-xs font-semibold text-muted-foreground">
+              Orientační měsíční splátka
             </p>
-          ) : (
             <p className="mt-1 text-sm text-muted-foreground">
               Zadejte údaje a klikněte na „{MINI_MORTGAGE_CTA.calculate}“.
             </p>
-          )}
-        </div>
-
-        {hasCalculated && committedResult ? (
-          <>
-            <p className="break-words text-sm text-muted-foreground">
-              Hypotéka{" "}
-              <span className="font-semibold tabular-nums text-text-dark">
-                {formatCurrency(committedResult.loanAmountCzk, "CZK")}
-              </span>
-              <span aria-hidden> • </span>
-              LTV{" "}
-              <span className="font-semibold tabular-nums text-text-dark">
-                {exactLtv != null ? `${formatExactLtvCs(exactLtv)}\u00a0%` : "—"}
-              </span>
-              {committedResult.ltvBand != null ? (
-                <>
-                  <span aria-hidden> · </span>
-                  <span className="text-muted-foreground">
-                    pásmo {formatLtvBandLabel(committedResult.ltvBand)}
-                  </span>
-                </>
-              ) : null}
-            </p>
-
-            <p
-              className={cn(
-                "text-xs leading-relaxed",
-                ltvHigh ? "text-amber-800" : "text-muted-foreground"
-              )}
-            >
-              {ltvHigh
-                ? "Vyšší podíl úvěru — podmínky bank mohou být přísnější."
-                : "Orientační podíl úvěru k ceně nemovitosti."}
-            </p>
-          </>
-        ) : null}
+          </div>
+        )}
       </div>
 
       {!hasCalculated ? (

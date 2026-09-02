@@ -63,7 +63,7 @@ export const MINI_MORTGAGE_FIXATION_OPTIONS = [24, 36, 60, 84, 120] as const;
 
 export const MINI_MORTGAGE_CTA = {
   calculate: "Spočítat splátku",
-  viewRates: "Zobrazit sazby pro tento výpočet",
+  viewRates: "Porovnat sazby pro toto zadání",
 } as const;
 
 /** @deprecated Prefer MINI_MORTGAGE_CTA.calculate */

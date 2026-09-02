@@ -1,6 +1,6 @@
 import type { CountryId } from "@/lib/calculators";
 import { formatCompactOfficeAddress, legalOperator } from "@/config/legal";
-import { getCountryGuidePath, routes } from "@/lib/routes";
+import { routes } from "@/lib/routes";
 
 export interface DestinationCard {
   id: CountryId;
@@ -91,6 +91,7 @@ import {
   primaryNavLinks,
   secondaryNavGroups,
 } from "@/lib/navigation";
+import { getLandingPath } from "@/lib/seo/landings";
 
 export type { NavLinkItem };
 export { primaryNavLinks, secondaryNavGroups };
@@ -106,20 +107,53 @@ export const navLinks = [
 ];
 
 export const footerLinks = {
+  hypoteky: [
+    { href: routes.sazby, label: "Aktuální sazby" },
+    { href: `${routes.sazby}?purpose=purchase`, label: "Koupě nemovitosti" },
+    { href: getLandingPath("refinancovani"), label: "Refinancování" },
+    { href: getLandingPath("hypoteka-osvc"), label: "Hypotéka pro OSVČ" },
+    { href: getLandingPath("investicni-hypoteka"), label: "Investiční hypotéka" },
+    { href: getLandingPath("americka-hypoteka"), label: "Americká hypotéka" },
+  ],
+  investice: [
+    { href: routes.investicniRentgen, label: "Investiční rentgen" },
+    { href: routes.investicniPas, label: "Investiční pas" },
+    { href: routes.financniPas, label: "Finanční pas" },
+    { href: routes.kalkulacky.historickyVyvoj, label: "Hypotéka vs. hotovost" },
+    { href: routes.dueDiligence, label: "Prověrka nemovitosti" },
+  ],
+  zahranici: [
+    { href: routes.pruvodceInvestora, label: "Průvodce investora" },
+    { href: routes.globalFinancing, label: "Globální financování" },
+    { href: getLandingPath("hypoteka-v-zahranici"), label: "Hypotéka v zahraničí" },
+  ],
+  nastroje: [
+    { href: routes.kalkulacky.hypotecniKalkulacka, label: "Hypoteční kalkulačka" },
+    { href: routes.kalkulacky.koupeVsNajem, label: "Nájem vs. hypotéka" },
+    { href: routes.kalkulacky.root, label: "Všechny kalkulačky" },
+    { href: routes.mojeMoznosti, label: "Moje možnosti" },
+    { href: routes.dashboard, label: "Můj přehled" },
+    { href: routes.copilot, label: "Finanční AI průvodce" },
+  ],
+  pruvodci: [
+    { href: routes.akademie, label: "Hypoteční akademie" },
+    { href: routes.clanky, label: "Články" },
+    { href: routes.faq, label: "Časté otázky" },
+    { href: routes.metodika, label: "Metodika" },
+    { href: routes.zdroje, label: "Zdroje dat" },
+    { href: routes.temata, label: "Témata hypoték" },
+  ],
+  company: [
+    { href: routes.oNas, label: "O nás" },
+    { href: routes.kontakt, label: "Kontakt" },
+    { href: routes.duvera, label: "Centrum důvěry" },
+    { href: routes.jakVydelavame, label: "Jak vyděláváme" },
+  ],
   legal: [
     { href: routes.legal.gdpr, label: "GDPR" },
     { href: routes.legal.cookies, label: "Zásady cookies" },
     { href: routes.legal.smlouvy, label: "Smlouvy" },
     { href: routes.legal.zasady, label: "Zásady" },
-  ],
-  company: [
-    { href: routes.kontakt, label: "Kontakt" },
-    { href: routes.faq, label: "Časté otázky" },
-    { href: routes.temata, label: "Témata hypoték" },
-    { href: routes.dashboard, label: "Můj přehled" },
-    { href: routes.financniPas, label: "Finanční pas" },
-    { href: routes.copilot, label: "Finanční AI průvodce" },
-    { href: routes.oNas, label: "O nás" },
   ],
 };
 
