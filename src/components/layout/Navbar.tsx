@@ -270,13 +270,21 @@ function HeaderCta({ className }: { className?: string }) {
 }
 
 export function Navbar() {
+  const { pathname, search } = useNavLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openMobileGroup, setOpenMobileGroup] = useState<string | null>(null);
   const [openDesktopId, setOpenDesktopId] = useState<string | null>(null);
+  const [routeKey, setRouteKey] = useState(`${pathname}${search}`);
   const drawerTitleId = useId();
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const { pathname, search } = useNavLocation();
+
+  // Reset open disclosure when the route changes (render-time adjust, not an effect).
+  const nextRouteKey = `${pathname}${search}`;
+  if (nextRouteKey !== routeKey) {
+    setRouteKey(nextRouteKey);
+    setOpenDesktopId(null);
+  }
 
   const closeMobile = useCallback(() => {
     setMobileOpen(false);
@@ -296,11 +304,6 @@ export function Navbar() {
       document.body.style.overflow = previous;
     };
   }, [mobileOpen]);
-
-  // Close desktop disclosure on route change
-  useEffect(() => {
-    setOpenDesktopId(null);
-  }, [pathname, search]);
 
   return (
     <header
