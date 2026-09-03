@@ -84,14 +84,9 @@ export function HomeSituationSelector() {
           </p>
         </div>
 
-        <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <ul className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {SITUATIONS.map((s) => (
-            <li
-              key={s.id}
-              className={cn(
-                s.id === "foreign_income" && "sm:col-span-2 lg:col-span-1 xl:col-span-1"
-              )}
-            >
+            <li key={s.id} className="min-w-0">
               <Link
                 href={s.href}
                 onClick={() => {

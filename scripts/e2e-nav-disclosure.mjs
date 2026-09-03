@@ -5,7 +5,8 @@
  */
 import { chromium } from "playwright";
 
-const BASE = (process.env.E2E_BASE_URL || "http://127.0.0.1:3010").replace(
+const baseArg = process.argv.find((a) => a.startsWith("--base="))?.slice(7);
+const BASE = (baseArg || process.env.E2E_BASE_URL || "http://127.0.0.1:3010").replace(
   /\/$/,
   ""
 );

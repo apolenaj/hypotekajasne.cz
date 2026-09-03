@@ -216,6 +216,12 @@ describe("navbar overflow guards (static source)", () => {
     assert.ok(navbar.includes('document.body.style.overflow = "hidden"'));
   });
 
+  it("home-below-fold does not reserve remembered inline size (mobile overflow)", () => {
+    const css = readFileSync(join(ROOT, "app/globals.css"), "utf8");
+    assert.ok(css.includes("contain-intrinsic-block-size"));
+    assert.ok(!/contain-intrinsic-size:\s*auto\s+420px/.test(css));
+  });
+
   it("breakpoint matrix is documented for QA", () => {
     assert.equal(NAV_BREAKPOINTS.length, 14);
     for (const w of NAV_BREAKPOINTS) {

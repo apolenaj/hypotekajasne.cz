@@ -149,9 +149,10 @@
     display: none;
   }
 
+  /* Only reserve block size — remembering inline size caused mobile horizontal overflow. */
   .home-below-fold {
     content-visibility: auto;
-    contain-intrinsic-size: auto 420px;
+    contain-intrinsic-block-size: 420px;
   }
 
   /* Homepage cockpit — jemné reveal animace */
