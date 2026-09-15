@@ -18,15 +18,16 @@ import {
   ACADEMY_GAMIFICATION_FEATURE_STATUS,
   LEARNING_PATHS,
   buildGamificationDashboard,
-  defaultAcademyProgressStore,
   estimatePathReadingMinutes,
   getAcademyPathHref,
+  getAcademyProgressServerSnapshot,
   getCharacter,
   getLearningPath,
   getNextRecommendedStep,
   getPathCalculatorStep,
   isPrimaryLearningPath,
   loadAcademyProgressStore,
+  subscribeAcademyProgress,
   type LearningPath,
   type LearningPathId,
 } from "@/lib/academy/gamification";
@@ -110,16 +111,12 @@ function PathCard({
   );
 }
 
-function subscribeNoop() {
-  return () => {};
-}
-
 export function AcademyPathsHub() {
-  // Client store via external snapshot — SSR uses default (no localStorage).
+  // Client store via external snapshot — SSR uses a stable empty snapshot.
   const store = useSyncExternalStore(
-    subscribeNoop,
+    subscribeAcademyProgress,
     loadAcademyProgressStore,
-    defaultAcademyProgressStore
+    getAcademyProgressServerSnapshot
   );
 
   const dashboard = useMemo(
@@ -307,9 +304,9 @@ export function AcademyPathsHub() {
 export function AcademyPathDetail({ pathId }: { pathId: LearningPathId }) {
   const path = getLearningPath(pathId);
   const store = useSyncExternalStore(
-    subscribeNoop,
+    subscribeAcademyProgress,
     loadAcademyProgressStore,
-    defaultAcademyProgressStore
+    getAcademyProgressServerSnapshot
   );
 
   const dashboard = useMemo(

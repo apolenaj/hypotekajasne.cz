@@ -135,6 +135,22 @@ export type AcademyGamificationDashboard = {
   methodology: string[];
 };
 
+/**
+ * Stable empty snapshot for `useSyncExternalStore` getServerSnapshot.
+ * Returning a fresh object each call causes React error #185 (max update depth).
+ */
+export const ACADEMY_PROGRESS_SERVER_SNAPSHOT: AcademyProgressStore =
+  Object.freeze({
+    version: 1 as const,
+    lessonReadAt: Object.freeze({}) as Record<string, string>,
+    quizPassedAt: Object.freeze({}) as Record<string, string>,
+    calculatorUsedAt: Object.freeze({}) as Record<string, string>,
+    practicalTaskDoneAt: Object.freeze({}) as Record<string, string>,
+    paths: Object.freeze({}) as AcademyProgressStore["paths"],
+    earnedBadges: Object.freeze([]) as readonly AcademyBadgeId[] as AcademyBadgeId[],
+  });
+
+/** Empty progress — mutable factory for tests and write paths. */
 export function defaultAcademyProgressStore(): AcademyProgressStore {
   return {
     version: 1,

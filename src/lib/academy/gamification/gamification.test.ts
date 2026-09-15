@@ -17,9 +17,30 @@ import {
 import { evaluateEarnedBadges } from "@/lib/academy/gamification/recommendations";
 import { buildGamificationDashboard } from "@/lib/academy/gamification/build";
 import { defaultAcademyProgressStore } from "@/lib/academy/gamification/types";
+import {
+  getAcademyProgressServerSnapshot,
+  loadAcademyProgressStore,
+  resetAcademyProgressStoreCacheForTests,
+} from "@/lib/academy/gamification/storage";
 import { ACADEMY_CHARACTERS } from "@/lib/academy/gamification/paths";
 import { getAllAcademySlugs } from "@/lib/academy/catalog";
 import { routes } from "@/lib/routes";
+
+describe("academy progress store snapshots", () => {
+  it("returns a referentially stable server snapshot for useSyncExternalStore", () => {
+    assert.equal(
+      getAcademyProgressServerSnapshot(),
+      getAcademyProgressServerSnapshot()
+    );
+  });
+
+  it("caches client getSnapshot until save", () => {
+    resetAcademyProgressStoreCacheForTests();
+    const a = loadAcademyProgressStore();
+    const b = loadAcademyProgressStore();
+    assert.equal(a, b);
+  });
+});
 
 describe("learning paths", () => {
   it("has six situational paths including four primaries", () => {
