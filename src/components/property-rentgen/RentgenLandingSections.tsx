@@ -2,35 +2,13 @@ import Link from "next/link";
 import {
   formatAnalysisPrice,
   formatDigitalRentgenPrice,
-  formatTierPrice,
-  getAnalysisTier,
   getRentgenPremiumConfig,
   rentgenPrimaryCtaLabel,
   withAnalysisPrice,
   RENTGEN_FAQ,
 } from "@/lib/property-rentgen";
-import { CLAIM_KIND_DESCRIPTIONS, CLAIM_KIND_LABELS } from "@/lib/property-rentgen/types";
 import { routes } from "@/lib/routes";
 import { legalOperator } from "@/config/legal";
-
-const QUESTIONS = [
-  {
-    q: "Kolik potřebuji hotovosti?",
-    a: "Vlastní část kupní ceny, úpravy, vedlejší náklady a oddělená hotovostní rezerva.",
-  },
-  {
-    q: "Kolik zůstane měsíčně?",
-    a: "Nájem po výpadku a správě minus provoz, rezervy a splátka úvěru.",
-  },
-  {
-    q: "Co když se zvýší sazba nebo vypadne nájem?",
-    a: "Tři modelové situace a citlivost — bez předstírání, že známe budoucnost.",
-  },
-  {
-    q: "Jaká cena odpovídá mému cíli?",
-    a: "Bod zvratu a cenová hranice modelu při zadaném financování — ne tržní ocenění.",
-  },
-] as const;
 
 export function RentgenHero() {
   return (
@@ -43,15 +21,15 @@ export function RentgenHero() {
           Kolik vám z nájmu skutečně zůstane?
         </h1>
         <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/85 sm:text-lg">
-          Zjistěte potřebný kapitál, měsíční výsledek a rizika konkrétní
-          nemovitosti. Ještě předtím, než ji koupíte.
+          Spočítejte potřebnou hotovost, měsíční výsledek po nákladech a splátce
+          a rizika ještě před koupí.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Link
             href={routes.investicniRentgenUkazka}
-            className="inline-flex items-center justify-center rounded-xl bg-muted-gold px-6 py-3.5 text-sm font-bold text-[#0b3d3a] transition hover:bg-muted-gold-light"
+            className="inline-flex items-center justify-center rounded-xl bg-muted-gold px-6 py-3.5 text-sm font-bold text-[#0b3d3a] shadow-sm transition hover:bg-muted-gold-light"
           >
-            Prohlédnout modelový rozbor
+            Zobrazit ukázku výsledku
           </Link>
           <a
             href="#nastroj"
@@ -61,47 +39,18 @@ export function RentgenHero() {
           </a>
         </div>
         <p className="mt-5 max-w-2xl text-[11px] leading-relaxed text-white/55">
-          Modelový analytický nástroj. Nejsme investiční doporučení, znalecký
-          posudek ani právní due diligence. Neslibujeme jistou budoucnost ani
-          zaručený výnos.
+          Model podle vašich vstupů a předpokladů. Nejde o investiční doporučení
+          ani záruku výnosu.
         </p>
       </div>
     </header>
   );
 }
 
-export function RentgenFourQuestions() {
-  return (
-    <section
-      className="border-b border-border bg-white py-10 sm:py-12"
-      aria-labelledby="questions-heading"
-    >
-      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-        <h2
-          id="questions-heading"
-          className="font-heading text-xl font-bold text-text-dark sm:text-2xl"
-        >
-          Čtyři otázky před koupí
-        </h2>
-        <ul className="mt-6 grid gap-3 sm:grid-cols-2">
-          {QUESTIONS.map((item) => (
-            <li
-              key={item.q}
-              className="rounded-2xl border border-border bg-[#f7f9f8] px-4 py-4"
-            >
-              <p className="font-semibold text-deep-teal">{item.q}</p>
-              <p className="mt-1 text-sm text-muted-foreground">{item.a}</p>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
-  );
-}
-
 export function RentgenPricing() {
-  const tiers = getAnalysisTier();
   const live = getRentgenPremiumConfig().commerciallyActive;
+  const digitalPrice = formatDigitalRentgenPrice();
+  const premiumPrice = formatAnalysisPrice();
 
   return (
     <section
@@ -114,99 +63,166 @@ export function RentgenPricing() {
           id="pricing-heading"
           className="font-heading text-2xl font-bold text-text-dark sm:text-3xl"
         >
-          Co dostanete
+          Co si můžete objednat
         </h2>
         <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
-          Jednoznačný rozsah plnění. Ceny z jediné konfigurace. Dokud není
-          platba a doručení připravené, nabízíme poptávku — ne předstíraný nákup.
+          Dva placené výstupy pro jednu nemovitost. Nejdřív si prohlédněte
+          ukázku — uvidíte skutečný rozsah čísel.
         </p>
         {!live ? (
-          <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-            Placené balíčky zatím nejsou v prodeji. Můžete poptat rozbor — ozveme
-            se, až bude plnění připravené.
+          <p className="mt-4 text-sm text-muted-foreground">
+            Online nákup zatím není spuštěný. Můžete zanechat poptávku — ozveme
+            se s potvrzením rozsahu.
           </p>
         ) : null}
 
-        <div className="mt-8 overflow-x-auto">
-          <table className="w-full min-w-[640px] border-collapse text-left text-sm">
-            <caption className="sr-only">Srovnání balíčků Investičního rentgenu</caption>
-            <thead>
-              <tr className="border-b border-border">
-                <th className="py-3 pr-4 font-semibold text-muted-foreground">Rozsah</th>
-                {tiers.map((t) => (
-                  <th key={t.id} className="px-3 py-3 font-heading text-base text-text-dark">
-                    {t.name}
-                    <div className="mt-1 text-lg font-bold tabular-nums text-deep-teal">
-                      {formatTierPrice(t)}
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="text-muted-foreground">
-              {(
-                [
-                  ["Cena za m², hrubý výnos", true, true, true],
-                  ["Rozpočet koupě a vlastní hotovosti", false, true, true],
-                  ["Cash flow včetně provozu, úvěru a rezerv", false, true, true],
-                  ["Tři scénáře, citlivost a bod zvratu", false, true, true],
-                  ["Interaktivní výstup a souhrnné PDF", false, true, true],
-                  [
-                    "Dohledání místních nabídek (odkazy + datum)",
-                    false,
-                    false,
-                    true,
-                  ],
-                  ["Rozbor dodaných dokumentů", false, false, true],
-                  ["Individuální komentovaný závěr", false, false, true],
-                ] as const
-              ).map(([label, free, digital, premium]) => (
-                <tr key={label} className="border-b border-border/80">
-                  <td className="py-3 pr-4 text-text-dark">{label}</td>
-                  {[free, digital, premium].map((ok, i) => (
-                    <td key={i} className="px-3 py-3 tabular-nums">
-                      {ok ? "Ano" : "Ne"}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="mt-8 grid gap-5 lg:grid-cols-2 lg:items-stretch">
+          {/* 999 */}
+          <article className="flex h-full flex-col rounded-2xl border-2 border-muted-gold bg-white p-6 shadow-sm">
+            <h3 className="font-heading text-xl font-bold text-text-dark">
+              Investiční rentgen
+            </h3>
+            <p className="mt-2 font-heading text-3xl font-bold tabular-nums text-deep-teal">
+              {digitalPrice}
+            </p>
+            <p className="text-xs text-muted-foreground">za jednu nemovitost</p>
+            <p className="mt-3 text-sm text-text-dark">
+              Pro koho: chcete rychle spočítat hotovost, měsíční tok a citlivost
+              z vlastních čísel.
+            </p>
+            <p className="mt-2 text-sm font-semibold text-deep-teal">
+              Hlavní přínos: víte, kolik doplácíte nebo vám zbývá — ještě před
+              koupí.
+            </p>
+            <ul className="mt-4 flex-1 space-y-2 text-sm text-muted-foreground">
+              <li>· Potřebná vlastní hotovost</li>
+              <li>· Měsíční výsledek po nákladech, splátce a rezervách</li>
+              <li>· Scénáře a citlivost</li>
+              <li>· Bod zvratu a cenové podmínky modelu</li>
+              <li>· Interaktivní výstup a souhrnné PDF</li>
+            </ul>
+            <p className="mt-4 text-xs text-muted-foreground">
+              Forma: automatický model ze zadaných údajů. Dodání: po úhradě a
+              kompletních vstupech
+              {!live ? " — aktuálně formou poptávky" : ""}.
+            </p>
+            <div className="mt-5 flex flex-col gap-2 sm:flex-row lg:mt-auto lg:pt-6">
+              <Link
+                href={`${routes.investicniRentgenUkazka}?balicek=999`}
+                className="inline-flex flex-1 items-center justify-center rounded-xl border border-deep-teal/30 px-4 py-3 text-sm font-bold text-deep-teal"
+              >
+                Ukázka výstupu
+              </Link>
+              <Link
+                href={`${routes.investicniRentgen}?balicek=999#premium-objednavka`}
+                className="inline-flex flex-1 items-center justify-center rounded-xl bg-muted-gold px-4 py-3 text-sm font-bold text-text-dark"
+              >
+                {rentgenPrimaryCtaLabel("digital")}
+              </Link>
+            </div>
+          </article>
+
+          {/* 4990 */}
+          <article className="flex h-full flex-col rounded-2xl border border-border bg-[#f7f9f8] p-6 shadow-sm">
+            <h3 className="font-heading text-xl font-bold text-text-dark">
+              Individuální rozbor
+            </h3>
+            <p className="mt-2 font-heading text-3xl font-bold tabular-nums text-deep-teal">
+              {premiumPrice}
+            </p>
+            <p className="text-xs text-muted-foreground">za jednu nemovitost</p>
+            <p className="mt-3 text-sm text-text-dark">
+              Pro koho: potřebujete k modelu ještě dohledání nabídek a rozbor
+              dodaných podkladů.
+            </p>
+            <p className="mt-2 text-sm font-semibold text-deep-teal">
+              Hlavní přínos: konkrétní otázky a mezery v podkladech před
+              rozhodnutím o koupi.
+            </p>
+            <ul className="mt-4 flex-1 space-y-2 text-sm text-muted-foreground">
+              <li>· Vše z automatického modelu</li>
+              <li>· Dohledání místních nabídek se zdroji a datem</li>
+              <li>· Posouzení předpokladů příjmů a výdajů</li>
+              <li>· Rozbor dodaných podkladů v dohodnutém rozsahu</li>
+              <li>· Individuálně komentovaný závěr a co ještě prověřit</li>
+            </ul>
+            <p className="mt-4 text-xs text-muted-foreground">
+              Forma: model + individuální práce s podklady. Dodání: po úhradě a
+              kompletních podkladech
+              {!live ? " — aktuálně formou poptávky" : ""}.
+            </p>
+            <div className="mt-5 flex flex-col gap-2 sm:flex-row lg:mt-auto lg:pt-6">
+              <Link
+                href={`${routes.investicniRentgenUkazka}?balicek=4990`}
+                className="inline-flex flex-1 items-center justify-center rounded-xl border border-deep-teal/30 px-4 py-3 text-sm font-bold text-deep-teal"
+              >
+                Ukázka výstupu
+              </Link>
+              <Link
+                href={`${routes.investicniRentgen}?balicek=4990#premium-objednavka`}
+                className="inline-flex flex-1 items-center justify-center rounded-xl bg-deep-teal px-4 py-3 text-sm font-bold text-white"
+              >
+                {rentgenPrimaryCtaLabel("premium")}
+              </Link>
+            </div>
+          </article>
         </div>
 
-        <div className="mt-6 grid gap-4 lg:grid-cols-3">
-          {tiers.map((tier) => (
-            <div
-              key={tier.id}
-              className={
-                tier.id === "digital"
-                  ? "rounded-2xl border-2 border-muted-gold bg-white p-5 shadow-sm"
-                  : "rounded-2xl border border-border bg-[#f7f9f8] p-5"
-              }
-            >
-              <p className="text-sm text-muted-foreground">{tier.summary}</p>
-              <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
-                {tier.deliveryExpectation.slice(0, 2).map((d) => (
-                  <li key={d}>· {d}</li>
-                ))}
-              </ul>
-              <a
-                href={
-                  tier.id === "free"
-                    ? "#nastroj"
-                    : "#premium-objednavka"
-                }
-                className={
-                  tier.id === "digital"
-                    ? "mt-5 inline-flex w-full items-center justify-center rounded-xl bg-muted-gold px-4 py-3 text-sm font-bold text-text-dark"
-                    : "mt-5 inline-flex w-full items-center justify-center rounded-xl bg-deep-teal px-4 py-3 text-sm font-bold text-white"
-                }
-              >
-                {rentgenPrimaryCtaLabel(tier.id)}
-              </a>
-            </div>
-          ))}
+        {/* Free as smaller entry */}
+        <div className="mt-5 rounded-2xl border border-dashed border-border bg-[#fafbfa] px-5 py-4 sm:flex sm:items-center sm:justify-between sm:gap-6">
+          <div>
+            <h3 className="font-semibold text-text-dark">Náhled zdarma</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Cena za m² a hrubý výnos z vašich čísel — ihned v prohlížeči.
+              Bez PDF a bez scénářů.
+            </p>
+          </div>
+          <a
+            href="#nastroj"
+            className="mt-3 inline-flex shrink-0 rounded-xl border border-deep-teal/25 px-4 py-2.5 text-sm font-bold text-deep-teal sm:mt-0"
+          >
+            Spočítat náhled zdarma
+          </a>
         </div>
+
+        <details className="mt-6 rounded-2xl border border-border bg-white px-5 py-4">
+          <summary className="cursor-pointer list-none font-semibold text-deep-teal [&::-webkit-details-marker]:hidden">
+            Detailní srovnání rozsahu
+          </summary>
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[520px] text-left text-sm">
+              <caption className="sr-only">Srovnání balíčků</caption>
+              <thead>
+                <tr className="border-b border-border text-muted-foreground">
+                  <th className="py-2 pr-3">Rozsah</th>
+                  <th className="py-2 px-2">Zdarma</th>
+                  <th className="py-2 px-2">Rentgen</th>
+                  <th className="py-2 px-2">Rozbor</th>
+                </tr>
+              </thead>
+              <tbody className="text-muted-foreground">
+                {(
+                  [
+                    ["Cena za m², hrubý výnos", "Ano", "Ano", "Ano"],
+                    ["Rozpočet hotovosti a cash flow", "Ne", "Ano", "Ano"],
+                    ["Scénáře, citlivost, bod zvratu", "Ne", "Ano", "Ano"],
+                    ["PDF výstup", "Ne", "Ano", "Ano"],
+                    ["Dohledání místních nabídek", "Ne", "Ne", "Ano"],
+                    ["Rozbor dodaných dokumentů", "Ne", "Ne", "Ano"],
+                    ["Individuální komentář", "Ne", "Ne", "Ano"],
+                  ] as const
+                ).map(([label, a, b, c]) => (
+                  <tr key={label} className="border-b border-border/70">
+                    <td className="py-2 pr-3 text-text-dark">{label}</td>
+                    <td className="px-2 py-2">{a}</td>
+                    <td className="px-2 py-2">{b}</td>
+                    <td className="px-2 py-2">{c}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </details>
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
           <Link
@@ -216,7 +232,7 @@ export function RentgenPricing() {
             Obchodní podmínky
           </Link>
           {" · "}
-          Provozovatel {legalOperator.companyName}, IČO {legalOperator.ico}
+          {legalOperator.companyName}, IČO {legalOperator.ico}
         </p>
       </div>
     </section>
@@ -234,24 +250,24 @@ export function RentgenHowItWorks() {
           id="how-heading"
           className="font-heading text-2xl font-bold text-text-dark"
         >
-          Jak to funguje
+          Jak probíhá zpracování
         </h2>
         <ol className="mt-6 grid gap-4 sm:grid-cols-3">
           {[
             {
               n: "1",
-              t: "Podklady",
-              d: "Cena, plocha, nájem, kapitál. Dokumenty jen u podrobného rozboru — a jen v rozsahu, který skutečně zpracujeme.",
+              t: "Zadáte údaje",
+              d: "Cena, plocha, nájem, vlastní kapitál. U individuálního rozboru doplníte dokumenty, které máte.",
             },
             {
               n: "2",
-              t: "Výpočet / rozbor",
-              d: `Automatický model (náhled a ${formatDigitalRentgenPrice()}) vs. individuální služba (${formatAnalysisPrice()}) s doloženými podklady.`,
+              t: "Výpočet nebo rozbor",
+              d: `Náhled a Rentgen (${formatDigitalRentgenPrice()}) běží automaticky. Individuální rozbor (${formatAnalysisPrice()}) přidává práci s podklady a nabídkami.`,
             },
             {
               n: "3",
-              t: "Doručení",
-              d: "Náhled ihned. Placené výstupy až po úhradě a kompletních vstupech — pokud je prodej aktivní.",
+              t: "Výstup",
+              d: "Náhled ihned. Placený výstup po úhradě a kompletních vstupech — nebo po potvrzení poptávky, dokud není online nákup spuštěný.",
             },
           ].map((s) => (
             <li
@@ -264,39 +280,28 @@ export function RentgenHowItWorks() {
             </li>
           ))}
         </ol>
-      </div>
-    </section>
-  );
-}
 
-export function RentgenDataTrustNote() {
-  return (
-    <section className="border-b border-border bg-white py-8">
-      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-        <h2 className="font-heading text-xl font-bold text-text-dark">
-          Kdo odpovídá a odkud jsou čísla
-        </h2>
-        <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-          Provozovatel: {legalOperator.companyName}, IČO {legalOperator.ico},{" "}
-          {legalOperator.street}, {legalOperator.zip} {legalOperator.city}.
-          Výpočty jsou deterministické z vašich vstupů a zveřejněných předpokladů.
-        </p>
-        <details className="group mt-4 rounded-2xl border border-border bg-[#f7f9f8] px-5 py-4">
-          <summary className="cursor-pointer list-none font-semibold text-deep-teal [&::-webkit-details-marker]:hidden">
-            Jak označujeme údaje
-          </summary>
-          <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-            {(
-              ["DATA", "MODEL", "ODHAD", "NEOVERENO"] as const
-            ).map((k) => (
-              <li key={k}>
-                <strong className="text-text-dark">{CLAIM_KIND_LABELS[k]}</strong>
-                {" — "}
-                {CLAIM_KIND_DESCRIPTIONS[k]}
-              </li>
-            ))}
-          </ul>
-        </details>
+        <div className="mt-8 rounded-2xl border border-border bg-white px-5 py-5">
+          <h3 className="font-heading text-lg font-bold text-text-dark">
+            Kdo to zajišťuje
+          </h3>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Provozovatel: {legalOperator.companyName}, IČO {legalOperator.ico},{" "}
+            {legalOperator.street}, {legalOperator.zip} {legalOperator.city}.
+            Výpočty vycházejí z vašich vstupů a zveřejněných předpokladů modelu.
+          </p>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Označení údajů:{" "}
+            <strong className="font-medium text-text-dark">Zadáno klientem</strong>
+            ,{" "}
+            <strong className="font-medium text-text-dark">Modelový předpoklad</strong>
+            ,{" "}
+            <strong className="font-medium text-text-dark">Vypočteno</strong>
+            ,{" "}
+            <strong className="font-medium text-text-dark">Neověřeno</strong>
+            . Váš vstup automaticky neoznačujeme jako ověřený.
+          </p>
+        </div>
       </div>
     </section>
   );
@@ -305,7 +310,7 @@ export function RentgenDataTrustNote() {
 export function RentgenFaq() {
   return (
     <section
-      className="border-b border-border bg-[#f4f6f5] py-12 sm:py-16"
+      className="border-b border-border bg-white py-12 sm:py-16"
       aria-labelledby="faq-heading"
     >
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
@@ -317,7 +322,10 @@ export function RentgenFaq() {
         </h2>
         <dl className="mt-8 space-y-4">
           {RENTGEN_FAQ.map((item) => (
-            <div key={item.q} className="rounded-2xl border border-border bg-white px-5 py-4">
+            <div
+              key={item.q}
+              className="rounded-2xl border border-border bg-[#f7f9f8] px-5 py-4"
+            >
               <dt className="font-semibold text-text-dark">
                 {withAnalysisPrice(item.q)}
               </dt>
@@ -327,23 +335,28 @@ export function RentgenFaq() {
             </div>
           ))}
         </dl>
+        <p className="mt-6 text-sm text-muted-foreground">
+          <Link
+            href={routes.metodika}
+            className="font-semibold text-deep-teal underline-offset-2 hover:underline"
+          >
+            Metodika a zdroje dat
+          </Link>
+        </p>
       </div>
     </section>
   );
 }
 
 export function RentgenBottomCta() {
-  const live = getRentgenPremiumConfig().commerciallyActive;
   return (
     <section className="bg-deep-teal py-12 text-white">
       <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
         <h2 className="font-heading text-2xl font-bold sm:text-3xl">
-          Spočítejte konkrétní nemovitost
+          Spočítejte svou nemovitost
         </h2>
         <p className="mt-3 text-sm text-white/80">
-          Nejdřív náhled zdarma. Model {formatDigitalRentgenPrice()} a podrobný
-          rozbor {formatAnalysisPrice()} — až bude prodej připraven, nebo formou
-          poptávky.
+          Začněte náhledem zdarma, nebo si prohlédněte hotovou ukázku výstupu.
         </p>
         <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <a
@@ -356,21 +369,17 @@ export function RentgenBottomCta() {
             href={routes.investicniRentgenUkazka}
             className="inline-flex rounded-xl border border-white/30 px-6 py-3.5 text-sm font-bold text-white"
           >
-            Prohlédnout modelový rozbor
+            Zobrazit ukázku výsledku
           </Link>
         </div>
-        {!live ? (
-          <p className="mt-4 text-[11px] text-white/55">
-            Placené plnění není aktivní — CTA vedou na poptávku, ne na fiktivní
-            platbu.
-          </p>
-        ) : null}
       </div>
     </section>
   );
 }
 
 /** Back-compat aliases */
+export const RentgenFourQuestions = () => null;
+export const RentgenDataTrustNote = () => null;
 export const RentgenPillars = RentgenFourQuestions;
 export const RentgenValueProp = RentgenFourQuestions;
 export const RentgenWhatWeAnalyze = RentgenHowItWorks;

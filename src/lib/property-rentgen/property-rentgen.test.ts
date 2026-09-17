@@ -18,7 +18,7 @@ describe("PROPERTY_ANALYSIS_PRICING", () => {
     assert.equal(PROPERTY_ANALYSIS_PRICING.amountCzk, 4990);
     assert.match(formatAnalysisPrice(), /4[\s\u00a0\u202f]?990\s*Kč/);
     assert.ok(!formatAnalysisPrice().includes("/"));
-    assert.ok(formatAnalysisPriceLabel().includes("Podrobný rozbor"));
+    assert.ok(formatAnalysisPriceLabel().includes("Individuální rozbor"));
     assert.equal(PROPERTY_ANALYSIS_PRICING.ctaLabel, "Poptat rozbor");
   });
 
@@ -79,6 +79,8 @@ describe("buildFreePreview", () => {
       priceCzk: 8_400_000,
       rentMonthlyCzk: 28_000,
       equityCzk: 2_000_000,
+      annualRatePercent: null,
+      termYears: null,
       purpose: "investment",
       listingUrl: "",
     };
@@ -105,6 +107,8 @@ describe("buildFreePreview", () => {
         priceCzk: null,
         rentMonthlyCzk: null,
         equityCzk: null,
+        annualRatePercent: null,
+        termYears: null,
         purpose: "investment",
         listingUrl: "",
       },
@@ -127,6 +131,8 @@ describe("buildFreePreview", () => {
         priceCzk: null,
         rentMonthlyCzk: null,
         equityCzk: null,
+        annualRatePercent: null,
+        termYears: null,
         purpose: "investment",
         listingUrl: "",
       },
@@ -145,6 +151,8 @@ describe("buildFreePreview", () => {
         priceCzk: 5_000_000,
         rentMonthlyCzk: null,
         equityCzk: 1_000_000,
+        annualRatePercent: null,
+        termYears: null,
         purpose: "investment",
         listingUrl: "https://example.com/listing",
       },

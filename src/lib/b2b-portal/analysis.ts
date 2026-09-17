@@ -39,6 +39,8 @@ export function computeIsolatedAnalysisScore(
     priceCzk: submission.priceCzk,
     rentMonthlyCzk: submission.rentMonthlyCzk,
     equityCzk: null,
+    annualRatePercent: null,
+    termYears: null,
     purpose: "investment",
     listingUrl: submission.listingUrl ?? "",
   };

@@ -2,18 +2,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Legend,
-  ReferenceLine,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { useSearchParams } from "next/navigation";
 import {
   CONTROL_MODEL_INPUTS,
   CONTROL_MODEL_VERSION,
@@ -29,13 +18,19 @@ import {
 import {
   formatAnalysisPrice,
   formatDigitalRentgenPrice,
+  packageQueryValue,
   rentgenPrimaryCtaLabel,
-} from "@/lib/property-rentgen/pricing";
+  samplePackageFromQuery,
+  type RentgenSamplePackageId,
+} from "@/lib/property-rentgen";
+import {
+  buildMonthlyWaterfallSteps,
+  RentgenScenarioBars,
+  RentgenWaterfallChart,
+} from "@/components/property-rentgen/RentgenCharts";
 import { track } from "@/lib/analytics/track";
 import { routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
-
-type PackageId = "digital" | "premium";
 
 const NAV = [
   { id: "shrnuti", label: "Shrnutí" },
@@ -51,6 +46,18 @@ const NAV = [
 
 const SENSITIVITY_RENTS = [18_000, 19_000, 20_000, 21_000, 22_000] as const;
 const SENSITIVITY_RATES = [3.8, 4.8, 5.8, 6.8] as const;
+
+function cashFlowHeadline(monthlyCashFlowCzk: number): string {
+  const abs = Math.round(Math.abs(monthlyCashFlowCzk));
+  const formatted = abs.toLocaleString("cs-CZ");
+  if (monthlyCashFlowCzk < -0.5) {
+    return `Měsíčně doplácíte přibližně ${formatted} Kč.`;
+  }
+  if (monthlyCashFlowCzk > 0.5) {
+    return `Měsíčně vám zbývá přibližně ${formatted} Kč.`;
+  }
+  return "Měsíční peněžní tok vychází přibližně na nulu.";
+}
 
 function sensitivityCashFlow(
   monthlyRentCzk: number,
@@ -68,28 +75,6 @@ function sensitivityCashFlow(
     CONTROL_MODEL_INPUTS.termYears
   );
   return ops.operatingSurplusAfterReserveCzk / 12 - payment;
-}
-
-function ChartShell({
-  ready,
-  heightClass,
-  children,
-}: {
-  ready: boolean;
-  heightClass: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className={`${heightClass} w-full min-h-0`}>
-      {ready ? (
-        children
-      ) : (
-        <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-border text-xs text-muted-foreground">
-          Načítám graf…
-        </div>
-      )}
-    </div>
-  );
 }
 
 function Section({
@@ -177,46 +162,100 @@ function EvidenceTablePremium() {
   );
 }
 
+function FindingCard({
+  podklad,
+  zjisteni,
+  dopad,
+  proverit,
+}: {
+  podklad: string;
+  zjisteni: string;
+  dopad: string;
+  proverit: string;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-white px-4 py-3 text-sm">
+      <p>
+        <span className="font-semibold text-text-dark">Podklad:</span>{" "}
+        <span className="text-muted-foreground">{podklad}</span>
+      </p>
+      <p className="mt-1">
+        <span className="font-semibold text-text-dark">Zjištění:</span>{" "}
+        <span className="text-muted-foreground">{zjisteni}</span>
+      </p>
+      <p className="mt-1">
+        <span className="font-semibold text-text-dark">Dopad:</span>{" "}
+        <span className="text-muted-foreground">{dopad}</span>
+      </p>
+      <p className="mt-1">
+        <span className="font-semibold text-text-dark">Co prověřit:</span>{" "}
+        <span className="text-muted-foreground">{proverit}</span>
+      </p>
+    </div>
+  );
+}
+
 function ModelBody({
   model,
   pkg,
-  chartsReady,
 }: {
   model: ControlModelResult;
-  pkg: PackageId;
-  chartsReady: boolean;
+  pkg: RentgenSamplePackageId;
 }) {
   const scenarios = useMemo(() => runControlScenarios(), []);
-  const waterfall = model.monthlyWaterfall.filter((w) => w.key !== "net");
-  const chartScenarios = scenarios.map((s) => ({
-    name: s.label,
-    value: Math.round(s.monthlyCashFlowCzk * 100) / 100,
-  }));
-  const amortChart = model.first12Months.map((m) => ({
-    month: String(m.month),
-    interest: Math.round(m.interestCzk),
-    principal: Math.round(m.principalCzk),
+  const waterfallSteps = useMemo(
+    () => buildMonthlyWaterfallSteps(model.monthlyWaterfall),
+    [model.monthlyWaterfall]
+  );
+  const scenarioRows = scenarios.map((s) => ({
+    id: s.id,
+    label: s.label,
+    valueCzk: s.monthlyCashFlowCzk,
+    assumptions: `Nájem ${formatModelCzk(s.monthlyRentCzk, 0)} · výpadek ${(s.vacancyRate * 100).toLocaleString("cs-CZ")} % · sazba ${s.annualRatePercent.toLocaleString("cs-CZ")} %`,
+    emphasize: s.id === "base",
   }));
 
   return (
     <>
       <Section id="shrnuti" title="Shrnutí">
+        <p className="text-lg font-semibold text-text-dark">
+          {cashFlowHeadline(model.monthlyCashFlowCzk)}
+        </p>
         <p className="text-sm leading-relaxed text-text-dark">
           {model.baseConclusionCs}
         </p>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
-            ["Vlastní hotovost vč. rezervy", formatModelCzk(model.totalOwnCashIncludingReserveCzk)],
-            ["Měsíční tok", formatModelCzk(model.monthlyCashFlowCzk, 2)],
-            ["Hrubý výnos", formatModelPct(model.grossYieldOnPurchase, 2)],
-            ["Provozní výnos po rezervě", formatModelPct(model.operatingYieldOnAcquisition, 2)],
+            [
+              "Vlastní hotovost vč. rezervy",
+              formatModelCzk(model.totalOwnCashIncludingReserveCzk),
+            ],
+            ["Měsíční tok", formatModelCzk(model.monthlyCashFlowCzk, 0)],
+            ["Hrubý výnos z kupní ceny", formatModelPct(model.grossYieldOnPurchase, 2)],
+            [
+              "Provozní výnos z pořízení",
+              formatModelPct(model.operatingYieldOnAcquisition, 2),
+            ],
           ].map(([l, v]) => (
-            <div key={l} className="rounded-xl border border-border bg-[#f7f9f8] px-3 py-3">
-              <p className="text-[10px] font-semibold uppercase text-muted-foreground">{l}</p>
-              <p className="mt-1 font-heading text-lg font-bold tabular-nums">{v}</p>
+            <div
+              key={l}
+              className="rounded-xl border border-border bg-[#f7f9f8] px-3 py-3"
+            >
+              <p className="text-[10px] font-semibold uppercase text-muted-foreground">
+                {l}
+              </p>
+              <p className="mt-1 font-heading text-lg font-bold tabular-nums">
+                {v}
+              </p>
             </div>
           ))}
         </div>
+        <p className="text-[11px] text-muted-foreground">
+          Hrubý výnos = roční potenciální nájem / kupní cena. Provozní výnos po
+          rezervě = přebytek po rezervě / pořizovací investice{" "}
+          {formatModelCzk(model.totalAcquisitionCostCzk)}. Tok je před daní z
+          příjmů.
+        </p>
       </Section>
 
       <Section id="vstupy" title="Vstupy">
@@ -228,12 +267,21 @@ function ModelBody({
               ["Úpravy a vybavení", formatModelCzk(model.inputs.initialFitOutCzk)],
               ["Vedlejší náklady", formatModelCzk(model.inputs.closingCostsCzk)],
               ["Úvěr", formatModelCzk(model.inputs.loanAmountCzk)],
-              ["Sazba / splatnost", `${model.inputs.annualRatePercent} % · ${model.inputs.termYears} let`],
-              ["Nájem / měs.", formatModelCzk(model.inputs.monthlyRentCzk)],
-              ["Výpadek / správa", `${model.inputs.vacancyRate * 100} % / ${model.inputs.managementFeeRate * 100} %`],
+              [
+                "Sazba / splatnost",
+                `${model.inputs.annualRatePercent} % · ${model.inputs.termYears} let`,
+              ],
+              ["Nájem bez záloh / měs.", formatModelCzk(model.inputs.monthlyRentCzk)],
+              [
+                "Výpadek / správa",
+                `${model.inputs.vacancyRate * 100} % / ${model.inputs.managementFeeRate * 100} %`,
+              ],
             ] as const
           ).map(([k, v]) => (
-            <div key={k} className="flex justify-between gap-4 border-b border-border/60 py-2">
+            <div
+              key={k}
+              className="flex justify-between gap-4 border-b border-border/60 py-2"
+            >
               <dt className="text-muted-foreground">{k}</dt>
               <dd className="tabular-nums font-medium text-text-dark">{v}</dd>
             </div>
@@ -247,10 +295,16 @@ function ModelBody({
           nezahrnuje drženou rezervu {formatModelCzk(model.inputs.cashReserveCzk)}.
         </p>
         <ul className="space-y-1 text-sm">
-          <li>Vlastní část kupní ceny: {formatModelCzk(model.equityTowardPurchaseCzk)}</li>
+          <li>
+            Vlastní část kupní ceny:{" "}
+            {formatModelCzk(model.equityTowardPurchaseCzk)}
+          </li>
           <li>Úpravy: {formatModelCzk(model.inputs.initialFitOutCzk)}</li>
           <li>Vedlejší: {formatModelCzk(model.inputs.closingCostsCzk)}</li>
-          <li>Oddělená hotovostní rezerva: {formatModelCzk(model.inputs.cashReserveCzk)}</li>
+          <li>
+            Oddělená hotovostní rezerva:{" "}
+            {formatModelCzk(model.inputs.cashReserveCzk)}
+          </li>
           <li className="font-semibold">
             Celkem vlastní hotovost:{" "}
             {formatModelCzk(model.totalOwnCashIncludingReserveCzk)}
@@ -259,32 +313,15 @@ function ModelBody({
       </Section>
 
       <Section id="mesicni" title="Měsíční výsledek">
-        <ChartShell ready={chartsReady} heightClass="h-[260px]">
-          <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-            <BarChart
-              data={waterfall.map((w) => ({
-                name: w.label,
-                amount: Math.round(w.amountCzk * 100) / 100,
-              }))}
-              margin={{ top: 8, right: 8, left: 0, bottom: 40 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="name" interval={0} angle={-25} textAnchor="end" height={60} tick={{ fontSize: 10 }} />
-              <YAxis tick={{ fontSize: 11 }} width={44} />
-              <Tooltip formatter={(v) => formatModelCzk(Number(v), 2)} />
-              <Bar dataKey="amount" name="Kč / měs.">
-                {waterfall.map((w) => (
-                  <Cell
-                    key={w.key}
-                    fill={w.amountCzk >= 0 ? "#059669" : "#dc2626"}
-                  />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartShell>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[320px] text-left text-xs">
+        <p className="text-base font-semibold text-text-dark">
+          {cashFlowHeadline(model.monthlyCashFlowCzk)}
+        </p>
+        <RentgenWaterfallChart steps={waterfallSteps} />
+        <details>
+          <summary className="cursor-pointer text-xs font-semibold text-deep-teal">
+            Tabulka vodopádu
+          </summary>
+          <table className="mt-2 w-full min-w-[320px] text-left text-xs">
             <caption className="sr-only">Vodopád měsíčního výsledku</caption>
             <thead>
               <tr className="border-b border-border text-muted-foreground">
@@ -297,16 +334,16 @@ function ModelBody({
                 <tr key={w.key} className="border-b border-border/70">
                   <td className="py-1.5">{w.label}</td>
                   <td className="py-1.5 tabular-nums font-medium">
-                    {formatModelCzk(w.amountCzk, 2)}
+                    {formatModelCzk(w.amountCzk, 0)}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
+        </details>
         <p className="text-sm font-semibold tabular-nums text-text-dark">
-          Výsledek: {formatModelCzk(model.monthlyCashFlowCzk, 2)} / měs. před daní
-          z příjmů
+          Výsledek: {formatModelCzk(model.monthlyCashFlowCzk, 0)} / měs. před
+          daní z příjmů
         </p>
       </Section>
 
@@ -318,50 +355,44 @@ function ModelBody({
           {formatModelCzk(CONTROL_MODEL_INPUTS.loanAmountCzk)}, splatnost 360
           měsíců.
         </p>
-        <ChartShell ready={chartsReady} heightClass="h-[240px]">
-          <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-            <BarChart data={chartScenarios}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="name" />
-              <YAxis width={44} />
-              <ReferenceLine y={0} stroke="#1a1a1a" />
-              <Tooltip formatter={(v) => formatModelCzk(Number(v), 2)} />
-              <Bar dataKey="value" name="Tok / měs.">
-                {chartScenarios.map((r) => (
-                  <Cell key={r.name} fill={r.value >= 0 ? "#047857" : "#dc2626"} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartShell>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[480px] text-left text-xs">
-            <thead>
-              <tr className="border-b border-border text-muted-foreground">
-                <th className="py-2">Scénář</th>
-                <th className="py-2">Nájem</th>
-                <th className="py-2">Výpadek</th>
-                <th className="py-2">Sazba</th>
-                <th className="py-2">Splátka</th>
-                <th className="py-2">Tok / měs.</th>
-              </tr>
-            </thead>
-            <tbody>
-              {scenarios.map((s) => (
-                <tr key={s.id} className="border-b border-border/70">
-                  <td className="py-2">{s.label}</td>
-                  <td className="py-2 tabular-nums">{formatModelCzk(s.monthlyRentCzk)}</td>
-                  <td className="py-2 tabular-nums">{s.vacancyRate * 100} %</td>
-                  <td className="py-2 tabular-nums">{s.annualRatePercent} %</td>
-                  <td className="py-2 tabular-nums">{formatModelCzk(s.monthlyPaymentCzk, 2)}</td>
-                  <td className="py-2 tabular-nums font-semibold">
-                    {formatModelCzk(s.monthlyCashFlowCzk, 2)}
-                  </td>
+        <RentgenScenarioBars rows={scenarioRows} />
+        <details>
+          <summary className="cursor-pointer text-xs font-semibold text-deep-teal">
+            Detailní tabulka scénářů
+          </summary>
+          <div className="mt-2 overflow-x-auto">
+            <table className="w-full min-w-[480px] text-left text-xs">
+              <thead>
+                <tr className="border-b border-border text-muted-foreground">
+                  <th className="py-2">Scénář</th>
+                  <th className="py-2">Nájem</th>
+                  <th className="py-2">Výpadek</th>
+                  <th className="py-2">Sazba</th>
+                  <th className="py-2">Splátka</th>
+                  <th className="py-2">Tok / měs.</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {scenarios.map((s) => (
+                  <tr key={s.id} className="border-b border-border/70">
+                    <td className="py-2">{s.label}</td>
+                    <td className="py-2 tabular-nums">
+                      {formatModelCzk(s.monthlyRentCzk)}
+                    </td>
+                    <td className="py-2 tabular-nums">{s.vacancyRate * 100} %</td>
+                    <td className="py-2 tabular-nums">{s.annualRatePercent} %</td>
+                    <td className="py-2 tabular-nums">
+                      {formatModelCzk(s.monthlyPaymentCzk, 0)}
+                    </td>
+                    <td className="py-2 tabular-nums font-semibold">
+                      {formatModelCzk(s.monthlyCashFlowCzk, 0)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </details>
 
         <div className="mt-6">
           <h3 className="font-semibold text-text-dark">
@@ -418,61 +449,53 @@ function ModelBody({
       </Section>
 
       <Section id="financovani" title="Financování — prvních 12 měsíců">
-        <ChartShell ready={chartsReady} heightClass="h-[240px]">
-          <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-            <BarChart data={amortChart}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="month" />
-              <YAxis width={44} />
-              <Tooltip formatter={(v) => formatModelCzk(Number(v))} />
-              <Legend />
-              <Bar dataKey="interest" stackId="a" fill="#c5a059" name="Úrok" />
-              <Bar dataKey="principal" stackId="a" fill="#1b4d3e" name="Umoření" />
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartShell>
         <p className="text-sm text-muted-foreground">
           Splacená jistina za 12 měsíců:{" "}
           <span className="font-semibold tabular-nums text-text-dark">
-            {formatModelCzk(model.principalPaidFirst12MonthsCzk, 2)}
+            {formatModelCzk(model.principalPaidFirst12MonthsCzk, 0)}
           </span>
           . Jistina není peněžní příjem na účet.
         </p>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[520px] text-left text-xs">
-            <caption className="sr-only">
-              Amortizace úvěru v prvních 12 měsících
-            </caption>
-            <thead>
-              <tr className="border-b border-border text-muted-foreground">
-                <th className="py-2">Měsíc</th>
-                <th className="py-2">Úrok</th>
-                <th className="py-2">Umoření</th>
-                <th className="py-2">Splátka</th>
-                <th className="py-2">Zůstatek</th>
-              </tr>
-            </thead>
-            <tbody>
-              {model.first12Months.map((m) => (
-                <tr key={m.month} className="border-b border-border/70">
-                  <td className="py-1.5 tabular-nums">{m.month}</td>
-                  <td className="py-1.5 tabular-nums">
-                    {formatModelCzk(m.interestCzk, 2)}
-                  </td>
-                  <td className="py-1.5 tabular-nums">
-                    {formatModelCzk(m.principalCzk, 2)}
-                  </td>
-                  <td className="py-1.5 tabular-nums">
-                    {formatModelCzk(m.paymentCzk, 2)}
-                  </td>
-                  <td className="py-1.5 tabular-nums">
-                    {formatModelCzk(m.closingBalanceCzk, 2)}
-                  </td>
+        <details>
+          <summary className="cursor-pointer text-xs font-semibold text-deep-teal">
+            Tabulka amortizace
+          </summary>
+          <div className="mt-2 overflow-x-auto">
+            <table className="w-full min-w-[520px] text-left text-xs">
+              <caption className="sr-only">
+                Amortizace úvěru v prvních 12 měsících
+              </caption>
+              <thead>
+                <tr className="border-b border-border text-muted-foreground">
+                  <th className="py-2">Měsíc</th>
+                  <th className="py-2">Úrok</th>
+                  <th className="py-2">Umoření</th>
+                  <th className="py-2">Splátka</th>
+                  <th className="py-2">Zůstatek</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {model.first12Months.map((m) => (
+                  <tr key={m.month} className="border-b border-border/70">
+                    <td className="py-1.5 tabular-nums">{m.month}</td>
+                    <td className="py-1.5 tabular-nums">
+                      {formatModelCzk(m.interestCzk, 0)}
+                    </td>
+                    <td className="py-1.5 tabular-nums">
+                      {formatModelCzk(m.principalCzk, 0)}
+                    </td>
+                    <td className="py-1.5 tabular-nums">
+                      {formatModelCzk(m.paymentCzk, 0)}
+                    </td>
+                    <td className="py-1.5 tabular-nums">
+                      {formatModelCzk(m.closingBalanceCzk, 0)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </details>
       </Section>
 
       <Section id="cenove" title="Cenové podmínky modelu">
@@ -480,20 +503,21 @@ function ModelBody({
           <li>
             Nájem pro nulový tok:{" "}
             <strong className="tabular-nums">
-              {formatModelCzk(model.rentForZeroCashFlowCzk, 2)}
+              {formatModelCzk(model.rentForZeroCashFlowCzk, 0)}
             </strong>{" "}
             / měs.
           </li>
           <li>
             Cenová hranice nulového toku při úvěru 70 % kupní ceny:{" "}
             <strong className="tabular-nums">
-              {formatModelCzk(model.purchasePriceForZeroCashFlowAt70LoanCzk, 2)}
+              {formatModelCzk(model.purchasePriceForZeroCashFlowAt70LoanCzk, 0)}
             </strong>
           </li>
         </ul>
         <p className="text-xs text-muted-foreground">
           Není to tržní ocenění, garantovaná nákupní cena ani osobní doporučení.
-          Úvěr se v tomto výpočtu mění s 70 % kupní ceny. Tok je před daní z příjmů.
+          Úvěr se v tomto výpočtu mění s 70 % kupní ceny. Tok je před daní z
+          příjmů.
         </p>
       </Section>
 
@@ -502,47 +526,54 @@ function ModelBody({
           <>
             <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
               <p className="font-semibold">
-                Šablona rozsahu podrobného rozboru — v této ukázce neprovedeno
+                Ukázka rozsahu individuálního rozboru — v této ukázce
+                neprovedeno
               </p>
               <p className="mt-1 text-amber-900/90">
                 Níže nejsou výsledky skutečného průzkumu ani ověření dokumentů.
-                Ukazují, co by individuální práce doplnila po dodání podkladů a
-                úhradě. Nevydávejte tuto sekci za hotový placený rozbor.
+                Ukazují strukturu zjištění po dodání podkladů. Nevydávejte tuto
+                sekci za hotový placený rozbor.
               </p>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Potřebné podklady od vás: kupní / rezervační smlouva nebo nabídka,
-              výpis SVJ / předpis plateb, nájemní smlouva (pokud existuje), LV
-              (pokud máte), technické podklady nebo zápis z prohlídky. Bez nich
-              nelze potvrdit vlastnictví, absenci omezení ani zjištěný stav
-              oprav.
+            <p className="text-sm font-semibold text-text-dark">
+              Co individuální rozbor přidává oproti automatickému modelu
             </p>
-            <EvidenceTablePremium />
-            <div className="rounded-xl border border-border bg-[#f7f9f8] px-4 py-3 text-sm text-text-dark">
-              <p className="font-semibold">
-                Příklady otázek pro prodávajícího (individuální práce)
-              </p>
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
-                <li>Jaké jsou skutečné platby SVJ / správě domu za posledních 12 měsíců?</li>
-                <li>Existují plánované investice do společných částí?</li>
-                <li>Jaký je stav rozvodů, oken a střechy / jádra? (vyžaduje prohlídku)</li>
-              </ul>
+            <div className="space-y-3">
+              <FindingCard
+                podklad="Veřejné inzeráty v lokalitě (se zdrojem a datem)"
+                zjisteni="V ukázce neprovedeno — při reálném rozboru doplníme srovnání nabídek."
+                dopad="Bez srovnání nelze posoudit, zda je zadaný nájem a cena realistické."
+                proverit="Aktuální nabídkové nájmy a prodejní ceny ve stejném segmentu."
+              />
+              <FindingCard
+                podklad="Dodané doklady (smlouva, předpis SVJ, nájemní smlouva…)"
+                zjisteni="V ukázce neprovedeno — rozsah závisí na tom, co skutečně dodáte."
+                dopad="Chybějící podklady = neověřené předpoklady příjmů a výdajů."
+                proverit="Skutečné platby SVJ, plánované investice, stav bytu."
+              />
+              <FindingCard
+                podklad="Model cash flow z vašich čísel"
+                zjisteni="Stejný automatický model jako u výstupu za 999 Kč."
+                dopad="Individuální komentář vysvětlí citlivá místa modelu."
+                proverit="Otázky k prodávajícímu a bankovní podmínky."
+              />
             </div>
+            <EvidenceTablePremium />
           </>
         ) : (
           <div className="space-y-3 text-sm text-muted-foreground">
             <p>
               <strong className="text-text-dark">
-                Rozsah modelu {formatDigitalRentgenPrice()}
+                Rozsah výstupu za {formatDigitalRentgenPrice()}
               </strong>
               : rozpočet hotovosti, cash flow, scénáře, citlivost, bod zvratu a
               PDF z vašich čísel a modelových předpokladů. Automatický výklad —
-              bez lidské kontroly a bez dohledání nabídek.
+              bez dohledání nabídek a bez rozboru dokumentů.
             </p>
             <p>
-              V tomto přepínači proto neukazujeme tabulku podkladů, srovnání
-              inzerátů ani otázky z prohlídky. To patří do podrobného rozboru{" "}
-              {formatAnalysisPrice()} a vzniká jen skutečnou individuální prací.
+              Přepněte na výstup za {formatAnalysisPrice()}, abyste viděli
+              strukturu individuálních zjištění (podklad → zjištění → dopad → co
+              prověřit).
             </p>
           </div>
         )}
@@ -553,16 +584,16 @@ function ModelBody({
           <li>Verze modelu: {CONTROL_MODEL_VERSION}</li>
           <li>
             Anuita z jistiny, sazby a splatnosti; provozní přebytek po rezervě =
-            inkasovaný nájem − správa − ostatní roční náklady (42 000 Kč v tomto
-            příkladu).
+            inkasovaný nájem − správa − ostatní roční náklady (
+            {formatModelCzk(CONTROL_OTHER_ANNUAL_COSTS_CZK)} v tomto příkladu).
           </li>
           <li>
             Poměr úvěru ke kupní ceně není automaticky bankovní LTV. Model
             nevyslovuje závěr o schválení úvěru.
           </li>
           <li>
-            V modelu není daň z příjmů, poplatky za úvěr, výnos rezervy ani náklady
-            prodeje.
+            V modelu není daň z příjmů, poplatky za úvěr, výnos rezervy ani
+            náklady prodeje.
           </li>
         </ul>
       </Section>
@@ -571,13 +602,15 @@ function ModelBody({
 }
 
 export function RentgenUkazkaView() {
-  const [pkg, setPkg] = useState<PackageId>("digital");
-  const [chartsReady, setChartsReady] = useState(false);
+  const searchParams = useSearchParams();
+  const [pkg, setPkg] = useState<RentgenSamplePackageId>(() =>
+    samplePackageFromQuery(searchParams.get("balicek"))
+  );
   const model = useMemo(() => runControlModel(), []);
 
   useEffect(() => {
-    setChartsReady(true);
-  }, []);
+    setPkg(samplePackageFromQuery(searchParams.get("balicek")));
+  }, [searchParams]);
 
   useEffect(() => {
     track("premium_viewed", {
@@ -586,21 +619,24 @@ export function RentgenUkazkaView() {
     });
   }, []);
 
-  const selectPackage = (id: PackageId) => {
+  const selectPackage = (id: RentgenSamplePackageId) => {
     setPkg(id);
     try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("balicek", packageQueryValue(id));
+      window.history.replaceState({}, "", url.toString());
       track("premium_cta_clicked", {
         tool_id: "investicni_rentgen_ukazka",
         cta_id: `package_${id}`,
         price_band: "premium",
       });
     } catch {
-      /* analytics must not block UI */
+      /* analytics / history must not block UI */
     }
   };
 
   return (
-    <div className="overflow-x-hidden bg-white" data-charts-ready={chartsReady ? "1" : "0"}>
+    <div className="overflow-x-hidden bg-white">
       <div className="border-b border-amber-200 bg-amber-50">
         <div className="mx-auto max-w-5xl px-4 py-3 text-sm text-amber-950 sm:px-6 lg:px-8">
           <strong>Modelový příklad</strong> — smyšlená nemovitost, přesně
@@ -618,6 +654,14 @@ export function RentgenUkazkaView() {
             <h1 className="mt-1 font-heading text-3xl font-bold text-text-dark">
               Modelový rozbor výstupu
             </h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Právě prohlížíte:{" "}
+              <strong className="text-text-dark">
+                {pkg === "premium"
+                  ? `Individuální rozbor (${formatAnalysisPrice()})`
+                  : `Investiční rentgen (${formatDigitalRentgenPrice()})`}
+              </strong>
+            </p>
           </div>
           <div
             role="tablist"
@@ -637,7 +681,7 @@ export function RentgenUkazkaView() {
                 data-package={id}
                 aria-selected={pkg === id}
                 className={cn(
-                  "rounded-lg px-3 py-2 text-xs font-semibold sm:text-sm",
+                  "rounded-lg px-3 py-2 text-xs font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal sm:text-sm",
                   pkg === id
                     ? "bg-white text-deep-teal shadow-sm"
                     : "text-muted-foreground"
@@ -658,7 +702,7 @@ export function RentgenUkazkaView() {
             <a
               key={item.id}
               href={`#${item.id}`}
-              className="shrink-0 rounded-full border border-border bg-white px-3 py-1.5 text-deep-teal hover:bg-[#f7f9f8]"
+              className="shrink-0 rounded-full border border-border bg-white px-3 py-1.5 text-deep-teal hover:bg-[#f7f9f8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
             >
               {item.label}
             </a>
@@ -668,7 +712,7 @@ export function RentgenUkazkaView() {
         <div className="mt-4 flex flex-wrap gap-3">
           <a
             href="/api/rentgen-sample-pdf"
-            className="inline-flex rounded-xl bg-deep-teal px-4 py-2.5 text-sm font-bold text-white"
+            className="inline-flex rounded-xl bg-deep-teal px-4 py-2.5 text-sm font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-muted-gold"
             onClick={() =>
               track("primary_cta_clicked", {
                 tool_id: "investicni_rentgen_ukazka",
@@ -679,8 +723,8 @@ export function RentgenUkazkaView() {
             Stáhnout ukázkový rozbor PDF
           </a>
           <Link
-            href={`${routes.investicniRentgen}#premium-objednavka`}
-            className="inline-flex rounded-xl border border-deep-teal/30 px-4 py-2.5 text-sm font-bold text-deep-teal"
+            href={`${routes.investicniRentgen}?balicek=${packageQueryValue(pkg)}#premium-objednavka`}
+            className="inline-flex rounded-xl border border-deep-teal/30 px-4 py-2.5 text-sm font-bold text-deep-teal focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
           >
             {rentgenPrimaryCtaLabel(pkg)}
           </Link>
@@ -692,7 +736,7 @@ export function RentgenUkazkaView() {
           </Link>
         </div>
 
-        <ModelBody model={model} pkg={pkg} chartsReady={chartsReady} />
+        <ModelBody model={model} pkg={pkg} />
       </div>
     </div>
   );

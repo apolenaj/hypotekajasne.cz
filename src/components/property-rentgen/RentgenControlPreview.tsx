@@ -1,48 +1,58 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  ReferenceLine,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { useMemo } from "react";
 import Link from "next/link";
 import {
+  CONTROL_MODEL_INPUTS,
   formatModelCzk,
   formatModelPct,
   runControlModel,
   runControlScenarios,
 } from "@/lib/property-rentgen/control-model";
+import {
+  buildMonthlyWaterfallSteps,
+  RentgenScenarioBars,
+  RentgenWaterfallChart,
+} from "@/components/property-rentgen/RentgenCharts";
 import { routes } from "@/lib/routes";
+import { cn } from "@/lib/utils";
+
+function cashFlowHeadline(monthlyCashFlowCzk: number): string {
+  const abs = Math.round(Math.abs(monthlyCashFlowCzk));
+  const formatted = abs.toLocaleString("cs-CZ");
+  if (monthlyCashFlowCzk < -0.5) {
+    return `Měsíčně doplácíte přibližně ${formatted} Kč.`;
+  }
+  if (monthlyCashFlowCzk > 0.5) {
+    return `Měsíčně vám zbývá přibližně ${formatted} Kč.`;
+  }
+  return "Měsíční peněžní tok vychází přibližně na nulu.";
+}
 
 /**
- * Landing preview — four metrics + one chart + short conclusion
- * from the binding control model (no marketing numbers).
+ * Landing: assumptions → KPIs → waterfall → scenarios (control model SoT).
  */
 export function RentgenControlPreview() {
   const model = useMemo(() => runControlModel(), []);
   const scenarios = useMemo(() => runControlScenarios(), []);
-  const [chartsReady, setChartsReady] = useState(false);
+  const waterfallSteps = useMemo(
+    () => buildMonthlyWaterfallSteps(model.monthlyWaterfall),
+    [model.monthlyWaterfall]
+  );
+  const cfRounded = Math.round(model.monthlyCashFlowCzk);
 
-  useEffect(() => {
-    setChartsReady(true);
-  }, []);
-
-  const chartData = scenarios.map((s) => ({
-    name: s.label,
-    cashFlow: Math.round(s.monthlyCashFlowCzk * 100) / 100,
+  const scenarioRows = scenarios.map((s) => ({
+    id: s.id,
+    label: s.label,
+    valueCzk: s.monthlyCashFlowCzk,
+    assumptions: `Nájem ${formatModelCzk(s.monthlyRentCzk, 0)} · výpadek ${(s.vacancyRate * 100).toLocaleString("cs-CZ")} % · sazba ${s.annualRatePercent.toLocaleString("cs-CZ")} %`,
+    emphasize: s.id === "base",
   }));
 
   return (
     <section
       id="ukazka-nahled"
-      className="scroll-mt-24 border-b border-border bg-[#f4f6f5] py-10 sm:py-12"
+      className="scroll-mt-24 border-b border-border bg-[#f4f6f5] py-10 sm:py-14"
       aria-labelledby="preview-heading"
     >
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
@@ -55,42 +65,79 @@ export function RentgenControlPreview() {
               id="preview-heading"
               className="mt-1 font-heading text-2xl font-bold text-text-dark sm:text-3xl"
             >
-              Co uvidíte ve výstupu
+              Jak vypadá výsledek u konkrétního bytu
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Smyšlená nemovitost, přesně spočtené vstupy. Čísla pocházejí z
-              jednotného výpočetního modelu — ne z marketingového textu.
+              Smyšlená nemovitost — ne tržní nabídka. Čísla počítá jednotný model
+              ze zadaných předpokladů.
             </p>
           </div>
           <Link
             href={routes.investicniRentgenUkazka}
-            className="inline-flex rounded-xl bg-deep-teal px-5 py-3 text-sm font-bold text-white"
+            className="inline-flex rounded-xl bg-deep-teal px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-deep-teal/90"
           >
-            Prohlédnout modelový rozbor
+            Zobrazit celou ukázku
           </Link>
         </div>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-6 rounded-2xl border border-border bg-white px-4 py-4 sm:px-5">
+          <p className="text-xs font-semibold uppercase tracking-wide text-deep-teal">
+            Předpoklady modelového příkladu
+          </p>
+          <dl className="mt-3 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+            {(
+              [
+                ["Plocha", `${CONTROL_MODEL_INPUTS.areaM2} m²`],
+                ["Kupní cena", formatModelCzk(CONTROL_MODEL_INPUTS.purchasePriceCzk)],
+                ["Úpravy a vybavení", formatModelCzk(CONTROL_MODEL_INPUTS.initialFitOutCzk)],
+                ["Vedlejší náklady", formatModelCzk(CONTROL_MODEL_INPUTS.closingCostsCzk)],
+                ["Oddělená hotovostní rezerva", formatModelCzk(CONTROL_MODEL_INPUTS.cashReserveCzk)],
+                ["Úvěr", formatModelCzk(CONTROL_MODEL_INPUTS.loanAmountCzk)],
+                [
+                  "Sazba / splatnost",
+                  `${CONTROL_MODEL_INPUTS.annualRatePercent} % · ${CONTROL_MODEL_INPUTS.termYears} let`,
+                ],
+                ["Nájem bez záloh", formatModelCzk(CONTROL_MODEL_INPUTS.monthlyRentCzk)],
+                [
+                  "Výpadek / správa",
+                  `${CONTROL_MODEL_INPUTS.vacancyRate * 100} % / ${CONTROL_MODEL_INPUTS.managementFeeRate * 100} %`,
+                ],
+              ] as const
+            ).map(([k, v]) => (
+              <div key={k} className="flex justify-between gap-3 border-b border-border/50 py-1.5">
+                <dt className="text-muted-foreground">{k}</dt>
+                <dd className="tabular-nums font-medium text-text-dark">{v}</dd>
+              </div>
+            ))}
+          </dl>
+          <p className="mt-3 text-[11px] text-muted-foreground">
+            Zdroj čísel: modelový předpoklad a výpočet. Neověřená nabídka ani
+            právní stav bytu.
+          </p>
+        </div>
+
+        <div className="mt-6 grid gap-3 sm:grid-cols-3">
           {[
             {
-              label: "Potřebná vlastní hotovost",
+              label: "Kolik hotovosti potřebuji",
               value: formatModelCzk(model.totalOwnCashIncludingReserveCzk),
-              hint: "Včetně rezervy 150 000 Kč",
+              hint: "Vlastní část ceny + úpravy + vedlejší + rezerva",
             },
             {
-              label: "Měsíční peněžní tok",
-              value: formatModelCzk(model.monthlyCashFlowCzk, 2),
-              hint: "Po rezervě, před daní z příjmů",
+              label: "Kolik měsíčně doplácím / zbývá",
+              value: formatModelCzk(cfRounded),
+              hint: "Po rezervě na údržbu, před daní z příjmů",
+              tone: cfRounded < 0 ? "neg" : cfRounded > 0 ? "pos" : "neu",
             },
             {
-              label: "Hrubý výnos",
-              value: formatModelPct(model.grossYieldOnPurchase, 2),
-              hint: "Potenciální nájem / kupní cena",
-            },
-            {
-              label: "Cena / m²",
-              value: formatModelCzk(model.pricePerM2Czk),
-              hint: "Z kupní ceny a plochy",
+              label: "Nepříznivý scénář",
+              value: formatModelCzk(
+                Math.round(
+                  scenarios.find((s) => s.id === "adverse")?.monthlyCashFlowCzk ?? 0
+                )
+              ),
+              hint: "Nižší nájem, vyšší výpadek, vyšší sazba",
+              tone: "neg",
             },
           ].map((k) => (
             <div
@@ -100,7 +147,16 @@ export function RentgenControlPreview() {
               <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                 {k.label}
               </p>
-              <p className="mt-1 font-heading text-xl font-bold tabular-nums text-text-dark">
+              <p
+                className={cn(
+                  "mt-1 font-heading text-2xl font-bold tabular-nums",
+                  k.tone === "neg"
+                    ? "text-red-700"
+                    : k.tone === "pos"
+                      ? "text-emerald-700"
+                      : "text-text-dark"
+                )}
+              >
                 {k.value}
               </p>
               <p className="mt-1 text-[11px] text-muted-foreground">{k.hint}</p>
@@ -108,80 +164,80 @@ export function RentgenControlPreview() {
           ))}
         </div>
 
-        <div className="mt-5 rounded-2xl border border-border bg-white p-4 shadow-sm sm:p-5">
-          <h3 className="font-semibold text-text-dark">
-            Tři modelové situace — měsíční peněžní tok
-          </h3>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Srovnání počátečních podmínek, nikoli predikce budoucnosti. Záporné
-            hodnoty jsou záměrně viditelné.
+        <div className="mt-4 flex flex-wrap gap-4 text-sm text-muted-foreground">
+          <p>
+            <span className="font-medium text-text-dark">Hrubý výnos</span>{" "}
+            {formatModelPct(model.grossYieldOnPurchase, 2)}
+            <span className="ml-1 text-[11px]">
+              (roční potenciální nájem / kupní cena)
+            </span>
           </p>
-          <div className="mt-4 h-[220px] w-full min-h-0 sm:h-[260px]">
-            {chartsReady ? (
-            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-              <BarChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#6b7280" }} />
-                <YAxis
-                  tick={{ fontSize: 11, fill: "#9ca3af" }}
-                  tickFormatter={(v: number) =>
-                    `${Math.round(v / 1000)}k`
-                  }
-                  width={40}
-                />
-                <ReferenceLine y={0} stroke="#1a1a1a" />
-                <Tooltip
-                  formatter={(v) =>
-                    formatModelCzk(typeof v === "number" ? v : Number(v), 2)
-                  }
-                />
-                <Bar dataKey="cashFlow" name="Peněžní tok / měs." radius={[6, 6, 0, 0]}>
-                  {chartData.map((row) => (
-                    <Cell
-                      key={row.name}
-                      fill={row.cashFlow >= 0 ? "#047857" : "#dc2626"}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-            ) : (
-              <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-                Načítám graf…
-              </div>
-            )}
+          <p>
+            <span className="font-medium text-text-dark">Provozní výnos po rezervě</span>{" "}
+            {formatModelPct(model.operatingYieldOnAcquisition, 2)}
+            <span className="ml-1 text-[11px]">
+              (přebytek po rezervě / pořizovací investice{" "}
+              {formatModelCzk(model.totalAcquisitionCostCzk)})
+            </span>
+          </p>
+        </div>
+
+        <div className="mt-8 rounded-2xl border border-border bg-white p-4 shadow-sm sm:p-6">
+          <h3 className="font-heading text-lg font-bold text-text-dark">
+            {cashFlowHeadline(model.monthlyCashFlowCzk)}
+          </h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Rozklad měsíčního nájmu na výdaje a výsledek. Částky v Kč/měsíc, před
+            daní z příjmů.
+          </p>
+          <div className="mt-4">
+            <RentgenWaterfallChart steps={waterfallSteps} />
           </div>
-          <div className="mt-3 overflow-x-auto">
-            <table className="w-full min-w-[320px] text-left text-xs">
-              <caption className="sr-only">
-                Měsíční peněžní tok ve třech scénářích
-              </caption>
+          <details className="mt-3">
+            <summary className="cursor-pointer text-xs font-semibold text-deep-teal">
+              Tabulka vodopádu
+            </summary>
+            <table className="mt-2 w-full text-left text-xs">
+              <caption className="sr-only">Položky měsíčního vodopádu</caption>
               <thead>
                 <tr className="border-b border-border text-muted-foreground">
-                  <th className="py-2 pr-3 font-semibold">Scénář</th>
-                  <th className="py-2 pr-3 font-semibold">Tok / měs.</th>
+                  <th className="py-1.5">Položka</th>
+                  <th className="py-1.5">Kč / měs.</th>
                 </tr>
               </thead>
               <tbody>
-                {scenarios.map((s) => (
-                  <tr key={s.id} className="border-b border-border/70">
-                    <td className="py-2 pr-3 text-text-dark">{s.label}</td>
-                    <td className="py-2 tabular-nums text-text-dark">
-                      {formatModelCzk(s.monthlyCashFlowCzk, 2)}
+                {model.monthlyWaterfall.map((w) => (
+                  <tr key={w.key} className="border-b border-border/60">
+                    <td className="py-1.5">{w.label}</td>
+                    <td className="py-1.5 tabular-nums font-medium">
+                      {formatModelCzk(w.amountCzk, 0)}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </details>
+        </div>
+
+        <div className="mt-6 rounded-2xl border border-border bg-white p-4 shadow-sm sm:p-6">
+          <h3 className="font-heading text-lg font-bold text-text-dark">
+            Tři modelové situace
+          </h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Srovnání počátečních podmínek — ne predikce ani pravděpodobnost.
+            Společná nulová osa, částky viditelné bez najetí myší.
+          </p>
+          <div className="mt-4">
+            <RentgenScenarioBars rows={scenarioRows} />
           </div>
         </div>
 
-        <p className="mt-4 rounded-xl border border-border bg-white px-4 py-3 text-sm leading-relaxed text-text-dark">
+        <p className="mt-5 text-sm leading-relaxed text-text-dark">
           {model.baseConclusionCs}
         </p>
         <p className="mt-2 text-[11px] text-muted-foreground">
-          Model verze {model.version}. Záporný tok a splácení jistiny mohou
-          existovat současně — jistina není příjem na účet.
+          Záporný tok a splácení jistiny mohou existovat současně — jistina není
+          příjem na účet. Model {model.version}.
         </p>
       </div>
     </section>

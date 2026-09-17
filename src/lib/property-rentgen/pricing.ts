@@ -46,7 +46,7 @@ export const CANONICAL_PREMIUM_ANALYSIS_PRICE_CZK = 4990;
 
 export const PROPERTY_ANALYSIS_PRICING: PropertyAnalysisPricing = {
   productId: "majetio-property-analysis-v1",
-  productName: "Podrobný rozbor",
+  productName: "Individuální rozbor",
   amountCzk: envAmount(
     "NEXT_PUBLIC_PROPERTY_ANALYSIS_PRICE_CZK",
     CANONICAL_PREMIUM_ANALYSIS_PRICE_CZK
@@ -80,22 +80,21 @@ export const PROPERTY_ANALYSIS_PRICING: PropertyAnalysisPricing = {
 
 export const DIGITAL_RENTGEN_PRICING = {
   productId: "hypotekajasne-rentgen-digital-v1",
-  productName: "Model 999 Kč",
+  productName: "Investiční rentgen",
   amountCzk: envAmount(
     "NEXT_PUBLIC_DIGITAL_RENTGEN_PRICE_CZK",
     CANONICAL_DIGITAL_RENTGEN_PRICE_CZK
   ),
   currency: "CZK" as const,
-  ctaLabel: "Poptat model",
+  ctaLabel: "Poptat Rentgen",
   summary:
-    "Rozpočet koupě, cash flow, tři scénáře, citlivost a bod zvratu — po úhradě a kompletních vstupech.",
+    "Rozpočet koupě, cash flow, tři scénáře, citlivost a bod zvratu — ze zadaných údajů.",
   includes: [
     "Cena za m² a hrubý výnos",
     "Rozpočet koupě a vlastní hotovosti",
     "Cash flow včetně provozu, úvěru a rezerv",
     "Tři scénáře, citlivost a bod zvratu",
     "Interaktivní výstup a souhrnné PDF",
-    "Automatický výklad modelu (bez lidské kontroly)",
   ],
 };
 
@@ -141,7 +140,7 @@ export const ANALYSIS_PRODUCT_TIERS: AnalysisProductTier[] = [
     id: "premium",
     name: PROPERTY_ANALYSIS_PRICING.productName,
     summary:
-      "Individuální rozbor s doloženými podklady. Navrhované dodání: 3 pracovní dny od kompletních podkladů a úhrady — veřejně jen pokud je provoz připraven.",
+      "Individuální rozbor s doloženými podklady. Termín dodání potvrdíme po kontrole rozsahu a podkladů.",
     priceCzk: PROPERTY_ANALYSIS_PRICING.amountCzk,
     priceDisplayOverride: null,
     commerciallyActive: false,
@@ -161,12 +160,10 @@ export function getAnalysisTier(): AnalysisProductTier[] {
       return {
         ...tier,
         commerciallyActive: live,
-        name: `Model ${formatDigitalRentgenPrice()}`,
+        name: DIGITAL_RENTGEN_PRICING.productName,
         deliveryExpectation: live
           ? ["Po úhradě a kompletních vstupech."]
-          : [
-              "Prodej zatím není spuštěný — použijte poptávku. Žádný fiktivní nákup.",
-            ],
+          : ["Online nákup zatím není spuštěný — můžete zanechat poptávku."],
       };
     }
     if (tier.id === "premium") {
@@ -183,7 +180,7 @@ export function getAnalysisTier(): AnalysisProductTier[] {
           : [
               live
                 ? premiumCfg.deliverySla.note
-                : "Poptávka — termín a rozsah potvrdíme až po kontrole podkladů. Neslibujeme dodání, dokud není provoz připraven.",
+                : "Poptávka — termín a rozsah potvrdíme po kontrole podkladů.",
               ...PROPERTY_ANALYSIS_PRICING.ctaNextSteps,
             ],
       };
@@ -244,7 +241,7 @@ export function rentgenPrimaryCtaLabel(tier: AnalysisProductTierId): string {
   const live = isPaidAnalysisCommerciallyAvailable();
   if (tier === "free") return "Spočítat náhled zdarma";
   if (!live) {
-    return tier === "digital" ? "Poptat model" : "Poptat rozbor";
+    return tier === "digital" ? "Poptat Rentgen" : "Poptat rozbor";
   }
   return tier === "digital"
     ? `Koupit model za ${formatDigitalRentgenPrice()}`

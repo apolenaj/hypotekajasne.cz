@@ -62,8 +62,8 @@ function buildDeliverySla(active: boolean): RentgenPremiumConfig["deliverySla"] 
       configured: true,
       label: labelOverride,
       note: active
-        ? "Termín dodání dle aktuální produkční konfigurace — potvrzení e-mailem."
-        : "Plánovaný SLA — produkt zatím není v prodeji.",
+        ? "Termín dodání potvrdíme e-mailem podle aktuální konfigurace."
+        : "Termín zveřejníme před spuštěním prodeje.",
     };
   }
 
@@ -73,8 +73,8 @@ function buildDeliverySla(active: boolean): RentgenPremiumConfig["deliverySla"] 
       configured: true,
       label,
       note: active
-        ? "Konfigurovatelné SLA — finální termín potvrdíme při objednávce."
-        : "Plánovaný SLA — zobrazuje se jen jako orientace před spuštěním.",
+        ? "Finální termín potvrdíme při objednávce."
+        : "Orientace před spuštěním — závazný termín potvrdíme až při prodeji.",
     };
   }
 
@@ -82,8 +82,8 @@ function buildDeliverySla(active: boolean): RentgenPremiumConfig["deliverySla"] 
     configured: false,
     label: null,
     note: active
-      ? "Termín dodání upřesníme individuálně při potvrzení objednávky — není hardcoded slib."
-      : "Připravujeme — SLA zveřejníme před spuštěním prodeje.",
+      ? "Termín dodání upřesníme individuálně při potvrzení objednávky."
+      : "Termín dodání zveřejníme před spuštěním prodeje.",
   };
 }
 

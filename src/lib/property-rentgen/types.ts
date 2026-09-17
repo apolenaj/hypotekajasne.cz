@@ -19,25 +19,25 @@ export const ANALYSIS_METHOD_LABELS: Record<AnalysisMethod, string> = {
 
 export const ANALYSIS_METHOD_DESCRIPTIONS: Record<AnalysisMethod, string> = {
   automated_calculation:
-    "Deterministický model z vašich vstupů a katalogových referencí.",
+    "Výpočet z vašich vstupů a zveřejněných předpokladů modelu.",
   ai_analysis:
     "Text nebo syntéza generovaná AI — vždy s limitem kvality dat.",
   human_verification:
-    "Kontrola specialistou — používáme jen pokud report skutečně prošel člověkem.",
+    "Kontrola specialistou — jen pokud výstup skutečně prošel člověkem.",
 };
 
 export const CLAIM_KIND_LABELS: Record<ClaimKind, string> = {
-  DATA: "Data",
-  MODEL: "Modelový výpočet",
-  ODHAD: "Odhad",
+  DATA: "Zadáno klientem",
+  MODEL: "Vypočteno",
+  ODHAD: "Modelový předpoklad",
   NEOVERENO: "Neověřeno",
 };
 
 export const CLAIM_KIND_DESCRIPTIONS: Record<ClaimKind, string> = {
-  DATA: "Údaj zadaný vámi nebo ověřený ze zdroje.",
-  MODEL: "Orientační model platformy — ne živá kotace ani právní posudek.",
-  ODHAD: "Hrubý odhad z dostupných vstupů; vyžaduje ověření.",
-  NEOVERENO: "Bez ověřeného zdroje — nezobrazujeme jako fakt.",
+  DATA: "Údaj, který jste zadali. Automaticky ho neoznačujeme jako ověřený ze zdroje.",
+  MODEL: "Výsledek výpočtu z vašich vstupů a předpokladů modelu.",
+  ODHAD: "Modelový předpoklad platformy — vyžaduje ověření na konkrétní nemovitosti.",
+  NEOVERENO: "Bez doloženého zdroje — nezobrazujeme jako ověřený fakt.",
 };
 
 export type ClaimedValue<T = number | string | null> = {
@@ -55,7 +55,12 @@ export type ManualPropertyInput = {
   areaM2: number | null;
   priceCzk: number | null;
   rentMonthlyCzk: number | null;
+  /** Vlastní část kupní ceny (ne celková hotovost včetně rezerv). */
   equityCzk: number | null;
+  /** Volitelná sazba úvěru (% p.a.) — pokud chybí, použije se modelový předpoklad. */
+  annualRatePercent: number | null;
+  /** Volitelná splatnost (roky) — pokud chybí, použije se modelový předpoklad. */
+  termYears: number | null;
   purpose: "investment" | "own_use" | "";
   listingUrl: string;
 };

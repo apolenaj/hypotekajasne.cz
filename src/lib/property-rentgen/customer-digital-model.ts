@@ -199,6 +199,14 @@ export function runCustomerDigitalModelFromManual(
         areaM2: input.areaM2!,
         monthlyRentCzk: input.rentMonthlyCzk!,
         equityTowardPurchaseCzk: input.equityCzk!,
+        annualRatePercent:
+          input.annualRatePercent != null && input.annualRatePercent >= 0
+            ? input.annualRatePercent
+            : undefined,
+        termYears:
+          input.termYears != null && input.termYears > 0
+            ? input.termYears
+            : undefined,
       },
       defaults
     );

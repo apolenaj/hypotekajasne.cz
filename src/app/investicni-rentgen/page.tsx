@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getStaticPageSeo } from "@/lib/seo/pages";
 import { JsonLdScript } from "@/components/seo/JsonLdScript";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
@@ -5,9 +6,7 @@ import { faqPageJsonLd } from "@/lib/seo/json-ld";
 import { crumbs } from "@/lib/seo/breadcrumbs";
 import {
   RentgenBottomCta,
-  RentgenDataTrustNote,
   RentgenFaq,
-  RentgenFourQuestions,
   RentgenHero,
   RentgenHowItWorks,
   RentgenPricing,
@@ -45,11 +44,17 @@ export default function InvesticniRentgenPage() {
 
       <RentgenHero />
       <RentgenControlPreview />
-      <RentgenFourQuestions />
-      <RentgenToolIsland />
       <RentgenPricing />
+      <Suspense
+        fallback={
+          <div className="border-b border-border bg-white py-12 text-center text-sm text-muted-foreground">
+            Načítám nástroj…
+          </div>
+        }
+      >
+        <RentgenToolIsland />
+      </Suspense>
       <RentgenHowItWorks />
-      <RentgenDataTrustNote />
       <RentgenFaq />
       <RentgenBottomCta />
       <p className="sr-only">{formatAnalysisPriceLabel()}</p>

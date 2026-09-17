@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getStaticPageSeo } from "@/lib/seo/pages";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { crumbs } from "@/lib/seo/breadcrumbs";
@@ -23,7 +24,15 @@ export default function InvesticniRentgenUkazkaPage() {
           )}
         />
       </div>
-      <RentgenUkazkaView />
+      <Suspense
+        fallback={
+          <div className="mx-auto max-w-5xl px-4 py-12 text-sm text-muted-foreground">
+            Načítám ukázku…
+          </div>
+        }
+      >
+        <RentgenUkazkaView />
+      </Suspense>
     </div>
   );
 }

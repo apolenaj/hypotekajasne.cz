@@ -23,6 +23,8 @@ export const EMPTY_MANUAL_INPUT: ManualPropertyInput = {
   priceCzk: null,
   rentMonthlyCzk: null,
   equityCzk: null,
+  annualRatePercent: null,
+  termYears: null,
   purpose: "investment",
   listingUrl: "",
 };

@@ -219,7 +219,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     path: routes.investicniRentgen,
     title: "Investiční rentgen nemovitosti",
     description:
-      "Kolik vám z nájmu skutečně zůstane? Potřebný kapitál, měsíční výsledek a rizika konkrétní nemovitosti — náhled zdarma, model a podrobný rozbor.",
+      "Kolik vám z nájmu skutečně zůstane? Potřebný kapitál, měsíční výsledek a rizika konkrétní nemovitosti — náhled zdarma, automatický Rentgen a individuální rozbor.",
     priority: 0.85,
   },
   {
