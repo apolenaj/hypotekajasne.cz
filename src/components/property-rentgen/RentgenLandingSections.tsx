@@ -104,7 +104,9 @@ export function RentgenPricing() {
             <p className="mt-4 text-xs text-muted-foreground">
               Forma: automatický model ze zadaných údajů. Dodání: po úhradě a
               kompletních vstupech
-              {!live ? " — aktuálně formou poptávky" : ""}.
+              {!live ? " — aktuálně formou poptávky" : ""}. Oprava zjevně
+              chybných vstupů v rámci objednávky; rozsah následných dotazů
+              potvrdíme při převzetí.
             </p>
             <div className="mt-5 flex flex-col gap-2 sm:flex-row lg:mt-auto lg:pt-6">
               <Link
@@ -120,6 +122,14 @@ export function RentgenPricing() {
                 {rentgenPrimaryCtaLabel("digital")}
               </Link>
             </div>
+            <p className="mt-2 text-center text-[11px] text-muted-foreground">
+              <a
+                href="/api/rentgen-sample-pdf?balicek=999"
+                className="font-semibold text-deep-teal underline-offset-2 hover:underline"
+              >
+                Stáhnout modelové PDF (8 stran)
+              </a>
+            </p>
           </article>
 
           {/* 4990 */}
@@ -147,24 +157,41 @@ export function RentgenPricing() {
               <li>· Individuálně komentovaný závěr a co ještě prověřit</li>
             </ul>
             <p className="mt-4 text-xs text-muted-foreground">
-              Forma: model + individuální práce s podklady. Dodání: po úhradě a
-              kompletních podkladech
-              {!live ? " — aktuálně formou poptávky" : ""}.
+              Forma: model + individuální práce s podklady. Dodání: termín
+              potvrdíme po kontrole rozsahu a podkladů
+              {!live ? " — aktuálně formou poptávky" : ""}. Oprava zjevně
+              chybných vstupů v rámci objednávky; následné dotazy v dohodnutém
+              rozsahu.
             </p>
             <div className="mt-5 flex flex-col gap-2 sm:flex-row lg:mt-auto lg:pt-6">
               <Link
                 href={`${routes.investicniRentgenUkazka}?balicek=4990`}
-                className="inline-flex flex-1 items-center justify-center rounded-xl border border-deep-teal/30 px-4 py-3 text-sm font-bold text-deep-teal"
+                className="inline-flex flex-1 items-center justify-center rounded-xl bg-deep-teal px-4 py-3 text-sm font-bold text-white"
               >
-                Ukázka výstupu
+                Prohlédnout celý modelový rozbor
               </Link>
               <Link
                 href={`${routes.investicniRentgen}?balicek=4990#premium-objednavka`}
-                className="inline-flex flex-1 items-center justify-center rounded-xl bg-deep-teal px-4 py-3 text-sm font-bold text-white"
+                className="inline-flex flex-1 items-center justify-center rounded-xl border border-deep-teal/30 px-4 py-3 text-sm font-bold text-deep-teal"
               >
                 {rentgenPrimaryCtaLabel("premium")}
               </Link>
             </div>
+            <p className="mt-2 text-center text-[11px] text-muted-foreground">
+              <a
+                href="/api/rentgen-sample-pdf?balicek=4990"
+                className="font-semibold text-deep-teal underline-offset-2 hover:underline"
+              >
+                Stáhnout modelové PDF (~30 stran)
+              </a>
+              {" · "}
+              <Link
+                href={`${routes.investicniRentgenUkazka}?balicek=4990`}
+                className="underline-offset-2 hover:underline"
+              >
+                Ukázka na webu
+              </Link>
+            </p>
           </article>
         </div>
 

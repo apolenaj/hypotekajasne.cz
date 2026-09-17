@@ -191,7 +191,7 @@ export function validateControlModelInputs(input: ControlModelInputs): void {
   }
 }
 
-function otherAnnualCosts(input: ControlModelInputs): number {
+export function otherAnnualCosts(input: ControlModelInputs): number {
   return (
     input.ownerBuildingCostsAnnualCzk +
     input.insuranceAnnualCzk +

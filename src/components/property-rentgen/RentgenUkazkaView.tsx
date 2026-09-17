@@ -24,6 +24,14 @@ import {
   type RentgenSamplePackageId,
 } from "@/lib/property-rentgen";
 import {
+  CASE_STUDY_LABEL_CS,
+  buildCaseStudyBundle,
+} from "@/lib/property-rentgen/case-study-analytics";
+import {
+  DIGITAL_SAMPLE_PAGE_COUNT,
+  PREMIUM_SAMPLE_PAGE_COUNT,
+} from "@/lib/property-rentgen/sample-pdf-meta";
+import {
   buildMonthlyWaterfallSteps,
   RentgenScenarioBars,
   RentgenWaterfallChart,
@@ -96,31 +104,31 @@ function Section({
   );
 }
 
-function EvidenceTablePremium() {
+function EvidenceTablePremium({ generatedAt }: { generatedAt: string }) {
   const rows = [
     {
       field: "List vlastnictví",
-      value: "—",
-      source: "—",
+      value: "neznámo",
+      source: "neznámo",
       date: "—",
-      status: "v této modelové ukázce nezjišťováno",
+      status: "chybí — v omezeních rozboru",
       impact: "Bez LV nepotvrzujeme vlastnictví ani absenci omezení.",
     },
     {
       field: "Technická prohlídka",
-      value: "—",
-      source: "—",
+      value: "neznámo",
+      source: "neznámo",
       date: "—",
-      status: "v této modelové ukázce nezjišťováno",
-      impact: "Odhad oprav není zjištěný stav.",
+      status: "chybí — v omezeních rozboru",
+      impact: "Odhad oprav není zjištěný stav bytu.",
     },
     {
-      field: "Srovnání místních nabídek",
-      value: "Ukázková šablona",
-      source: "veřejné inzeráty",
-      date: "doplní se při reálném rozboru",
-      status: "v této modelové ukázce nezjišťováno",
-      impact: "Nabídkové ceny ≠ realizované prodeje.",
+      field: "Srovnání nabídek",
+      value: "syntetická sada (5+5)",
+      source: "modelový podklad pro demonstraci",
+      date: generatedAt,
+      status: "syntetická srovnávací sada",
+      impact: "Neprokazuje skutečnou cenovou úroveň trhu.",
     },
     {
       field: "Kupní cena (vstup)",
@@ -129,6 +137,14 @@ function EvidenceTablePremium() {
       date: CONTROL_MODEL_VERSION,
       status: "modelový předpoklad",
       impact: "Základ všech výpočtů.",
+    },
+    {
+      field: "Nájem bez záloh",
+      value: formatModelCzk(CONTROL_MODEL_INPUTS.monthlyRentCzk),
+      source: "zadáno v modelu",
+      date: CONTROL_MODEL_VERSION,
+      status: "modelový předpoklad",
+      impact: "Citlivý vstup — srovnání nájmů v PDF.",
     },
   ];
 
@@ -203,6 +219,7 @@ function ModelBody({
   pkg: RentgenSamplePackageId;
 }) {
   const scenarios = useMemo(() => runControlScenarios(), []);
+  const caseStudy = useMemo(() => buildCaseStudyBundle(model.inputs), [model.inputs]);
   const waterfallSteps = useMemo(
     () => buildMonthlyWaterfallSteps(model.monthlyWaterfall),
     [model.monthlyWaterfall]
@@ -524,41 +541,68 @@ function ModelBody({
       <Section id="podklady" title="Podklady a rizika">
         {pkg === "premium" ? (
           <>
-            <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-              <p className="font-semibold">
-                Ukázka rozsahu individuálního rozboru — v této ukázce
-                neprovedeno
-              </p>
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+              <p className="font-semibold">{CASE_STUDY_LABEL_CS}</p>
               <p className="mt-1 text-amber-900/90">
-                Níže nejsou výsledky skutečného průzkumu ani ověření dokumentů.
-                Ukazují strukturu zjištění po dodání podkladů. Nevydávejte tuto
-                sekci za hotový placený rozbor.
+                Dokončený modelový rozbor se syntetickou srovnávací sadou.
+                Neprokazuje skutečnou cenovou úroveň trhu. Plný text je v PDF (
+                {PREMIUM_SAMPLE_PAGE_COUNT} stran).
               </p>
             </div>
             <p className="text-sm font-semibold text-text-dark">
-              Co individuální rozbor přidává oproti automatickému modelu
+              Co tento rozbor přidává oproti automatickému modelu
+            </p>
+            <ul className="space-y-1 text-sm text-muted-foreground">
+              {caseStudy.whatPremiumAddsCs.map((line) => (
+                <li key={line}>· {line}</li>
+              ))}
+            </ul>
+            <p className="mt-4 text-sm font-semibold text-text-dark">
+              Individuální zjištění (výběr)
             </p>
             <div className="space-y-3">
-              <FindingCard
-                podklad="Veřejné inzeráty v lokalitě (se zdrojem a datem)"
-                zjisteni="V ukázce neprovedeno — při reálném rozboru doplníme srovnání nabídek."
-                dopad="Bez srovnání nelze posoudit, zda je zadaný nájem a cena realistické."
-                proverit="Aktuální nabídkové nájmy a prodejní ceny ve stejném segmentu."
-              />
-              <FindingCard
-                podklad="Dodané doklady (smlouva, předpis SVJ, nájemní smlouva…)"
-                zjisteni="V ukázce neprovedeno — rozsah závisí na tom, co skutečně dodáte."
-                dopad="Chybějící podklady = neověřené předpoklady příjmů a výdajů."
-                proverit="Skutečné platby SVJ, plánované investice, stav bytu."
-              />
-              <FindingCard
-                podklad="Model cash flow z vašich čísel"
-                zjisteni="Stejný automatický model jako u výstupu za 999 Kč."
-                dopad="Individuální komentář vysvětlí citlivá místa modelu."
-                proverit="Otázky k prodávajícímu a bankovní podmínky."
-              />
+              {caseStudy.findings.slice(0, 5).map((f) => (
+                <FindingCard
+                  key={f.id}
+                  podklad={f.podklad}
+                  zjisteni={f.zjisteni}
+                  dopad={f.dopad}
+                  proverit={f.overit}
+                />
+              ))}
             </div>
-            <EvidenceTablePremium />
+            <p className="mt-4 text-sm font-semibold text-text-dark">
+              Syntetické nájemní nabídky (ukázka)
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[480px] text-left text-xs">
+                <thead>
+                  <tr className="border-b border-border text-muted-foreground">
+                    <th className="py-2">Nabídka</th>
+                    <th className="py-2">m²</th>
+                    <th className="py-2">Nájem</th>
+                    <th className="py-2">Poznámka</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {caseStudy.rentListings.map((l) => (
+                    <tr key={l.id} className="border-b border-border/70">
+                      <td className="py-1.5">{l.label}</td>
+                      <td className="py-1.5 tabular-nums">{l.areaM2}</td>
+                      <td className="py-1.5 tabular-nums">
+                        {formatModelCzk(l.priceOrRentCzk)}
+                      </td>
+                      <td className="py-1.5 text-muted-foreground">{l.notes}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-2 text-[11px] text-muted-foreground">
+              {caseStudy.rentListings[0]?.sourceNote} · Datum sady{" "}
+              {caseStudy.generatedAt}.
+            </p>
+            <EvidenceTablePremium generatedAt={caseStudy.generatedAt} />
           </>
         ) : (
           <div className="space-y-3 text-sm text-muted-foreground">
@@ -567,13 +611,14 @@ function ModelBody({
                 Rozsah výstupu za {formatDigitalRentgenPrice()}
               </strong>
               : rozpočet hotovosti, cash flow, scénáře, citlivost, bod zvratu a
-              PDF z vašich čísel a modelových předpokladů. Automatický výklad —
-              bez dohledání nabídek a bez rozboru dokumentů.
+              PDF ({DIGITAL_SAMPLE_PAGE_COUNT} stran) z vašich čísel a
+              modelových předpokladů. Automatický výklad — bez dohledání nabídek
+              a bez rozboru dokumentů.
             </p>
             <p>
               Přepněte na výstup za {formatAnalysisPrice()}, abyste viděli
-              strukturu individuálních zjištění (podklad → zjištění → dopad → co
-              prověřit).
+              dokončená individuální zjištění a syntetické srovnání z modelového
+              rozboru ({PREMIUM_SAMPLE_PAGE_COUNT} stran PDF).
             </p>
           </div>
         )}
@@ -658,8 +703,8 @@ export function RentgenUkazkaView() {
               Právě prohlížíte:{" "}
               <strong className="text-text-dark">
                 {pkg === "premium"
-                  ? `Individuální rozbor (${formatAnalysisPrice()})`
-                  : `Investiční rentgen (${formatDigitalRentgenPrice()})`}
+                  ? `Individuální rozbor (${formatAnalysisPrice()}) · ${PREMIUM_SAMPLE_PAGE_COUNT} stran A4`
+                  : `Investiční rentgen (${formatDigitalRentgenPrice()}) · ${DIGITAL_SAMPLE_PAGE_COUNT} stran A4`}
               </strong>
             </p>
           </div>
@@ -711,16 +756,21 @@ export function RentgenUkazkaView() {
 
         <div className="mt-4 flex flex-wrap gap-3">
           <a
-            href="/api/rentgen-sample-pdf"
+            href={`/api/rentgen-sample-pdf?balicek=${packageQueryValue(pkg)}`}
             className="inline-flex rounded-xl bg-deep-teal px-4 py-2.5 text-sm font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-muted-gold"
             onClick={() =>
               track("primary_cta_clicked", {
                 tool_id: "investicni_rentgen_ukazka",
-                cta_id: "sample_pdf_download",
+                cta_id:
+                  pkg === "premium"
+                    ? "sample_pdf_premium_download"
+                    : "sample_pdf_digital_download",
               })
             }
           >
-            Stáhnout ukázkový rozbor PDF
+            {pkg === "premium"
+              ? `Stáhnout individuální rozbor PDF (${PREMIUM_SAMPLE_PAGE_COUNT} stran)`
+              : `Stáhnout automatický model PDF (${DIGITAL_SAMPLE_PAGE_COUNT} stran)`}
           </a>
           <Link
             href={`${routes.investicniRentgen}?balicek=${packageQueryValue(pkg)}#premium-objednavka`}
@@ -735,6 +785,118 @@ export function RentgenUkazkaView() {
             Spočítat náhled zdarma
           </Link>
         </div>
+
+        {pkg === "premium" ? (
+          <div className="mt-6">
+            <p className="text-sm font-semibold text-text-dark">
+              Náhledy stran z modelového PDF
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Skutečné stránky vygenerovaného dokumentu (ne ilustrace).
+            </p>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                {
+                  title: "Rozhodovací shrnutí",
+                  body: "Hlavní zjištění a co rozbor přidává oproti automatickému modelu.",
+                  src: "/rentgen-sample-previews/premium-p02.png",
+                  page: 2,
+                },
+                {
+                  title: "Srovnání nájmů",
+                  body: "Syntetická sada nabídek — výslovně neprokazuje tržní průměr.",
+                  src: "/rentgen-sample-previews/premium-p08.png",
+                  page: 8,
+                },
+                {
+                  title: "Citlivost a stres",
+                  body: "Matice nájem×sazba a průběh rezervy při prázdném bytě.",
+                  src: "/rentgen-sample-previews/premium-p19.png",
+                  page: 19,
+                },
+                {
+                  title: "Individuální zjištění",
+                  body: "Podklad → zjištění → dopad → co ověřit.",
+                  src: "/rentgen-sample-previews/premium-p23.png",
+                  page: 23,
+                },
+              ].map((card) => (
+                <figure
+                  key={card.title}
+                  className="overflow-hidden rounded-xl border border-border bg-[#f7f9f8]"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={card.src}
+                    alt={`Strana ${card.page} — ${card.title}`}
+                    className="aspect-[210/297] w-full object-cover object-top bg-white"
+                  />
+                  <figcaption className="px-3 py-2">
+                    <p className="text-sm font-semibold text-deep-teal">
+                      {card.title}
+                      <span className="ml-1 font-normal text-muted-foreground">
+                        · s. {card.page}
+                      </span>
+                    </p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {card.body}
+                    </p>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="mt-6">
+            <p className="text-sm font-semibold text-text-dark">
+              Náhledy stran z automatického PDF
+            </p>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                {
+                  title: "Shrnutí výsledků",
+                  src: "/rentgen-sample-previews/digital-p01.png",
+                  page: 1,
+                },
+                {
+                  title: "Vstupy a rozpočet",
+                  src: "/rentgen-sample-previews/digital-p02.png",
+                  page: 2,
+                },
+                {
+                  title: "Scénáře",
+                  src: "/rentgen-sample-previews/digital-p04.png",
+                  page: 4,
+                },
+                {
+                  title: "Citlivost",
+                  src: "/rentgen-sample-previews/digital-p06.png",
+                  page: 6,
+                },
+              ].map((card) => (
+                <figure
+                  key={card.title}
+                  className="overflow-hidden rounded-xl border border-border bg-[#f7f9f8]"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={card.src}
+                    alt={`Strana ${card.page} — ${card.title}`}
+                    className="aspect-[210/297] w-full object-cover object-top bg-white"
+                  />
+                  <figcaption className="px-3 py-2">
+                    <p className="text-sm font-semibold text-deep-teal">
+                      {card.title}
+                      <span className="ml-1 font-normal text-muted-foreground">
+                        · s. {card.page}
+                      </span>
+                    </p>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+        )}
 
         <ModelBody model={model} pkg={pkg} />
       </div>
