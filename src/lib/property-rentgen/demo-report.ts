@@ -1,33 +1,33 @@
+/** FAQ — krátké nákupní otázky, bez interního žargonu. */
+export const RENTGEN_FAQ: { q: string; a: string }[] = [
+  {
+    q: "Co potřebuji k výpočtu?",
+    a: "Kupní cena, plocha, nájem, vlastní kapitál a základní předpoklady financování. URL inzerátu je volitelná reference — obsah automaticky neověřujeme.",
+  },
+  {
+    q: "Co když nemám všechny podklady?",
+    a: "Náhled spočítá to, co zadáte, a chybějící fakta neoznačí jako ověřená. Podrobný rozbor bez dokumentů nepotvrdí vlastnictví, technický stav ani absenci omezení.",
+  },
+  {
+    q: "Jaký je rozdíl mezi modelem za {{DIGITAL_PRICE}} a rozborem za {{PRICE}}?",
+    a: "Model dodá rozpočet, cash flow, scénáře a PDF z vašich vstupů. Rozbor navíc dohledá místní nabídky (s datem), projde dodané dokumenty v zajištěném rozsahu a doplní individuální závěr — bez automatického verdiktu kupte/nekupte.",
+  },
+  {
+    q: "Jak rychle dostanu výsledek?",
+    a: "Náhled ihned. Model po úhradě a kompletních vstupech — až bude prodej aktivní. Podrobný rozbor navrhovaně do 3 pracovních dnů od kompletních podkladů a úhrady; veřejný termín uvádíme jen pokud provoz toto plnění skutečně drží.",
+  },
+  {
+    q: "Odkud berete srovnání nabídek?",
+    a: "Jen z dohledaných veřejných zdrojů s odkazem a datem. Přiznáme, když dat není dost. Nabídkové ceny nejsou realizované prodeje.",
+  },
+  {
+    q: "Je výstup investiční doporučení?",
+    a: "Ne. Jde o model a doložené výpočty. Finální rozhodnutí a schválení úvěru je na vás a bance.",
+  },
+];
+
 export {
   ANONYMOUS_SAMPLE_REPORT,
   ANONYMOUS_DEMO_REPORT,
   SAMPLE_REPORT_SECTION_TITLES,
 } from "@/lib/property-rentgen/sample-report";
-
-/** Krátké nákupní FAQ — ne metodická dokumentace. */
-export const RENTGEN_FAQ: { q: string; a: string }[] = [
-  {
-    q: "Co potřebuji k analýze?",
-    a: "Základ: lokalita, typ nemovitosti, kupní cena, plocha, nájem a vlastní kapitál. URL inzerátu je volitelná reference — obsah automaticky neověřujeme.",
-  },
-  {
-    q: "Jaký je rozdíl mezi Rentgenem za {{DIGITAL_PRICE}} a analýzou za {{PRICE}}?",
-    a: "Rentgen je digitální modelový dashboard během několika minut. Kompletní analýza za {{PRICE}} je hloubkový elektronický report konkrétní investice (ekonomika, scénáře, rizika, checklist) — ne investiční verdikt kupte/nekupte.",
-  },
-  {
-    q: "Jaké údaje jsou ověřené?",
-    a: "Ověřené jsou jen údaje, které zadáte vy, nebo které máme z katalogu s uvedeným zdrojem. Modelové výpočty a odhady vždy označujeme. Neověřená fakta nevydáváme za jistotu.",
-  },
-  {
-    q: "Umíte analyzovat inzerát pouze z URL?",
-    a: "URL můžete uložit jako odkaz. Automatické stažení a ověření všech dat z inzerátu zatím neprovádíme — klíčové údaje doplňte ručně.",
-  },
-  {
-    q: "Je výstup investiční doporučení?",
-    a: "Ne. Jde o modelový analytický nástroj. Finální rozhodnutí a posouzení financování je na vás a případně na bance / poradci.",
-  },
-  {
-    q: "Jak rychle dostanu kompletní report?",
-    a: "Bezplatný náhled ihned. Digitální Rentgen po aktivaci checkoutu. Kompletní analýza za {{PRICE}} se dodává elektronicky — termín potvrdíme při objednávce (bez hardcoded slibu, dokud není SLA nastavené v konfiguraci).",
-  },
-];

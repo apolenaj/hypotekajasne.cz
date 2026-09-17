@@ -18,13 +18,8 @@ describe("PROPERTY_ANALYSIS_PRICING", () => {
     assert.equal(PROPERTY_ANALYSIS_PRICING.amountCzk, 4990);
     assert.match(formatAnalysisPrice(), /4[\s\u00a0\u202f]?990\s*Kč/);
     assert.ok(!formatAnalysisPrice().includes("/"));
-    assert.ok(
-      formatAnalysisPriceLabel().includes("Kompletní analýza nemovitosti")
-    );
-    assert.equal(
-      PROPERTY_ANALYSIS_PRICING.ctaLabel,
-      "Objednat kompletní analýzu"
-    );
+    assert.ok(formatAnalysisPriceLabel().includes("Podrobný rozbor"));
+    assert.equal(PROPERTY_ANALYSIS_PRICING.ctaLabel, "Poptat rozbor");
   });
 
   it("exposes free / digital 999 / premium 4990 without inventing advanced SKU", () => {

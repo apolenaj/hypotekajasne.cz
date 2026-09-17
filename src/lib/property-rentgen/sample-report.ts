@@ -159,8 +159,8 @@ const SECTIONS: SampleReportSection[] = [
     "Data quality",
     "free",
     "automated_calculation",
-    "Skóre completeness vstupů — ne kvalita nemovitosti.",
-    "DEMO profil: vysoká completeness (cena, plocha, nájem, kapitál).",
+    "Skóre úplnosti vstupů — ne kvalita nemovitosti.",
+    "DEMO profil: vysoká úplnost (cena, plocha, nájem, kapitál).",
     ["Chybějící pole snižují spolehlivost modelu."],
     "MODEL"
   ),

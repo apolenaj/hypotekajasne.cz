@@ -1,4 +1,3 @@
-import type { MetadataRoute } from "next";
 import {
   buildSitemapBucket,
   type SitemapBucketId,
@@ -55,9 +54,4 @@ ${entries
       "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
     },
   });
-}
-
-/** Type helper for MetadataRoute consumers / tests */
-export function asMetadataSitemap(id: SitemapBucketId): MetadataRoute.Sitemap {
-  return buildSitemapBucket(id);
 }

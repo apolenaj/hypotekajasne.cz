@@ -13,6 +13,7 @@ export const routes = {
   oNas: "/o-nas",
   pruvodceInvestora: "/pruvodce-investora",
   investicniRentgen: "/investicni-rentgen",
+  investicniRentgenUkazka: "/investicni-rentgen/ukazka",
   investicniRentgenModelar: "/investicni-rentgen/modelar",
   investicniRentgenPorovnani: "/investicni-rentgen/porovnani",
   investicniPas: "/investicni-pas",

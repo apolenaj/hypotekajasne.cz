@@ -18,10 +18,16 @@ import {
   buildFreePreview,
   formatAnalysisPrice,
   formatAnalysisPriceLabel,
+  formatDigitalRentgenPrice,
   getRentgenPremiumConfig,
   type ManualPropertyInput,
   type RentgenInputMode,
 } from "@/lib/property-rentgen";
+import {
+  formatModelCzk,
+  formatModelPct,
+} from "@/lib/property-rentgen/control-model";
+import { runCustomerDigitalModelFromManual } from "@/lib/property-rentgen/customer-digital-model";
 import { submitLead } from "@/lib/leads";
 import { routes } from "@/lib/routes";
 import { cn, formatNumber, parseNumber } from "@/lib/utils";
@@ -142,6 +148,10 @@ export function RentgenToolIsland() {
     () => (ran ? buildFreePreview(input, mode) : null),
     [ran, input, mode]
   );
+  const digitalModel = useMemo(
+    () => (ran ? runCustomerDigitalModelFromManual(input) : null),
+    [ran, input]
+  );
 
   useEffect(() => {
     if (startedRef.current) return;
@@ -243,7 +253,9 @@ export function RentgenToolIsland() {
     setPremiumLoading(false);
     setPremiumMsg(
       res.ok
-        ? "Poptávka odeslána. Ozveme se s potvrzením rozsahu a postupem dodání detailní analýzy."
+        ? premiumCfg.commerciallyActive
+          ? "Poptávka odeslána. Ozveme se s potvrzením rozsahu a postupem dodání."
+          : "Poptávka uložena. Placené balíčky zatím nejsou v prodeji — ozveme se s potvrzením, až bude plnění připravené. Toto není platba ani objednávka s termínem dodání."
         : res.error
     );
     if (res.ok) {
@@ -535,42 +547,72 @@ export function RentgenToolIsland() {
                   </div>
                 ) : null}
 
-                {preview.modelCashFlow ? (
-                  <div className="rounded-xl border border-border bg-[#f7f8f7] p-3">
-                    <div className="flex items-center justify-between gap-2">
+                {digitalModel?.ok ? (
+                  <div className="rounded-xl border border-deep-teal/30 bg-[#f4f7f6] p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                       <p className="text-xs font-semibold uppercase text-muted-foreground">
-                        Modelové cash flow / měs.
+                        Model cash flow z vašich vstupů
                       </p>
                       <ClaimBadge kind="MODEL" />
                     </div>
-                    <dl className="mt-2 grid grid-cols-2 gap-2 text-xs">
-                      <div>
-                        <dt className="text-muted-foreground">Nájem</dt>
-                        <dd className="font-semibold tabular-nums">
-                          {preview.modelCashFlow.monthlyRent.value?.toLocaleString("cs-CZ") ?? "—"} Kč
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-muted-foreground">Splátka (model)</dt>
-                        <dd className="font-semibold tabular-nums">
-                          {preview.modelCashFlow.monthlyMortgageModel.value?.toLocaleString("cs-CZ") ?? "—"} Kč
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-muted-foreground">Provoz (model)</dt>
-                        <dd className="font-semibold tabular-nums">
-                          {preview.modelCashFlow.monthlyOpsModel.value?.toLocaleString("cs-CZ") ?? "—"} Kč
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-muted-foreground">Netto (model)</dt>
-                        <dd className="font-bold tabular-nums text-deep-teal">
-                          {preview.modelCashFlow.netMonthlyModel.value?.toLocaleString("cs-CZ") ?? "—"} Kč
-                        </dd>
-                      </div>
-                    </dl>
-                    <p className="mt-2 text-[11px] text-muted-foreground">
-                      {preview.modelCashFlow.note}
+                    <p className="mt-1 text-[11px] text-muted-foreground">
+                      Spočteno modulem {digitalModel.modelVersion} z vámi zadané
+                      ceny, plochy, nájmu a kapitálu — ne z ukázkového dema.
+                    </p>
+                    <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      {[
+                        [
+                          "Vlastní hotovost vč. rezervy",
+                          formatModelCzk(
+                            digitalModel.result.totalOwnCashIncludingReserveCzk
+                          ),
+                        ],
+                        [
+                          "Tok / měs.",
+                          formatModelCzk(
+                            digitalModel.result.monthlyCashFlowCzk,
+                            2
+                          ),
+                        ],
+                        [
+                          "Hrubý výnos",
+                          formatModelPct(
+                            digitalModel.result.grossYieldOnPurchase,
+                            2
+                          ),
+                        ],
+                        [
+                          "Cena / m²",
+                          formatModelCzk(digitalModel.result.pricePerM2Czk),
+                        ],
+                      ].map(([l, v]) => (
+                        <div key={l}>
+                          <p className="text-[10px] text-muted-foreground">{l}</p>
+                          <p className="font-semibold tabular-nums text-text-dark">
+                            {v}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                    <ul className="mt-3 space-y-1 text-[11px] text-muted-foreground">
+                      {digitalModel.assumptionNotesCs.slice(0, 3).map((n) => (
+                        <li key={n}>· {n}</li>
+                      ))}
+                    </ul>
+                    <a
+                      href={`/api/rentgen-sample-pdf?source=customer&price=${input.priceCzk}&area=${input.areaM2}&rent=${input.rentMonthlyCzk}&equity=${input.equityCzk}`}
+                      className="mt-3 inline-flex text-xs font-semibold text-deep-teal underline-offset-2 hover:underline"
+                    >
+                      Stáhnout PDF z těchto vstupů (model)
+                    </a>
+                  </div>
+                ) : digitalModel && !digitalModel.ok ? (
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-950">
+                    <p className="font-semibold">Pro plný model cash flow</p>
+                    <p className="mt-1">{digitalModel.messageCs}</p>
+                    <p className="mt-1 text-amber-900/80">
+                      Náhled zdarma výše zůstává. Model {formatDigitalRentgenPrice()}{" "}
+                      počítá až z kompletních vstupů — ne z ukázkových čísel.
                     </p>
                   </div>
                 ) : null}
@@ -578,7 +620,7 @@ export function RentgenToolIsland() {
                 <div>
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase text-muted-foreground">
-                      Financing fit
+                      Orientace financování
                     </p>
                     <ClaimBadge kind={preview.financingFit.kind} />
                   </div>
@@ -590,7 +632,7 @@ export function RentgenToolIsland() {
                 <div>
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase text-muted-foreground">
-                      Data quality
+                      Úplnost vstupů
                     </p>
                     <ClaimBadge kind="MODEL" />
                   </div>
@@ -599,6 +641,10 @@ export function RentgenToolIsland() {
                     <span className="ml-2 text-sm font-normal text-muted-foreground">
                       {preview.dataQuality.label}
                     </span>
+                  </p>
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    Skóre úplnosti zadaných polí — ne kvalita ani doporučení
+                    nemovitosti.
                   </p>
                   {preview.dataQuality.missingFields.length > 0 ? (
                     <p className="mt-1 text-xs text-muted-foreground">
@@ -609,7 +655,7 @@ export function RentgenToolIsland() {
 
                 <div>
                   <p className="text-xs font-semibold uppercase text-amber-800">
-                    Warning signals
+                    Signály k ověření
                   </p>
                   <ul className="mt-2 space-y-2">
                     {preview.warningSignals.map((f) => (
@@ -637,16 +683,16 @@ export function RentgenToolIsland() {
               className="mt-6 scroll-mt-28 rounded-xl border border-muted-gold/40 bg-muted-gold/10 p-4"
             >
               <p className="text-sm font-bold text-text-dark">
-                Zájem o Rentgen / kompletní analýzu
+                Zájem o model nebo podrobný rozbor
               </p>
               {!premiumCfg.commerciallyActive ? (
                 <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                  Placené vrstvy připravujeme. Zanechte kontakt — ozveme se po
-                  spuštění. Nejde o platbu ani o fake checkout.
+                  Placené balíčky zatím nejsou v prodeji. Zanechte kontakt —
+                  ozveme se, až bude plnění připravené. Toto není platba.
                 </p>
               ) : (
                 <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                  Digitální Rentgen nebo kompletní analýza za{" "}
+                  Model {formatDigitalRentgenPrice()} nebo podrobný rozbor{" "}
                   {formatAnalysisPrice()}. Elektronický výstup — ne investiční
                   doporučení.
                 </p>

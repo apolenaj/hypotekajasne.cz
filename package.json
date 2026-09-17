@@ -17,7 +17,7 @@
     "test:decision-lab": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/decision-lab/decision-lab.test.ts",
     "test:readiness": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/mortgage-readiness/mortgage-readiness.test.ts",
     "test:matching": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/market-matching/market-matching.test.ts",
-    "test:rentgen": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/property-rentgen/property-rentgen.test.ts src/lib/property-rentgen/rentgen-math-engine.test.ts src/lib/property-rentgen/checkout-metadata.test.ts",
+    "test:rentgen": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/property-rentgen/property-rentgen.test.ts src/lib/property-rentgen/rentgen-math-engine.test.ts src/lib/property-rentgen/checkout-metadata.test.ts src/lib/property-rentgen/control-model.test.ts",
     "test:majetio": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/majetio/majetio.test.ts",
     "test:academy": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/academy/academy.test.ts",
     "test:academy-gamification": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/academy/gamification/gamification.test.ts",

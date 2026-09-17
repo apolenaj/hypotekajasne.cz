@@ -14,3 +14,12 @@ export {
   runPremiumRentgenAudit,
   simulateRateShock,
 } from "@/lib/property-rentgen/rentgen-math-engine";
+export {
+  CONTROL_MODEL_INPUTS,
+  CONTROL_MODEL_VERSION,
+  CONTROL_SCENARIOS,
+  formatModelCzk,
+  formatModelPct,
+  runControlModel,
+  runControlScenarios,
+} from "@/lib/property-rentgen/control-model";

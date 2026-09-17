@@ -62,11 +62,11 @@ function buildDataQuality(input: ManualPropertyInput): DataQualityIndicator {
     band,
     label:
       band === "high"
-        ? "Vysoká completeness vstupů"
+        ? "Vstupy jsou téměř kompletní"
         : band === "medium"
-          ? "Střední completeness — doplněním zlepšíte model"
+          ? "Střední úplnost vstupů — doplněním zlepšíte model"
           : band === "low"
-            ? "Nízká completeness — výsledky orientační"
+            ? "Nízká úplnost vstupů — výsledky jsou orientační"
             : "Nedostatek vstupů",
     filledFields,
     missingFields,

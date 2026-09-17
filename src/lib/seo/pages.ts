@@ -219,8 +219,15 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     path: routes.investicniRentgen,
     title: "Investiční rentgen nemovitosti",
     description:
-      "Než investujete miliony, prověřte čísla. Výnos, cash flow, financování a rizika konkrétní nemovitosti — náhled zdarma, digitální Rentgen a kompletní analýza.",
+      "Kolik vám z nájmu skutečně zůstane? Potřebný kapitál, měsíční výsledek a rizika konkrétní nemovitosti — náhled zdarma, model a podrobný rozbor.",
     priority: 0.85,
+  },
+  {
+    path: routes.investicniRentgenUkazka,
+    title: "Ukázka Investičního rentgenu — modelový rozbor",
+    description:
+      "Veřejná ukázka výstupu: smyšlená nemovitost, přesně spočtené vstupy. Shrnutí, scénáře, financování a metodika bez registrace.",
+    priority: 0.7,
   },
   {
     path: routes.investicniRentgenModelar,
