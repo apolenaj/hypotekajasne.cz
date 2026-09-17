@@ -7,6 +7,10 @@ import {
   withAnalysisPrice,
   RENTGEN_FAQ,
 } from "@/lib/property-rentgen";
+import {
+  DIGITAL_SAMPLE_PAGE_COUNT,
+  PREMIUM_SAMPLE_PAGE_COUNT,
+} from "@/lib/property-rentgen/sample-pdf-meta";
 import { routes } from "@/lib/routes";
 import { legalOperator } from "@/config/legal";
 
@@ -127,7 +131,7 @@ export function RentgenPricing() {
                 href="/api/rentgen-sample-pdf?balicek=999"
                 className="font-semibold text-deep-teal underline-offset-2 hover:underline"
               >
-                Stáhnout modelové PDF (8 stran)
+                Stáhnout modelové PDF ({DIGITAL_SAMPLE_PAGE_COUNT} stran)
               </a>
             </p>
           </article>
@@ -182,7 +186,7 @@ export function RentgenPricing() {
                 href="/api/rentgen-sample-pdf?balicek=4990"
                 className="font-semibold text-deep-teal underline-offset-2 hover:underline"
               >
-                Stáhnout modelové PDF (~30 stran)
+                Stáhnout modelové PDF ({PREMIUM_SAMPLE_PAGE_COUNT} stran)
               </a>
               {" · "}
               <Link

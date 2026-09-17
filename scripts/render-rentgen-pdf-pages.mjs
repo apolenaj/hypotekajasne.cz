@@ -19,7 +19,7 @@ const JOBS = [
   {
     pdf: path.join(ROOT, "tmp", "rentgen-pdfs", "premium-4990.pdf"),
     prefix: "premium",
-    previewPages: [2, 8, 18, 24],
+    previewPages: [2, 10, 15, 20],
   },
 ];
 

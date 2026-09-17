@@ -124,11 +124,11 @@ function EvidenceTablePremium({ generatedAt }: { generatedAt: string }) {
     },
     {
       field: "Srovnání nabídek",
-      value: "syntetická sada (5+5)",
-      source: "modelový podklad pro demonstraci",
+      value: "veřejné nabídky Brno-Židenice",
+      source: "inzeráty se URL a datem přístupu",
       date: generatedAt,
-      status: "syntetická srovnávací sada",
-      impact: "Neprokazuje skutečnou cenovou úroveň trhu.",
+      status: "veřejná nabídka — ne realizovaný prodej",
+      impact: "Nabídkové ceny ≠ tržní hodnota modelu.",
     },
     {
       field: "Kupní cena (vstup)",
@@ -544,10 +544,37 @@ function ModelBody({
             <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
               <p className="font-semibold">{CASE_STUDY_LABEL_CS}</p>
               <p className="mt-1 text-amber-900/90">
-                Dokončený modelový rozbor se syntetickou srovnávací sadou.
-                Neprokazuje skutečnou cenovou úroveň trhu. Plný text je v PDF (
-                {PREMIUM_SAMPLE_PAGE_COUNT} stran).
+                Modelový byt v lokalitě Brno-Židenice. Srovnání vychází z
+                veřejných nabídek se zdrojem a datem. Modelové podklady jsou
+                výslovně označené. Plný rozbor: PDF ({PREMIUM_SAMPLE_PAGE_COUNT}{" "}
+                stran).
               </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-xl border border-border bg-white px-4 py-3">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  Původní zadání
+                </p>
+                <p className="mt-1 text-lg font-bold tabular-nums text-text-dark">
+                  {formatModelCzk(caseStudy.originalModel.monthlyCashFlowCzk, 0)}
+                  <span className="text-sm font-normal text-muted-foreground">
+                    {" "}
+                    / měs.
+                  </span>
+                </p>
+              </div>
+              <div className="rounded-xl border border-deep-teal/30 bg-[#f7f9f8] px-4 py-3">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-deep-teal">
+                  Po zpracování podkladů
+                </p>
+                <p className="mt-1 text-lg font-bold tabular-nums text-deep-teal">
+                  {formatModelCzk(caseStudy.adjustedModel.monthlyCashFlowCzk, 0)}
+                  <span className="text-sm font-normal text-muted-foreground">
+                    {" "}
+                    / měs.
+                  </span>
+                </p>
+              </div>
             </div>
             <p className="text-sm font-semibold text-text-dark">
               Co tento rozbor přidává oproti automatickému modelu
@@ -558,21 +585,24 @@ function ModelBody({
               ))}
             </ul>
             <p className="mt-4 text-sm font-semibold text-text-dark">
-              Individuální zjištění (výběr)
+              Hlavní zjištění z podkladů a trhu
             </p>
             <div className="space-y-3">
-              {caseStudy.findings.slice(0, 5).map((f) => (
-                <FindingCard
-                  key={f.id}
-                  podklad={f.podklad}
-                  zjisteni={f.zjisteni}
-                  dopad={f.dopad}
-                  proverit={f.overit}
-                />
-              ))}
+              {caseStudy.findings
+                .filter((f) => f.fromDocumentWork)
+                .slice(0, 3)
+                .map((f) => (
+                  <FindingCard
+                    key={f.id}
+                    podklad={f.podklad}
+                    zjisteni={f.zjisteni}
+                    dopad={f.dopad}
+                    proverit={f.overit}
+                  />
+                ))}
             </div>
             <p className="mt-4 text-sm font-semibold text-text-dark">
-              Syntetické nájemní nabídky (ukázka)
+              Veřejné nájemní nabídky (Brno-Židenice)
             </p>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[480px] text-left text-xs">
@@ -581,26 +611,42 @@ function ModelBody({
                     <th className="py-2">Nabídka</th>
                     <th className="py-2">m²</th>
                     <th className="py-2">Nájem</th>
-                    <th className="py-2">Poznámka</th>
+                    <th className="py-2">Omezení</th>
                   </tr>
                 </thead>
                 <tbody>
                   {caseStudy.rentListings.map((l) => (
                     <tr key={l.id} className="border-b border-border/70">
-                      <td className="py-1.5">{l.label}</td>
+                      <td className="py-1.5">
+                        {l.url ? (
+                          <a
+                            href={l.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-deep-teal underline-offset-2 hover:underline"
+                          >
+                            {l.label}
+                          </a>
+                        ) : (
+                          l.label
+                        )}
+                      </td>
                       <td className="py-1.5 tabular-nums">{l.areaM2}</td>
                       <td className="py-1.5 tabular-nums">
                         {formatModelCzk(l.priceOrRentCzk)}
                       </td>
-                      <td className="py-1.5 text-muted-foreground">{l.notes}</td>
+                      <td className="py-1.5 text-muted-foreground">
+                        {l.comparabilityLimit}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
             <p className="mt-2 text-[11px] text-muted-foreground">
-              {caseStudy.rentListings[0]?.sourceNote} · Datum sady{" "}
-              {caseStudy.generatedAt}.
+              Nabídkové nájmy bez přeúčtovaných služeb · přístup{" "}
+              {caseStudy.rentListings[0]?.accessDate ?? caseStudy.generatedAt} ·
+              neprokazují realizované nájemné.
             </p>
             <EvidenceTablePremium generatedAt={caseStudy.generatedAt} />
           </>
@@ -617,8 +663,8 @@ function ModelBody({
             </p>
             <p>
               Přepněte na výstup za {formatAnalysisPrice()}, abyste viděli
-              dokončená individuální zjištění a syntetické srovnání z modelového
-              rozboru ({PREMIUM_SAMPLE_PAGE_COUNT} stran PDF).
+              zjištění z podkladů, veřejné srovnání a likviditní scénáře (
+              {PREMIUM_SAMPLE_PAGE_COUNT} stran PDF).
             </p>
           </div>
         )}
@@ -637,8 +683,9 @@ function ModelBody({
             nevyslovuje závěr o schválení úvěru.
           </li>
           <li>
-            V modelu není daň z příjmů, poplatky za úvěr, výnos rezervy ani
-            náklady prodeje.
+            {pkg === "premium"
+              ? "Základní automatický model neobsahuje daň z příjmů ani poplatky za úvěr. Prémiový rozbor přidává modelové prodejní náklady (např. 4 %) a vypořádání — stále před daní z příjmů."
+              : "V modelu není daň z příjmů, poplatky za úvěr, výnos rezervy ani náklady prodeje."}
           </li>
         </ul>
       </Section>
@@ -798,27 +845,27 @@ export function RentgenUkazkaView() {
               {[
                 {
                   title: "Rozhodovací shrnutí",
-                  body: "Hlavní zjištění a co rozbor přidává oproti automatickému modelu.",
+                  body: "Tok před a po podkladech, hotovost a co rozbor přidává.",
                   src: "/rentgen-sample-previews/premium-p02.png",
                   page: 2,
                 },
                 {
                   title: "Srovnání nájmů",
-                  body: "Syntetická sada nabídek — výslovně neprokazuje tržní průměr.",
-                  src: "/rentgen-sample-previews/premium-p08.png",
-                  page: 8,
+                  body: "Veřejné nabídky Brno-Židenice s omezeními srovnatelnosti.",
+                  src: "/rentgen-sample-previews/premium-p10.png",
+                  page: 10,
                 },
                 {
-                  title: "Citlivost a stres",
-                  body: "Matice nájem×sazba a průběh rezervy při prázdném bytě.",
-                  src: "/rentgen-sample-previews/premium-p19.png",
-                  page: 19,
+                  title: "Likvidita a stres",
+                  body: "Prázdno, oprava 80 tis. a průběh rezervy.",
+                  src: "/rentgen-sample-previews/premium-p15.png",
+                  page: 15,
                 },
                 {
-                  title: "Individuální zjištění",
-                  body: "Podklad → zjištění → dopad → co ověřit.",
-                  src: "/rentgen-sample-previews/premium-p23.png",
-                  page: 23,
+                  title: "Individuální závěr",
+                  body: "Podmínky, hotovost a co ověřit jako první.",
+                  src: "/rentgen-sample-previews/premium-p20.png",
+                  page: 20,
                 },
               ].map((card) => (
                 <figure
