@@ -43,16 +43,14 @@ function envLabel(key: string): string | null {
 }
 
 const PREMIUM_DELIVERABLES: string[] = [
-  "Executive summary a property overview z vašich vstupů",
-  "Srovnání s modelovým trhem (kde máme referenční data)",
-  "Analýza ceny / m² a rental model",
-  "Cash-flow a financing scénáře (automatizovaný model)",
-  "Stress test sazby a neobsazenosti",
-  "Likviditní riziko lokality (orientační)",
-  "Právní / dokumentační checklist otázek — ne právní posudek",
-  "Red flags a data quality sekce",
-  "Final decision framework — orientace, ne investiční doporučení",
-  "Elektronický report (PDF / export podle aktivní verze produktu)",
+  "Shrnutí ekonomiky transakce z vašich vstupů",
+  "Výnosy, cash flow a financování (model)",
+  "Vedlejší náklady, provoz a CAPEX",
+  "Scénáře a stress test",
+  "Lokalita a likvidita — jen kde máme ověřitelný kontext",
+  "Checklist dokumentů a informací k ověření",
+  "Shrnutí pozitivních a rizikových faktorů — bez verdiktu kupte/nekupte",
+  "Elektronický report (PDF) podle aktivní verze produktu",
 ];
 
 function buildDeliverySla(active: boolean): RentgenPremiumConfig["deliverySla"] {

@@ -1,44 +1,38 @@
 /**
- * Centrální pricing + produktové vrstvy Investičního rentgenu / placené analýzy.
+ * Centrální pricing + produktové vrstvy Investičního rentgenu.
  *
- * Obchodní rozhodnutí: 4 990 Kč (nikoli 5 000).
- * Override ceny: NEXT_PUBLIC_PROPERTY_ANALYSIS_PRICE_CZK
- * SLA: NEXT_PUBLIC_RENTGEN_PREMIUM_SLA_DAYS nebo NEXT_PUBLIC_RENTGEN_PREMIUM_SLA_LABEL
+ * Tři zákaznické vrstvy:
+ * 1) Zdarma — náhled
+ * 2) Investiční rentgen — 999 Kč (digitální dashboard)
+ * 3) Kompletní analýza — 4 990 Kč (hloubkový report)
  *
- * ADVANCED due diligence není aktivní SKU — jen individuální poptávka.
+ * Checkout / SLA jen když je produkt komerčně aktivní (env).
  */
 
 import { getRentgenPremiumConfig } from "@/lib/property-rentgen/product-config";
-export type AnalysisProductTierId = "free" | "premium" | "advanced_inquiry";
+import { isPaidAnalysisCommerciallyAvailable } from "@/lib/legal/operator";
+
+export type AnalysisProductTierId = "free" | "digital" | "premium";
 
 export type AnalysisProductTier = {
   id: AnalysisProductTierId;
-  /** Veřejný název */
   name: string;
-  /** Krátký popisek */
   summary: string;
-  /** null = zdarma; string = individuální poptávka; number = CZK */
   priceCzk: number | null;
   priceDisplayOverride: string | null;
-  /** Lze objednat / požádat self-serve v UI */
   commerciallyActive: boolean;
   includes: string[];
   excludes: string[];
-  /** Co produkt NENÍ (vždy zobrazit u placené vrstvy) */
   isNot: string[];
   deliveryExpectation: string[];
 };
 
 export type PropertyAnalysisPricing = {
-  /** Interní ID (ne zobrazovat ve veřejném UI) */
   productId: string;
   productName: string;
-  /** Prodejní cena v Kč — jediný SoT */
   amountCzk: number;
   currency: "CZK";
-  /** Primární CTA na premium */
   ctaLabel: string;
-  /** Co následuje po CTA */
   ctaNextSteps: string[];
   includes: string[];
   excludes: string[];
@@ -53,31 +47,35 @@ function envAmount(key: string, fallback: number): number {
   return Number.isFinite(n) && n > 0 ? Math.round(n) : fallback;
 }
 
-/** Schválená prodejní cena Prémiové analýzy — všude jen tato hodnota. */
+/** Digitální Investiční rentgen (dashboard). */
+export const CANONICAL_DIGITAL_RENTGEN_PRICE_CZK = 999;
+
+/** Kompletní hloubková analýza / report. */
 export const CANONICAL_PREMIUM_ANALYSIS_PRICE_CZK = 4990;
 
-/** Obchodní rozhodnutí: 4 990 Kč všude. */
+/** SoT pro kompletní analýzu (4 990 Kč). */
 export const PROPERTY_ANALYSIS_PRICING: PropertyAnalysisPricing = {
   productId: "majetio-property-analysis-v1",
-  productName: "Detailní analýza nemovitosti",
+  productName: "Kompletní analýza nemovitosti",
   amountCzk: envAmount(
     "NEXT_PUBLIC_PROPERTY_ANALYSIS_PRICE_CZK",
     CANONICAL_PREMIUM_ANALYSIS_PRICE_CZK
   ),
   currency: "CZK",
-  ctaLabel: "Získat detailní analýzu",
+  ctaLabel: "Objednat kompletní analýzu",
   ctaNextSteps: [
     "Zanecháte kontakt (jméno, e-mail, telefon) a souhlas.",
     "Ozveme se s potvrzením rozsahu a postupem dodání.",
     "Po dokončení obdržíte elektronický report — ne schválení banky.",
   ],
   includes: [
-    "Detailní model cash flow a scénáře (sazba, neobsazenost)",
-    "Orientační výnos (hrubý / čistý model)",
-    "Rámec financování a nákladů",
-    "Rizika a lokální kontext",
-    "Závěry a checklist otázek k due diligence",
-    "Elektronický report / export podkladů",
+    "Hloubkový elektronický report konkrétní investice",
+    "Ekonomika transakce, výnosy a cash flow",
+    "Financování, vedlejší a provozní náklady, CAPEX",
+    "Scénáře a stress test",
+    "Lokalita, likvidita a rizikové oblasti (kde máme podklady)",
+    "Checklist dokumentů k ověření",
+    "Shrnutí pozitivních a rizikových faktorů — bez verdiktu kupte/nekupte",
   ],
   excludes: [
     "Závazné právní posouzení (bez právníka)",
@@ -92,41 +90,75 @@ export const PROPERTY_ANALYSIS_PRICING: PropertyAnalysisPricing = {
   ],
 };
 
-/**
- * Tři vrstvy — Advanced jen jako individuální poptávka (není self-serve SKU).
- */
+export const DIGITAL_RENTGEN_PRICING = {
+  productId: "hypotekajasne-rentgen-digital-v1",
+  productName: "Investiční rentgen",
+  amountCzk: envAmount(
+    "NEXT_PUBLIC_DIGITAL_RENTGEN_PRICE_CZK",
+    CANONICAL_DIGITAL_RENTGEN_PRICE_CZK
+  ),
+  currency: "CZK" as const,
+  ctaLabel: "Spustit Rentgen",
+  summary: "Kompletní modelová analýza během několika minut.",
+  includes: [
+    "Rozšířený dashboard: čistý výnos, cash flow, ROCE, LTV",
+    "Celkové pořizovací a provozní náklady",
+    "Model CAPEX a neobsazenost",
+    "Stress test sazby a nájmu",
+    "Cash-flow a financing scénáře",
+    "Rizikové signály a použité předpoklady",
+  ],
+};
+
 export const ANALYSIS_PRODUCT_TIERS: AnalysisProductTier[] = [
   {
     id: "free",
     name: "Bezplatný náhled",
     summary:
-      "Rychlý snapshot: klíčové metriky, varovné signály a základní fit financování.",
+      "Rychlý snapshot konkrétní nemovitosti — základ pro rozhodnutí, zda jít do hloubky.",
     priceCzk: 0,
-    priceDisplayOverride: "0 Kč",
+    priceDisplayOverride: "Zdarma",
     commerciallyActive: true,
     includes: [
-      "Základní snapshot nemovitosti",
-      "Orientační hrubý výnos a cena / m²",
-      "Základní rizikové faktory (red flags)",
-      "Základní vhodnost financování (odhad)",
+      "Cena za m²",
+      "Orientační hrubý výnos",
+      "Orientační LTV",
+      "Základní cash flow / risk signal",
     ],
     excludes: [
-      "Detailní cash flow a citlivostní scénáře",
-      "Kompletní report k exportu",
+      "Plný dashboard Rentgenu",
+      "Hloubkový elektronický report",
     ],
     isNot: [
       "Není kompletní analýza ani investiční doporučení.",
       "Není schválení banky.",
     ],
+    deliveryExpectation: ["Výsledek ihned v prohlížeči."],
+  },
+  {
+    id: "digital",
+    name: DIGITAL_RENTGEN_PRICING.productName,
+    summary: DIGITAL_RENTGEN_PRICING.summary,
+    priceCzk: DIGITAL_RENTGEN_PRICING.amountCzk,
+    priceDisplayOverride: null,
+    commerciallyActive: false,
+    includes: [...DIGITAL_RENTGEN_PRICING.includes],
+    excludes: [
+      "Hloubkový multi-page report s individuálním rozborem",
+      "Lidská verifikace podkladů",
+    ],
+    isNot: [
+      "Není investiční doporučení.",
+      "Není právní ani technická due diligence.",
+    ],
     deliveryExpectation: [
-      "Výsledek ihned v prohlížeči po vyplnění údajů.",
+      "Digitální dashboard po zaplacení — bez falešného slibu okamžitého reportu, dokud není checkout aktivní.",
     ],
   },
   {
     id: "premium",
     name: PROPERTY_ANALYSIS_PRICING.productName,
-    summary:
-      "Hloubková modelová analýza s reportem — za jednotnou cenu z centrálního ceníku.",
+    summary: "Hloubkový elektronický report konkrétní investice.",
     priceCzk: PROPERTY_ANALYSIS_PRICING.amountCzk,
     priceDisplayOverride: null,
     commerciallyActive: false,
@@ -135,51 +167,42 @@ export const ANALYSIS_PRODUCT_TIERS: AnalysisProductTier[] = [
     isNot: [...PROPERTY_ANALYSIS_PRICING.isNot],
     deliveryExpectation: [],
   },
-  {
-    id: "advanced_inquiry",
-    name: "Pokročilá due diligence",
-    summary:
-      "Manuální služba s partnerem (právo / technika) — není samoobslužný produkt.",
-    priceCzk: null,
-    priceDisplayOverride: "Na individuální poptávku",
-    commerciallyActive: false,
-    includes: [
-      "Individuální rozsah dle poptávky",
-      "Koordinace s ověřeným partnerem / specialistou",
-    ],
-    excludes: [
-      "Automatický online nákup",
-      "Okamžitý digitální report bez konzultace",
-    ],
-    isNot: [
-      "Není aktivní e-shop produkt.",
-      "Není náhradou za vlastního právníka nebo stavebního znalce.",
-    ],
-    deliveryExpectation: [
-      "Po poptávce upřesníme rozsah, cenu a termín individuálně.",
-    ],
-  },
 ];
 
 export function getAnalysisTier(): AnalysisProductTier[] {
   const premiumCfg = getRentgenPremiumConfig();
+  const live = isPaidAnalysisCommerciallyAvailable();
+
   return ANALYSIS_PRODUCT_TIERS.map((tier) => {
-    if (tier.id !== "premium") return tier;
-    return {
-      ...tier,
-      commerciallyActive: premiumCfg.commerciallyActive,
-      includes: premiumCfg.deliverables.slice(0, 6),
-      deliveryExpectation: premiumCfg.deliverySla.configured
-        ? [
-            premiumCfg.deliverySla.label!,
-            premiumCfg.deliverySla.note,
-            ...PROPERTY_ANALYSIS_PRICING.ctaNextSteps,
-          ]
-        : [
-            premiumCfg.deliverySla.note,
-            ...PROPERTY_ANALYSIS_PRICING.ctaNextSteps,
-          ],
-    };
+    if (tier.id === "digital") {
+      return {
+        ...tier,
+        commerciallyActive: live,
+        deliveryExpectation: live
+          ? ["Digitální dashboard po dokončení platby."]
+          : [
+              "Připravujeme — můžete zanechat zájem. Nejde o online platbu.",
+            ],
+      };
+    }
+    if (tier.id === "premium") {
+      return {
+        ...tier,
+        commerciallyActive: premiumCfg.commerciallyActive,
+        includes: premiumCfg.deliverables.slice(0, 7),
+        deliveryExpectation: premiumCfg.deliverySla.configured
+          ? [
+              premiumCfg.deliverySla.label!,
+              premiumCfg.deliverySla.note,
+              ...PROPERTY_ANALYSIS_PRICING.ctaNextSteps,
+            ]
+          : [
+              premiumCfg.deliverySla.note,
+              ...PROPERTY_ANALYSIS_PRICING.ctaNextSteps,
+            ],
+      };
+    }
+    return tier;
   });
 }
 
@@ -187,11 +210,15 @@ export function getPremiumTier(): AnalysisProductTier {
   return getAnalysisTier().find((t) => t.id === "premium")!;
 }
 
+export function getDigitalTier(): AnalysisProductTier {
+  return getAnalysisTier().find((t) => t.id === "digital")!;
+}
+
 export function getFreeTier(): AnalysisProductTier {
   return ANALYSIS_PRODUCT_TIERS.find((t) => t.id === "free")!;
 }
 
-/** @deprecated — listová cena zrušena; alias pro zpětnou kompatibilitu */
+/** @deprecated — listová cena zrušena */
 export function getListAmountCzk(
   pricing: PropertyAnalysisPricing = PROPERTY_ANALYSIS_PRICING
 ): number {
@@ -207,6 +234,13 @@ export function formatAnalysisPrice(
   return `${fmt}\u00a0Kč`;
 }
 
+export function formatDigitalRentgenPrice(): string {
+  const fmt = DIGITAL_RENTGEN_PRICING.amountCzk.toLocaleString("cs-CZ", {
+    maximumFractionDigits: 0,
+  });
+  return `${fmt}\u00a0Kč`;
+}
+
 export function formatAnalysisPriceLabel(
   pricing: PropertyAnalysisPricing = PROPERTY_ANALYSIS_PRICING
 ): string {
@@ -216,19 +250,21 @@ export function formatAnalysisPriceLabel(
 export function formatTierPrice(tier: AnalysisProductTier): string {
   if (tier.priceDisplayOverride) return tier.priceDisplayOverride;
   if (tier.priceCzk == null) return "Na individuální poptávku";
-  if (tier.priceCzk === 0) return "0 Kč";
+  if (tier.priceCzk === 0) return "Zdarma";
   return `${tier.priceCzk.toLocaleString("cs-CZ", {
     maximumFractionDigits: 0,
   })}\u00a0Kč`;
 }
 
-/** FAQ / copy: nahraď {{PRICE}} jednotným formátem. */
 export function withAnalysisPrice(text: string): string {
   return text
     .replaceAll("{{PRICE}}", formatAnalysisPrice())
+    .replaceAll("{{DIGITAL_PRICE}}", formatDigitalRentgenPrice())
     .replaceAll("4 990 Kč", formatAnalysisPrice())
     .replaceAll("4\u00a0990 Kč", formatAnalysisPrice())
     .replaceAll("4990 Kč", formatAnalysisPrice())
     .replaceAll("5 000 Kč", formatAnalysisPrice())
-    .replaceAll("5000 Kč", formatAnalysisPrice());
+    .replaceAll("5000 Kč", formatAnalysisPrice())
+    .replaceAll("999 Kč", formatDigitalRentgenPrice())
+    .replaceAll("999\u00a0Kč", formatDigitalRentgenPrice());
 }

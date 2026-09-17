@@ -219,7 +219,7 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     path: routes.investicniRentgen,
     title: "Investiční rentgen nemovitosti",
     description:
-      "Bezplatný snapshot a detailní analýza nemovitosti (4 990 Kč). Údaje: Data, Model, Odhad, Neověřeno — bez garantovaného výnosu.",
+      "Než investujete miliony, prověřte čísla. Výnos, cash flow, financování a rizika konkrétní nemovitosti — náhled zdarma, digitální Rentgen a kompletní analýza.",
     priority: 0.85,
   },
   {

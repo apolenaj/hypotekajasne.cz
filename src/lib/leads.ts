@@ -29,7 +29,7 @@ export const LEAD_SOURCE_LABELS: Record<LeadSource, string> = {
   investment_passport: "Osobní investiční průvodce",
   navrh_na_miru: "Hypoteční připravenost",
   mortgage_calculator: "Hypoteční kalkulačka",
-  property_analysis: "Detailní analýza nemovitosti",
+  property_analysis: "Kompletní analýza nemovitosti / Investiční rentgen",
   lead_gen: "Konzultace s expertem",
   expert_request: "Přesný výpočet od experta",
   contact: "Kontaktní formulář",

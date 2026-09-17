@@ -239,7 +239,7 @@ export function buildFreePreview(
   }
   if (mode === "upload") {
     limitations.push(
-      "Nahrání dokumentů a fotek připravujeme — zatím použijte manuální údaje nebo Prémiovou analýzu."
+      "Nahrání dokumentů zatím není ve free nástroji — použijte manuální údaje."
     );
   }
 

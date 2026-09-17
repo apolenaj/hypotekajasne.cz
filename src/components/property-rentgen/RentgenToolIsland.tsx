@@ -36,19 +36,14 @@ import { getExperimentVariant } from "@/lib/analytics/experiments";
 
 const MODES: { id: RentgenInputMode; label: string; hint: string }[] = [
   {
-    id: "url",
-    label: "URL inzerátu",
-    hint: "Odkaz jen jako reference — obsah automaticky neověřujeme.",
-  },
-  {
     id: "manual",
     label: "Manuálně",
     hint: "Nejspolehlivější cesta k bezplatnému náhledu.",
   },
   {
-    id: "upload",
-    label: "Nahrání",
-    hint: "Dokumenty a fotky — připravujeme; zatím manuál nebo detailní analýza.",
+    id: "url",
+    label: "S odkazem na inzerát",
+    hint: "URL je jen reference — obsah automaticky neověřujeme ani nenačítáme jako Data.",
   },
 ];
 
@@ -189,16 +184,13 @@ export function RentgenToolIsland() {
     return () => obs.disconnect();
   }, [preview]);
 
-  const canPreview =
-    mode === "upload"
-      ? false
-      : Boolean(
-          input.priceCzk ||
-            input.areaM2 ||
-            input.rentMonthlyCzk ||
-            input.city ||
-            (mode === "url" && input.listingUrl.trim())
-        );
+  const canPreview = Boolean(
+    input.priceCzk ||
+      input.areaM2 ||
+      input.rentMonthlyCzk ||
+      input.city ||
+      (mode === "url" && input.listingUrl.trim())
+  );
 
   const requestPremium = async () => {
     if (
@@ -275,11 +267,11 @@ export function RentgenToolIsland() {
           id="tool-heading"
           className="font-heading text-2xl font-bold text-text-dark sm:text-3xl"
         >
-          Nástroj — bezplatný náhled
+          Analyzovat nemovitost
         </h2>
         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-          Zadejte dostupné údaje. Nevymýšlíme právní ani technická fakta bez
-          zdroje — chybějící údaje označíme jako Neověřeno.
+          Zadejte údaje o konkrétní nemovitosti. Výsledek je modelový náhled —
+          ne investiční doporučení.
         </p>
 
         <div className="mt-6 flex flex-wrap gap-2">
@@ -311,7 +303,7 @@ export function RentgenToolIsland() {
             {(mode === "url" || mode === "manual") && (
               <>
                 {mode === "url" && (
-                  <Field label="URL inzerátu (reference)">
+                  <Field label="URL inzerátu (volitelná reference)">
                     <TextField
                       value={input.listingUrl}
                       onChange={(v) => patch("listingUrl", v)}
@@ -336,7 +328,7 @@ export function RentgenToolIsland() {
                   </Field>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <Field label="Typ">
+                  <Field label="Typ nemovitosti">
                     <select
                       value={input.propertyType}
                       onChange={(e) =>
@@ -395,7 +387,7 @@ export function RentgenToolIsland() {
                       inputMode="numeric"
                     />
                   </Field>
-                  <Field label="Nájem / měs. (Kč)">
+                  <Field label="Měsíční nájem (Kč)">
                     <TextField
                       value={
                         input.rentMonthlyCzk != null
@@ -409,7 +401,7 @@ export function RentgenToolIsland() {
                       inputMode="numeric"
                     />
                   </Field>
-                  <Field label="Vlastní zdroje / vlastní kapitál (Kč)">
+                  <Field label="Vlastní kapitál (Kč)">
                     <TextField
                       value={
                         input.equityCzk != null
@@ -424,25 +416,35 @@ export function RentgenToolIsland() {
                     />
                   </Field>
                 </div>
-              </>
-            )}
 
-            {mode === "upload" && (
-              <div className="rounded-xl border border-dashed border-border bg-white p-6 text-center">
-                <p className="text-sm font-semibold text-text-dark">
-                  Nahrání dokumentů a fotek
-                </p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Funkce bude dostupná později. Zatím použijte manuální zadání —
-                  nebo požádejte o detailní analýzu a podklady předáte partnerovi.
-                </p>
-                <ClaimBadge kind="NEOVERENO" className="mt-3" />
-              </div>
+                <details className="rounded-xl border border-border bg-white px-4 py-3">
+                  <summary className="cursor-pointer text-sm font-semibold text-deep-teal">
+                    Upřesnit financování
+                  </summary>
+                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                    Ve free náhledu stačí vlastní kapitál (LTV). Modelová sazba a
+                    splatnost se použijí v digitálním Rentgenu a kompletní
+                    analýze — zde je neslibujeme jako živý bankovní výpočet.
+                  </p>
+                  {mode === "manual" ? (
+                    <div className="mt-3">
+                      <Field label="URL inzerátu (volitelně)">
+                        <TextField
+                          value={input.listingUrl}
+                          onChange={(v) => patch("listingUrl", v)}
+                          placeholder="https://… (jen reference)"
+                          inputMode="url"
+                        />
+                      </Field>
+                    </div>
+                  ) : null}
+                </details>
+              </>
             )}
 
             <button
               type="button"
-              disabled={!canPreview || mode === "upload"}
+              disabled={!canPreview}
               onClick={() => {
                 setRan(true);
                 track("property_input_completed", {
@@ -456,9 +458,9 @@ export function RentgenToolIsland() {
                   variant_id: getExperimentVariant("free_preview"),
                 });
               }}
-              className="w-full rounded-lg bg-deep-teal px-4 py-3 text-sm font-bold text-white disabled:opacity-40"
+              className="w-full rounded-xl bg-deep-teal px-4 py-3 text-sm font-bold text-white disabled:opacity-40"
             >
-              Spočítat bezplatný náhled
+              Analyzovat nemovitost
             </button>
           </div>
 
@@ -634,54 +636,27 @@ export function RentgenToolIsland() {
               id="premium-objednavka"
               className="mt-6 scroll-mt-28 rounded-xl border border-muted-gold/40 bg-muted-gold/10 p-4"
             >
-              <div className="flex flex-wrap items-center gap-2">
-                <p className="text-sm font-bold text-text-dark">
-                  {formatAnalysisPriceLabel()}
-                </p>
-                <span
-                  className={cn(
-                    "rounded-full px-2 py-0.5 text-[10px] font-bold uppercase",
-                    premiumCfg.commerciallyActive
-                      ? "bg-emerald-100 text-emerald-900"
-                      : "bg-amber-100 text-amber-900"
-                  )}
-                >
-                  {premiumCfg.statusLabel}
-                </span>
-              </div>
+              <p className="text-sm font-bold text-text-dark">
+                Zájem o Rentgen / kompletní analýzu
+              </p>
               {!premiumCfg.commerciallyActive ? (
-                <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-950">
-                  Připravujeme — zatím nelze koupit online (žádný fake checkout).
-                  Můžete zanechat zájem; ozveme se po spuštění produktu.
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                  Placené vrstvy připravujeme. Zanechte kontakt — ozveme se po
+                  spuštění. Nejde o platbu ani o fake checkout.
                 </p>
               ) : (
-                <p className="mt-2 text-xs font-semibold text-text-dark">
-                  Deliverable: elektronický report — executive summary, scénáře,
-                  stress test, checklist, red flags, data quality, decision framework.
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                  Digitální Rentgen nebo kompletní analýza za{" "}
+                  {formatAnalysisPrice()}. Elektronický výstup — ne investiční
+                  doporučení.
                 </p>
               )}
-              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                Navíc oproti free: kompletní 13 sekcí reportu.{" "}
-                <strong className="font-semibold text-text-dark">Není</strong>{" "}
-                garantovaný výnos, právní due diligence bez právníka, technická
-                inspekce bez partnera ani schválení banky.
-              </p>
-              <p className="mt-2 text-xs font-semibold text-text-dark">
-                Dodání (SLA)
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-2 text-xs text-muted-foreground">
+                Dodání:{" "}
                 {premiumCfg.deliverySla.configured
                   ? premiumCfg.deliverySla.label
                   : premiumCfg.deliverySla.note}
               </p>
-              <p className="mt-2 text-xs font-semibold text-text-dark">
-                Co následuje po CTA
-              </p>
-              <ul className="mt-1 space-y-1 text-xs text-muted-foreground">
-                {PROPERTY_ANALYSIS_PRICING.ctaNextSteps.map((s) => (
-                  <li key={s}>→ {s}</li>
-                ))}
-              </ul>
               <div className="mt-3 space-y-2">
                 <TextField
                   label="Jméno"
@@ -709,7 +684,7 @@ export function RentgenToolIsland() {
                   showPartnerTransfer
                 />
                 <p className="text-[11px] text-muted-foreground">
-                  Podmínky digitální služby:{" "}
+                  Podmínky:{" "}
                   <Link
                     href={routes.legal.placenaAnalyza}
                     className="text-deep-teal underline"
@@ -726,13 +701,13 @@ export function RentgenToolIsland() {
                     premiumPhone.trim().length < 6
                   }
                   onClick={requestPremium}
-                  className="w-full rounded-lg bg-muted-gold px-4 py-2.5 text-sm font-bold text-[#0b3d3a] disabled:opacity-40"
+                  className="w-full rounded-xl bg-muted-gold px-4 py-2.5 text-sm font-bold text-[#0b3d3a] disabled:opacity-40"
                 >
                   {premiumLoading
                     ? "Odesílám…"
                     : premiumCfg.commerciallyActive
                       ? `${PROPERTY_ANALYSIS_PRICING.ctaLabel} · ${formatAnalysisPrice()}`
-                      : `${PROPERTY_ANALYSIS_PRICING.ctaLabel} — Připravujeme`}
+                      : "Chci vědět, až bude Rentgen dostupný"}
                 </button>
                 {premiumMsg ? (
                   <p className="text-xs text-muted-foreground">{premiumMsg}</p>
@@ -741,7 +716,7 @@ export function RentgenToolIsland() {
             </div>
 
             <p className="mt-4 text-xs text-muted-foreground">
-              30letý modelář peněžního toku:{" "}
+              30letý modelář (alternativní scénáře, vč. srovnání kapitálu):{" "}
               <Link
                 href={routes.investicniRentgenModelar}
                 className="font-semibold text-deep-teal underline"

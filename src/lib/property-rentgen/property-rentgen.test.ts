@@ -8,7 +8,6 @@ import {
   buildFreePreview,
   formatAnalysisPrice,
   formatAnalysisPriceLabel,
-  formatTierPrice,
   getAnalysisTier,
   getRentgenPremiumConfig,
   type ManualPropertyInput,
@@ -20,27 +19,30 @@ describe("PROPERTY_ANALYSIS_PRICING", () => {
     assert.match(formatAnalysisPrice(), /4[\s\u00a0\u202f]?990\s*Kč/);
     assert.ok(!formatAnalysisPrice().includes("/"));
     assert.ok(
-      formatAnalysisPriceLabel().includes("Detailní analýza nemovitosti")
+      formatAnalysisPriceLabel().includes("Kompletní analýza nemovitosti")
     );
     assert.equal(
       PROPERTY_ANALYSIS_PRICING.ctaLabel,
-      "Získat detailní analýzu"
+      "Objednat kompletní analýzu"
     );
   });
 
-  it("exposes free / premium / inquiry tiers without inventing advanced SKU price", () => {
+  it("exposes free / digital 999 / premium 4990 without inventing advanced SKU", () => {
     assert.equal(ANALYSIS_PRODUCT_TIERS.length, 3);
     assert.equal(ANALYSIS_PRODUCT_TIERS[0]!.id, "free");
-    assert.equal(ANALYSIS_PRODUCT_TIERS[1]!.priceCzk, 4990);
-    assert.equal(ANALYSIS_PRODUCT_TIERS[2]!.commerciallyActive, false);
-    assert.match(formatTierPrice(ANALYSIS_PRODUCT_TIERS[2]!), /poptávku/i);
+    assert.equal(ANALYSIS_PRODUCT_TIERS[1]!.id, "digital");
+    assert.equal(ANALYSIS_PRODUCT_TIERS[1]!.priceCzk, 999);
+    assert.equal(ANALYSIS_PRODUCT_TIERS[2]!.id, "premium");
+    assert.equal(ANALYSIS_PRODUCT_TIERS[2]!.priceCzk, 4990);
   });
 
   it("premium tier commerciallyActive follows product config (default preparing)", () => {
     const tiers = getAnalysisTier();
     const premium = tiers.find((t) => t.id === "premium")!;
+    const digital = tiers.find((t) => t.id === "digital")!;
     const cfg = getRentgenPremiumConfig();
     assert.equal(premium.commerciallyActive, cfg.commerciallyActive);
+    assert.equal(digital.commerciallyActive, cfg.commerciallyActive);
     assert.equal(cfg.status, "preparing");
     assert.equal(cfg.statusLabel, "Připravujeme");
     assert.equal(cfg.checkoutMode, "interest_only");
