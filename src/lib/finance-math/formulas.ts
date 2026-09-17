@@ -199,6 +199,38 @@ export const FORMULA_REGISTRY: FormulaEntry[] = [
     kind: "model",
   },
   {
+    id: "rentgen_premium_30y_cf",
+    name: "Investiční audit 30Y cash-flow",
+    formula:
+      "Roční smyčka: amortize(12×annuity); rent·(1+g_r)^(y-1)·(1−vacancy); opex·(1+g_o)^(y-1); CF = rent − opex − reserve − debt",
+    sourceOfTruth: "src/lib/property-rentgen/rentgen-math-engine.ts#projectYearlyCashFlows",
+    units: "CZK / year; growth as decimal p.a.; vacancy 0–1",
+    rounding: "roundMoney per year aggregates",
+    boundaries: "MODEL — not bank offer; loan ≤ purchase price",
+    kind: "model",
+  },
+  {
+    id: "rentgen_rate_shock",
+    name: "Úrokový šok po fixaci",
+    formula:
+      "Po fixationYears: balance→annuity(balance, shock%, remainingTerm); shock defaults 7 % a 9 %",
+    sourceOfTruth: "src/lib/property-rentgen/rentgen-math-engine.ts#simulateRateShock",
+    units: "money / month; rate % p.a.",
+    rounding: "roundMoney",
+    boundaries: "MODEL stress — not ČNB limit",
+    kind: "model",
+  },
+  {
+    id: "rentgen_wealth_vs_sp500",
+    name: "Wealth creation vs S&P 500",
+    formula: "equity_t = value_t − loan_t; sp500_t = equity0·(1.08)^t",
+    sourceOfTruth: "src/lib/property-rentgen/rentgen-math-engine.ts#projectWealthCreation",
+    units: "CZK; return decimal p.a.",
+    rounding: "roundMoney",
+    boundaries: "Illustrative alternative cost of capital",
+    kind: "model",
+  },
+  {
     id: "rpsn",
     name: "RPSN / APR",
     formula: "Pass-through only when bank example present — never invent",

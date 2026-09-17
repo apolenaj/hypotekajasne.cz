@@ -5,3 +5,12 @@ export * from "@/lib/property-rentgen/preview";
 export * from "@/lib/property-rentgen/pricing";
 export * from "@/lib/property-rentgen/sample-report";
 export * from "@/lib/property-rentgen/product-config";
+export * from "@/lib/property-rentgen/audit-types";
+export {
+  RentgenMathValidationError,
+  buildPremiumRentgenInput,
+  projectWealthCreation,
+  projectYearlyCashFlows,
+  runPremiumRentgenAudit,
+  simulateRateShock,
+} from "@/lib/property-rentgen/rentgen-math-engine";

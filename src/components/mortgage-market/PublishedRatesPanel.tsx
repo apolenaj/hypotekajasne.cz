@@ -26,6 +26,7 @@ import {
   journeyCoreEqual,
   parseMortgageJourneyParams,
   serializeMortgageJourneyParams,
+  LTV_ABOVE_CATALOG_WARNING,
   type LtvContext,
   type MortgageJourneyContext,
   type MortgageJourneyCore,
@@ -149,15 +150,23 @@ export function PublishedRatesPanel({
 
   const applyQuery = useCallback(
     (next: RatesQueryState) => {
-      setQuery(next);
+      // Keep equity consistent with property − loan so URL parse does not
+      // treat a filter tweak as contradictory "invalid parameters".
+      const normalized: RatesQueryState = {
+        ...next,
+        ownFundsCzk: Math.max(
+          0,
+          Math.round(next.propertyValueCzk - next.loanAmountCzk)
+        ),
+      };
+      const nextLtv = buildLtvContext({
+        propertyValueCzk: normalized.propertyValueCzk,
+        loanAmountCzk: normalized.loanAmountCzk,
+      });
+      setQuery(normalized);
       setParamErrors([]);
-      setLtvContext(
-        buildLtvContext({
-          propertyValueCzk: next.propertyValueCzk,
-          loanAmountCzk: next.loanAmountCzk,
-        })
-      );
-      syncUrl(next, marketing);
+      setLtvContext(nextLtv);
+      syncUrl(normalized, marketing);
     },
     [marketing, syncUrl]
   );
@@ -399,6 +408,15 @@ export function PublishedRatesPanel({
             </p>
           ) : null}
         </div>
+
+        {paramErrors.length === 0 && ltvContext.exceedsSupportedMax ? (
+          <div
+            className="mt-4 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-950"
+            role="status"
+          >
+            <p>{LTV_ABOVE_CATALOG_WARNING}</p>
+          </div>
+        ) : null}
 
         {loading ? (
           <p className="mt-6 text-sm text-muted-foreground" aria-live="polite">

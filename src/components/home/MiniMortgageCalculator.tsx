@@ -34,7 +34,6 @@ import {
 } from "@/lib/mortgage-rates/mortgage-journey-context";
 import { MiniMortgageCalculatorSkeleton } from "@/components/home/MiniMortgageCalculatorSkeleton";
 import { getCalculatorDisclaimer } from "@/components/calculators/CalculatorDisclaimer";
-import { CTA_CS } from "@/lib/ux/cta";
 import { cn } from "@/lib/utils";
 
 const fieldControlClassName = cn(
@@ -170,7 +169,6 @@ function MiniMortgageCalculatorCore({
   );
   const [interestRate, setInterestRate] = useState<number>(bootstrap.interestRate);
   const [rateDraft, setRateDraft] = useState(bootstrap.rateDraft);
-  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [hasCalculated, setHasCalculated] = useState(bootstrap.hasCalculated);
   const [committedResult, setCommittedResult] = useState<MiniMortgageResult | null>(
     bootstrap.committedResult
@@ -373,67 +371,52 @@ function MiniMortgageCalculatorCore({
           </select>
         </div>
 
-        <div>
-          <button
-            type="button"
-            className="text-xs font-semibold text-deep-teal underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal"
-            aria-expanded={advancedOpen}
-            onClick={() => {
-              markInteracted();
-              setAdvancedOpen((v) => !v);
-            }}
+        <div className="min-w-0 space-y-1.5">
+          <Label
+            htmlFor="mini-mortgage-rate"
+            className="text-xs font-semibold text-text-dark"
           >
-            {advancedOpen ? "Skrýt upřesnění" : CTA_CS.refineCalculation}
-          </button>
-          {advancedOpen ? (
-            <div className="mt-3 min-w-0 space-y-1.5">
-              <Label
-                htmlFor="mini-mortgage-rate"
-                className="text-xs font-semibold text-text-dark"
-              >
-                Modelová sazba pro splátku
-              </Label>
-              <div className="relative min-w-0">
-                <input
-                  id="mini-mortgage-rate"
-                  type="text"
-                  inputMode="decimal"
-                  autoComplete="off"
-                  value={rateDraft}
-                  onChange={(e) => {
-                    markInteracted();
-                    resetCalculation();
-                    const next = e.target.value;
-                    setRateDraft(next);
-                    const parsed = parseInterestRate(next);
-                    if (parsed != null) setInterestRate(parsed);
-                  }}
-                  onBlur={() => {
-                    const parsed = parseInterestRate(rateDraft);
-                    const next =
-                      parsed ?? MINI_MORTGAGE_DEFAULTS.annualRatePercent;
-                    setInterestRate(next);
-                    setRateDraft(next.toFixed(2).replace(".", ","));
-                  }}
-                  aria-describedby="mini-mortgage-rate-hint"
-                  className={cn(fieldControlClassName, "pr-12 tabular-nums")}
-                  title="Modelová sazba — nejde o aktuální nabídku banky"
-                />
-                <span
-                  className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground"
-                  aria-hidden
-                >
-                  %
-                </span>
-              </div>
-              <p
-                id="mini-mortgage-rate-hint"
-                className="text-[11px] text-muted-foreground"
-              >
-                Jen pro odhad splátky. Bankovní sazby zobrazíte po výpočtu.
-              </p>
-            </div>
-          ) : null}
+            Modelová sazba pro splátku
+          </Label>
+          <div className="relative min-w-0">
+            <input
+              id="mini-mortgage-rate"
+              type="text"
+              inputMode="decimal"
+              autoComplete="off"
+              value={rateDraft}
+              onChange={(e) => {
+                markInteracted();
+                resetCalculation();
+                const next = e.target.value;
+                setRateDraft(next);
+                const parsed = parseInterestRate(next);
+                if (parsed != null) setInterestRate(parsed);
+              }}
+              onBlur={() => {
+                const parsed = parseInterestRate(rateDraft);
+                const next =
+                  parsed ?? MINI_MORTGAGE_DEFAULTS.annualRatePercent;
+                setInterestRate(next);
+                setRateDraft(next.toFixed(2).replace(".", ","));
+              }}
+              aria-describedby="mini-mortgage-rate-hint"
+              className={cn(fieldControlClassName, "pr-12 tabular-nums")}
+              title="Modelová sazba — nejde o aktuální nabídku banky"
+            />
+            <span
+              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground"
+              aria-hidden
+            >
+              %
+            </span>
+          </div>
+          <p
+            id="mini-mortgage-rate-hint"
+            className="text-[11px] text-muted-foreground"
+          >
+            Jen pro odhad splátky. Bankovní sazby zobrazíte po výpočtu.
+          </p>
         </div>
       </div>
 
@@ -493,6 +476,15 @@ function MiniMortgageCalculatorCore({
               </p>
               <p className="mt-1 break-words font-heading text-2xl font-bold tabular-nums tracking-tight text-text-dark sm:text-3xl">
                 {formatCurrency(committedResult.monthlyPaymentCzk, "CZK")}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                při modelové sazbě{" "}
+                <span className="font-semibold tabular-nums text-text-dark">
+                  {committedResult.annualRatePercent
+                    .toFixed(2)
+                    .replace(".", ",")}
+                  &nbsp;% p.a.
+                </span>
               </p>
             </div>
           </>

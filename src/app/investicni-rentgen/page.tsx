@@ -13,6 +13,7 @@ import {
   RentgenValueProp,
   RentgenWhatWeAnalyze,
 } from "@/components/property-rentgen/RentgenLandingSections";
+import { InvestmentXrayDashboard } from "@/components/property-rentgen/InvestmentXrayDashboard";
 import { RentgenToolIsland } from "@/components/property-rentgen/RentgenToolIsland";
 import {
   formatAnalysisPriceLabel,
@@ -47,6 +48,9 @@ export default function InvesticniRentgenPage() {
       <RentgenWhatWeAnalyze />
       <RentgenMetricsGrid />
       <RentgenDemoReport />
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <InvestmentXrayDashboard />
+      </div>
       <RentgenToolIsland />
       <RentgenPricing />
       <RentgenFaq />

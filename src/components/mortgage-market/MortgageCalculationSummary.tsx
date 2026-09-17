@@ -89,36 +89,46 @@ export function MortgageCalculationSummary({
             </p>
           </div>
         ) : (
-          <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            <SummaryItem
-              label="Hodnota nemovitosti"
-              value={formatCurrency(summary.propertyValueCzk, "CZK")}
-            />
-            <SummaryItem
-              label="Vlastní prostředky"
-              value={formatCurrency(summary.ownFundsCzk, "CZK")}
-            />
-            <SummaryItem
-              label="Výše úvěru"
-              value={formatCurrency(summary.loanAmountCzk, "CZK")}
-            />
-            <SummaryItem
-              label="Doba splácení"
-              value={`${summary.termYears} let`}
-            />
-            <SummaryItem label="Fixace" value={summary.fixationLabel} />
-            <SummaryItem label="Účel" value={summary.purposeLabel} />
-            <SummaryItem label="Skutečné LTV" value={summary.exactLtvLabel} />
-            <SummaryItem
-              label="Bankovní LTV pásmo"
-              value={summary.ltvBandLabel ?? "—"}
-            />
-            <SummaryItem
-              label="Orientační splátka"
-              value={formatCurrency(summary.modelMonthlyPaymentCzk, "CZK")}
-              emphasize
-            />
-          </dl>
+          <>
+            <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              <SummaryItem
+                label="Hodnota nemovitosti"
+                value={formatCurrency(summary.propertyValueCzk, "CZK")}
+              />
+              <SummaryItem
+                label="Vlastní prostředky"
+                value={formatCurrency(summary.ownFundsCzk, "CZK")}
+              />
+              <SummaryItem
+                label="Výše úvěru"
+                value={formatCurrency(summary.loanAmountCzk, "CZK")}
+              />
+              <SummaryItem
+                label="Doba splácení"
+                value={`${summary.termYears} let`}
+              />
+              <SummaryItem label="Fixace" value={summary.fixationLabel} />
+              <SummaryItem label="Účel" value={summary.purposeLabel} />
+              <SummaryItem label="Skutečné LTV" value={summary.exactLtvLabel} />
+              <SummaryItem
+                label="Bankovní LTV pásmo"
+                value={summary.ltvBandLabel ?? "—"}
+              />
+              <SummaryItem
+                label="Orientační splátka"
+                value={formatCurrency(summary.modelMonthlyPaymentCzk, "CZK")}
+                emphasize
+              />
+            </dl>
+            {summary.catalogCoverageWarning ? (
+              <div
+                className="mt-4 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-950"
+                role="status"
+              >
+                <p>{summary.catalogCoverageWarning}</p>
+              </div>
+            ) : null}
+          </>
         )}
 
         {summary.status === "ready" ? (

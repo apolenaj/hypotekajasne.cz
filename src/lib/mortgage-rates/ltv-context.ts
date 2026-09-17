@@ -8,7 +8,9 @@
 import { ltvPercent } from "@/lib/finance-math/core";
 import { CZ_LTV_BANDS } from "@/lib/mortgage-rates/cz-rate-structure";
 import { matchesLtvBand } from "@/lib/mortgage-rates/ltv-band";
+import { LTV_ABOVE_CATALOG_WARNING } from "@/lib/mortgage-rates/ltv-catalog-copy";
 
+export { LTV_ABOVE_CATALOG_WARNING };
 /** Upper limits evidenced in CZ rate structure (0–80 and >80–90). */
 export const CZ_SUPPORTED_LTV_BAND_UPPER_LIMITS = [80, 90] as const;
 
@@ -82,7 +84,7 @@ export function formatLtvBandLabel(ltvBandUpper: number): string {
   return `do ${label} %`;
 }
 
-function validationMessage(code: LtvValidationCode): string {
+function validationMessage(code: Exclude<LtvValidationCode, "exceeds_supported_max">): string {
   switch (code) {
     case "invalid_property":
       return "Zadejte kladnou hodnotu nemovitosti.";
@@ -90,8 +92,6 @@ function validationMessage(code: LtvValidationCode): string {
       return "Výše úvěru nemůže být záporná.";
     case "loan_exceeds_property":
       return "Úvěr nesmí být vyšší než hodnota nemovitosti.";
-    case "exceeds_supported_max":
-      return `LTV přesahuje nejvyšší podporované pásmo sazebníku (do ${MAX_SUPPORTED_LTV} %). Zveřejněné sazby pro vyšší LTV nezobrazujeme.`;
   }
 }
 
@@ -132,14 +132,13 @@ export function buildLtvContext(input: PropertyLoanInput): LtvContext {
 
   const exactLtv = computeExactLtv(loanAmountCzk, propertyValueCzk)!;
   const ltvBand = resolveLtvBandUpperLimit(exactLtv);
+  // LTV > catalog max is mathematically valid — not a parameter error.
   const exceedsSupportedMax = exactLtv > MAX_SUPPORTED_LTV || ltvBand == null;
 
   return {
     exactLtv,
     ltvBand: exceedsSupportedMax ? null : ltvBand,
-    validationError: exceedsSupportedMax
-      ? validationMessage("exceeds_supported_max")
-      : null,
+    validationError: null,
     validationCode: exceedsSupportedMax ? "exceeds_supported_max" : null,
     exceedsSupportedMax,
   };
@@ -148,6 +147,8 @@ export function buildLtvContext(input: PropertyLoanInput): LtvContext {
 /** Rate API filter uses exact LTV, not the band upper limit. */
 export function rateFilterLtvFromContext(context: LtvContext): number | null {
   if (context.validationError || context.exactLtv == null) return null;
+  // No published band above catalog max — skip rate fetch instead of inventing matches.
+  if (context.exceedsSupportedMax) return null;
   return context.exactLtv;
 }
 

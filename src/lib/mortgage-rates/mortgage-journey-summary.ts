@@ -12,6 +12,7 @@ import {
   formatExactLtvCs,
   formatLtvBandLabel,
 } from "@/lib/mortgage-rates/ltv-context";
+import { LTV_ABOVE_CATALOG_WARNING } from "@/lib/mortgage-rates/ltv-catalog-copy";
 import {
   buildCalculatorHref,
   type MortgageJourneyContext,
@@ -41,6 +42,8 @@ export type MortgageJourneySummaryReady = {
   modelMonthlyPaymentCzk: number;
   modelRatePercent: number;
   editHref: string;
+  /** Present when LTV is valid but outside published rate-band coverage. */
+  catalogCoverageWarning: string | null;
 };
 
 export type MortgageJourneySummaryIncomplete = {
@@ -148,5 +151,8 @@ export function resolveMortgageJourneySummary(
     modelMonthlyPaymentCzk: result.monthlyPaymentCzk,
     modelRatePercent: result.annualRatePercent,
     editHref,
+    catalogCoverageWarning: journey.ltvContext.exceedsSupportedMax
+      ? LTV_ABOVE_CATALOG_WARNING
+      : null,
   };
 }

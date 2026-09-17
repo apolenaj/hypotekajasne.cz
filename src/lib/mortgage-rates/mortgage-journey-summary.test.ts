@@ -61,6 +61,30 @@ describe("resolveMortgageJourneySummary", () => {
     assert.equal(summary.status, "incomplete");
   });
 
+  it("LTV 95 % is a ready calculation (catalog gap ≠ invalid input)", () => {
+    const journey = parseMortgageJourneyParams({
+      purpose: "purchase",
+      fixationMonths: "36",
+      property: "6000000",
+      loan: "5700000",
+      equity: "300000",
+      termYears: "30",
+      modelRate: "4.49",
+    });
+    assert.equal(journey.paramErrors.length, 0);
+    assert.equal(journey.ltvContext.exactLtv, 95);
+    assert.equal(journey.ltvContext.exceedsSupportedMax, true);
+    assert.equal(journey.ltvContext.validationError, null);
+
+    const summary = resolveMortgageJourneySummary(journey);
+    assert.equal(summary.status, "ready");
+    if (summary.status !== "ready") return;
+    assert.equal(summary.loanAmountCzk, 5_700_000);
+    assert.equal(summary.exactLtv, 95);
+    assert.equal(summary.ltvBand, null);
+    assert.ok(summary.catalogCoverageWarning?.includes("90"));
+  });
+
   it("formatFixationMonthsCs", () => {
     assert.equal(formatFixationMonthsCs(36), "3 roky");
     assert.equal(formatFixationMonthsCs(60), "5 let");

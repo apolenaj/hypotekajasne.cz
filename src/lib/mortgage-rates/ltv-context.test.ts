@@ -71,7 +71,9 @@ describe("buildLtvContext", () => {
     });
     assert.equal(high.exactLtv, 95);
     assert.equal(high.exceedsSupportedMax, true);
-    assert.ok(high.validationError?.includes("90"));
+    assert.equal(high.validationError, null);
+    assert.equal(high.validationCode, "exceeds_supported_max");
+    assert.equal(high.ltvBand, null);
   });
 });
 
