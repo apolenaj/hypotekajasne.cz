@@ -4,11 +4,8 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
-  CONTROL_MODEL_INPUTS,
   CONTROL_MODEL_VERSION,
   CONTROL_OTHER_ANNUAL_COSTS_CZK,
-  computeMonthlyAnnuity,
-  computeOperatingSurplusAfterReserve,
   formatModelCzk,
   formatModelPct,
   runControlModel,
@@ -33,9 +30,25 @@ import {
 } from "@/lib/property-rentgen/sample-pdf-meta";
 import {
   buildMonthlyWaterfallSteps,
+  RentgenBeforeAfterPanels,
+  RentgenEquityDebtChart,
+  RentgenReservePathChart,
+  RentgenSaleSettlementCharts,
   RentgenScenarioBars,
+  RentgenSensitivityHeatmap,
+  RentgenStackedCashBar,
+  RentgenTornadoChart,
   RentgenWaterfallChart,
 } from "@/components/property-rentgen/RentgenCharts";
+import {
+  buildBeforeAfterPanels,
+  buildCashNeededStacked,
+  buildEquityDebtSeries,
+  buildReservePathSeries,
+  buildSaleWaterfall,
+  buildSettlementWaterfall,
+  buildTornadoDeltas,
+} from "@/lib/property-rentgen/chart-series";
 import { track } from "@/lib/analytics/track";
 import { routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
@@ -52,9 +65,6 @@ const NAV = [
   { id: "metodika", label: "Metodika" },
 ] as const;
 
-const SENSITIVITY_RENTS = [18_000, 19_000, 20_000, 21_000, 22_000] as const;
-const SENSITIVITY_RATES = [3.8, 4.8, 5.8, 6.8] as const;
-
 function cashFlowHeadline(monthlyCashFlowCzk: number): string {
   const abs = Math.round(Math.abs(monthlyCashFlowCzk));
   const formatted = abs.toLocaleString("cs-CZ");
@@ -65,24 +75,6 @@ function cashFlowHeadline(monthlyCashFlowCzk: number): string {
     return `Měsíčně vám zbývá přibližně ${formatted} Kč.`;
   }
   return "Měsíční peněžní tok vychází přibližně na nulu.";
-}
-
-function sensitivityCashFlow(
-  monthlyRentCzk: number,
-  annualRatePercent: number
-): number {
-  const ops = computeOperatingSurplusAfterReserve({
-    monthlyRentCzk,
-    vacancyRate: CONTROL_MODEL_INPUTS.vacancyRate,
-    managementFeeRate: CONTROL_MODEL_INPUTS.managementFeeRate,
-    otherAnnualCostsCzk: CONTROL_OTHER_ANNUAL_COSTS_CZK,
-  });
-  const payment = computeMonthlyAnnuity(
-    CONTROL_MODEL_INPUTS.loanAmountCzk,
-    annualRatePercent,
-    CONTROL_MODEL_INPUTS.termYears
-  );
-  return ops.operatingSurplusAfterReserveCzk / 12 - payment;
 }
 
 function Section({
@@ -104,7 +96,13 @@ function Section({
   );
 }
 
-function EvidenceTablePremium({ generatedAt }: { generatedAt: string }) {
+function EvidenceTablePremium({
+  generatedAt,
+  model,
+}: {
+  generatedAt: string;
+  model: ControlModelResult;
+}) {
   const rows = [
     {
       field: "List vlastnictví",
@@ -132,16 +130,16 @@ function EvidenceTablePremium({ generatedAt }: { generatedAt: string }) {
     },
     {
       field: "Kupní cena (vstup)",
-      value: formatModelCzk(CONTROL_MODEL_INPUTS.purchasePriceCzk),
-      source: "zadáno v modelu",
+      value: formatModelCzk(model.inputs.purchasePriceCzk),
+      source: "upravený model po podkladech",
       date: CONTROL_MODEL_VERSION,
       status: "modelový předpoklad",
       impact: "Základ všech výpočtů.",
     },
     {
       field: "Nájem bez záloh",
-      value: formatModelCzk(CONTROL_MODEL_INPUTS.monthlyRentCzk),
-      source: "zadáno v modelu",
+      value: formatModelCzk(model.inputs.monthlyRentCzk),
+      source: "upravený model po podkladech",
       date: CONTROL_MODEL_VERSION,
       status: "modelový předpoklad",
       impact: "Citlivý vstup — srovnání nájmů v PDF.",
@@ -218,11 +216,13 @@ function ModelBody({
   model: ControlModelResult;
   pkg: RentgenSamplePackageId;
 }) {
-  const scenarios = useMemo(() => runControlScenarios(), []);
   const caseStudy = useMemo(() => buildCaseStudyBundle(model.inputs), [model.inputs]);
+  const activeModel = pkg === "premium" ? caseStudy.adjustedModel : model;
+  const scenarios =
+    pkg === "premium" ? caseStudy.scenarios : runControlScenarios(model.inputs);
   const waterfallSteps = useMemo(
-    () => buildMonthlyWaterfallSteps(model.monthlyWaterfall),
-    [model.monthlyWaterfall]
+    () => buildMonthlyWaterfallSteps(activeModel.monthlyWaterfall),
+    [activeModel.monthlyWaterfall]
   );
   const scenarioRows = scenarios.map((s) => ({
     id: s.id,
@@ -231,27 +231,180 @@ function ModelBody({
     assumptions: `Nájem ${formatModelCzk(s.monthlyRentCzk, 0)} · výpadek ${(s.vacancyRate * 100).toLocaleString("cs-CZ")} % · sazba ${s.annualRatePercent.toLocaleString("cs-CZ")} %`,
     emphasize: s.id === "base",
   }));
+  const sensitivityRows =
+    pkg === "premium"
+      ? caseStudy.sensitivity.rents
+      : [18_000, 19_000, 20_000, 21_000, 22_000];
+  const sensitivityColumns =
+    pkg === "premium" ? caseStudy.sensitivity.rates : [3.8, 4.8, 5.8, 6.8];
+  const sensitivityCells =
+    pkg === "premium"
+      ? caseStudy.sensitivity.cells.map((cell) => ({
+          rowValue: cell.monthlyRentCzk,
+          columnValue: cell.annualRatePercent,
+          valueCzk: cell.monthlyCashFlowCzk,
+        }))
+      : sensitivityRows.flatMap((rent) =>
+          sensitivityColumns.map((rate) => ({
+            rowValue: rent,
+            columnValue: rate,
+            valueCzk: runControlModel({
+              ...model.inputs,
+              monthlyRentCzk: rent,
+              annualRatePercent: rate,
+            }).monthlyCashFlowCzk,
+          }))
+        );
+  const cashNeeded = buildCashNeededStacked(
+    {
+      equityCzk: activeModel.equityTowardPurchaseCzk,
+      fitoutCzk: activeModel.inputs.initialFitOutCzk,
+      optionalFitoutCzk:
+        pkg === "premium"
+          ? Math.max(
+              0,
+              caseStudy.originalModel.inputs.initialFitOutCzk -
+                caseStudy.adjustedInputs.initialFitOutCzk
+            )
+          : 0,
+      closingCzk: activeModel.inputs.closingCostsCzk,
+      reserveCzk: activeModel.inputs.cashReserveCzk,
+    },
+    {
+      interpretationCs:
+        pkg === "premium"
+          ? "Nutná částka počítá s úpravami za 145 tis. Kč; volitelný nábytek je zobrazen zvlášť."
+          : "Sloupec ukazuje vlastní část kupní ceny, úpravy, vedlejší náklady a drženou rezervu.",
+      assumptionsCs: [
+        `Kupní cena ${formatModelCzk(activeModel.inputs.purchasePriceCzk)}`,
+        `úvěr ${formatModelCzk(activeModel.inputs.loanAmountCzk)}`,
+      ],
+    }
+  );
+  const beforeAfter = buildBeforeAfterPanels(
+    {
+      monthlyCashFlow: {
+        beforeCzk: caseStudy.originalModel.monthlyCashFlowCzk,
+        afterCzk: caseStudy.adjustedModel.monthlyCashFlowCzk,
+      },
+      ownCash: {
+        beforeCzk: caseStudy.originalModel.totalOwnCashIncludingReserveCzk,
+        afterCzk: caseStudy.adjustedModel.totalOwnCashIncludingReserveCzk,
+      },
+      ownerCosts: {
+        beforeCzk: CONTROL_OTHER_ANNUAL_COSTS_CZK / 12,
+        afterCzk:
+          (caseStudy.adjustedInputs.ownerBuildingCostsAnnualCzk +
+            caseStudy.adjustedInputs.insuranceAnnualCzk +
+            caseStudy.adjustedInputs.propertyTaxAnnualCzk +
+            caseStudy.adjustedInputs.unitMaintenanceReserveAnnualCzk) /
+          12,
+      },
+    },
+    {
+      interpretationCs:
+        "Podklady snížily nutné úpravy, ale zvýšily pravidelné náklady vlastníka a měsíční doplatek.",
+      assumptionsCs: ["Před = původní zadání", "po = údaje upravené podle modelových podkladů"],
+    }
+  );
+  const tornado = buildTornadoDeltas(
+    caseStudy.sensitivity.concreteDeltas
+      .filter((row) => Math.abs(row.deltaMonthlyCashFlowCzk) >= 100)
+      .map((row) => ({
+        label: row.label,
+        deltaCzk: row.deltaMonthlyCashFlowCzk,
+        changeNote: row.changeDescriptionCs,
+      })),
+    {
+      interpretationCs:
+        "Největší délka pruhu označuje změnu s největším dopadem na měsíční výsledek.",
+      assumptionsCs: ["Každá změna je počítána samostatně proti upravenému modelu"],
+    }
+  );
+  const reservePath = buildReservePathSeries(
+    caseStudy.combinedLiquidity.path.map((row) => ({
+      month: row.month,
+      openingCzk: row.openingCzk,
+      closingCzk: row.closingCzk,
+      topupCzk: row.investorInflowCzk,
+      empty: row.month <= caseStudy.combinedLiquidity.emptyMonthsWithoutRent,
+      repair: row.month === caseStudy.combinedLiquidity.repairMonth,
+      relet:
+        row.month === caseStudy.combinedLiquidity.emptyMonthsWithoutRent + 1,
+    })),
+    {
+      interpretationCs:
+        "Rezerva při souběhu prázdna a opravy nestačí bez externího doplnění.",
+      assumptionsCs: [
+        "4 měsíce bez nájmu",
+        "oprava 80 000 Kč ve 4. měsíci",
+        "opětovné pronajmutí od 5. měsíce",
+      ],
+    }
+  );
+  const equityDebt = buildEquityDebtSeries(
+    caseStudy.longTermFlatCosts.map((row) => ({
+      year: row.year,
+      propertyValueCzk: row.propertyValueCzk,
+      debtCzk: row.loanBalanceCzk,
+      equityCzk: row.equityCzk,
+    })),
+    {
+      interpretationCs:
+        "Rozdíl mezi modelovou hodnotou bytu a zůstatkem úvěru tvoří vlastní kapitál.",
+      assumptionsCs: ["Hodnota nemovitosti +2 % ročně", "řádné splácení úvěru"],
+    }
+  );
+  const saleY5 = caseStudy.sales[0]!;
+  const saleChart = buildSaleWaterfall(
+    {
+      salePriceCzk: saleY5.assumedSalePriceCzk,
+      costsCzk: saleY5.sellingCostsCzk,
+      debtCzk: saleY5.loanBalanceCzk,
+      netProceedsCzk: saleY5.netProceedsBeforeTaxCzk,
+    },
+    {
+      interpretationCs:
+        "Po nákladech prodeje a splacení zůstatku úvěru zbývá čisté inkaso před daní.",
+      assumptionsCs: ["prodej po 5 letech", "náklady prodeje 4 %", "růst hodnoty 2 % ročně"],
+    }
+  );
+  const settlementChart = buildSettlementWaterfall(
+    {
+      initialOutlayCzk: caseStudy.settlementStressY5.initialOwnCashCzk,
+      topupsCzk: caseStudy.settlementStressY5.investorTopUpsCzk,
+      saleAndReserveCzk:
+        caseStudy.settlementStressY5.saleNetProceedsBeforeTaxCzk +
+        caseStudy.settlementStressY5.reserveReleasedCzk,
+      totalCzk: caseStudy.settlementStressY5.totalResultBeforeTaxCzk,
+    },
+    {
+      interpretationCs:
+        "Výsledek spojuje počáteční hotovost, doplnění rezervy a konečné inkaso bez dvojího započtení provozních toků.",
+      assumptionsCs: ["stres na začátku", "prodej po 5 letech", "výsledek před daní z příjmů"],
+    }
+  );
 
   return (
     <>
       <Section id="shrnuti" title="Shrnutí">
         <p className="text-lg font-semibold text-text-dark">
-          {cashFlowHeadline(model.monthlyCashFlowCzk)}
+          {cashFlowHeadline(activeModel.monthlyCashFlowCzk)}
         </p>
         <p className="text-sm leading-relaxed text-text-dark">
-          {model.baseConclusionCs}
+          {activeModel.baseConclusionCs}
         </p>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
             [
               "Vlastní hotovost vč. rezervy",
-              formatModelCzk(model.totalOwnCashIncludingReserveCzk),
+              formatModelCzk(activeModel.totalOwnCashIncludingReserveCzk),
             ],
-            ["Měsíční tok", formatModelCzk(model.monthlyCashFlowCzk, 0)],
-            ["Hrubý výnos z kupní ceny", formatModelPct(model.grossYieldOnPurchase, 2)],
+            ["Měsíční tok", formatModelCzk(activeModel.monthlyCashFlowCzk, 0)],
+            ["Hrubý výnos z kupní ceny", formatModelPct(activeModel.grossYieldOnPurchase, 2)],
             [
               "Provozní výnos z pořízení",
-              formatModelPct(model.operatingYieldOnAcquisition, 2),
+              formatModelPct(activeModel.operatingYieldOnAcquisition, 2),
             ],
           ].map(([l, v]) => (
             <div
@@ -270,28 +423,31 @@ function ModelBody({
         <p className="text-[11px] text-muted-foreground">
           Hrubý výnos = roční potenciální nájem / kupní cena. Provozní výnos po
           rezervě = přebytek po rezervě / pořizovací investice{" "}
-          {formatModelCzk(model.totalAcquisitionCostCzk)}. Tok je před daní z
+          {formatModelCzk(activeModel.totalAcquisitionCostCzk)}. Tok je před daní z
           příjmů.
         </p>
+        {pkg === "premium" ? (
+          <RentgenBeforeAfterPanels data={beforeAfter.data} meta={beforeAfter.meta} />
+        ) : null}
       </Section>
 
       <Section id="vstupy" title="Vstupy">
         <dl className="grid gap-2 text-sm sm:grid-cols-2">
           {(
             [
-              ["Plocha", `${model.inputs.areaM2} m²`],
-              ["Kupní cena", formatModelCzk(model.inputs.purchasePriceCzk)],
-              ["Úpravy a vybavení", formatModelCzk(model.inputs.initialFitOutCzk)],
-              ["Vedlejší náklady", formatModelCzk(model.inputs.closingCostsCzk)],
-              ["Úvěr", formatModelCzk(model.inputs.loanAmountCzk)],
+              ["Plocha", `${activeModel.inputs.areaM2} m²`],
+              ["Kupní cena", formatModelCzk(activeModel.inputs.purchasePriceCzk)],
+              ["Úpravy a vybavení", formatModelCzk(activeModel.inputs.initialFitOutCzk)],
+              ["Vedlejší náklady", formatModelCzk(activeModel.inputs.closingCostsCzk)],
+              ["Úvěr", formatModelCzk(activeModel.inputs.loanAmountCzk)],
               [
                 "Sazba / splatnost",
-                `${model.inputs.annualRatePercent} % · ${model.inputs.termYears} let`,
+                `${activeModel.inputs.annualRatePercent} % · ${activeModel.inputs.termYears} let`,
               ],
-              ["Nájem bez záloh / měs.", formatModelCzk(model.inputs.monthlyRentCzk)],
+              ["Nájem bez záloh / měs.", formatModelCzk(activeModel.inputs.monthlyRentCzk)],
               [
                 "Výpadek / správa",
-                `${model.inputs.vacancyRate * 100} % / ${model.inputs.managementFeeRate * 100} %`,
+                `${activeModel.inputs.vacancyRate * 100} % / ${activeModel.inputs.managementFeeRate * 100} %`,
               ],
             ] as const
           ).map(([k, v]) => (
@@ -308,32 +464,48 @@ function ModelBody({
 
       <Section id="naklady" title="Náklady a rozpočet vstupu">
         <p className="text-sm text-muted-foreground">
-          Celková pořizovací investice {formatModelCzk(model.totalAcquisitionCostCzk)}{" "}
-          nezahrnuje drženou rezervu {formatModelCzk(model.inputs.cashReserveCzk)}.
+          Celková pořizovací investice {formatModelCzk(activeModel.totalAcquisitionCostCzk)}{" "}
+          nezahrnuje drženou rezervu {formatModelCzk(activeModel.inputs.cashReserveCzk)}.
         </p>
+        <RentgenStackedCashBar data={cashNeeded.data} meta={cashNeeded.meta} />
         <ul className="space-y-1 text-sm">
           <li>
             Vlastní část kupní ceny:{" "}
-            {formatModelCzk(model.equityTowardPurchaseCzk)}
+            {formatModelCzk(activeModel.equityTowardPurchaseCzk)}
           </li>
-          <li>Úpravy: {formatModelCzk(model.inputs.initialFitOutCzk)}</li>
-          <li>Vedlejší: {formatModelCzk(model.inputs.closingCostsCzk)}</li>
+          <li>Úpravy: {formatModelCzk(activeModel.inputs.initialFitOutCzk)}</li>
+          <li>Vedlejší: {formatModelCzk(activeModel.inputs.closingCostsCzk)}</li>
           <li>
             Oddělená hotovostní rezerva:{" "}
-            {formatModelCzk(model.inputs.cashReserveCzk)}
+            {formatModelCzk(activeModel.inputs.cashReserveCzk)}
           </li>
           <li className="font-semibold">
             Celkem vlastní hotovost:{" "}
-            {formatModelCzk(model.totalOwnCashIncludingReserveCzk)}
+            {formatModelCzk(activeModel.totalOwnCashIncludingReserveCzk)}
           </li>
         </ul>
       </Section>
 
       <Section id="mesicni" title="Měsíční výsledek">
         <p className="text-base font-semibold text-text-dark">
-          {cashFlowHeadline(model.monthlyCashFlowCzk)}
+          {cashFlowHeadline(activeModel.monthlyCashFlowCzk)}
         </p>
-        <RentgenWaterfallChart steps={waterfallSteps} />
+        <RentgenWaterfallChart
+          steps={waterfallSteps}
+          meta={{
+            id: "sample-waterfall",
+            questionCs: "Jak vzniká měsíční výsledek?",
+            unitCs: "Kč/měs.",
+            periodCs: "Počáteční stav",
+            interpretationCs:
+              "Jednotlivé odpočty vedou od nájemného k částce, kterou investor doplácí nebo která mu zbývá.",
+            assumptionsCs: [
+              `nájem ${formatModelCzk(activeModel.inputs.monthlyRentCzk)}`,
+              `výpadek ${activeModel.inputs.vacancyRate * 100} %`,
+              `sazba ${activeModel.inputs.annualRatePercent} %`,
+            ],
+          }}
+        />
         <details>
           <summary className="cursor-pointer text-xs font-semibold text-deep-teal">
             Tabulka vodopádu
@@ -347,7 +519,7 @@ function ModelBody({
               </tr>
             </thead>
             <tbody>
-              {model.monthlyWaterfall.map((w) => (
+              {activeModel.monthlyWaterfall.map((w) => (
                 <tr key={w.key} className="border-b border-border/70">
                   <td className="py-1.5">{w.label}</td>
                   <td className="py-1.5 tabular-nums font-medium">
@@ -359,7 +531,7 @@ function ModelBody({
           </table>
         </details>
         <p className="text-sm font-semibold tabular-nums text-text-dark">
-          Výsledek: {formatModelCzk(model.monthlyCashFlowCzk, 0)} / měs. před
+          Výsledek: {formatModelCzk(activeModel.monthlyCashFlowCzk, 0)} / měs. před
           daní z příjmů
         </p>
       </Section>
@@ -367,12 +539,61 @@ function ModelBody({
       <Section id="scenare" title="Scénáře">
         <p className="text-xs text-muted-foreground">
           Srovnání různých počátečních podmínek — ne predikce ani pravděpodobnost.
-          Fixované: správa 5 %, ostatní náklady{" "}
-          {formatModelCzk(CONTROL_OTHER_ANNUAL_COSTS_CZK)}/rok, úvěr{" "}
-          {formatModelCzk(CONTROL_MODEL_INPUTS.loanAmountCzk)}, splatnost 360
+          Fixované: správa {activeModel.inputs.managementFeeRate * 100} %, úvěr{" "}
+          {formatModelCzk(activeModel.inputs.loanAmountCzk)}, splatnost{" "}
+          {activeModel.inputs.termYears * 12}
           měsíců.
         </p>
-        <RentgenScenarioBars rows={scenarioRows} />
+        <RentgenScenarioBars
+          rows={scenarioRows}
+          meta={{
+            id: "sample-scenarios",
+            questionCs: "Jak dopadnou tři možné vstupní podmínky?",
+            unitCs: "Kč/měs.",
+            periodCs: "Počáteční stav",
+            interpretationCs:
+              "Pruhy porovnávají měsíční výsledek; nejde o předpověď ani pravděpodobnost.",
+            assumptionsCs: [
+              `úvěr ${formatModelCzk(activeModel.inputs.loanAmountCzk)}`,
+              `splatnost ${activeModel.inputs.termYears} let`,
+              "správa a náklady podle zvoleného balíčku",
+            ],
+          }}
+        />
+        {pkg === "premium" ? (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+            <p className="font-semibold">Co říká historie neobsazenosti?</p>
+            <p className="mt-1">
+              V podkladu chyběl nájem {caseStudy.vacancyAnalysis.historicalEmptyMonths} z{" "}
+              {caseStudy.vacancyAnalysis.historicalHorizonMonths} měsíců, tedy{" "}
+              {(caseStudy.vacancyAnalysis.historicalRate * 100).toLocaleString("cs-CZ", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}{" "}
+              %. Budoucí model ponechává předpoklad{" "}
+              {caseStudy.vacancyAnalysis.futureAssumptionRate * 100} %.
+            </p>
+            <p className="mt-1 tabular-nums">
+              Při 5 %:{" "}
+              <strong>
+                {formatModelCzk(
+                  caseStudy.vacancyAnalysis.monthlyCashFlowAtFutureAssumptionCzk,
+                  0
+                )}{" "}
+                / měs.
+              </strong>{" "}
+              · při historických 4/36:{" "}
+              <strong>
+                {formatModelCzk(
+                  caseStudy.vacancyAnalysis.monthlyCashFlowAtHistoricalRateCzk,
+                  0
+                )}{" "}
+                / měs.
+              </strong>
+            </p>
+            <p className="mt-1 text-xs">{caseStudy.vacancyAnalysis.futureAssumptionReasonCs}</p>
+          </div>
+        ) : null}
         <details>
           <summary className="cursor-pointer text-xs font-semibold text-deep-teal">
             Detailní tabulka scénářů
@@ -419,49 +640,31 @@ function ModelBody({
             Buňky = měsíční peněžní tok (Kč). Zelená jen nad nulou. Výpadek a
             správa zůstávají jako v základním modelu.
           </p>
-          <div className="mt-3 overflow-x-auto">
-            <table className="w-full min-w-[420px] text-center text-xs">
-              <caption className="sr-only">
-                Citlivost měsíčního toku na nájem a sazbu
-              </caption>
-              <thead>
-                <tr className="border-b border-border text-muted-foreground">
-                  <th className="py-2 text-left">Nájem \ sazba</th>
-                  {SENSITIVITY_RATES.map((r) => (
-                    <th key={r} className="px-2 py-2 tabular-nums">
-                      {r} %
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {SENSITIVITY_RENTS.map((rent) => (
-                  <tr key={rent} className="border-b border-border/70">
-                    <td className="py-2 text-left tabular-nums font-medium">
-                      {formatModelCzk(rent)}
-                    </td>
-                    {SENSITIVITY_RATES.map((rate) => {
-                      const cf = sensitivityCashFlow(rent, rate);
-                      const positive = cf >= 0;
-                      return (
-                        <td
-                          key={`${rent}-${rate}`}
-                          className={cn(
-                            "px-2 py-2 tabular-nums",
-                            positive
-                              ? "bg-emerald-50 font-semibold text-emerald-800"
-                              : "text-red-700"
-                          )}
-                        >
-                          {formatModelCzk(cf, 0)}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <RentgenSensitivityHeatmap
+            rows={sensitivityRows}
+            columns={sensitivityColumns}
+            cells={sensitivityCells}
+            currentRow={20_000}
+            currentColumn={4.8}
+            meta={{
+              id: "sample-sensitivity",
+              questionCs: "Jak nájem a sazba mění měsíční výsledek?",
+              unitCs: "Kč/měs.",
+              periodCs: "Počáteční stav",
+              interpretationCs:
+                "Zlatý rámeček označuje základní kombinaci nájmu 20 000 Kč a sazby 4,8 %.",
+              assumptionsCs: [
+                `výpadek ${activeModel.inputs.vacancyRate * 100} %`,
+                `správa ${activeModel.inputs.managementFeeRate * 100} %`,
+                "ostatní vstupy beze změny",
+              ],
+            }}
+          />
+          {pkg === "premium" ? (
+            <div className="mt-6">
+              <RentgenTornadoChart data={tornado.data} meta={tornado.meta} />
+            </div>
+          ) : null}
         </div>
       </Section>
 
@@ -469,10 +672,16 @@ function ModelBody({
         <p className="text-sm text-muted-foreground">
           Splacená jistina za 12 měsíců:{" "}
           <span className="font-semibold tabular-nums text-text-dark">
-            {formatModelCzk(model.principalPaidFirst12MonthsCzk, 0)}
+            {formatModelCzk(activeModel.principalPaidFirst12MonthsCzk, 0)}
           </span>
           . Jistina není peněžní příjem na účet.
         </p>
+        {pkg === "premium" ? (
+          <>
+            <RentgenReservePathChart data={reservePath.data} meta={reservePath.meta} />
+            <RentgenEquityDebtChart data={equityDebt.data} meta={equityDebt.meta} />
+          </>
+        ) : null}
         <details>
           <summary className="cursor-pointer text-xs font-semibold text-deep-teal">
             Tabulka amortizace
@@ -492,7 +701,7 @@ function ModelBody({
                 </tr>
               </thead>
               <tbody>
-                {model.first12Months.map((m) => (
+                {activeModel.first12Months.map((m) => (
                   <tr key={m.month} className="border-b border-border/70">
                     <td className="py-1.5 tabular-nums">{m.month}</td>
                     <td className="py-1.5 tabular-nums">
@@ -520,14 +729,14 @@ function ModelBody({
           <li>
             Nájem pro nulový tok:{" "}
             <strong className="tabular-nums">
-              {formatModelCzk(model.rentForZeroCashFlowCzk, 0)}
+              {formatModelCzk(activeModel.rentForZeroCashFlowCzk, 0)}
             </strong>{" "}
             / měs.
           </li>
           <li>
             Cenová hranice nulového toku při úvěru 70 % kupní ceny:{" "}
             <strong className="tabular-nums">
-              {formatModelCzk(model.purchasePriceForZeroCashFlowAt70LoanCzk, 0)}
+              {formatModelCzk(activeModel.purchasePriceForZeroCashFlowAt70LoanCzk, 0)}
             </strong>
           </li>
         </ul>
@@ -536,6 +745,14 @@ function ModelBody({
           Úvěr se v tomto výpočtu mění s 70 % kupní ceny. Tok je před daní z
           příjmů.
         </p>
+        {pkg === "premium" ? (
+          <RentgenSaleSettlementCharts
+            sale={saleChart.data}
+            settlement={settlementChart.data}
+            saleMeta={saleChart.meta}
+            settlementMeta={settlementChart.meta}
+          />
+        ) : null}
       </Section>
 
       <Section id="podklady" title="Podklady a rizika">
@@ -648,7 +865,10 @@ function ModelBody({
               {caseStudy.rentListings[0]?.accessDate ?? caseStudy.generatedAt} ·
               neprokazují realizované nájemné.
             </p>
-            <EvidenceTablePremium generatedAt={caseStudy.generatedAt} />
+            <EvidenceTablePremium
+              generatedAt={caseStudy.generatedAt}
+              model={caseStudy.adjustedModel}
+            />
           </>
         ) : (
           <div className="space-y-3 text-sm text-muted-foreground">
@@ -676,7 +896,12 @@ function ModelBody({
           <li>
             Anuita z jistiny, sazby a splatnosti; provozní přebytek po rezervě =
             inkasovaný nájem − správa − ostatní roční náklady (
-            {formatModelCzk(CONTROL_OTHER_ANNUAL_COSTS_CZK)} v tomto příkladu).
+            {formatModelCzk(
+              pkg === "premium"
+                ? caseStudy.adjustedModel.otherAnnualCostsCzk
+                : CONTROL_OTHER_ANNUAL_COSTS_CZK
+            )}{" "}
+            v tomto příkladu).
           </li>
           <li>
             Poměr úvěru ke kupní ceně není automaticky bankovní LTV. Model
@@ -695,14 +920,11 @@ function ModelBody({
 
 export function RentgenUkazkaView() {
   const searchParams = useSearchParams();
-  const [pkg, setPkg] = useState<RentgenSamplePackageId>(() =>
-    samplePackageFromQuery(searchParams.get("balicek"))
-  );
+  const queryPackage = samplePackageFromQuery(searchParams.get("balicek"));
+  const [selectedPackage, setSelectedPackage] =
+    useState<RentgenSamplePackageId | null>(null);
+  const pkg = selectedPackage ?? queryPackage;
   const model = useMemo(() => runControlModel(), []);
-
-  useEffect(() => {
-    setPkg(samplePackageFromQuery(searchParams.get("balicek")));
-  }, [searchParams]);
 
   useEffect(() => {
     track("premium_viewed", {
@@ -712,7 +934,7 @@ export function RentgenUkazkaView() {
   }, []);
 
   const selectPackage = (id: RentgenSamplePackageId) => {
-    setPkg(id);
+    setSelectedPackage(id);
     try {
       const url = new URL(window.location.href);
       url.searchParams.set("balicek", packageQueryValue(id));
@@ -844,28 +1066,28 @@ export function RentgenUkazkaView() {
             <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {[
                 {
-                  title: "Rozhodovací shrnutí",
-                  body: "Tok před a po podkladech, hotovost a co rozbor přidává.",
+                  title: "Rozhodnutí a hotovost",
+                  body: "Tok před a po podkladech, potřebná hotovost.",
                   src: "/rentgen-sample-previews/premium-p02.png",
                   page: 2,
                 },
                 {
-                  title: "Srovnání nájmů",
-                  body: "Veřejné nabídky Brno-Židenice s omezeními srovnatelnosti.",
-                  src: "/rentgen-sample-previews/premium-p10.png",
-                  page: 10,
+                  title: "Rozklad nájmu a scénáře",
+                  body: "Vodopád měsíčního toku a srovnání variant.",
+                  src: "/rentgen-sample-previews/premium-p08.png",
+                  page: 8,
                 },
                 {
-                  title: "Likvidita a stres",
-                  body: "Prázdno, oprava 80 tis. a průběh rezervy.",
-                  src: "/rentgen-sample-previews/premium-p15.png",
-                  page: 15,
+                  title: "Likvidita a refixace",
+                  body: "Čtyři měsíce bez inkasa a dopad sazby.",
+                  src: "/rentgen-sample-previews/premium-p12.png",
+                  page: 12,
                 },
                 {
-                  title: "Individuální závěr",
-                  body: "Podmínky, hotovost a co ověřit jako první.",
-                  src: "/rentgen-sample-previews/premium-p20.png",
-                  page: 20,
+                  title: "Závěr a vypořádání",
+                  body: "Prodej, celkový výsledek a co ověřit.",
+                  src: "/rentgen-sample-previews/premium-p16.png",
+                  page: 16,
                 },
               ].map((card) => (
                 <figure

@@ -29,13 +29,54 @@ describe("case study analytics", () => {
     assert.equal(b.adjustedInputs.initialFitOutCzk, 145_000);
   });
 
-  it("combined liquidity does not apply average vacancy while empty", () => {
+  it("combined liquidity: 3 empty + repair month without rent", () => {
     const b = buildCaseStudyBundle();
-    assert.match(b.combinedLiquidity.noteCs, /5 %/);
-    assert.equal(b.combinedLiquidity.path.length, 8);
+    assert.equal(b.combinedLiquidity.emptyMonthsWithoutRent, 4);
+    assert.equal(b.combinedLiquidity.emptyMonthsBeforeRepair, 3);
+    assert.equal(b.combinedLiquidity.repairMonth, 4);
+    assert.equal(b.combinedLiquidity.path.length, 12);
     assert.equal(b.combinedLiquidity.path[0]!.opsInflowCzk, 0);
     assert.ok(b.combinedLiquidity.path[0]!.outflowCzk > 15_000);
     assert.ok(b.combinedLiquidity.path[3]!.outflowCzk > 80_000);
+    assert.match(b.combinedLiquidity.noteCs, /čtyři měsíce bez nájemného/i);
+  });
+
+  it("historical vacancy 4/36 is distinct from future 5% assumption", () => {
+    const b = buildCaseStudyBundle();
+    assert.ok(Math.abs(b.vacancyAnalysis.historicalRate - 4 / 36) < 1e-12);
+    assert.equal(b.vacancyAnalysis.futureAssumptionRate, 0.05);
+    assert.ok(
+      Math.abs(b.vacancyAnalysis.monthlyCashFlowAtFutureAssumptionCzk - -1_675.16) <
+        0.1
+    );
+    assert.ok(
+      Math.abs(b.vacancyAnalysis.monthlyCashFlowAtHistoricalRateCzk - -2_836.27) <
+        0.1
+    );
+    assert.match(b.documents.find((d) => d.id === "doc-occupancy")!.says, /11,11/);
+  });
+
+  it("settlement uses ending reserve from history, not full initial reserve after stress", () => {
+    const b = buildCaseStudyBundle();
+    assert.equal(b.settlementY5.scenarioId, "base");
+    assert.equal(b.settlementStressY5.scenarioId, "stress");
+    assert.ok(b.settlementStressY5.investorTopUpsCzk > 0);
+    // Stres: konečná rezerva ≠ slepé vrácení celých 150 000 Kč
+    assert.ok(
+      Math.abs(
+        b.settlementStressY5.reserveReleasedCzk -
+          b.adjustedModel.inputs.cashReserveCzk
+      ) > 1
+    );
+    const wrongStress =
+      -b.settlementStressY5.initialOwnCashCzk +
+      b.settlementStressY5.cumulativeOperatingCashCzk -
+      b.settlementStressY5.investorTopUpsCzk +
+      b.settlementStressY5.saleNetProceedsBeforeTaxCzk +
+      b.adjustedModel.inputs.cashReserveCzk;
+    assert.ok(
+      Math.abs(b.settlementStressY5.totalResultBeforeTaxCzk - wrongStress) > 1
+    );
   });
 
   it("refix isolated matches constant-rent shock; connected uses grown rent", () => {
@@ -102,7 +143,7 @@ describe("case study analytics", () => {
       b.settlementY5.totalResultBeforeTaxCzk,
       b.settlementY5.saleNetProceedsBeforeTaxCzk
     );
-    assert.match(b.settlementY5.excludedCs, /daně/i);
+    assert.match(b.settlementY5.excludedCs, /dan/i);
   });
 
   it("market comps are public listings with URLs; exclusions labeled", () => {
@@ -128,6 +169,6 @@ describe("sample pdf package routing helpers", () => {
     assert.equal(samplePackageFromQuery("999"), "digital");
     assert.equal(samplePackageFromQuery("4990"), "premium");
     assert.equal(DIGITAL_SAMPLE_PAGE_COUNT, 8);
-    assert.equal(PREMIUM_SAMPLE_PAGE_COUNT, 25);
+    assert.equal(PREMIUM_SAMPLE_PAGE_COUNT, 16);
   });
 });

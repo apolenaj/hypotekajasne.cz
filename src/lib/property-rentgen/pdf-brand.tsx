@@ -3,15 +3,30 @@
  */
 
 import path from "node:path";
+import { Fragment } from "react";
 import {
   Font,
   StyleSheet,
   Svg,
   Rect,
+  Line,
+  Circle,
   Text,
   View,
 } from "@react-pdf/renderer";
 import { formatModelCzk } from "@/lib/property-rentgen/control-model";
+import type {
+  BeforeAfterPanels,
+  CashNeededStacked,
+  ChartMeta,
+  EquityDebtSeries,
+  MarketScatterPoint,
+  RefixTimeSeries,
+  ReservePathSeries,
+  SaleWaterfall,
+  SettlementWaterfall,
+  TornadoDeltas,
+} from "@/lib/property-rentgen/chart-series";
 
 const FONT_DIR = path.join(process.cwd(), "src/lib/property-rentgen/fonts");
 
@@ -307,7 +322,7 @@ export function PdfWaterfallChart({
         {bars.map((b) => (
           <View key={b.key} style={{ width: barW + gap }}>
             <Text style={{ fontSize: 6, textAlign: "center" }}>
-              {b.label.length > 10 ? `${b.label.slice(0, 9)}…` : b.label}
+              {b.label}
             </Text>
             <Text style={{ fontSize: 6.5, textAlign: "center", fontWeight: 700 }}>
               {formatModelCzk(b.value, 0)}
@@ -325,7 +340,6 @@ export function PdfScenarioBars({
   values: Array<{ label: string; value: number; emphasize?: boolean }>;
 }) {
   const maxAbs = Math.max(...values.map((v) => Math.abs(v.value)), 1);
-  const midY = 55;
   const chartH = 110;
   const barH = 10;
   const rowGap = 22;
@@ -381,6 +395,554 @@ export function PdfScenarioBars({
           </Text>
         </View>
       ))}
+    </View>
+  );
+}
+
+type PdfChartProps<T> = { data: T; meta?: ChartMeta };
+
+function PdfChartCaption({ meta }: { meta?: ChartMeta }) {
+  if (!meta) return null;
+  return (
+    <View style={{ marginTop: 3 }}>
+      <Text style={{ fontSize: 7.5, fontWeight: 700 }}>{meta.questionCs}</Text>
+      <Text style={{ fontSize: 6.5, color: PDF_BRAND.muted }}>
+        {meta.periodCs} · {meta.interpretationCs}
+      </Text>
+    </View>
+  );
+}
+
+function pdfSignedCzk(value: number): string {
+  return `${value > 0 ? "+" : ""}${formatModelCzk(value, 0)}`;
+}
+
+function PdfSeriesLines({
+  points,
+  color,
+  width = 2,
+  dashed = false,
+}: {
+  points: Array<{ x: number; y: number }>;
+  color: string;
+  width?: number;
+  dashed?: boolean;
+}) {
+  return (
+    <>
+      {points.slice(1).map((point, index) => {
+        const previous = points[index]!;
+        return (
+          <Line
+            key={`${previous.x}-${point.x}-${index}`}
+            x1={previous.x}
+            y1={previous.y}
+            x2={point.x}
+            y2={point.y}
+            stroke={color}
+            strokeWidth={width}
+            strokeDasharray={dashed ? "5 4" : undefined}
+          />
+        );
+      })}
+    </>
+  );
+}
+
+export function PdfStackedCashBar({
+  data,
+  meta,
+}: PdfChartProps<CashNeededStacked>) {
+  const height = 112;
+  const barX = 24;
+  const barW = 115;
+  const segments = [
+    ["Vlastní kapitál", data.equityCzk, PDF_BRAND.teal],
+    ["Nutný fit-out", data.fitoutCzk, PDF_BRAND.gold],
+    ["Vedlejší náklady", data.closingCzk, "#8a7350"],
+    ["Držená rezerva", data.reserveCzk, PDF_BRAND.green],
+    ["Volitelný fit-out", data.optionalFitoutCzk, PDF_BRAND.line],
+  ] as const;
+  const max = Math.max(data.totalWithOptionalFitoutCzk, 1);
+  let cursor = 100;
+  return (
+    <View style={{ marginVertical: 4 }} wrap={false}>
+      <View style={{ flexDirection: "row", gap: 12 }}>
+        <Svg width={160} height={height}>
+          {segments.map(([label, value, fill]) => {
+            const h = Math.max((value / max) * 88, value === 0 ? 0 : 1);
+            cursor -= h;
+            return (
+              <Rect
+                key={label}
+                x={barX}
+                y={cursor}
+                width={barW}
+                height={h}
+                fill={fill}
+              />
+            );
+          })}
+          <Line
+            x1={barX}
+            x2={barX + barW}
+            y1={100}
+            y2={100}
+            stroke={PDF_BRAND.ink}
+          />
+        </Svg>
+        <View style={{ flex: 1, justifyContent: "center" }}>
+          {segments.map(([label, value, fill]) => (
+            <View
+              key={label}
+              style={{ flexDirection: "row", alignItems: "center", marginBottom: 3 }}
+            >
+              <View
+                style={{
+                  width: 8,
+                  height: 8,
+                  backgroundColor: fill,
+                  marginRight: 6,
+                }}
+              />
+              <Text style={{ fontSize: 7.5, flex: 1 }}>{label}</Text>
+              <Text style={{ fontSize: 7.5, fontWeight: 700 }}>
+                {formatModelCzk(value, 0)}
+              </Text>
+            </View>
+          ))}
+        </View>
+      </View>
+      <View style={{ flexDirection: "row", justifyContent: "center", gap: 16, marginTop: 4 }}>
+        <Text style={{ fontSize: 7.5, fontWeight: 700 }}>
+          Nutné: {formatModelCzk(data.totalRequiredCzk, 0)}
+        </Text>
+        <Text style={{ fontSize: 7.5 }}>
+          Včetně volitelného: {formatModelCzk(data.totalWithOptionalFitoutCzk, 0)}
+        </Text>
+      </View>
+      <PdfChartCaption meta={meta} />
+    </View>
+  );
+}
+
+export function PdfBeforeAfterPanels({
+  data,
+  meta,
+}: PdfChartProps<BeforeAfterPanels>) {
+  const panels = [data.monthlyCashFlow, data.ownCash, data.ownerCosts];
+  return (
+    <View style={{ marginVertical: 4 }} wrap={false}>
+      <View style={{ flexDirection: "row", gap: 6 }}>
+        {panels.map((panel) => (
+          <View key={panel.label} style={pdfStyles.card}>
+            <Text style={{ fontSize: 7.5, fontWeight: 700, marginBottom: 4 }}>
+              {panel.label}
+            </Text>
+            <Text style={{ fontSize: 7, color: PDF_BRAND.muted }}>
+              Před: {formatModelCzk(panel.beforeCzk, 0)}
+            </Text>
+            <Svg width={140} height={7}>
+              <Line x1={70} x2={70} y1={0} y2={7} stroke={PDF_BRAND.ink} />
+              <Rect
+                x={panel.beforeCzk >= 0 ? 70 : 70 - (Math.abs(panel.beforeCzk) / panel.scaleMaxAbsCzk) * 68}
+                y={1}
+                width={Math.max(1, (Math.abs(panel.beforeCzk) / panel.scaleMaxAbsCzk) * 68)}
+                height={5}
+                fill={panel.beforeCzk < 0 ? PDF_BRAND.red : PDF_BRAND.muted}
+              />
+            </Svg>
+            <Text style={{ fontSize: 7, marginTop: 3 }}>
+              Po: {formatModelCzk(panel.afterCzk, 0)}
+            </Text>
+            <Svg width={140} height={7}>
+              <Line x1={70} x2={70} y1={0} y2={7} stroke={PDF_BRAND.ink} />
+              <Rect
+                x={panel.afterCzk >= 0 ? 70 : 70 - (Math.abs(panel.afterCzk) / panel.scaleMaxAbsCzk) * 68}
+                y={1}
+                width={Math.max(1, (Math.abs(panel.afterCzk) / panel.scaleMaxAbsCzk) * 68)}
+                height={5}
+                fill={panel.afterCzk < 0 ? PDF_BRAND.red : PDF_BRAND.teal}
+              />
+            </Svg>
+          </View>
+        ))}
+      </View>
+      <PdfChartCaption meta={meta} />
+    </View>
+  );
+}
+
+export function PdfTornadoChart({ data, meta }: PdfChartProps<TornadoDeltas>) {
+  const max = Math.max(1, ...data.map((row) => Math.abs(row.deltaCzk)));
+  const mid = 330;
+  const rowH = 24;
+  return (
+    <View style={{ marginVertical: 4 }} wrap={false}>
+      <Svg width={520} height={Math.max(42, data.length * rowH + 12)}>
+        <Line x1={mid} x2={mid} y1={3} y2={data.length * rowH} stroke={PDF_BRAND.ink} />
+        {data.map((row, index) => {
+          const y = 5 + index * rowH;
+          const w = (Math.abs(row.deltaCzk) / max) * 170;
+          return (
+            <Fragment key={`${row.label}-${index}`}>
+              <Text x={4} y={y + 7} style={{ fontSize: 7, fontWeight: 700 }}>{row.label}</Text>
+              <Text x={4} y={y + 16} style={{ fontSize: 5.5, fill: PDF_BRAND.muted }}>{row.changeNote}</Text>
+              <Rect
+                x={row.deltaCzk >= 0 ? mid : mid - w}
+                y={y}
+                width={Math.max(w, 1)}
+                height={9}
+                fill={row.deltaCzk >= 0 ? PDF_BRAND.green : PDF_BRAND.red}
+              />
+              <Text
+                x={row.deltaCzk >= 0 ? mid + w + 4 : mid - w - 4}
+                y={y + 7}
+                textAnchor={row.deltaCzk >= 0 ? "start" : "end"}
+                style={{ fontSize: 6.5, fontWeight: 700 }}
+              >
+                {pdfSignedCzk(row.deltaCzk)}
+              </Text>
+            </Fragment>
+          );
+        })}
+      </Svg>
+      <PdfChartCaption meta={meta} />
+    </View>
+  );
+}
+
+export function PdfReservePathChart({
+  data,
+  meta,
+}: PdfChartProps<ReservePathSeries>) {
+  const width = 520;
+  const height = 155;
+  const pad = { l: 34, r: 8, t: 18, b: 28 };
+  const all = data.months.flatMap((row) => [row.openingCzk, row.closingCzk, row.hypotheticalClosingCzk]);
+  const min = Math.min(0, ...all);
+  const max = Math.max(1, ...all);
+  const span = Math.max(max - min, 1);
+  const x = (index: number) => pad.l + (index / Math.max(data.months.length - 1, 1)) * (width - pad.l - pad.r);
+  const y = (value: number) => pad.t + ((max - value) / span) * (height - pad.t - pad.b);
+  const actual = data.months.map((row, index) => ({ x: x(index), y: y(row.closingCzk) }));
+  const hypothetical = data.months.map((row, index) => ({ x: x(index), y: y(row.hypotheticalClosingCzk) }));
+  return (
+    <View style={{ marginVertical: 4 }} wrap={false}>
+      <Svg width={width} height={height}>
+        <Line x1={pad.l} x2={width - pad.r} y1={y(0)} y2={y(0)} stroke={PDF_BRAND.ink} />
+        <Text x={pad.l - 4} y={y(0) + 2} textAnchor="end" style={{ fontSize: 6 }}>0</Text>
+        <PdfSeriesLines points={hypothetical} color={PDF_BRAND.red} dashed />
+        <PdfSeriesLines points={actual} color={PDF_BRAND.teal} width={2.5} />
+        {data.months.map((row, index) => (
+          <Fragment key={row.month}>
+            <Circle
+              cx={x(index)}
+              cy={y(row.closingCzk)}
+              r={row.topup || row.repair ? 3.5 : 2}
+              fill={row.topup ? PDF_BRAND.gold : row.repair ? PDF_BRAND.red : PDF_BRAND.teal}
+            />
+            <Text x={x(index)} y={height - 13} textAnchor="middle" style={{ fontSize: 5.5 }}>
+              M{row.month}
+            </Text>
+          </Fragment>
+        ))}
+      </Svg>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 5 }}>
+        {data.months.filter((row) => row.empty || row.repair || row.relet || row.topup).map((row) => (
+          <Text key={row.month} style={{ fontSize: 6 }}>
+            M{row.month}: {[row.empty && "prázdno", row.repair && "oprava", row.relet && "pronajato", row.topup && "doplnění"].filter(Boolean).join(", ")}
+          </Text>
+        ))}
+      </View>
+      <Text style={{ fontSize: 6, color: PDF_BRAND.muted }}>
+        Plná čára: po doplnění. Červená přerušovaná: hypoteticky bez doplnění.
+      </Text>
+      <PdfChartCaption meta={meta} />
+    </View>
+  );
+}
+
+export function PdfRefixCompareChart({
+  data,
+  meta,
+}: PdfChartProps<RefixTimeSeries>) {
+  const width = 520;
+  const height = 145;
+  const pad = { l: 34, r: 8, t: 18, b: 22 };
+  const all = data.months.flatMap((row) => [row.cfNoRefixCzk, row.cfWithRefixCzk]);
+  const min = Math.min(0, ...all);
+  const max = Math.max(0, ...all);
+  const span = Math.max(max - min, 1);
+  const minMonth = Math.min(...data.months.map((row) => row.month), 0);
+  const maxMonth = Math.max(...data.months.map((row) => row.month), data.refixMonth, minMonth + 1);
+  const x = (month: number) => pad.l + ((month - minMonth) / (maxMonth - minMonth)) * (width - pad.l - pad.r);
+  const y = (value: number) => pad.t + ((max - value) / span) * (height - pad.t - pad.b);
+  return (
+    <View style={{ marginVertical: 4 }} wrap={false}>
+      <Svg width={width} height={height}>
+        <Line x1={pad.l} x2={width - pad.r} y1={y(0)} y2={y(0)} stroke={PDF_BRAND.line} />
+        <Line x1={x(data.refixMonth)} x2={x(data.refixMonth)} y1={pad.t} y2={height - pad.b}
+          stroke={PDF_BRAND.gold} strokeWidth={1.5} strokeDasharray="4 3" />
+        <Text x={x(data.refixMonth)} y={10} textAnchor="middle" style={{ fontSize: 6.5, fontWeight: 700 }}>
+          Refixace M{data.refixMonth}
+        </Text>
+        <PdfSeriesLines
+          points={data.months.map((row) => ({ x: x(row.month), y: y(row.cfNoRefixCzk) }))}
+          color={PDF_BRAND.muted}
+        />
+        <PdfSeriesLines
+          points={data.months.map((row) => ({ x: x(row.month), y: y(row.cfWithRefixCzk) }))}
+          color={PDF_BRAND.teal}
+          width={2.5}
+        />
+      </Svg>
+      <Text style={{ fontSize: 6, color: PDF_BRAND.muted }}>
+        Zelená: s refixací · šedá: bez refixace.
+      </Text>
+      <PdfChartCaption meta={meta} />
+    </View>
+  );
+}
+
+export function PdfEquityDebtChart({
+  data,
+  meta,
+}: PdfChartProps<EquityDebtSeries>) {
+  const width = 520;
+  const height = 150;
+  const pad = { l: 30, r: 8, t: 14, b: 25 };
+  const max = Math.max(1, ...data.flatMap((row) => [row.propertyValueCzk, row.debtCzk, row.equityCzk]));
+  const x = (index: number) => pad.l + (index / Math.max(data.length - 1, 1)) * (width - pad.l - pad.r);
+  const y = (value: number) => pad.t + (1 - value / max) * (height - pad.t - pad.b);
+  return (
+    <View style={{ marginVertical: 4 }} wrap={false}>
+      <Svg width={width} height={height}>
+        <Line x1={pad.l} x2={width - pad.r} y1={height - pad.b} y2={height - pad.b} stroke={PDF_BRAND.ink} />
+        <PdfSeriesLines points={data.map((row, index) => ({ x: x(index), y: y(row.propertyValueCzk) }))} color={PDF_BRAND.gold} width={2.5} />
+        <PdfSeriesLines points={data.map((row, index) => ({ x: x(index), y: y(row.debtCzk) }))} color={PDF_BRAND.red} />
+        <PdfSeriesLines points={data.map((row, index) => ({ x: x(index), y: y(row.equityCzk) }))} color={PDF_BRAND.teal} width={2.5} />
+        {data.map((row, index) => (
+          <Text key={row.year} x={x(index)} y={height - 10} textAnchor="middle" style={{ fontSize: 5.5 }}>
+            R{row.year}
+          </Text>
+        ))}
+      </Svg>
+      <Text style={{ fontSize: 6, color: PDF_BRAND.muted }}>
+        Zlatá: hodnota · červená: dluh · zelená: vlastní kapitál.
+      </Text>
+      <PdfChartCaption meta={meta} />
+    </View>
+  );
+}
+
+function PdfMiniWaterfall({
+  title,
+  values,
+}: {
+  title: string;
+  values: Array<{ label: string; value: number; total?: boolean }>;
+}) {
+  const bars = values.reduce<{
+    running: number;
+    bars: Array<{
+      label: string;
+      value: number;
+      total?: boolean;
+      from: number;
+      to: number;
+    }>;
+  }>(
+    (state, item) => {
+      const from = item.total ? 0 : state.running;
+      const to = item.total ? item.value : from + item.value;
+      return {
+        running: item.total ? state.running : to,
+        bars: [...state.bars, { ...item, from, to }],
+      };
+    },
+    { running: 0, bars: [] }
+  ).bars;
+  const extent = bars.flatMap((bar) => [bar.from, bar.to]);
+  const min = Math.min(0, ...extent);
+  const max = Math.max(0, ...extent);
+  const span = Math.max(max - min, 1);
+  const y = (value: number) => 16 + ((max - value) / span) * 78;
+  return (
+    <View style={{ width: 254 }}>
+      <Text style={{ fontSize: 7.5, fontWeight: 700, color: PDF_BRAND.teal }}>{title}</Text>
+      <Svg width={250} height={104}>
+        <Line x1={5} x2={247} y1={y(0)} y2={y(0)} stroke={PDF_BRAND.ink} />
+        {bars.map((bar, index) => {
+          const x = 8 + index * 61;
+          const top = y(Math.max(bar.from, bar.to));
+          const bottom = y(Math.min(bar.from, bar.to));
+          return (
+            <Rect key={bar.label} x={x} y={top} width={42} height={Math.max(bottom - top, 1)}
+              fill={bar.total ? PDF_BRAND.teal : bar.value >= 0 ? PDF_BRAND.green : PDF_BRAND.red} />
+          );
+        })}
+      </Svg>
+      <View style={{ flexDirection: "row" }}>
+        {bars.map((bar) => (
+          <View key={bar.label} style={{ width: 61 }}>
+            <Text style={{ fontSize: 5.5, textAlign: "center" }}>{bar.label}</Text>
+            <Text style={{ fontSize: 5.5, textAlign: "center", fontWeight: 700 }}>{pdfSignedCzk(bar.value)}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+export function PdfSaleSettlementCharts({
+  sale,
+  settlement,
+  saleMeta,
+  settlementMeta,
+}: {
+  sale: SaleWaterfall;
+  settlement: SettlementWaterfall;
+  saleMeta?: ChartMeta;
+  settlementMeta?: ChartMeta;
+}) {
+  return (
+    <View style={{ marginVertical: 4 }} wrap={false}>
+      <View style={{ flexDirection: "row", gap: 8 }}>
+        <PdfMiniWaterfall
+          title={saleMeta?.questionCs ?? "Inkaso z prodeje"}
+          values={[
+            { label: "Prodejní cena", value: sale.salePriceCzk },
+            { label: "Náklady prodeje", value: -Math.abs(sale.costsCzk) },
+            { label: "Splacení dluhu", value: -Math.abs(sale.debtCzk) },
+            { label: "Čisté inkaso", value: sale.netProceedsCzk, total: true },
+          ]}
+        />
+        <PdfMiniWaterfall
+          title={settlementMeta?.questionCs ?? "Celkové vypořádání"}
+          values={[
+            { label: "Počáteční vklad", value: -Math.abs(settlement.initialOutlayCzk) },
+            { label: "Doplnění", value: -Math.abs(settlement.topupsCzk) },
+            { label: "Prodej + rezerva", value: settlement.saleAndReserveCzk },
+            { label: "Celkem", value: settlement.totalCzk, total: true },
+          ]}
+        />
+      </View>
+      <PdfChartCaption meta={settlementMeta ?? saleMeta} />
+    </View>
+  );
+}
+
+export function PdfMarketScatter({
+  data,
+  meta,
+}: PdfChartProps<MarketScatterPoint[]>) {
+  const width = 520;
+  const height = 165;
+  const pad = { l: 35, r: 12, t: 15, b: 25 };
+  const minX = Math.min(...data.map((point) => point.x), 0);
+  const maxX = Math.max(...data.map((point) => point.x), minX + 1);
+  const minY = Math.min(...data.map((point) => point.y), 0);
+  const maxY = Math.max(...data.map((point) => point.y), minY + 1);
+  const x = (value: number) => pad.l + ((value - minX) / (maxX - minX)) * (width - pad.l - pad.r);
+  const y = (value: number) => pad.t + ((maxY - value) / (maxY - minY)) * (height - pad.t - pad.b);
+  return (
+    <View style={{ marginVertical: 4 }} wrap={false}>
+      <Svg width={width} height={height}>
+        <Line x1={pad.l} x2={width - pad.r} y1={height - pad.b} y2={height - pad.b} stroke={PDF_BRAND.ink} />
+        <Line x1={pad.l} x2={pad.l} y1={pad.t} y2={height - pad.b} stroke={PDF_BRAND.ink} />
+        {data.map((point, index) => (
+          <Fragment key={`${point.label}-${index}`}>
+            <Circle cx={x(point.x)} cy={y(point.y)} r={point.isModel ? 5 : 3.5}
+              fill={point.isModel ? PDF_BRAND.gold : PDF_BRAND.teal} stroke={PDF_BRAND.ink} />
+            <Text x={x(point.x) + 5} y={y(point.y) - 4} style={{ fontSize: 5.5, fontWeight: point.isModel ? 700 : 400 }}>
+              {point.label}
+            </Text>
+          </Fragment>
+        ))}
+      </Svg>
+      <PdfChartCaption meta={meta} />
+    </View>
+  );
+}
+
+export type PdfSensitivityHeatmapCell = {
+  rowValue: number;
+  columnValue: number;
+  valueCzk: number;
+};
+
+export function PdfSensitivityHeatmap({
+  rows,
+  columns,
+  cells,
+  currentRow,
+  currentColumn,
+  rowLabel = "Nájem",
+  columnLabel = "Sazba",
+  meta,
+}: {
+  rows: number[];
+  columns: number[];
+  cells: PdfSensitivityHeatmapCell[];
+  currentRow: number;
+  currentColumn: number;
+  rowLabel?: string;
+  columnLabel?: string;
+  meta?: ChartMeta;
+}) {
+  const lookup = new Map(cells.map((cell) => [`${cell.rowValue}:${cell.columnValue}`, cell]));
+  const maxAbs = Math.max(1, ...cells.map((cell) => Math.abs(cell.valueCzk)));
+  const cellW = 78;
+  const cellH = 24;
+  const left = 105;
+  return (
+    <View style={{ marginVertical: 4 }} wrap={false}>
+      <Svg width={520} height={35 + rows.length * cellH}>
+        <Text x={2} y={15} style={{ fontSize: 6.5, fontWeight: 700 }}>
+          {rowLabel} ↓ / {columnLabel} →
+        </Text>
+        {columns.map((column, index) => (
+          <Text key={column} x={left + index * cellW + cellW / 2} y={15} textAnchor="middle" style={{ fontSize: 6.5, fontWeight: 700 }}>
+            {column.toLocaleString("cs-CZ")} %
+          </Text>
+        ))}
+        {rows.map((row, rowIndex) => (
+          <Fragment key={row}>
+            <Text x={2} y={31 + rowIndex * cellH} style={{ fontSize: 6.5, fontWeight: 700 }}>
+              {formatModelCzk(row, 0)}
+            </Text>
+            {columns.map((column, columnIndex) => {
+              const value = lookup.get(`${row}:${column}`)?.valueCzk ?? 0;
+              const opacity = 0.2 + (Math.abs(value) / maxAbs) * 0.65;
+              const current = row === currentRow && column === currentColumn;
+              return (
+                <Fragment key={`${row}-${column}`}>
+                  <Rect
+                    x={left + columnIndex * cellW}
+                    y={19 + rowIndex * cellH}
+                    width={cellW - 2}
+                    height={cellH - 2}
+                    fill={value >= 0 ? PDF_BRAND.green : PDF_BRAND.red}
+                    fillOpacity={opacity}
+                    stroke={current ? PDF_BRAND.gold : PDF_BRAND.line}
+                    strokeWidth={current ? 2 : 0.5}
+                  />
+                  <Text
+                    x={left + columnIndex * cellW + (cellW - 2) / 2}
+                    y={32 + rowIndex * cellH}
+                    textAnchor="middle"
+                    style={{ fontSize: 6, fontWeight: 700 }}
+                  >
+                    {formatModelCzk(value, 0)}{current ? " · aktuální" : ""}
+                  </Text>
+                </Fragment>
+              );
+            })}
+          </Fragment>
+        ))}
+      </Svg>
+      <PdfChartCaption meta={meta} />
     </View>
   );
 }

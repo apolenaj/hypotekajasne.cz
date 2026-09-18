@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "postinstall": "node scripts/patch-react-pdf-hyphenate.mjs",
+    "generate:rentgen-pdfs": "tsx --tsconfig tsconfig.json scripts/generate-rentgen-sample-pdfs.ts",
     "check:data": "node scripts/verify-data-catalog.mjs",
     "test:pipeline": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/mortgage-pipeline/pipeline.test.ts",
     "test:decision": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/mortgage-decision.test.ts src/lib/mortgage-regulation/mortgage-regulation.test.ts",
