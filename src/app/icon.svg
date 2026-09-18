@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Hypoteka Jasne">
+  <defs>
+    <linearGradient id="tile" x1="72" y1="28" x2="440" y2="484" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1B6B4A"/>
+      <stop offset="0.42" stop-color="#104F33"/>
+      <stop offset="1" stop-color="#06281C"/>
+    </linearGradient>
+    <linearGradient id="tileSheen" x1="96" y1="48" x2="280" y2="220" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.28"/>
+      <stop offset="0.45" stop-color="#F5D061" stop-opacity="0.08"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="goldBloom" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(348 168) rotate(90) scale(168)">
+      <stop offset="0" stop-color="#F5D061" stop-opacity="0.55"/>
+      <stop offset="0.55" stop-color="#D4AF37" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#D4AF37" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="120" y1="120" x2="420" y2="80" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F5D061"/>
+      <stop offset="0.48" stop-color="#D4AF37"/>
+      <stop offset="1" stop-color="#B8860B"/>
+    </linearGradient>
+    <linearGradient id="goldSoft" x1="180" y1="360" x2="410" y2="110" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#B8860B" stop-opacity="0.15"/>
+      <stop offset="1" stop-color="#F5D061" stop-opacity="0.95"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="168" y1="210" x2="300" y2="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.22"/>
+      <stop offset="0.4" stop-color="#D4AF37" stop-opacity="0.08"/>
+      <stop offset="1" stop-color="#064E3B" stop-opacity="0.35"/>
+    </linearGradient>
+    <linearGradient id="roof" x1="118" y1="150" x2="318" y2="250" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFF6D4"/>
+      <stop offset="0.35" stop-color="#F5D061"/>
+      <stop offset="1" stop-color="#8C6A12"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#02140C" flood-opacity="0.45"/>
+    </filter>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="innerGlass" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="1.2" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <clipPath id="tileClip">
+      <rect x="36" y="36" width="440" height="440" rx="108"/>
+    </clipPath>
+  </defs>
+
+  <rect x="36" y="36" width="440" height="440" rx="108" fill="url(#tile)" filter="url(#softShadow)"/>
+  <rect x="36" y="36" width="440" height="440" rx="108" fill="url(#goldBloom)"/>
+  <rect x="36" y="36" width="440" height="440" rx="108" fill="url(#tileSheen)"/>
+
+  <g clip-path="url(#tileClip)" opacity="0.35">
+    <path d="M36 150 H476 M36 230 H476 M36 310 H476 M36 390 H476" stroke="#F5D061" stroke-width="1" opacity="0.25"/>
+    <path d="M140 36 V476 M220 36 V476 M300 36 V476 M380 36 V476" stroke="#FFFFFF" stroke-width="1" opacity="0.12"/>
+  </g>
+
+  <rect x="52" y="52" width="408" height="408" rx="92" fill="none" stroke="#F5D061" stroke-opacity="0.28" stroke-width="2"/>
+  <rect x="64" y="64" width="384" height="384" rx="84" fill="none" stroke="#FFFFFF" stroke-opacity="0.1" stroke-width="1"/>
+
+  <g filter="url(#innerGlass)">
+    <path d="M156 268 L248 168 L340 268 V392 H156 Z" fill="url(#glass)" stroke="#FFFFFF" stroke-opacity="0.18" stroke-width="2"/>
+    <path d="M168 278 L248 188 L328 278" fill="none" stroke="url(#roof)" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M176 286 L248 206 L320 286" fill="none" stroke="#FFF6D4" stroke-opacity="0.55" stroke-width="4" stroke-linecap="round"/>
+    <path d="M196 320 H300" stroke="#F5D061" stroke-opacity="0.45" stroke-width="3" stroke-linecap="round"/>
+    <path d="M196 352 H268" stroke="#FFFFFF" stroke-opacity="0.28" stroke-width="3" stroke-linecap="round"/>
+    <rect x="214" y="318" width="36" height="74" rx="6" fill="#06281C" fill-opacity="0.45" stroke="#D4AF37" stroke-opacity="0.7" stroke-width="2"/>
+    <path d="M214 344 H250" stroke="#F5D061" stroke-opacity="0.5" stroke-width="1.5"/>
+  </g>
+
+  <path d="M228 372 C268 372 286 300 318 246 C346 198 372 168 408 132" fill="none" stroke="url(#goldSoft)" stroke-width="28" stroke-linecap="round" opacity="0.35" filter="url(#glow)"/>
+  <path d="M228 372 C268 372 286 300 318 246 C346 198 372 168 408 132" fill="none" stroke="url(#gold)" stroke-width="14" stroke-linecap="round"/>
+  <path d="M236 364 C270 360 286 304 316 252" fill="none" stroke="#FFF6D4" stroke-opacity="0.55" stroke-width="3" stroke-linecap="round"/>
+
+  <g filter="url(#glow)">
+    <circle cx="228" cy="372" r="10" fill="#F5D061"/>
+    <circle cx="318" cy="246" r="7" fill="#FFF6D4"/>
+    <path d="M392 118 L430 132 L408 168 Z" fill="url(#roof)"/>
+    <path d="M404 132 L422 138 L410 154 Z" fill="#FFFFFF" fill-opacity="0.45"/>
+  </g>
+
+  <path d="M92 86 C150 70 190 78 214 108" fill="none" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="10" stroke-linecap="round"/>
+</svg>
