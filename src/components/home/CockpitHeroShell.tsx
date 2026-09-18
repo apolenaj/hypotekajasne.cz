@@ -6,10 +6,22 @@ import { HeroCalculatorIsland } from "@/components/home/HeroCalculatorIsland";
 import type { MortgageJourneyParseResult } from "@/lib/mortgage-rates/mortgage-journey-context";
 
 const HERO_BENEFITS = [
-  "Najít a nastavit hypotéku",
-  "Porovnat hypotéku s nájmem",
-  "Vyhodnotit investici",
-  "Prozkoumat zahraniční trhy",
+  {
+    label: "Najít a nastavit hypotéku",
+    href: routes.sazby,
+  },
+  {
+    label: "Porovnat hypotéku s nájmem",
+    href: routes.kalkulacky.koupeVsNajem,
+  },
+  {
+    label: "Vyhodnotit investici",
+    href: routes.investicniRentgen,
+  },
+  {
+    label: "Prozkoumat zahraniční trhy",
+    href: routes.pruvodceInvestora,
+  },
 ] as const;
 
 /**
@@ -78,11 +90,13 @@ export function CockpitHeroShell({
 
             <ul className="grid max-w-lg gap-2 sm:grid-cols-2">
               {HERO_BENEFITS.map((item) => (
-                <li
-                  key={item}
-                  className="rounded-lg border border-white/15 bg-white/5 px-3 py-2.5 text-xs font-medium leading-snug text-white/90 sm:text-[13px]"
-                >
-                  {item}
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className="block cursor-pointer rounded-lg border border-white/15 bg-white/5 px-3 py-2.5 text-xs font-medium leading-snug text-white/90 transition-colors duration-200 hover:border-white/30 hover:bg-white/10 sm:text-[13px]"
+                  >
+                    {item.label}
+                  </Link>
                 </li>
               ))}
             </ul>
