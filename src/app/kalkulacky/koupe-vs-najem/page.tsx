@@ -4,5 +4,12 @@ import { getStaticPageSeo } from "@/lib/seo/pages";
 export const metadata = getStaticPageSeo("/kalkulacky/koupe-vs-najem");
 
 export default function KoupeVsNajemPage() {
-  return <KalkulackyView initialTab="buy_vs_rent" />;
+  return (
+    <>
+      <h1 className="sr-only">
+        Koupě vs. nájem — vlastní bydlení, nebo platit nájem majiteli
+      </h1>
+      <KalkulackyView initialTab="buy_vs_rent" />
+    </>
+  );
 }

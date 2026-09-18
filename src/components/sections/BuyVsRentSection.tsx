@@ -37,8 +37,8 @@ export function BuyVsRentSection({
               Koupě vs. nájem
             </h2>
             <p className="mt-2 max-w-2xl text-muted-foreground">
-              Interaktivní srovnání čistého jmění. Verdikt vždy závisí na
-              předpokladech — nikdy pevný univerzální vítěz.
+              Porovnání vlastního bydlení s placením nájmu majiteli — ne
+              investiční pronájem. Verdikt vždy závisí na předpokladech.
             </p>
           </header>
         )}

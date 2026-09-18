@@ -295,9 +295,9 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
   },
   {
     path: routes.kalkulacky.koupeVsNajem,
-    title: "Kalkulačka koupě vs. nájem",
+    title: "Kalkulačka koupě vs. nájem — vlastní bydlení nebo platit nájem",
     description:
-      "Porovnání koupě a nájmu s viditelnými předpoklady. Orientační model.",
+      "Vyplatí se hypotéka, nebo bydlet v nájmu? Porovnejte náklady na bydlení a čisté jmění. Orientační model — ne investiční pronájem.",
     priority: 0.75,
   },
   {
