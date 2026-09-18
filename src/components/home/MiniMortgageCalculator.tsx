@@ -19,8 +19,10 @@ import {
   MINI_MORTGAGE_CTA,
   MINI_MORTGAGE_DEFAULTS,
   MINI_MORTGAGE_FIXATION_OPTIONS,
+  MINI_MORTGAGE_PRICE_SLIDER,
   MINI_MORTGAGE_TERM_OPTIONS,
   miniMortgageLtvPct,
+  suggestedAprPercent,
   validateMiniMortgageInput,
   type MiniMortgagePurpose,
   type MiniMortgageResult,
@@ -54,12 +56,20 @@ function MoneyField({
   label,
   value,
   onChange,
+  slider,
 }: {
   id: string;
   label: string;
   value: number;
   onChange: (next: number) => void;
+  slider?: { min: number; max: number; step: number };
 }) {
+  const sliderValue =
+    slider == null
+      ? value
+      : Math.min(slider.max, Math.max(slider.min, value));
+  const showSlider = slider != null && slider.max > slider.min;
+
   return (
     <div className="min-w-0 space-y-1.5">
       <Label htmlFor={id} className="text-xs font-semibold text-text-dark">
@@ -72,8 +82,28 @@ function MoneyField({
         suffix="Kč"
         className="rounded-lg border-border bg-white text-base text-text-dark placeholder:text-gray-400"
       />
+      {showSlider ? (
+        <input
+          type="range"
+          min={slider.min}
+          max={slider.max}
+          step={slider.step}
+          value={sliderValue}
+          onChange={(e) => onChange(Number(e.target.value))}
+          aria-label={`${label}, posuvník`}
+          aria-valuemin={slider.min}
+          aria-valuemax={slider.max}
+          aria-valuenow={sliderValue}
+          aria-valuetext={formatCurrency(sliderValue, "CZK")}
+          className="h-2 w-full cursor-pointer accent-muted-gold"
+        />
+      ) : null}
     </div>
   );
+}
+
+function formatPercentDraft(value: number): string {
+  return value.toFixed(2).replace(".", ",");
 }
 
 function parseInterestRate(raw: string): number | null {
@@ -117,6 +147,8 @@ type CalculatorBootstrap = {
   fixationMonths: number;
   interestRate: number;
   rateDraft: string;
+  aprPercent: number;
+  aprDraft: string;
   hasCalculated: boolean;
   committedResult: MiniMortgageResult | null;
 };
@@ -132,6 +164,10 @@ function bootstrapFromJourney(
     fixationMonths: MINI_MORTGAGE_DEFAULTS.fixationMonths,
     interestRate: MINI_MORTGAGE_DEFAULTS.annualRatePercent,
     rateDraft: String(MINI_MORTGAGE_DEFAULTS.annualRatePercent).replace(".", ","),
+    aprPercent: suggestedAprPercent(MINI_MORTGAGE_DEFAULTS.annualRatePercent),
+    aprDraft: formatPercentDraft(
+      suggestedAprPercent(MINI_MORTGAGE_DEFAULTS.annualRatePercent)
+    ),
     hasCalculated: false,
     committedResult: null,
   };
@@ -149,6 +185,8 @@ function bootstrapFromJourney(
     fixationMonths: input.fixationMonths ?? MINI_MORTGAGE_DEFAULTS.fixationMonths,
     interestRate: rate,
     rateDraft: rate.toFixed(2).replace(".", ","),
+    aprPercent: suggestedAprPercent(rate),
+    aprDraft: formatPercentDraft(suggestedAprPercent(rate)),
     hasCalculated: true,
     committedResult: result,
   };
@@ -169,6 +207,9 @@ function MiniMortgageCalculatorCore({
   );
   const [interestRate, setInterestRate] = useState<number>(bootstrap.interestRate);
   const [rateDraft, setRateDraft] = useState(bootstrap.rateDraft);
+  const [aprPercent, setAprPercent] = useState<number>(bootstrap.aprPercent);
+  const [aprDraft, setAprDraft] = useState(bootstrap.aprDraft);
+  const aprTouchedRef = useRef(false);
   const [hasCalculated, setHasCalculated] = useState(bootstrap.hasCalculated);
   const [committedResult, setCommittedResult] = useState<MiniMortgageResult | null>(
     bootstrap.committedResult
@@ -185,10 +226,11 @@ function MiniMortgageCalculatorCore({
       ownFundsCzk: ownFunds,
       termYears,
       annualRatePercent: interestRate,
+      aprPercent,
       purpose,
       fixationMonths,
     }),
-    [propertyPrice, ownFunds, termYears, interestRate, purpose, fixationMonths]
+    [propertyPrice, ownFunds, termYears, interestRate, aprPercent, purpose, fixationMonths]
   );
 
   const preview = useMemo(() => computeMiniMortgage(input), [input]);
@@ -196,7 +238,6 @@ function MiniMortgageCalculatorCore({
   const display = hasCalculated && committedResult ? committedResult : preview;
   const exactLtv = display.exactLtv;
   const ltvHigh = exactLtv != null && exactLtv > 80;
-  const rateDisplay = display.annualRatePercent.toFixed(2).replace(".", ",");
 
   const resetCalculation = useCallback(() => {
     setHasCalculated(false);
@@ -342,12 +383,22 @@ function MiniMortgageCalculatorCore({
           label="Cena nemovitosti"
           value={propertyPrice}
           onChange={(next) => onInputChange(setPropertyPrice, next)}
+          slider={{
+            min: MINI_MORTGAGE_PRICE_SLIDER.min,
+            max: MINI_MORTGAGE_PRICE_SLIDER.max,
+            step: MINI_MORTGAGE_PRICE_SLIDER.step,
+          }}
         />
         <MoneyField
           id="mini-mortgage-equity"
           label="Vlastní prostředky"
           value={ownFunds}
           onChange={(next) => onInputChange(setOwnFunds, next)}
+          slider={{
+            min: 0,
+            max: Math.max(propertyPrice, 0),
+            step: 50_000,
+          }}
         />
 
         <div className="min-w-0 space-y-1.5">
@@ -371,53 +422,111 @@ function MiniMortgageCalculatorCore({
           </select>
         </div>
 
-        <div className="min-w-0 space-y-1.5">
-          <Label
-            htmlFor="mini-mortgage-rate"
-            className="text-xs font-semibold text-text-dark"
-          >
-            Modelová sazba pro splátku
-          </Label>
-          <div className="relative min-w-0">
-            <input
-              id="mini-mortgage-rate"
-              type="text"
-              inputMode="decimal"
-              autoComplete="off"
-              value={rateDraft}
-              onChange={(e) => {
-                markInteracted();
-                resetCalculation();
-                const next = e.target.value;
-                setRateDraft(next);
-                const parsed = parseInterestRate(next);
-                if (parsed != null) setInterestRate(parsed);
-              }}
-              onBlur={() => {
-                const parsed = parseInterestRate(rateDraft);
-                const next =
-                  parsed ?? MINI_MORTGAGE_DEFAULTS.annualRatePercent;
-                setInterestRate(next);
-                setRateDraft(next.toFixed(2).replace(".", ","));
-              }}
-              aria-describedby="mini-mortgage-rate-hint"
-              className={cn(fieldControlClassName, "pr-12 tabular-nums")}
-              title="Modelová sazba — nejde o aktuální nabídku banky"
-            />
-            <span
-              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground"
-              aria-hidden
+        <div className="grid min-w-0 grid-cols-2 gap-3">
+          <div className="min-w-0 space-y-1.5">
+            <Label
+              htmlFor="mini-mortgage-rate"
+              className="text-xs font-semibold text-text-dark"
             >
-              %
-            </span>
+              Modelová sazba pro splátku
+            </Label>
+            <div className="relative min-w-0">
+              <input
+                id="mini-mortgage-rate"
+                type="text"
+                inputMode="decimal"
+                autoComplete="off"
+                value={rateDraft}
+                onChange={(e) => {
+                  markInteracted();
+                  resetCalculation();
+                  const next = e.target.value;
+                  setRateDraft(next);
+                  const parsed = parseInterestRate(next);
+                  if (parsed == null) return;
+                  setInterestRate(parsed);
+                  if (!aprTouchedRef.current) {
+                    const apr = suggestedAprPercent(parsed);
+                    setAprPercent(apr);
+                    setAprDraft(formatPercentDraft(apr));
+                  }
+                }}
+                onBlur={() => {
+                  const parsed = parseInterestRate(rateDraft);
+                  const next =
+                    parsed ?? MINI_MORTGAGE_DEFAULTS.annualRatePercent;
+                  setInterestRate(next);
+                  setRateDraft(formatPercentDraft(next));
+                  if (!aprTouchedRef.current) {
+                    const apr = suggestedAprPercent(next);
+                    setAprPercent(apr);
+                    setAprDraft(formatPercentDraft(apr));
+                  }
+                }}
+                aria-describedby="mini-mortgage-rate-hint mini-mortgage-market-hint"
+                className={cn(fieldControlClassName, "pr-8 tabular-nums")}
+                title="Modelová sazba — nejde o aktuální nabídku banky"
+              />
+              <span
+                className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground"
+                aria-hidden
+              >
+                %
+              </span>
+            </div>
           </div>
-          <p
-            id="mini-mortgage-rate-hint"
-            className="text-[11px] text-muted-foreground"
-          >
-            Jen pro odhad splátky. Bankovní sazby zobrazíte po výpočtu.
-          </p>
+          <div className="min-w-0 space-y-1.5">
+            <Label
+              htmlFor="mini-mortgage-apr"
+              className="text-xs font-semibold text-text-dark"
+            >
+              Očekávané RPSN
+            </Label>
+            <div className="relative min-w-0">
+              <input
+                id="mini-mortgage-apr"
+                type="text"
+                inputMode="decimal"
+                autoComplete="off"
+                value={aprDraft}
+                onChange={(e) => {
+                  markInteracted();
+                  resetCalculation();
+                  aprTouchedRef.current = true;
+                  const next = e.target.value;
+                  setAprDraft(next);
+                  const parsed = parseInterestRate(next);
+                  if (parsed != null) setAprPercent(parsed);
+                }}
+                onBlur={() => {
+                  const parsed = parseInterestRate(aprDraft);
+                  const next = parsed ?? suggestedAprPercent(interestRate);
+                  setAprPercent(next);
+                  setAprDraft(formatPercentDraft(next));
+                }}
+                aria-describedby="mini-mortgage-market-hint"
+                className={cn(fieldControlClassName, "pr-8 tabular-nums")}
+                title="Očekávané RPSN — odhad celkových nákladů úvěru, ne nabídka banky"
+              />
+              <span
+                className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground"
+                aria-hidden
+              >
+                %
+              </span>
+            </div>
+          </div>
         </div>
+        <p id="mini-mortgage-market-hint" className="text-sm text-gray-500">
+          Pro srovnání: Aktuální průměrná sazba na trhu se pohybuje kolem 5,3&nbsp;%.
+        </p>
+        <p
+          id="mini-mortgage-rate-hint"
+          className="text-[11px] text-muted-foreground"
+        >
+          Splátka se počítá z modelové sazby. RPSN slouží jen k odhadu celkové
+          zaplacené částky a můžete ho upravit.
+        </p>
       </div>
 
       {!validation.valid && validation.reason ? (
@@ -470,7 +579,7 @@ function MiniMortgageCalculatorCore({
               </p>
             </div>
 
-            <div className="min-w-0">
+            <div className="min-w-0 rounded-xl bg-muted-gold/15 px-3 py-3 ring-1 ring-muted-gold/30">
               <p className="text-xs font-semibold text-muted-foreground">
                 Orientační měsíční splátka
               </p>
@@ -487,9 +596,26 @@ function MiniMortgageCalculatorCore({
                 </span>
               </p>
             </div>
+
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-muted-foreground">
+                Celková zaplacená částka
+              </p>
+              <p className="mt-1 break-words font-heading text-xl font-bold tabular-nums tracking-tight text-text-dark">
+                {formatCurrency(committedResult.totalPaidCzk, "CZK")}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                model podle RPSN{" "}
+                <span className="font-semibold tabular-nums text-text-dark">
+                  {committedResult.aprPercent.toFixed(2).replace(".", ",")}
+                  &nbsp;%
+                </span>{" "}
+                za {committedResult.termYears} let. Není nabídka banky.
+              </p>
+            </div>
           </>
         ) : (
-          <div className="min-w-0">
+          <div className="min-w-0 rounded-xl bg-muted-gold/15 px-3 py-3 ring-1 ring-muted-gold/30">
             <p className="text-xs font-semibold text-muted-foreground">
               Orientační měsíční splátka
             </p>

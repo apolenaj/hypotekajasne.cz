@@ -7,6 +7,8 @@ import {
   miniMortgageCtaLabel,
   miniMortgageLtvPct,
   MINI_MORTGAGE_DEFAULTS,
+  suggestedAprPercent,
+  totalPaidFromApr,
   validateMiniMortgageInput,
 } from "@/lib/mini-mortgage-calculator";
 import { parseSazbySearchParams } from "@/lib/mortgage-rates/ltv-context";
@@ -26,6 +28,40 @@ describe("mini mortgage calculator", () => {
     assert.equal(result.ltvBand, 80);
     assert.equal(result.annualRatePercent, MINI_MORTGAGE_DEFAULTS.annualRatePercent);
     assert.ok(result.monthlyPaymentCzk > 0);
+    assert.equal(
+      result.aprPercent,
+      suggestedAprPercent(result.annualRatePercent)
+    );
+    assert.equal(
+      result.totalPaidCzk,
+      totalPaidFromApr(result.loanAmountCzk, result.aprPercent, result.termYears)
+    );
+    const nominalTotal = totalPaidFromApr(
+      result.loanAmountCzk,
+      result.annualRatePercent,
+      result.termYears
+    );
+    assert.ok(result.totalPaidCzk > nominalTotal);
+  });
+
+  it("monthly payment stays on the nominal rate when RPSN is higher", () => {
+    const base = computeMiniMortgage({
+      propertyPriceCzk: 5_000_000,
+      ownFundsCzk: 1_000_000,
+      termYears: 20,
+      annualRatePercent: 4.5,
+    });
+    const withApr = computeMiniMortgage({
+      propertyPriceCzk: 5_000_000,
+      ownFundsCzk: 1_000_000,
+      termYears: 20,
+      annualRatePercent: 4.5,
+      aprPercent: 6,
+    });
+    assert.equal(withApr.monthlyPaymentCzk, base.monthlyPaymentCzk);
+    assert.equal(withApr.aprPercent, 6);
+    assert.equal(suggestedAprPercent(4.5), 4.7);
+    assert.ok(withApr.totalPaidCzk > base.totalPaidCzk);
   });
 
   it("7M / 6M loan scenario matches sazby LTV rules", () => {

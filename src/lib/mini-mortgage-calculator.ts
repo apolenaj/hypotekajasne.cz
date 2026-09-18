@@ -26,6 +26,11 @@ export type MiniMortgageInput = {
   termYears: number;
   /** Modelová sazba p.a. — nikdy bankovní LIVE. */
   annualRatePercent?: number;
+  /**
+   * Očekávané RPSN p.a. pro odhad celkové zaplacené částky.
+   * Splátka se z něj nepočítá. Výchozí je sazba + 0,2 p. b.
+   */
+  aprPercent?: number;
   purpose?: MiniMortgagePurpose;
   fixationMonths?: number;
 };
@@ -40,6 +45,10 @@ export type MiniMortgageResult = {
   ltvValidationError: string | null;
   monthlyPaymentCzk: number;
   annualRatePercent: number;
+  /** RPSN použité jen pro odhad celkové zaplacené částky. */
+  aprPercent: number;
+  /** Součet modelových splátek při RPSN za celou splatnost. */
+  totalPaidCzk: number;
   termYears: number;
   requiredOwnFundsCzk: number;
   purpose: MiniMortgagePurpose;
@@ -57,6 +66,43 @@ export const MINI_MORTGAGE_DEFAULTS = {
   purpose: "purchase" as MiniMortgagePurpose,
   fixationMonths: 36,
 } as const;
+
+/** Odhad poplatků nad nominální sazbu, dokud uživatel RPSN ručně nezmění. */
+export const MINI_MORTGAGE_APR_BUFFER_PERCENT = 0.2;
+
+export const MINI_MORTGAGE_PRICE_SLIDER = {
+  min: 1_000_000,
+  max: 20_000_000,
+  step: 100_000,
+} as const;
+
+export function suggestedAprPercent(annualRatePercent: number): number {
+  const rate = Number.isFinite(annualRatePercent) ? annualRatePercent : 0;
+  return Math.round((rate + MINI_MORTGAGE_APR_BUFFER_PERCENT) * 100) / 100;
+}
+
+/**
+ * Celková zaplacená částka = anuita při RPSN × počet měsíců.
+ * Nominální sazba do tohoto součtu nevstupuje.
+ */
+export function totalPaidFromApr(
+  loanAmountCzk: number,
+  aprPercent: number,
+  termYears: number
+): number {
+  if (
+    !Number.isFinite(loanAmountCzk) ||
+    loanAmountCzk <= 0 ||
+    !Number.isFinite(termYears) ||
+    termYears <= 0 ||
+    !Number.isFinite(aprPercent) ||
+    aprPercent < 0
+  ) {
+    return 0;
+  }
+  const monthly = calculateAnnuityPayment(loanAmountCzk, aprPercent, termYears);
+  return Math.round(monthly * termYears * 12);
+}
 
 export const MINI_MORTGAGE_TERM_OPTIONS = [10, 15, 20, 25, 30] as const;
 export const MINI_MORTGAGE_FIXATION_OPTIONS = [24, 36, 60, 84, 120] as const;
@@ -140,6 +186,11 @@ export function computeMiniMortgage(input: MiniMortgageInput): MiniMortgageResul
         )
       : 0;
 
+  const aprPercent = Number.isFinite(input.aprPercent)
+    ? Math.max(0, input.aprPercent as number)
+    : suggestedAprPercent(annualRatePercent);
+  const totalPaidCzk = totalPaidFromApr(loanAmountCzk, aprPercent, termYears);
+
   return {
     propertyPriceCzk,
     loanAmountCzk,
@@ -148,6 +199,8 @@ export function computeMiniMortgage(input: MiniMortgageInput): MiniMortgageResul
     ltvValidationError: ltv.validationError,
     monthlyPaymentCzk,
     annualRatePercent,
+    aprPercent,
+    totalPaidCzk,
     termYears,
     requiredOwnFundsCzk: Math.min(ownFunds, propertyPriceCzk),
     purpose,
