@@ -71,6 +71,7 @@ function NavItemLink({
   active?: boolean;
   showDescription?: boolean;
 }) {
+  const Icon = item.icon;
   const content =
     showDescription && item.description ? (
       <span className="flex min-w-0 flex-col gap-0.5">
@@ -83,6 +84,17 @@ function NavItemLink({
       item.label
     );
 
+  const body = (
+    <span className="flex min-w-0 items-start gap-2.5">
+      {Icon ? (
+        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-deep-teal/10 text-deep-teal">
+          <Icon className="h-4 w-4" aria-hidden />
+        </span>
+      ) : null}
+      {content}
+    </span>
+  );
+
   if (item.external) {
     return (
       <a
@@ -93,7 +105,7 @@ function NavItemLink({
         onClick={onClick}
       >
         <span className="inline-flex items-start gap-2">
-          {content}
+          {body}
           <span className="sr-only"> (otevře se v novém okně)</span>
           <ExternalLink
             className="mt-0.5 h-3.5 w-3.5 shrink-0 opacity-60"
@@ -111,7 +123,7 @@ function NavItemLink({
       onClick={onClick}
       aria-current={active ? "page" : undefined}
     >
-      {content}
+      {body}
     </Link>
   );
 }

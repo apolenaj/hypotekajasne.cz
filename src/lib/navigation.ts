@@ -4,6 +4,7 @@
  * Zahraniční nemovitosti, Kalkulačky, Průvodci.
  */
 
+import { Calculator, History, TrendingUp, type LucideIcon } from "lucide-react";
 import { getCountryGuidePath, routes } from "@/lib/routes";
 import { getLandingPath } from "@/lib/seo/landings";
 import { stripLocalePrefix } from "@/lib/i18n/config";
@@ -13,6 +14,7 @@ export type NavLinkItem = {
   label: string;
   description?: string;
   external?: boolean;
+  icon?: LucideIcon;
 };
 
 export type NavColumn = {
@@ -30,6 +32,12 @@ export type NavGroup = {
 
 /** Hypotéky — meglinks na existující routy. */
 export const hypotekyNavItems: NavLinkItem[] = [
+  {
+    href: routes.kalkulacky.hypotecniKalkulacka,
+    label: "Hypoteční kalkulačka",
+    description: "Orientační měsíční splátka",
+    icon: Calculator,
+  },
   {
     href: routes.akademie,
     label: "Jak hypotéka funguje",
@@ -187,6 +195,21 @@ export const zahraniciNavItems: NavLinkItem[] = [
   { href: getCountryGuidePath("bali"), label: "Bali (Indonésie)" },
   { href: getCountryGuidePath("saudi"), label: "Saúdská Arábie" },
   { href: getCountryGuidePath("slovakia"), label: "Slovensko" },
+];
+
+export const analytikaNavItems: NavLinkItem[] = [
+  {
+    href: routes.kalkulacky.historickyVyvoj,
+    label: "Historický vývoj",
+    description: "Jak by se majetek vyvíjel zpětně v čase",
+    icon: History,
+  },
+  {
+    href: routes.kalkulacky.potencialniVyvoj,
+    label: "Potenciální vývoj",
+    description: "Scénáře růstu hodnoty nemovitosti",
+    icon: TrendingUp,
+  },
 ];
 
 export const kalkulackyNavItems: NavLinkItem[] = [
@@ -373,6 +396,18 @@ export const desktopNav = {
     ]),
   } satisfies NavGroup,
 
+  analytika: {
+    id: "analytika",
+    label: "Analytika trhu",
+    items: analytikaNavItems,
+    columns: [
+      {
+        title: "Vývoj hodnoty",
+        items: analytikaNavItems,
+      },
+    ],
+  } satisfies NavGroup,
+
   zahranici: {
     id: "zahranici",
     label: "Zahraniční nemovitosti",
@@ -436,6 +471,7 @@ export const primaryDesktopGroups: NavGroup[] = [
   desktopNav.hypoteky,
   desktopNav.najem,
   desktopNav.investice,
+  desktopNav.analytika,
   desktopNav.zahranici,
   desktopNav.kalkulacky,
   desktopNav.pruvodci,

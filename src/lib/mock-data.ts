@@ -130,6 +130,8 @@ export const footerLinks = {
   nastroje: [
     { href: routes.kalkulacky.hypotecniKalkulacka, label: "Hypoteční kalkulačka" },
     { href: routes.kalkulacky.koupeVsNajem, label: "Nájem vs. hypotéka" },
+    { href: routes.kalkulacky.historickyVyvoj, label: "Historický vývoj" },
+    { href: routes.kalkulacky.potencialniVyvoj, label: "Potenciální vývoj" },
     { href: routes.kalkulacky.root, label: "Všechny kalkulačky" },
     { href: routes.mojeMoznosti, label: "Moje možnosti" },
     { href: routes.dashboard, label: "Můj přehled" },

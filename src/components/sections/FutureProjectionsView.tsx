@@ -32,11 +32,11 @@ export function FutureProjectionsView({
         {!embedded && (
           <header className="mb-8">
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-deep-teal">
-              Laboratoř rozhodnutí
+              Analytika trhu
             </p>
-            <h2 className="mt-1 font-heading text-3xl font-bold text-text-dark">
+            <h1 className="mt-1 font-heading text-3xl font-bold text-text-dark">
               Potenciální vývoj
-            </h2>
+            </h1>
             <p className="mt-2 max-w-2xl text-muted-foreground">
               Simulátor budoucnosti se scénáři Pesimistický / Základní /
               Optimistický / Vlastní. Pokud není zadán výnos z reinvestice,

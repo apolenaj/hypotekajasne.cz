@@ -32,11 +32,11 @@ export function HistoricalTrendsView({
         {!embedded && (
           <header className="mb-8">
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-deep-teal">
-              Laboratoř rozhodnutí
+              Analytika trhu
             </p>
-            <h2 className="mt-1 font-heading text-3xl font-bold text-text-dark">
-              Historický stroj času
-            </h2>
+            <h1 className="mt-1 font-heading text-3xl font-bold text-text-dark">
+              Historický vývoj
+            </h1>
             <p className="mt-2 max-w-2xl text-muted-foreground">
               Porovnejte hotovost, spoření, termínovaný vklad, akciový benchmark
               a nemovitost (cash / páka). Nominální vs. reálné (CPI) výsledky.

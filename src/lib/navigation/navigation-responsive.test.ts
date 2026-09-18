@@ -69,6 +69,7 @@ describe("navigation structure — produktové megamenu", () => {
       "Hypotéky",
       "Nájem vs. hypotéka",
       "Investice",
+      "Analytika trhu",
       "Zahraniční nemovitosti",
       "Kalkulačky",
       "Průvodci",
@@ -88,6 +89,7 @@ describe("navigation structure — produktové megamenu", () => {
   it("hypotéky megamenu covers purchase, refinance, OSVČ and foreign income", () => {
     const labels = hypotekyNavItems.map((i) => i.label);
     assert.ok(labels.some((l) => l.includes("Koupě")));
+    assert.ok(labels.includes("Hypoteční kalkulačka"));
     assert.ok(labels.some((l) => l.includes("Refinancování")));
     assert.ok(labels.some((l) => l.includes("OSVČ")));
     assert.ok(labels.some((l) => l.includes("zahraničí")));
@@ -113,6 +115,7 @@ describe("navigation structure — produktové megamenu", () => {
       "hypoteky",
       "najem",
       "investice",
+      "analytika",
       "zahranici",
       "kalkulacky",
       "pruvodci",

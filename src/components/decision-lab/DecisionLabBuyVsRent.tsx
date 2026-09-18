@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { History, TrendingUp } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
 import {
   CartesianGrid,
@@ -971,6 +972,53 @@ export function DecisionLabBuyVsRent({ countryId }: Props) {
             className="inline-flex min-h-11 items-center justify-center rounded-xl border border-deep-teal/30 bg-white px-5 text-sm font-semibold text-deep-teal transition-colors hover:bg-deep-teal/5"
           >
             Probrat možnosti financování
+          </Link>
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-border bg-white p-5 sm:p-6">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-deep-teal">
+          Analytika trhu
+        </p>
+        <h3 className="mt-1 font-heading text-xl font-bold text-text-dark">
+          Zajímá vás, jak by rostla hodnota této nemovitosti v čase?
+        </h3>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+          Objevte historický vývoj a potenciální scénáře. Jde o samostatné
+          modelové nástroje, ne o příjem z investičního pronájmu.
+        </p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <Link
+            href={routes.kalkulacky.historickyVyvoj}
+            className="flex min-h-11 items-start gap-3 rounded-xl border border-border px-4 py-3 transition-colors hover:border-deep-teal/40 hover:bg-deep-teal/5"
+          >
+            <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-deep-teal/10 text-deep-teal">
+              <History className="h-4 w-4" aria-hidden />
+            </span>
+            <span>
+              <span className="block text-sm font-semibold text-text-dark">
+                Historický vývoj
+              </span>
+              <span className="mt-0.5 block text-xs leading-snug text-muted-foreground">
+                Jak by se majetek vyvíjel zpětně
+              </span>
+            </span>
+          </Link>
+          <Link
+            href={routes.kalkulacky.potencialniVyvoj}
+            className="flex min-h-11 items-start gap-3 rounded-xl border border-border px-4 py-3 transition-colors hover:border-deep-teal/40 hover:bg-deep-teal/5"
+          >
+            <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-deep-teal/10 text-deep-teal">
+              <TrendingUp className="h-4 w-4" aria-hidden />
+            </span>
+            <span>
+              <span className="block text-sm font-semibold text-text-dark">
+                Potenciální vývoj
+              </span>
+              <span className="mt-0.5 block text-xs leading-snug text-muted-foreground">
+                Scénáře růstu hodnoty nemovitosti
+              </span>
+            </span>
           </Link>
         </div>
       </section>

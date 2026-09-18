@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { KalkulackyView } from "@/components/pages/KalkulackyView";
+import { MiniMortgageCalculator } from "@/components/home/MiniMortgageCalculator";
+import { LeadGen } from "@/components/sections/LeadGen";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { getStaticPageSeo } from "@/lib/seo/pages";
 import { crumbs } from "@/lib/seo/breadcrumbs";
@@ -44,7 +45,12 @@ export default function HypotecniKalkulackaPage() {
           </p>
         </div>
       </div>
-      <KalkulackyView initialTab="mortgage_calc" />
+      <div className="container mx-auto px-4 py-8 lg:px-8 lg:py-10">
+        <div className="mx-auto max-w-md">
+          <MiniMortgageCalculator />
+        </div>
+      </div>
+      <LeadGen />
     </>
   );
 }

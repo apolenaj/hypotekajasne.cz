@@ -9,7 +9,7 @@ export default function KoupeVsNajemPage() {
       <h1 className="sr-only">
         Koupě vs. nájem — vlastní bydlení, nebo platit nájem majiteli
       </h1>
-      <KalkulackyView initialTab="buy_vs_rent" />
+      <KalkulackyView />
     </>
   );
 }
