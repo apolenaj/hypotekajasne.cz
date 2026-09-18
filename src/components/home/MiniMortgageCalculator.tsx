@@ -51,29 +51,44 @@ const primaryButtonClassName = cn(
   "disabled:cursor-not-allowed disabled:opacity-55"
 );
 
+/** Podíl už zaokrouhlený na 1 desetinné místo. Celé číslo bez „,0“. */
+function formatSharePercent(percentage: number | null): string | null {
+  if (percentage == null || !Number.isFinite(percentage)) return null;
+  const rounded = Math.round(percentage * 10) / 10;
+  const text = Number.isInteger(rounded)
+    ? String(rounded)
+    : rounded.toFixed(1).replace(".", ",");
+  return `${text}\u00a0%`;
+}
+
 function MoneyField({
   id,
   label,
   value,
   onChange,
   slider,
+  shareLabel,
 }: {
   id: string;
   label: string;
   value: number;
   onChange: (next: number) => void;
   slider?: { min: number; max: number; step: number };
+  /** Např. „20 %“ — šedě za názvem pole. */
+  shareLabel?: string | null;
 }) {
+  const sliderMax = slider == null ? value : Math.max(slider.min, slider.max);
   const sliderValue =
-    slider == null
-      ? value
-      : Math.min(slider.max, Math.max(slider.min, value));
-  const showSlider = slider != null && slider.max > slider.min;
+    slider == null ? value : Math.min(sliderMax, Math.max(slider.min, value));
+  const showSlider = slider != null && sliderMax > slider.min;
 
   return (
     <div className="min-w-0 space-y-1.5">
       <Label htmlFor={id} className="text-xs font-semibold text-text-dark">
         {label}
+        {shareLabel ? (
+          <span className="font-medium text-gray-500"> ({shareLabel})</span>
+        ) : null}
       </Label>
       <FormattedMoneyInput
         id={id}
@@ -82,19 +97,26 @@ function MoneyField({
         suffix="Kč"
         className="rounded-lg border-border bg-white text-base text-text-dark placeholder:text-gray-400"
       />
-      {showSlider ? (
+      {showSlider && slider ? (
         <input
           type="range"
           min={slider.min}
-          max={slider.max}
-          step={slider.step}
+          max={sliderMax}
+          step={Math.min(slider.step, sliderMax)}
           value={sliderValue}
-          onChange={(e) => onChange(Number(e.target.value))}
+          onChange={(e) => {
+            const next = Number(e.target.value);
+            onChange(Math.min(sliderMax, Math.max(slider.min, next)));
+          }}
           aria-label={`${label}, posuvník`}
           aria-valuemin={slider.min}
-          aria-valuemax={slider.max}
+          aria-valuemax={sliderMax}
           aria-valuenow={sliderValue}
-          aria-valuetext={formatCurrency(sliderValue, "CZK")}
+          aria-valuetext={
+            shareLabel
+              ? `${formatCurrency(sliderValue, "CZK")}, ${shareLabel} z ceny nemovitosti`
+              : formatCurrency(sliderValue, "CZK")
+          }
           className="h-2 w-full cursor-pointer accent-muted-gold"
         />
       ) : null}
@@ -235,6 +257,11 @@ function MiniMortgageCalculatorCore({
 
   const preview = useMemo(() => computeMiniMortgage(input), [input]);
   const validation = useMemo(() => validateMiniMortgageInput(input), [input]);
+  const ownFundsPercentage =
+    Number.isFinite(propertyPrice) && propertyPrice > 0 && Number.isFinite(ownFunds)
+      ? (Math.max(0, ownFunds) / propertyPrice) * 100
+      : null;
+  const ownFundsShareLabel = formatSharePercent(ownFundsPercentage);
   const display = hasCalculated && committedResult ? committedResult : preview;
   const exactLtv = display.exactLtv;
   const ltvHigh = exactLtv != null && exactLtv > 80;
@@ -393,10 +420,11 @@ function MiniMortgageCalculatorCore({
           id="mini-mortgage-equity"
           label="Vlastní prostředky"
           value={ownFunds}
+          shareLabel={ownFundsShareLabel}
           onChange={(next) => onInputChange(setOwnFunds, next)}
           slider={{
             min: 0,
-            max: Math.max(propertyPrice, 0),
+            max: propertyPrice > 0 ? propertyPrice : 0,
             step: 50_000,
           }}
         />
