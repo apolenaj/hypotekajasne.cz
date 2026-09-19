@@ -76,7 +76,7 @@ export function formatOrientacniBankMonthlyPaymentLine(
 }
 
 /**
- * Splátka pro konkrétní produkt — jen u zveřejněné, čerstvé sazby s číslem.
+ * Splátka pro konkrétní produkt — jen když je k dispozici číselná sazba.
  */
 export function resolveBankRatePaymentDisplay(
   offer: Pick<
@@ -102,7 +102,7 @@ export function resolveBankRatePaymentDisplay(
   if (monthlyPaymentCzk == null) return null;
 
   return {
-    rateHeadline: `${display.headline} p. a.`,
+    rateHeadline: display.headline,
     monthlyPaymentCzk,
     monthlyPaymentLine: formatOrientacniBankMonthlyPaymentLine(monthlyPaymentCzk),
     disclaimer: BANK_RATE_PAYMENT_DISCLAIMER,

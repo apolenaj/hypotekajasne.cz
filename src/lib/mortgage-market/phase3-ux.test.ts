@@ -192,7 +192,7 @@ describe("Phase 3 UX — labels", () => {
       "2026-08-09T00:00:00.000Z",
       { nowMs: now }
     );
-    assert.equal(freshNoUrl.short, "Sazbu právě ověřujeme");
+    assert.equal(freshNoUrl.short, "Veřejnou sazbu se nepodařilo ověřit");
     const fresh = publicFreshnessLabel("fresh", "2026-08-09T00:00:00.000Z", {
       sourceUrl: "https://www.example-bank.test/rates",
       nowMs: now,
@@ -203,7 +203,7 @@ describe("Phase 3 UX — labels", () => {
       sourceUrl: "https://www.example-bank.test/rates",
       nowMs: now,
     });
-    assert.equal(stale.short, "Sazbu právě ověřujeme");
+    assert.equal(stale.short, "Poslední ověřená sazba");
   });
 
   it("public data badges are Czech (no English LIVE/MODEL/NEEDS UPDATE)", () => {

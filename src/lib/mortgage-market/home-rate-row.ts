@@ -1,8 +1,7 @@
 /**
  * Homepage rate rows.
- * /sazby keeps evaluatePublicRateDisplay (numeric rate only within 72h).
- * Homepage shows the last verified figure with its real date, or an explicit
- * unavailable state. It never substitutes another fixation and never invents a rate.
+ * Homepage and /sazby both keep the last verified figure.
+ * A date older than 72 hours adds a warning; it does not drop the number.
  */
 
 import { groupOffersByLenderProduct } from "@/lib/mortgage-market/group-offers";
@@ -100,7 +99,7 @@ export function buildHomeRateRows(
       verifiedAtLabel,
       ageWarning:
         usable && !fresh && verifiedAtLabel
-          ? `Poslední ověření ${verifiedAtLabel}. Údaj je starší než 72 hodin, není to aktuální osobní nabídka.`
+          ? `Poslední ověřená sazba ${verifiedAtLabel}. Aktuální platnost není potvrzena — údaj je starší než 72 hodin a není to aktuální osobní nabídka.`
           : null,
       sourceUrl,
       showNumeric: usable,

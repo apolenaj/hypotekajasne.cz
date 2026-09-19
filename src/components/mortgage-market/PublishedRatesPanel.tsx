@@ -75,11 +75,11 @@ async function fetchOffers(
 function pendingCards(result: GetMortgageOffersResult | null) {
   if (!result) return [];
   const wanted = new Map([
-    ["csob", "Sazbu právě ověřujeme"],
-    ["raiffeisenbank", "Aktuální sazbu ověřujeme"],
+    ["csob", "Veřejnou sazbu se nepodařilo ověřit"],
+    ["raiffeisenbank", "Veřejnou sazbu se nepodařilo ověřit"],
   ]);
   const seen = new Set<string>();
-  const cards: { slug: string; name: string; message: string }[] = [];
+  const cards: { slug: string; name: string; message: string; sourceUrl: string | null }[] = [];
   for (const a of result.lenderAvailability) {
     const msg = wanted.get(a.lenderSlug);
     if (!msg || seen.has(a.lenderSlug)) continue;
@@ -92,6 +92,10 @@ function pendingCards(result: GetMortgageOffersResult | null) {
         slug: a.lenderSlug,
         name: a.lenderName,
         message: msg,
+        sourceUrl:
+          a.lenderSlug === "raiffeisenbank"
+            ? "https://www.rb.cz/osobni/hypoteky"
+            : null,
       });
     }
   }
@@ -105,6 +109,10 @@ function pendingCards(result: GetMortgageOffersResult | null) {
         slug,
         name: slug === "csob" ? "ČSOB" : "Raiffeisenbank",
         message,
+        sourceUrl:
+          slug === "raiffeisenbank"
+            ? "https://www.rb.cz/osobni/hypoteky"
+            : null,
       });
     }
   }
@@ -517,8 +525,11 @@ export function PublishedRatesPanel({
                       </p>
                       {row.verifiedAtLabel && row.showNumeric ? (
                         <p className="mt-1 text-[11px] leading-relaxed text-gray-500">
-                          Ověřeno {row.verifiedAtLabel}
-                          {row.ageWarning ? " · starší než 72 hodin" : ""}
+                          {row.ageWarning ? "Poslední ověřená sazba" : "Ověřeno"}{" "}
+                          {row.verifiedAtLabel}
+                          {row.ageWarning
+                            ? " · aktuální platnost není potvrzena"
+                            : ""}
                           {row.sourceUrl ? (
                             <>
                               {" · "}
@@ -649,7 +660,7 @@ export function PublishedRatesPanel({
         {pending.length > 0 && canShowRates && layout !== "aside" ? (
           <div className="mt-10">
             <h3 className="font-heading text-lg font-semibold text-text-dark">
-              Banky v ověřování
+              Banky bez ověřené sazby pro tento filtr
             </h3>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               {pending.map((p) => (
@@ -657,6 +668,7 @@ export function PublishedRatesPanel({
                   key={p.slug}
                   lenderName={p.name}
                   message={p.message}
+                  sourceUrl={p.sourceUrl}
                 />
               ))}
             </div>

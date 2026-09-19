@@ -1,6 +1,7 @@
 /**
- * Central public display policy for verified mortgage rates on /sazby.
- * Single source of truth for freshness, eligibility, and Czech headline labels.
+ * Central public display policy for verified mortgage rates.
+ * Homepage and /sazby share this policy.
+ * Percent values are stored as percent points (4.79), never as a ratio (0.0479).
  */
 
 import type { MortgageOffer } from "@/lib/mortgage-market/offers";
@@ -11,16 +12,33 @@ import {
 } from "@/lib/mortgage-market/public-labels";
 import { isPublicRateWithinFreshWindow } from "@/lib/rates/mortgage-rate-freshness";
 
-export const PUBLIC_RATE_VERIFYING_MESSAGE = "Sazbu právě ověřujeme";
+/** Only for an in-flight fetch. A finished page must not keep this copy. */
+export const PUBLIC_RATE_LOADING_MESSAGE = "Načítáme sazbu";
+export const PUBLIC_RATE_LAST_VERIFIED_BADGE = "Poslední ověřená sazba";
+export const PUBLIC_RATE_UNVERIFIED_MESSAGE =
+  "Veřejnou sazbu se nepodařilo ověřit";
+export const PUBLIC_RATE_INDIVIDUAL_MESSAGE = "Individuální sazba";
+export const PUBLIC_RATE_EXPIRED_MESSAGE = "Sazba podle zdroje pozbyla platnosti";
 
-export type PublicRateDisplayVisibility = "hidden" | "verifying" | "published";
+/** @deprecated Finished cards no longer use the old verifying placeholder. */
+export const PUBLIC_RATE_VERIFYING_MESSAGE = PUBLIC_RATE_UNVERIFIED_MESSAGE;
+
+export type PublicRateDisplayVisibility =
+  | "hidden"
+  | "unavailable"
+  | "individual"
+  | "expired"
+  | "last_verified"
+  | "published";
 
 export type PublicRateDisplay = {
   visibility: PublicRateDisplayVisibility;
   showNumeric: boolean;
-  /** e.g. "Orientační sazba od 4,79 %" or verifying message */
+  /** e.g. "od 4,79 % p. a." */
   headline: string;
   badge: string;
+  /** Set when the number is kept but current validity is not confirmed. */
+  freshnessNote: string | null;
   verifiedAtLabel: string | null;
   sourceUrl: string | null;
   orientacniPrefix: "Orientační sazba" | "Orientační sazba od";
@@ -41,7 +59,7 @@ function resolveOfficialSourceUrl(
   return url;
 }
 
-/** "Orientační sazba od" for advertised/minimum-from rows; plain label otherwise. */
+/** "od" prefix for advertised / minimum-from rows. */
 export function orientacniSazbaPrefix(
   offer: Pick<MortgageOffer, "rateType" | "pricingScenarioKey">
 ): "Orientační sazba" | "Orientační sazba od" {
@@ -57,18 +75,39 @@ export function orientacniSazbaPrefix(
   return "Orientační sazba";
 }
 
-function buildPublishedHeadline(
+function buildRateFigure(
   prefix: PublicRateDisplay["orientacniPrefix"],
   rate: number
 ): string {
-  return `${prefix} ${formatRatePercentCs(rate)} %`;
+  const from = prefix === "Orientační sazba od" ? "od " : "";
+  return `${from}${formatRatePercentCs(rate)} % p. a.`;
+}
+
+function hasUsableNominalRate(rate: number): boolean {
+  return Number.isFinite(rate) && rate > 0 && rate < 100;
+}
+
+function validToElapsed(
+  validTo: string | null | undefined,
+  nowMs: number
+): boolean {
+  if (!validTo?.trim()) return false;
+  const t = Date.parse(validTo);
+  return Number.isFinite(t) && t <= nowMs;
+}
+
+function isExplicitlyIndividual(
+  offer: Pick<MortgageOffer, "pricingScenarioKey" | "pricingScenarioLabel">
+): boolean {
+  const key = offer.pricingScenarioKey ?? "";
+  const label = offer.pricingScenarioLabel ?? "";
+  return key.includes("individually_assessed") || /individuáln/i.test(label);
 }
 
 /**
- * Evaluate how a mortgage offer may appear on the public /sazby page.
- * - hidden: missing lastVerifiedAt or HTTPS official source — never list publicly
- * - verifying: source present but checked_at older than 72h — no numeric rate
- * - published: fresh verified rate with numeric value
+ * A date older than 72 hours does not erase the last verified number.
+ * The number stays, labelled apart from a freshly confirmed offer.
+ * A failed refresh must not be represented by clearing the number here.
  */
 export function evaluatePublicRateDisplay(
   offer: Pick<
@@ -78,6 +117,8 @@ export function evaluatePublicRateDisplay(
     | "nominalInterestRate"
     | "rateType"
     | "pricingScenarioKey"
+    | "pricingScenarioLabel"
+    | "validTo"
   >,
   nowMs: number = Date.now()
 ): PublicRateDisplay {
@@ -87,45 +128,77 @@ export function evaluatePublicRateDisplay(
   const verifiedAtLabel = lastVerifiedAt
     ? formatCheckedDateCs(lastVerifiedAt)
     : null;
-
-  if (!lastVerifiedAt || !sourceUrl) {
-    return {
-      visibility: "hidden",
-      showNumeric: false,
-      headline: PUBLIC_RATE_VERIFYING_MESSAGE,
-      badge: PUBLIC_RATE_VERIFYING_MESSAGE,
-      verifiedAtLabel,
-      sourceUrl,
-      orientacniPrefix: prefix,
-    };
-  }
-
-  const fresh = isPublicRateWithinFreshWindow(lastVerifiedAt, nowMs);
-  if (!fresh) {
-    return {
-      visibility: "verifying",
-      showNumeric: false,
-      headline: PUBLIC_RATE_VERIFYING_MESSAGE,
-      badge: PUBLIC_RATE_VERIFYING_MESSAGE,
-      verifiedAtLabel,
-      sourceUrl,
-      orientacniPrefix: prefix,
-    };
-  }
-
-  const headline = buildPublishedHeadline(prefix, offer.nominalInterestRate);
-  const badge = verifiedAtLabel
-    ? `Ověřeno ${verifiedAtLabel}`
-    : "Ověřeno";
-
-  return {
-    visibility: "published",
-    showNumeric: true,
-    headline,
-    badge,
+  const base = {
     verifiedAtLabel,
     sourceUrl,
     orientacniPrefix: prefix,
+    freshnessNote: null as string | null,
+  };
+
+  if (!lastVerifiedAt || !sourceUrl) {
+    return {
+      ...base,
+      visibility: "hidden",
+      showNumeric: false,
+      headline: PUBLIC_RATE_UNVERIFIED_MESSAGE,
+      badge: PUBLIC_RATE_UNVERIFIED_MESSAGE,
+    };
+  }
+
+  if (validToElapsed(offer.validTo, nowMs)) {
+    return {
+      ...base,
+      visibility: "expired",
+      showNumeric: false,
+      headline: PUBLIC_RATE_EXPIRED_MESSAGE,
+      badge: PUBLIC_RATE_EXPIRED_MESSAGE,
+      freshnessNote: verifiedAtLabel
+        ? `Platnost podle zdroje skončila. Naposledy ověřeno ${verifiedAtLabel}.`
+        : "Platnost podle zdroje skončila.",
+    };
+  }
+
+  if (!hasUsableNominalRate(offer.nominalInterestRate)) {
+    if (isExplicitlyIndividual(offer)) {
+      return {
+        ...base,
+        visibility: "individual",
+        showNumeric: false,
+        headline: PUBLIC_RATE_INDIVIDUAL_MESSAGE,
+        badge: PUBLIC_RATE_INDIVIDUAL_MESSAGE,
+      };
+    }
+    return {
+      ...base,
+      visibility: "unavailable",
+      showNumeric: false,
+      headline: PUBLIC_RATE_UNVERIFIED_MESSAGE,
+      badge: PUBLIC_RATE_UNVERIFIED_MESSAGE,
+    };
+  }
+
+  const headline = buildRateFigure(prefix, offer.nominalInterestRate);
+  const fresh = isPublicRateWithinFreshWindow(lastVerifiedAt, nowMs);
+  if (!fresh) {
+    return {
+      ...base,
+      visibility: "last_verified",
+      showNumeric: true,
+      headline,
+      badge: PUBLIC_RATE_LAST_VERIFIED_BADGE,
+      freshnessNote: verifiedAtLabel
+        ? `Aktuální platnost není potvrzena. Naposledy ověřeno ${verifiedAtLabel}. Údaj je starší než 72 hodin a není to aktuální osobní nabídka.`
+        : "Aktuální platnost není potvrzena.",
+    };
+  }
+
+  return {
+    ...base,
+    visibility: "published",
+    showNumeric: true,
+    headline,
+    badge: verifiedAtLabel ? `Ověřeno ${verifiedAtLabel}` : "Ověřeno",
+    freshnessNote: null,
   };
 }
 
@@ -138,9 +211,11 @@ export function isPubliclyListableMortgageOffer(
     evaluatePublicRateDisplay(
       {
         ...offer,
-        nominalInterestRate: 0,
+        nominalInterestRate: 1,
         rateType: "standard",
         pricingScenarioKey: "listing_gate",
+        pricingScenarioLabel: null,
+        validTo: null,
       },
       nowMs
     ).visibility !== "hidden"

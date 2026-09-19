@@ -23,7 +23,7 @@ import {
 } from "@/lib/mortgage-market/bank-rate-monthly-payment";
 import {
   evaluatePublicRateDisplay,
-  PUBLIC_RATE_VERIFYING_MESSAGE,
+  PUBLIC_RATE_UNVERIFIED_MESSAGE,
 } from "@/lib/mortgage-market/public-rate-display";
 import { cn } from "@/lib/utils";
 
@@ -55,19 +55,16 @@ function ScenarioRow({
     <div className="min-w-0 space-y-1.5">
       <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
         {payment ? (
-          <p className="font-heading text-2xl font-bold tabular-nums tracking-tight text-text-dark">
+          <p className="font-heading text-3xl font-bold tabular-nums tracking-tight text-deep-teal">
             {payment.rateHeadline}
           </p>
         ) : display.showNumeric ? (
-          <p className="font-heading text-2xl font-bold tabular-nums tracking-tight text-text-dark">
+          <p className="font-heading text-3xl font-bold tabular-nums tracking-tight text-deep-teal">
             {display.headline}
-            <span className="ml-1 text-sm font-semibold text-muted-foreground">
-              p.a.
-            </span>
           </p>
         ) : (
-          <p className="font-heading text-lg font-bold text-deep-teal">
-            {PUBLIC_RATE_VERIFYING_MESSAGE}
+          <p className="font-heading text-lg font-semibold text-gray-600">
+            {display.headline}
           </p>
         )}
         <p className="text-sm text-muted-foreground">{scenarioLabelCs(offer)}</p>
@@ -105,12 +102,17 @@ function PublicRateMeta({ offer }: { offer: MortgageOffer }) {
         {display.verifiedAtLabel ? (
           <div>
             <dt className="font-semibold uppercase tracking-wide text-muted-foreground/80">
-              Poslední ověření
+              {display.visibility === "published"
+                ? "Ověřeno"
+                : "Poslední ověření"}
             </dt>
             <dd className="mt-0.5 text-text-dark">{display.verifiedAtLabel}</dd>
           </div>
         ) : null}
       </dl>
+      {display.freshnessNote ? (
+        <p className="leading-relaxed text-amber-950">{display.freshnessNote}</p>
+      ) : null}
 
       {conditions.length > 0 ? (
         <div>
@@ -285,7 +287,7 @@ function AlternateScenarioLine({
   if (!display.showNumeric) {
     return (
       <p className="text-sm text-muted-foreground">
-        Alternativa: {PUBLIC_RATE_VERIFYING_MESSAGE} · {scenarioLabelCs(offer)}
+        Alternativa: {display.headline} · {scenarioLabelCs(offer)}
       </p>
     );
   }
@@ -344,7 +346,14 @@ export function BankRateCard({
               : null}
           </p>
         </div>
-        <p className="shrink-0 rounded-md bg-deep-teal/10 px-2 py-1 text-[11px] font-semibold text-deep-teal">
+        <p
+          className={cn(
+            "shrink-0 rounded-md px-2 py-1 text-[11px] font-semibold",
+            display.visibility === "published"
+              ? "bg-deep-teal/10 text-deep-teal"
+              : "bg-amber-50 text-amber-950"
+          )}
+        >
           {display.badge}
         </p>
       </header>
@@ -429,7 +438,7 @@ export function BankRateCard({
                     {scenarioLabelCs(offer)}
                     {scenarioDisplay.showNumeric
                       ? ` · ${scenarioDisplay.headline}`
-                      : ` · ${PUBLIC_RATE_VERIFYING_MESSAGE}`}
+                      : ` · ${scenarioDisplay.headline}`}
                   </p>
                 ) : null}
                 <OfferDetails offer={offer} />
@@ -445,21 +454,36 @@ export function BankRateCard({
 export function LenderPendingCard({
   lenderName,
   message,
+  sourceUrl,
 }: {
   lenderName: string;
   message?: string;
+  sourceUrl?: string | null;
 }) {
   return (
     <article className="rounded-2xl border border-dashed border-border bg-[#f7f8f7] p-4 sm:p-5">
       <h3 className="font-heading text-lg font-bold text-text-dark">
         {lenderName}
       </h3>
-      <p className="mt-2 text-sm font-medium text-deep-teal">
-        {message ?? PUBLIC_RATE_VERIFYING_MESSAGE}
+      <p className="mt-2 text-sm font-medium text-gray-700">
+        {message ?? PUBLIC_RATE_UNVERIFIED_MESSAGE}
       </p>
       <p className="mt-1 text-xs text-muted-foreground">
-        Zatím nezveřejňujeme ověřenou maloobchodní sazbu. Nejde o modelový odhad.
+        Pro zvolenou fixaci nemáme ověřenou číselnou sazbu. Nejde o modelový odhad
+        a sazbu nenahrazujeme údajem z jiné fixace.
       </p>
+      {sourceUrl ? (
+        <p className="mt-2 text-xs">
+          <a
+            href={sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-deep-teal underline underline-offset-2"
+          >
+            Oficiální zdroj banky
+          </a>
+        </p>
+      ) : null}
     </article>
   );
 }

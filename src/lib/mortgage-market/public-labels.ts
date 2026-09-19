@@ -46,12 +46,18 @@ export function publicFreshnessLabel(
   const withinPublicWindow =
     evidenced && isPublicRateWithinFreshWindow(checkedAt, nowMs);
 
-  if (!withinPublicWindow || !evidenced) {
+  if (!evidenced) {
     return {
-      short: "Sazbu právě ověřujeme",
+      short: "Veřejnou sazbu se nepodařilo ověřit",
+      detail: "Veřejnou sazbu se nepodařilo ověřit",
+    };
+  }
+  if (!withinPublicWindow) {
+    return {
+      short: "Poslední ověřená sazba",
       detail: date
-        ? `Sazbu právě ověřujeme · naposledy zkontrolováno ${date}`
-        : "Sazbu právě ověřujeme",
+        ? `Poslední ověřená sazba ${date}. Aktuální platnost není potvrzena.`
+        : "Poslední ověřená sazba. Aktuální platnost není potvrzena.",
     };
   }
   return {

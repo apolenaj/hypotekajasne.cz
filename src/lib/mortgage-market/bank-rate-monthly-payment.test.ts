@@ -14,7 +14,6 @@ import {
 } from "@/lib/mortgage-market/bank-rate-monthly-payment";
 import {
   evaluatePublicRateDisplay,
-  PUBLIC_RATE_VERIFYING_MESSAGE,
 } from "@/lib/mortgage-market/public-rate-display";
 import { PUBLIC_RATE_FRESH_MAX_AGE_MS } from "@/lib/rates/mortgage-rate-freshness";
 
@@ -146,23 +145,22 @@ describe("resolveBankRatePaymentDisplay", () => {
       NOW
     );
     assert.ok(resolved);
-    assert.match(resolved!.rateHeadline, /^Orientační sazba od 4,89 % p\. a\.$/);
+    assert.match(resolved!.rateHeadline, /^od 4,89 % p\. a\.$/);
     assert.equal(resolved!.monthlyPaymentCzk, 34_692);
     assert.equal(resolved!.disclaimer, BANK_RATE_PAYMENT_DISCLAIMER);
   });
 
-  it("returns null for stale, hidden, or missing rate", () => {
+  it("keeps a payment for a stale verified rate and hides one without a source", () => {
     const staleAt = new Date(
       NOW - PUBLIC_RATE_FRESH_MAX_AGE_MS - 60_000
     ).toISOString();
-    assert.equal(
-      resolveBankRatePaymentDisplay(
-        sampleOffer({ checkedAt: staleAt }),
-        ACCEPTANCE,
-        NOW
-      ),
-      null
+    const stalePayment = resolveBankRatePaymentDisplay(
+      sampleOffer({ checkedAt: staleAt }),
+      ACCEPTANCE,
+      NOW
     );
+    assert.ok(stalePayment);
+    assert.match(stalePayment!.rateHeadline, /% p\. a\.$/);
     assert.equal(
       resolveBankRatePaymentDisplay(
         sampleOffer({
@@ -239,7 +237,7 @@ describe("getMortgageOffers — purchase product payments integration", () => {
     );
   });
 
-  it("stale catalog offer keeps verifying headline and no payment", () => {
+  it("stale catalog offer keeps the last verified number", () => {
     const offer = getMortgageOffers(catalog, {
       purpose: "purchase",
       fixationMonths: 36,
@@ -250,15 +248,15 @@ describe("getMortgageOffers — purchase product payments integration", () => {
       offer,
       NOW + PUBLIC_RATE_FRESH_MAX_AGE_MS + 86_400_000
     );
-    assert.equal(staleDisplay.showNumeric, false);
-    assert.equal(staleDisplay.headline, PUBLIC_RATE_VERIFYING_MESSAGE);
-    assert.equal(
+    assert.equal(staleDisplay.showNumeric, true);
+    assert.equal(staleDisplay.visibility, "last_verified");
+    assert.match(staleDisplay.headline, /% p\. a\.$/);
+    assert.ok(
       resolveBankRatePaymentDisplay(
         offer,
         ACCEPTANCE,
         NOW + PUBLIC_RATE_FRESH_MAX_AGE_MS + 86_400_000
-      ),
-      null
+      )
     );
   });
 });

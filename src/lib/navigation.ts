@@ -4,7 +4,6 @@
  * Zahraniční nemovitosti, Kalkulačky, Průvodci.
  */
 
-import { Calculator, History, TrendingUp, type LucideIcon } from "lucide-react";
 import { getCountryGuidePath, routes } from "@/lib/routes";
 import { getLandingPath } from "@/lib/seo/landings";
 import { stripLocalePrefix } from "@/lib/i18n/config";
@@ -14,7 +13,6 @@ export type NavLinkItem = {
   label: string;
   description?: string;
   external?: boolean;
-  icon?: LucideIcon;
 };
 
 export type NavColumn = {
@@ -38,7 +36,6 @@ export const hypotekyNavItems: NavLinkItem[] = [
     href: routes.kalkulacky.hypotecniKalkulacka,
     label: "Hypoteční kalkulačka",
     description: "Orientační měsíční splátka",
-    icon: Calculator,
   },
   {
     href: routes.akademie,
@@ -227,13 +224,11 @@ export const cenyNavItems: NavLinkItem[] = [
     href: routes.kalkulacky.historickyVyvoj,
     label: "Historický vývoj",
     description: "Modelová řada cen a porovnání aktiv",
-    icon: History,
   },
   {
     href: routes.kalkulacky.potencialniVyvoj,
     label: "Potenciální vývoj",
     description: "Modelové scénáře, ne predikce",
-    icon: TrendingUp,
   },
   {
     href: routes.marketPulse,
@@ -247,13 +242,11 @@ export const analytikaNavItems: NavLinkItem[] = [
     href: routes.kalkulacky.historickyVyvoj,
     label: "Historický vývoj",
     description: "Jak by se majetek vyvíjel zpětně v čase",
-    icon: History,
   },
   {
     href: routes.kalkulacky.potencialniVyvoj,
     label: "Potenciální vývoj",
     description: "Scénáře růstu hodnoty nemovitosti",
-    icon: TrendingUp,
   },
 ];
 

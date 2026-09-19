@@ -10,7 +10,6 @@ import {
   evaluatePublicRateDisplay,
   isPubliclyListableMortgageOffer,
   orientacniSazbaPrefix,
-  PUBLIC_RATE_VERIFYING_MESSAGE,
 } from "@/lib/mortgage-market/public-rate-display";
 import { PUBLIC_RATE_FRESH_MAX_AGE_MS } from "@/lib/rates/mortgage-rate-freshness";
 
@@ -44,7 +43,7 @@ describe("evaluatePublicRateDisplay — 72h freshness", () => {
     );
     assert.equal(display.visibility, "published");
     assert.equal(display.showNumeric, true);
-    assert.match(display.headline, /^Orientační sazba od 4,79 %$/);
+    assert.equal(display.headline, "od 4,79 % p. a.");
     assert.match(display.badge, /Ověřeno/);
     assert.ok(display.verifiedAtLabel);
     assert.equal(display.sourceUrl, OFFICIAL_URL);
@@ -52,11 +51,11 @@ describe("evaluatePublicRateDisplay — 72h freshness", () => {
 
   it("standard rate uses Orientační sazba without od", () => {
     const display = evaluatePublicRateDisplay(sampleOffer(), NOW);
-    assert.match(display.headline, /^Orientační sazba 4,79 %$/);
+    assert.match(display.headline, /^4,79 % p\. a\.$/);
     assert.equal(orientacniSazbaPrefix(sampleOffer()), "Orientační sazba");
   });
 
-  it("rate older than 72h hides numeric value", () => {
+  it("rate older than 72h keeps the number as last verified, not as current", () => {
     const staleAt = new Date(
       NOW - PUBLIC_RATE_FRESH_MAX_AGE_MS - 60_000
     ).toISOString();
@@ -64,11 +63,22 @@ describe("evaluatePublicRateDisplay — 72h freshness", () => {
       sampleOffer({ checkedAt: staleAt }),
       NOW
     );
-    assert.equal(display.visibility, "verifying");
-    assert.equal(display.showNumeric, false);
-    assert.equal(display.headline, PUBLIC_RATE_VERIFYING_MESSAGE);
-    assert.equal(display.badge, PUBLIC_RATE_VERIFYING_MESSAGE);
+    assert.equal(display.visibility, "last_verified");
+    assert.equal(display.showNumeric, true);
+    assert.equal(display.headline, "4,79 % p. a.");
+    assert.equal(display.badge, "Poslední ověřená sazba");
+    assert.match(display.freshnessNote ?? "", /není potvrzena/);
     assert.ok(display.sourceUrl);
+  });
+
+  it("does not present a rate whose published validity has ended", () => {
+    const display = evaluatePublicRateDisplay(
+      sampleOffer({ validTo: "2026-08-01T00:00:00.000Z" }),
+      NOW
+    );
+    assert.equal(display.visibility, "expired");
+    assert.equal(display.showNumeric, false);
+    assert.equal(display.headline, "Sazba podle zdroje pozbyla platnosti");
   });
 
   it("missing checkedAt hides offer from public listing", () => {
