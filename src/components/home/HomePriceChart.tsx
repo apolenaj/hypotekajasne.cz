@@ -512,7 +512,7 @@ export function HomePriceChart() {
                 {blocked?.labelCs ?? "Data zatím nejsou v tomto přehledu"}
               </p>
               <p className="mt-2 max-w-xl text-sm leading-relaxed text-gray-600">
-                {blocked?.reasonCs ??
+                {blocked?.clientMessageCs ??
                   "Pro vybranou kombinaci nemáme ověřenou veřejnou časovou řadu."}
               </p>
             </div>
@@ -569,26 +569,35 @@ export function HomePriceChart() {
           nepříznivý ubírá 2 p. b. Tento model není náhradou historických tržních dat.
         </p>
       ) : marketSeries ? (
-        <p className="mt-4 text-xs leading-relaxed text-gray-500">
-          {marketSeries.methodologyCs} Zdroj:{" "}
-          <a
-            href={marketSeries.sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-semibold text-deep-teal underline-offset-2 hover:underline"
-          >
-            {marketSeries.sourceName}
-          </a>
-          {marketSeries.tableOrPage ? ` (${marketSeries.tableOrPage})` : null}.
-          Publikace: {marketSeries.publishedAt ?? "—"}. Ověřeno:{" "}
-          {marketSeries.verifiedAt}. Období dat: {marketSeries.points[0]!.year}–
-          {marketSeries.points.at(-1)!.year} ({marketSeries.points.length} bodů).
-        </p>
+        <details className="mt-4 text-xs leading-relaxed text-gray-500">
+          <summary className="cursor-pointer font-semibold text-deep-teal">
+            Metodika a zdroje
+          </summary>
+          <p className="mt-2">
+            {marketSeries.methodologyCs} Zdroj:{" "}
+            <a
+              href={marketSeries.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-deep-teal underline-offset-2 hover:underline"
+            >
+              {marketSeries.sourceName}
+            </a>
+            {marketSeries.tableOrPage ? ` (${marketSeries.tableOrPage})` : null}.
+            Publikace: {marketSeries.publishedAt ?? "—"}. Ověřeno:{" "}
+            {marketSeries.verifiedAt}. Období dat: {marketSeries.points[0]!.year}–
+            {marketSeries.points.at(-1)!.year} ({marketSeries.points.length} bodů).
+          </p>
+        </details>
       ) : blocked ? (
-        <p className="mt-4 text-xs leading-relaxed text-gray-500">
-          Prověřené zdroje bez použitelné otevřené řady:{" "}
-          {blocked.researchedSources.join(" · ")}
-        </p>
+        <details className="mt-4 text-xs leading-relaxed text-gray-500">
+          <summary className="cursor-pointer font-semibold text-deep-teal">
+            Metodika a zdroje
+          </summary>
+          <p className="mt-2">
+            Pro tuto volbu nemáme otevřenou srovnatelnou řadu. Nejde o výpadek zobrazení.
+          </p>
+        </details>
       ) : null}
 
       <Link

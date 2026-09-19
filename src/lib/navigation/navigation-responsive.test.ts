@@ -204,6 +204,17 @@ describe("navbar overflow guards (static source)", () => {
     assert.ok(!navbar.includes("w-screen"));
   });
 
+  it("homepage fixation tabs do not rewrite the URL to /sazby", () => {
+    const panel = readFileSync(
+      join(ROOT, "components/mortgage-market/PublishedRatesPanel.tsx"),
+      "utf8"
+    );
+    assert.ok(panel.includes('if (variant !== "home")'));
+    assert.ok(panel.includes("if (variant === \"home\") return;"));
+    assert.ok(panel.includes('type="button"'));
+    assert.ok(panel.includes("[12, \"1 rok\"]"));
+  });
+
   it("desktop nav starts at xl with accessible disclosure megamenu", () => {
     assert.ok(navbar.includes("xl:flex"));
     assert.ok(navbar.includes('aria-label="Hlavní navigace"'));

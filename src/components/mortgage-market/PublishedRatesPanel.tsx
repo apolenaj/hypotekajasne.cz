@@ -171,12 +171,16 @@ export function PublishedRatesPanel({
       setQuery(normalized);
       setParamErrors([]);
       setLtvContext(nextLtv);
-      syncUrl(normalized, marketing);
+      // Homepage fixation tabs stay local. Only /sazby rewrites the URL.
+      if (variant !== "home") {
+        syncUrl(normalized, marketing);
+      }
     },
-    [marketing, syncUrl]
+    [marketing, syncUrl, variant]
   );
 
   useEffect(() => {
+    if (variant === "home") return;
     const raw = Object.fromEntries(searchParams.entries());
     const parsed = parseMortgageJourneyParams(raw);
     setQuery((prev) =>
@@ -185,7 +189,7 @@ export function PublishedRatesPanel({
     setLtvContext(parsed.ltvContext);
     setMarketing(parsed.context);
     setParamErrors(parsed.paramErrors);
-  }, [searchParams]);
+  }, [searchParams, variant]);
 
   const reload = useCallback(
     async (next: RatesQueryState, context: LtvContext) => {
@@ -511,25 +515,27 @@ export function PublishedRatesPanel({
                         {row.fixationLabel}
                         {row.conditionLabel ? ` · ${row.conditionLabel}` : ""}
                       </p>
-                      {row.verifiedAtLabel && row.showNumeric && !row.ageWarning ? (
-                        <p className="mt-1 text-[11px] text-gray-500">
+                      {row.verifiedAtLabel && row.showNumeric ? (
+                        <p className="mt-1 text-[11px] leading-relaxed text-gray-500">
                           Ověřeno {row.verifiedAtLabel}
+                          {row.ageWarning ? " · starší než 72 hodin" : ""}
+                          {row.sourceUrl ? (
+                            <>
+                              {" · "}
+                              <a
+                                href={row.sourceUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-semibold text-deep-teal underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal"
+                              >
+                                Zdroj
+                              </a>
+                            </>
+                          ) : null}
                         </p>
                       ) : null}
                       {row.ageWarning ? (
-                        <p className="mt-1 text-[11px] leading-relaxed text-amber-900">
-                          {row.ageWarning}
-                        </p>
-                      ) : null}
-                      {row.sourceUrl ? (
-                        <a
-                          href={row.sourceUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mt-1 inline-flex text-xs font-semibold text-deep-teal underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal"
-                        >
-                          Oficiální zdroj
-                        </a>
+                        <p className="sr-only">{row.ageWarning}</p>
                       ) : null}
                     </div>
                     <Link

@@ -34,7 +34,7 @@ const ctaClassName = cn(
 
 const topLinkClass = (active: boolean) =>
   cn(
-    "inline-flex h-10 shrink-0 items-center rounded-md px-1.5 text-sm font-medium transition-colors",
+    "inline-flex h-10 shrink-0 items-center gap-1 rounded-md px-2.5 text-sm font-medium transition-colors",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal focus-visible:ring-offset-2",
     active
       ? "bg-deep-teal/10 font-semibold text-deep-teal"
@@ -66,7 +66,7 @@ function NavItemLink({
     showDescription && item.description ? (
       <span className="flex min-w-0 flex-col gap-0.5">
         <span className="font-medium leading-snug">{item.label}</span>
-        <span className="text-xs font-normal leading-snug text-gray-500">
+        <span className="text-[13px] font-normal leading-snug text-gray-500">
           {item.description}
         </span>
       </span>
@@ -163,6 +163,8 @@ function DesktopDisclosure({
     ? group.columns
     : [{ items: group.items }];
   const colCount = Math.min(3, Math.max(1, columns.length));
+  const alignEnd =
+    group.id === "zahranici" || group.id === "pruvodci" || group.id === "o-nas";
 
   const close = useCallback(() => {
     onOpenChange(false);
@@ -223,22 +225,24 @@ function DesktopDisclosure({
         hidden={!open}
         data-nav-panel={group.id}
         className={cn(
-          "absolute left-1/2 top-full z-[200] w-[min(36rem,90%)] -translate-x-1/2 pt-1",
-          "xl:left-0 xl:w-auto xl:min-w-[28rem] xl:max-w-[36rem] xl:translate-x-0"
+          "absolute top-full z-[200] pt-2",
+          alignEnd ? "right-0" : "left-0"
         )}
       >
         <div
           className={cn(
-            "max-h-[min(70vh,32rem)] overflow-y-auto overflow-x-hidden rounded-xl border border-gray-100 bg-white p-3 shadow-lg",
-            colCount === 1 && "w-max min-w-[14rem] max-w-[22rem]",
-            colCount === 2 && "grid grid-cols-2 gap-3",
-            colCount === 3 && "grid grid-cols-3 gap-3"
+            "max-h-[min(70vh,32rem)] overflow-y-auto overflow-x-hidden rounded-xl border border-gray-100 bg-white p-6 shadow-lg",
+            colCount === 1 && "w-[22rem] max-w-[min(22rem,92vw)]",
+            colCount === 2 &&
+              "grid w-[40rem] max-w-[min(40rem,92vw)] grid-cols-2 gap-x-8 gap-y-2",
+            colCount === 3 &&
+              "grid w-[46rem] max-w-[min(46rem,92vw)] grid-cols-3 gap-x-8 gap-y-2"
           )}
         >
           {columns.map((column, colIdx) => (
             <div key={column.title ?? `col-${colIdx}`} className="min-w-0">
               {column.title ? (
-                <p className="mb-1.5 px-2 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+                <p className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
                   {column.title}
                 </p>
               ) : null}
@@ -251,7 +255,7 @@ function DesktopDisclosure({
                       active={isNavItemActive(item.href, pathname, search)}
                       onClick={() => onOpenChange(false)}
                       className={cn(
-                        "block rounded-lg px-2.5 py-2 text-sm text-gray-700 transition-colors hover:bg-deep-teal/5 hover:text-deep-teal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal",
+                        "block rounded-lg px-2.5 py-2.5 text-[15px] leading-snug text-gray-700 transition-colors hover:bg-deep-teal/5 hover:text-deep-teal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal",
                         isNavItemActive(item.href, pathname, search) &&
                           "bg-deep-teal/10 font-semibold text-deep-teal"
                       )}
@@ -332,7 +336,7 @@ export function Navbar() {
         <Logo />
 
         <nav
-          className="ml-3 hidden min-w-0 flex-1 items-center justify-center gap-0 overflow-visible xl:flex"
+          className="ml-4 hidden min-w-0 flex-1 items-center justify-center gap-x-5 overflow-visible xl:flex"
           aria-label="Hlavní navigace"
           data-desktop-nav
         >

@@ -301,6 +301,9 @@ export type BlockedSegment = {
   segment: "pozemky" | "komercni";
   subtype: string;
   labelCs: string;
+  /** Short copy shown to visitors. */
+  clientMessageCs: string;
+  /** Internal research note — not rendered on the homepage. */
   reasonCs: string;
   researchedSources: string[];
 };
@@ -310,25 +313,27 @@ export const CZ_MARKET_BLOCKED: BlockedSegment[] = [
     segment: "pozemky",
     subtype: "stavebni",
     labelCs: "Stavební pozemky",
+    clientMessageCs:
+      "Pro stavební pozemky zatím nemáme ověřenou roční řadu ceny v Kč/m² za celou ČR. Nejde o stejný údaj jako u zemědělské půdy.",
     reasonCs:
       "ČSÚ publikuje průměrné kupní ceny stavebních pozemků v tříletých tabulkách a indexy (průměr 2010 = 100) v produktu Indexy cen nemovitostí / Ceny sledovaných druhů nemovitostí. Veřejný strojově stáhnutelný CSV/API export s kontinuální roční Kč/m² řadou pro celou ČR se při ověření 19. 9. 2026 nepodařilo získat (404 u přímých odkazů na XLSX). Nesestavujeme řadu z odhadu grafů. Doplnění vyžaduje ruční export z DataStat nebo XLSX z katalogu ČSÚ.",
     researchedSources: [
       "https://csu.gov.cz/ceny-nemovitosti",
       "https://csu.gov.cz/produkty/icn_cr",
       "https://csu.gov.cz/produkty/ceny-sledovanych-druhu-nemovitosti-2017-az-2019",
-      "https://data.csu.gov.cz/ (DataStat — vyžaduje interaktivní výběr)",
     ],
   },
   {
     segment: "komercni",
     subtype: "obchod",
     labelCs: "Obchodní prostory",
+    clientMessageCs:
+      "Pro obchodní prostory nemáme veřejnou srovnatelnou řadu prodejních cen. K dispozici jsou jen placené nebo jednorázové snapshoty nájemného a výnosů, které nelze spojit do jedné řady.",
     reasonCs:
-      "Veřejné reporty CBRE/Colliers/C&W pro ČR uvádí retail prime yield a vybrané nájemné, ale neposkytují bezplatnou dlouhodobou otevřenou časovou řadu prodejních cen ani jednotný index srovnatelný napříč lety bez licence. Neinventujeme řadu.",
+      "Veřejné reporty CBRE/Colliers/C&W pro ČR uvádí retail prime yield a vybrané nájemné, ale neposkytují bezplatnou dlouhodobou otevřenou časovou řadu prodejních cen ani jednotný index srovnatelný napříč lety bez licence.",
     researchedSources: [
       "https://www.cbre.cz/",
       "https://www.colliers.com/en-cz/research",
-      "Cushman & Wakefield Czech Marketbeat (retail) — často jen aktuální čtvrtletí",
     ],
   },
 ];
