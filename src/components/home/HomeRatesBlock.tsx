@@ -9,10 +9,12 @@ export function HomeRatesBlock({
   initialOffers,
   initialQuery,
   initialLtvContext,
+  layout = "page",
 }: {
   initialOffers: GetMortgageOffersResult | null;
   initialQuery: MortgageJourneyCore;
   initialLtvContext: LtvContext;
+  layout?: "page" | "aside";
 }) {
   return (
     <>
@@ -22,8 +24,9 @@ export function HomeRatesBlock({
         initialLtvContext={initialLtvContext}
         headingId="home-rates-heading"
         variant="home"
+        layout={layout}
       />
-      <RpsnEducationBlock />
+      {layout === "aside" ? null : <RpsnEducationBlock />}
     </>
   );
 }

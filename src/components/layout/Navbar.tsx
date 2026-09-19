@@ -8,7 +8,6 @@ import {
   useId,
   useRef,
   useState,
-  useSyncExternalStore,
 } from "react";
 import { ChevronDown, ExternalLink, Menu, X } from "lucide-react";
 import { BrandWordmark } from "@/components/brand/BrandWordmark";
@@ -23,7 +22,6 @@ import {
   type NavLinkItem,
 } from "@/lib/navigation";
 import { useFocusTrap } from "@/lib/a11y/focus-trap";
-import { loadReadiness } from "@/lib/mortgage-readiness/storage";
 import { routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
@@ -36,20 +34,12 @@ const ctaClassName = cn(
 
 const topLinkClass = (active: boolean) =>
   cn(
-    "inline-flex h-10 shrink-0 items-center rounded-lg px-2 text-[13px] font-medium transition-colors",
+    "inline-flex h-10 shrink-0 items-center rounded-md px-1.5 text-sm font-medium transition-colors",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal focus-visible:ring-offset-2",
     active
       ? "bg-deep-teal/10 font-semibold text-deep-teal"
       : "text-gray-700 hover:bg-gray-50 hover:text-deep-teal"
   );
-
-function useHasReturningProfile() {
-  return useSyncExternalStore(
-    () => () => {},
-    () => Boolean(loadReadiness()),
-    () => false
-  );
-}
 
 function useNavLocation() {
   const pathname = usePathname() ?? "/";
@@ -290,11 +280,9 @@ function Logo({ onClick }: { onClick?: () => void }) {
 }
 
 function HeaderCta({ className }: { className?: string }) {
-  const returning = useHasReturningProfile();
-  const cta = returning ? navCta.returning : navCta.default;
   return (
-    <Link href={cta.href} className={cn(ctaClassName, className)}>
-      {cta.label}
+    <Link href={navCta.default.href} className={cn(ctaClassName, className)}>
+      Nezávazná poptávka →
     </Link>
   );
 }
@@ -340,11 +328,11 @@ export function Navbar() {
       data-site-header
       className="sticky top-0 z-[100] w-full max-w-full overflow-visible border-b border-gray-200 bg-white"
     >
-      <div className="mx-auto flex h-16 w-full max-w-[90rem] min-w-0 items-center gap-3 overflow-visible px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-[72px] w-full max-w-[1440px] min-w-0 items-center gap-2 overflow-visible px-4 sm:px-8 lg:px-10 xl:px-12">
         <Logo />
 
         <nav
-          className="ml-4 hidden min-w-0 flex-1 items-center gap-0.5 overflow-visible xl:flex"
+          className="ml-3 hidden min-w-0 flex-1 items-center justify-center gap-0 overflow-visible xl:flex"
           aria-label="Hlavní navigace"
           data-desktop-nav
         >
@@ -376,7 +364,7 @@ export function Navbar() {
         </div>
 
         <div className="ml-auto flex shrink-0 items-center gap-2 xl:hidden">
-          <HeaderCta className="hidden max-w-[11rem] truncate px-3 text-xs sm:inline-flex" />
+          <HeaderCta className="inline-flex max-w-[9.2rem] truncate px-2.5 text-[11px] sm:max-w-none sm:px-4 sm:text-sm" />
           <button
             type="button"
             className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-deep-teal transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal"

@@ -357,7 +357,7 @@ function MiniMortgageCalculatorCore({
       className={cn(
         "box-border w-full min-w-0 max-w-full text-text-dark",
         hero
-          ? "rounded-[18px] border border-gray-200 bg-white p-5 shadow-[0_16px_40px_-28px_rgba(16,40,32,0.45)] sm:p-6"
+          ? "w-full max-w-[560px] rounded-[22px] border border-white/80 bg-white p-5 shadow-[0_24px_70px_rgba(15,60,45,0.16)] sm:p-6 lg:ml-auto"
           : "rounded-2xl border border-white/20 bg-white p-4 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.45)] ring-1 ring-black/5 sm:p-6 md:max-w-md"
       )}
       aria-labelledby="mini-mortgage-heading"
@@ -439,7 +439,7 @@ function MiniMortgageCalculatorCore({
         </div>
       ) : (
         <>
-      <div className="mt-4 space-y-4">
+      <div className={cn(hero ? "mt-4 grid grid-cols-2 gap-3" : "mt-4 space-y-4")}>
         {hero ? null : (
         <div className="grid min-w-0 grid-cols-2 gap-3">
           <div className="min-w-0 space-y-1.5">
@@ -645,7 +645,10 @@ function MiniMortgageCalculatorCore({
         )}
         <p
           id="mini-mortgage-rate-hint"
-          className="text-[11px] text-muted-foreground"
+          className={cn(
+            "text-[11px] text-muted-foreground",
+            hero && "sr-only"
+          )}
         >
           {hero
             ? "Modelová sazba pro orientační splátku. Není to nabídka banky."
@@ -659,7 +662,7 @@ function MiniMortgageCalculatorCore({
         </p>
       ) : null}
 
-      <hr className="my-5 border-border/80" />
+      <hr className={cn(hero ? "my-3 border-gray-100" : "my-5 border-border/80")} />
 
       <div
         className="space-y-3"
@@ -669,6 +672,8 @@ function MiniMortgageCalculatorCore({
       >
         {hasCalculated && committedResult ? (
           <>
+            {hero ? null : (
+            <>
             <div className="min-w-0">
               <p className="text-xs font-semibold text-muted-foreground">
                 Výše hypotéky
@@ -702,8 +707,17 @@ function MiniMortgageCalculatorCore({
                   : "Orientační podíl úvěru k ceně nemovitosti."}
               </p>
             </div>
+            </>
+            )}
 
-            <div className="min-w-0 rounded-xl bg-muted-gold/15 px-3 py-3 ring-1 ring-muted-gold/30">
+            <div
+              className={cn(
+                "min-w-0",
+                hero
+                  ? "pt-1"
+                  : "rounded-xl bg-muted-gold/15 px-3 py-3 ring-1 ring-muted-gold/30"
+              )}
+            >
               <p className="text-xs font-semibold text-muted-foreground">
                 Orientační měsíční splátka
               </p>
@@ -740,6 +754,10 @@ function MiniMortgageCalculatorCore({
             </div>
             )}
           </>
+        ) : hero ? (
+          <p className="text-sm text-gray-500">
+            Orientační měsíční splátka se zobrazí po výpočtu.
+          </p>
         ) : (
           <div className="min-w-0 rounded-xl bg-muted-gold/15 px-3 py-3 ring-1 ring-muted-gold/30">
             <p className="text-xs font-semibold text-muted-foreground">
@@ -757,9 +775,7 @@ function MiniMortgageCalculatorCore({
           type="button"
           className={cn(
             primaryButtonClassName,
-            hero
-              ? "bg-deep-teal text-white hover:bg-deep-teal-light"
-              : "bg-muted-gold text-text-dark hover:bg-muted-gold-light"
+            hero ? "h-14 bg-deep-teal text-[15px] text-white hover:bg-deep-teal-light" : "bg-muted-gold text-text-dark hover:bg-muted-gold-light"
           )}
           disabled={primaryDisabled}
           aria-busy={isCalculating}
@@ -803,13 +819,23 @@ function MiniMortgageCalculatorCore({
         </button>
       )}
 
-      <p className="mt-3 text-center text-[10px] leading-snug text-muted-foreground">
-        {hero ? "Nezávazně a bez odeslání osobních údajů. " : null}
-        {getCalculatorDisclaimer("cs")}
-        {hasCalculated
-          ? " Sazby bank otevřete tlačítkem výše."
-          : " Po výpočtu zobrazíte sazby pro stejné parametry."}
-      </p>
+      {hero ? (
+        <>
+          <p className="mt-3 text-center text-[11px] leading-snug text-gray-500">
+            Nezávazně a bez odeslání osobních údajů.
+          </p>
+          <p className="mt-1 text-center text-[10px] leading-snug text-gray-400">
+            {getCalculatorDisclaimer("cs")}
+          </p>
+        </>
+      ) : (
+        <p className="mt-3 text-center text-[10px] leading-snug text-muted-foreground">
+          {getCalculatorDisclaimer("cs")}
+          {hasCalculated
+            ? " Sazby bank otevřete tlačítkem výše."
+            : " Po výpočtu zobrazíte sazby pro stejné parametry."}
+        </p>
+      )}
         </>
       )}
     </article>

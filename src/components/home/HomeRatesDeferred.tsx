@@ -9,15 +9,20 @@ type HomeRatesDeferredProps = {
   initialOffers: GetMortgageOffersResult | null;
   initialQuery: MortgageJourneyCore;
   initialLtvContext: LtvContext;
+  layout?: "page" | "aside";
 };
 
-function RatesPlaceholder() {
+function RatesPlaceholder({ layout = "page" }: { layout?: "page" | "aside" }) {
   return (
     <section
       aria-labelledby="home-rates-heading"
-      className="home-below-fold border-b border-border bg-white"
+      className={
+        layout === "aside"
+          ? "h-full rounded-[18px] border border-gray-200 bg-white p-5"
+          : "home-below-fold border-b border-border bg-white"
+      }
     >
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
+      <div className={layout === "aside" ? "" : "mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12"}>
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-deep-teal">
           Orientační sazby
         </p>
@@ -47,7 +52,7 @@ export function HomeRatesDeferred(props: HomeRatesDeferredProps) {
 
   return (
     <DeferClientMount
-      placeholder={<RatesPlaceholder />}
+      placeholder={<RatesPlaceholder layout={props.layout} />}
       rootMargin="280px 0px"
       onMount={() => {
         if (RatesBlock) return;
@@ -56,7 +61,7 @@ export function HomeRatesDeferred(props: HomeRatesDeferredProps) {
         });
       }}
     >
-      {RatesBlock ? <RatesBlock {...props} /> : <RatesPlaceholder />}
+      {RatesBlock ? <RatesBlock {...props} /> : <RatesPlaceholder layout={props.layout} />}
     </DeferClientMount>
   );
 }

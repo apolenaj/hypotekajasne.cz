@@ -49,6 +49,8 @@ type PublishedRatesPanelProps = {
   showPendingLenders?: boolean;
   /** Homepage uses shorter intro focused on date + source. */
   variant?: "default" | "home";
+  /** Homepage data row: card beside the price chart, without the full filter form. */
+  layout?: "page" | "aside";
 };
 
 async function fetchOffers(
@@ -123,6 +125,7 @@ export function PublishedRatesPanel({
   onSelectOffer,
   showPendingLenders = true,
   variant = "default",
+  layout = "page",
 }: PublishedRatesPanelProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -272,9 +275,20 @@ export function PublishedRatesPanel({
   return (
     <section
       aria-labelledby={headingId}
-      className={cn("border-b border-border bg-white", className)}
+      className={cn(
+        layout === "aside"
+          ? "h-full rounded-[18px] border border-gray-200 bg-white shadow-[0_12px_40px_-28px_rgba(15,60,45,0.35)]"
+          : "border-b border-border bg-white",
+        className
+      )}
     >
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
+      <div
+        className={cn(
+          layout === "aside"
+            ? "p-5 sm:p-6"
+            : "mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12"
+        )}
+      >
         <div className="max-w-2xl">
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-deep-teal">
             {variant === "home" ? "Orientační sazby" : "Zveřejněné sazby bank"}
@@ -287,7 +301,7 @@ export function PublishedRatesPanel({
               ? "Aktuální hypoteční sazby"
               : "Ověřené sazby z oficiálních zdrojů bank"}
           </h2>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground sm:text-base">
+          <p className={cn("mt-2 text-sm leading-relaxed text-muted-foreground", layout === "aside" && "line-clamp-2")}>
             {variant === "home"
               ? "Sazby přebíráme z veřejných sazebníků bank. U každé karty uvádíme datum posledního ověření a odkaz na oficiální zdroj."
               : "Sazby přebíráme z veřejných sazebníků. U každé karty uvádíme datum posledního ověření a odkaz na oficiální zdroj."}
@@ -323,7 +337,7 @@ export function PublishedRatesPanel({
           ) : null}
         </div>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className={cn("mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4", layout === "aside" && "hidden")}>
           <label className="block min-w-0 text-sm">
             <span className="mb-1.5 block text-xs font-semibold text-text-dark">
               Účel
@@ -409,7 +423,7 @@ export function PublishedRatesPanel({
           </div>
         ) : null}
 
-        <div className="mt-4 rounded-xl border border-border bg-[#f7f8f7] px-4 py-3 text-sm">
+        <div className={cn("mt-4 rounded-xl border border-border bg-[#f7f8f7] px-4 py-3 text-sm", layout === "aside" && "hidden")}>
           {ltvContext.validationError ? (
             <p className="font-medium text-amber-900" role="alert">
               {ltvContext.validationError}
@@ -481,6 +495,29 @@ export function PublishedRatesPanel({
                 </li>
               );
             })}
+            {layout === "aside"
+              ? pending.map((p) => (
+                  <li key={p.slug}>
+                    <Link
+                      href={`/sazby?purpose=${query.purpose}&fixationMonths=${query.fixationMonths}`}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-[#f7f6f3]"
+                    >
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f4f6f5] text-xs font-semibold text-deep-teal">
+                        {p.name.slice(0, 1)}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-semibold text-text-dark">
+                          {p.name}
+                        </span>
+                        <span className="block truncate text-xs text-gray-500">
+                          Sazbu právě ověřujeme
+                        </span>
+                      </span>
+                      <ChevronRight className="h-4 w-4 shrink-0 text-gray-400" aria-hidden />
+                    </Link>
+                  </li>
+                ))
+              : null}
           </ul>
         ) : null}
 
@@ -544,7 +581,7 @@ export function PublishedRatesPanel({
           </>
         ) : null}
 
-        {pending.length > 0 && canShowRates ? (
+        {pending.length > 0 && canShowRates && layout !== "aside" ? (
           <div className="mt-10">
             <h3 className="font-heading text-lg font-semibold text-text-dark">
               Banky v ověřování

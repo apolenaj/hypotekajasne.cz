@@ -11,37 +11,28 @@ const CARDS = [
     cta: "Spočítat hypotéku →",
     href: routes.kalkulacky.hypotecniKalkulacka,
     image:
-      "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=900&q=70",
-    imageAlt: "Klíče od nemovitosti",
-    shell: "bg-white",
-    ctaClass: "bg-deep-teal text-white hover:bg-deep-teal-light",
-    accent: "bg-deep-teal",
+      "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1200&q=75",
+    imageAlt: "Rodinný dům se zahradou",
   },
   {
     title: "Už hypotéku mám",
-    text: "Prověřte, zda se vám vyplatí refinancování a kolik můžete ušetřit.",
+    text: "Prověřte refinancování a zjistěte, kolik můžete ušetřit.",
     points: ["Konec fixace", "Potenciální úspora", "Porovnání možností"],
     cta: "Prověřit refinancování →",
     href: getLandingPath("refinancovani"),
     image:
-      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=70",
-    imageAlt: "Interiér bytu",
-    shell: "bg-[#143d32] text-white",
-    ctaClass: "bg-white text-[#143d32] hover:bg-white/90",
-    accent: "bg-white/80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=75",
+    imageAlt: "Moderní interiér bytu",
   },
   {
     title: "Kupuji investici",
-    text: "Prověřte konkrétní nemovitost, její výnos, cash flow a rizika.",
+    text: "Prověřte výnos, cash flow a rizika konkrétní nemovitosti.",
     points: ["Výnos a cash flow", "Scénáře a rizika", "Investiční rentgen"],
     cta: "Analyzovat investici →",
     href: routes.investicniRentgen,
     image:
-      "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=900&q=70",
-    imageAlt: "Městská zástavba",
-    shell: "bg-white",
-    ctaClass: "bg-deep-teal text-white hover:bg-deep-teal-light",
-    accent: "bg-muted-gold",
+      "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=75",
+    imageAlt: "Moderní bytový dům",
   },
 ] as const;
 
@@ -50,19 +41,19 @@ export function HomePathCards() {
     <section
       id="situace"
       aria-labelledby="home-paths-heading"
-      className="scroll-mt-24 border-b border-gray-200 bg-white"
+      className="relative z-10 -mt-8 scroll-mt-24 bg-transparent pb-2 lg:-mt-12"
     >
-      <div className="mx-auto max-w-[90rem] px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
+      <div className="mx-auto max-w-[1440px] px-4 sm:px-8 lg:px-12 xl:px-14">
         <h2 id="home-paths-heading" className="sr-only">
           Tři cesty: koupě, refinancování a investice
         </h2>
-        <div className="grid gap-5 lg:grid-cols-3">
+        <div className="grid gap-4 lg:grid-cols-3 lg:gap-5">
           {CARDS.map((card) => (
             <article
               key={card.title}
-              className={`flex min-w-0 flex-col overflow-hidden rounded-[18px] border border-gray-200 shadow-[0_10px_30px_-24px_rgba(16,40,32,0.45)] ${card.shell}`}
+              className="flex min-w-0 flex-col overflow-hidden rounded-[20px] border border-gray-200/80 bg-white shadow-[0_18px_50px_-28px_rgba(15,60,45,0.35)]"
             >
-              <div className="relative h-36">
+              <div className="relative h-40 sm:h-44">
                 <Image
                   src={card.image}
                   alt={card.imageAlt}
@@ -70,30 +61,25 @@ export function HomePathCards() {
                   sizes="(min-width: 1024px) 30vw, 100vw"
                   className="object-cover"
                 />
-                <span className={`absolute bottom-0 left-0 h-1 w-16 ${card.accent}`} />
               </div>
-              <div className="flex flex-1 flex-col p-6">
-                <h3 className="font-heading text-2xl font-bold tracking-tight">
+              <div className="flex flex-1 flex-col p-5 sm:p-6">
+                <h3 className="font-heading text-[1.65rem] font-bold leading-tight tracking-tight text-text-dark">
                   {card.title}
                 </h3>
-                <p
-                  className={`mt-2 text-sm leading-relaxed ${
-                    card.shell.includes("text-white") ? "text-white/80" : "text-gray-600"
-                  }`}
-                >
-                  {card.text}
-                </p>
-                <ul className="mt-4 space-y-2 text-sm">
+                <p className="mt-2 text-sm leading-relaxed text-gray-600">{card.text}</p>
+                <ul className="mt-3 space-y-1.5 text-sm text-gray-800">
                   {card.points.map((point) => (
                     <li key={point} className="flex gap-2">
-                      <span aria-hidden>✓</span>
+                      <span className="text-deep-teal" aria-hidden>
+                        ✓
+                      </span>
                       {point}
                     </li>
                   ))}
                 </ul>
                 <Link
                   href={card.href}
-                  className={`mt-6 inline-flex h-11 items-center justify-center rounded-lg px-4 text-sm font-semibold ${card.ctaClass}`}
+                  className="mt-5 inline-flex h-11 items-center justify-center rounded-lg bg-deep-teal px-4 text-sm font-semibold text-white hover:bg-deep-teal-light"
                 >
                   {card.cta}
                 </Link>

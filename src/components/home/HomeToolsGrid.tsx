@@ -42,7 +42,7 @@ const TOOLS = [
     icon: RefreshCw,
   },
   {
-    title: "LTV",
+    title: "LTV kalkulačka",
     text: "Poměr úvěru k ceně nemovitosti.",
     href: `${routes.akademie}/ltv`,
     icon: Percent,
@@ -71,14 +71,14 @@ export function HomeToolsGrid() {
             Zobrazit všechny kalkulačky →
           </Link>
         </div>
-        <ul className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-3">
+        <ul className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
           {TOOLS.map((tool) => {
             const Icon = tool.icon;
             return (
               <li key={tool.title}>
                 <Link
                   href={tool.href}
-                  className="flex h-full items-start gap-3 rounded-[16px] border border-gray-200 bg-white p-4 transition-colors hover:border-deep-teal/30"
+                  className="flex h-full items-center gap-3 rounded-[16px] border border-gray-200 bg-[#fafaf7] px-3 py-3 transition-colors hover:border-deep-teal/30"
                 >
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#f4f6f5] text-deep-teal">
                     <Icon className="h-4 w-4" aria-hidden />
