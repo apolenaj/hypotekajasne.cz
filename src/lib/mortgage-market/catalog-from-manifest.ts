@@ -140,7 +140,8 @@ export function catalogFromImportManifest(
       nominalInterestRate: r.nominalInterestRate,
       rateType: r.rateType as MortgageMarketRateType,
       validFrom: r.validFrom ?? r.checkedAt,
-      validTo: null,
+      validTo:
+        r.validTo == null || r.validTo.trim() === "" ? null : r.validTo.trim(),
       checkedAt: r.checkedAt,
       isActive: true,
       sourceEvidenceId: r.evidence.evidenceId,

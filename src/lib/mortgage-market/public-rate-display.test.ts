@@ -31,6 +31,7 @@ function sampleOffer(overrides: Record<string, unknown> = {}) {
     nominalInterestRate: 4.79,
     rateType: "standard" as const,
     pricingScenarioKey: "with_repayment_insurance",
+    validTo: null,
     ...overrides,
   };
 }
@@ -79,6 +80,52 @@ describe("evaluatePublicRateDisplay — 72h freshness", () => {
     assert.equal(display.visibility, "expired");
     assert.equal(display.showNumeric, false);
     assert.equal(display.headline, "Sazba podle zdroje pozbyla platnosti");
+  });
+
+  it("treats a missing end date as unstated, not as expired or currently confirmed beyond checkedAt", () => {
+    const { validTo: _ignored, ...withoutEnd } = sampleOffer();
+    const omitted = evaluatePublicRateDisplay(withoutEnd, NOW);
+    const explicitNull = evaluatePublicRateDisplay(
+      sampleOffer({ validTo: null }),
+      NOW
+    );
+    const blank = evaluatePublicRateDisplay(sampleOffer({ validTo: "  " }), NOW);
+    assert.equal(omitted.visibility, "published");
+    assert.equal(omitted.showNumeric, true);
+    assert.equal(explicitNull.visibility, "published");
+    assert.equal(blank.visibility, "published");
+    assert.equal(explicitNull.headline, omitted.headline);
+
+    const staleAt = new Date(
+      NOW - PUBLIC_RATE_FRESH_MAX_AGE_MS - 60_000
+    ).toISOString();
+    const staleUnstated = evaluatePublicRateDisplay(
+      sampleOffer({ checkedAt: staleAt, validTo: null }),
+      NOW
+    );
+    assert.equal(staleUnstated.visibility, "last_verified");
+    assert.equal(staleUnstated.showNumeric, true);
+  });
+
+  it("keeps a numeric rate when validTo is still in the future", () => {
+    const display = evaluatePublicRateDisplay(
+      sampleOffer({ validTo: "2026-12-01T00:00:00.000Z" }),
+      NOW
+    );
+    assert.equal(display.visibility, "published");
+    assert.equal(display.showNumeric, true);
+    assert.equal(display.headline, "4,79 % p. a.");
+  });
+
+  it("does not treat an unreadable validTo as open-ended", () => {
+    const display = evaluatePublicRateDisplay(
+      sampleOffer({ validTo: "není-datum" }),
+      NOW
+    );
+    assert.equal(display.visibility, "unavailable");
+    assert.equal(display.showNumeric, false);
+    assert.equal(display.headline, "Konec platnosti ve zdroji nelze přečíst");
+    assert.notEqual(display.visibility, "published");
   });
 
   it("missing checkedAt hides offer from public listing", () => {
@@ -160,6 +207,11 @@ describe("getMortgageOffers — purchase vs refinance product rates", () => {
         `${offer.lenderSlug} should be listable`
       );
       assert.ok(offer.evidence?.sourceUrl?.startsWith("https://"));
+      assert.equal(
+        offer.validTo,
+        null,
+        `${offer.lenderSlug} must not invent a validity end`
+      );
     }
   });
 });

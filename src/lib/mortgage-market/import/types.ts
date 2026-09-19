@@ -184,6 +184,8 @@ export type ImportRateRecord = {
   evidence: ImportEvidence;
   checkedAt: string;
   validFrom?: string | null;
+  /** null or omitted = the source did not publish an end date. Do not invent one. */
+  validTo?: string | null;
   auditStatus: ImportAuditStatus;
   notes?: string;
 };

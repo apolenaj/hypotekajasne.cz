@@ -40,6 +40,7 @@ function sampleOffer(overrides: Record<string, unknown> = {}) {
     nominalInterestRate: 4.89,
     rateType: "standard" as const,
     pricingScenarioKey: "with_repayment_insurance",
+    validTo: null,
     ...overrides,
   };
 }

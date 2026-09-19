@@ -86,6 +86,8 @@ export function resolveBankRatePaymentDisplay(
     | "nominalInterestRate"
     | "rateType"
     | "pricingScenarioKey"
+    | "validTo"
+    | "pricingScenarioLabel"
   >,
   params: BankRatePaymentParams | null | undefined,
   nowMs: number = Date.now()

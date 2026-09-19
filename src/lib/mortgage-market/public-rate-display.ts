@@ -19,6 +19,8 @@ export const PUBLIC_RATE_UNVERIFIED_MESSAGE =
   "Veřejnou sazbu se nepodařilo ověřit";
 export const PUBLIC_RATE_INDIVIDUAL_MESSAGE = "Individuální sazba";
 export const PUBLIC_RATE_EXPIRED_MESSAGE = "Sazba podle zdroje pozbyla platnosti";
+export const PUBLIC_RATE_INVALID_VALIDITY_MESSAGE =
+  "Konec platnosti ve zdroji nelze přečíst";
 
 /** @deprecated Finished cards no longer use the old verifying placeholder. */
 export const PUBLIC_RATE_VERIFYING_MESSAGE = PUBLIC_RATE_UNVERIFIED_MESSAGE;
@@ -87,13 +89,34 @@ function hasUsableNominalRate(rate: number): boolean {
   return Number.isFinite(rate) && rate > 0 && rate < 100;
 }
 
-function validToElapsed(
+type PublicRateOfferInput = Pick<
+  MortgageOffer,
+  | "checkedAt"
+  | "evidence"
+  | "nominalInterestRate"
+  | "rateType"
+  | "pricingScenarioKey"
+  | "pricingScenarioLabel"
+> & {
+  /**
+   * Omitted or null: the source did not state an end date.
+   * That is neither expiry nor a confirmation that the rate is still current.
+   */
+  validTo?: string | null;
+};
+
+type ValidToReading = "unstated" | "open" | "elapsed" | "invalid";
+
+function readValidTo(
   validTo: string | null | undefined,
   nowMs: number
-): boolean {
-  if (!validTo?.trim()) return false;
-  const t = Date.parse(validTo);
-  return Number.isFinite(t) && t <= nowMs;
+): ValidToReading {
+  if (validTo == null) return "unstated";
+  const trimmed = validTo.trim();
+  if (trimmed.length === 0) return "unstated";
+  const parsed = Date.parse(trimmed);
+  if (!Number.isFinite(parsed)) return "invalid";
+  return parsed <= nowMs ? "elapsed" : "open";
 }
 
 function isExplicitlyIndividual(
@@ -110,16 +133,7 @@ function isExplicitlyIndividual(
  * A failed refresh must not be represented by clearing the number here.
  */
 export function evaluatePublicRateDisplay(
-  offer: Pick<
-    MortgageOffer,
-    | "checkedAt"
-    | "evidence"
-    | "nominalInterestRate"
-    | "rateType"
-    | "pricingScenarioKey"
-    | "pricingScenarioLabel"
-    | "validTo"
-  >,
+  offer: PublicRateOfferInput,
   nowMs: number = Date.now()
 ): PublicRateDisplay {
   const lastVerifiedAt = resolveLastVerifiedAt(offer);
@@ -145,7 +159,20 @@ export function evaluatePublicRateDisplay(
     };
   }
 
-  if (validToElapsed(offer.validTo, nowMs)) {
+  const validity = readValidTo(offer.validTo, nowMs);
+  if (validity === "invalid") {
+    return {
+      ...base,
+      visibility: "unavailable",
+      showNumeric: false,
+      headline: PUBLIC_RATE_INVALID_VALIDITY_MESSAGE,
+      badge: PUBLIC_RATE_INVALID_VALIDITY_MESSAGE,
+      freshnessNote:
+        "Zdroj uvádí konec platnosti, ale datum nelze přečíst. Sazbu proto nebereme jako aktuální.",
+    };
+  }
+
+  if (validity === "elapsed") {
     return {
       ...base,
       visibility: "expired",

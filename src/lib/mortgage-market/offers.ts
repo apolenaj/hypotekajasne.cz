@@ -197,8 +197,22 @@ export type MortgageOffer = {
   } | null;
   checkedAt: string;
   validFrom: string;
+  /**
+   * End of published validity. null = the source did not state an end.
+   * A non-empty unparseable string is kept so display does not treat it as open-ended.
+   */
+  validTo: string | null;
   freshness: Exclude<RateFreshness, "fallback">;
 };
+
+/** null when the source omitted the end date. Keeps unparseable text for the display policy. */
+export function normalizeStatedValidTo(
+  validTo: string | null | undefined
+): string | null {
+  if (validTo == null) return null;
+  const trimmed = validTo.trim();
+  return trimmed.length === 0 ? null : trimmed;
+}
 
 export type LenderAvailability = {
   lenderSlug: string;
@@ -345,6 +359,7 @@ function toOffer(
       : null,
     checkedAt: rate.checkedAt,
     validFrom: rate.validFrom,
+    validTo: normalizeStatedValidTo(rate.validTo),
     freshness: rateFreshnessFromCheckedAt(rate.checkedAt, nowMs),
   };
 }
