@@ -45,7 +45,9 @@ export function HomeExperience({
               Vývoj cen nemovitostí v ČR
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-gray-600 sm:text-base">
-              Ověřená historie v tomto přehledu není. U bytů a domů je oddělený modelový scénář.
+              Zemědělská půda a vybrané ukazatele komerčního trhu mají ověřenou historii.
+              U bytů a domů zůstává oddělený modelový scénář; stavební pozemky a obchodní
+              prostory zatím bez otevřené řady.
             </p>
             <div className="mt-5">
               <HomePriceDeferred />
