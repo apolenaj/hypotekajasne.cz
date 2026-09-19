@@ -25,7 +25,7 @@ function RatesPlaceholder() {
           id="home-rates-heading"
           className="mt-2 font-heading text-2xl font-bold tracking-tight text-text-dark sm:text-3xl"
         >
-          Přehled sazeb s datem a zdrojem ověření
+          Aktuální hypoteční sazby
         </h2>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
           Sazby přebíráme z veřejných sazebníků bank. U každé karty uvádíme datum

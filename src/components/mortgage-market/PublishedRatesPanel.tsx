@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { ChevronRight } from "lucide-react";
 import { FormattedMoneyInput } from "@/components/ui/FormattedMoneyInput";
 import {
   BankRateCard,
@@ -32,6 +33,7 @@ import {
   type MortgageJourneyCore,
 } from "@/lib/mortgage-rates/ltv-context";
 import { RatesDisclaimer } from "@/components/legal/RatesDisclaimer";
+import { evaluatePublicRateDisplay } from "@/lib/mortgage-market/public-rate-display";
 import { cn } from "@/lib/utils";
 
 export type RatesQueryState = MortgageJourneyCore;
@@ -282,7 +284,7 @@ export function PublishedRatesPanel({
             className="mt-2 font-heading text-2xl font-bold tracking-tight text-text-dark sm:text-3xl"
           >
             {variant === "home"
-              ? "Přehled sazeb s datem a zdrojem ověření"
+              ? "Aktuální hypoteční sazby"
               : "Ověřené sazby z oficiálních zdrojů bank"}
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground sm:text-base">
@@ -291,6 +293,34 @@ export function PublishedRatesPanel({
               : "Sazby přebíráme z veřejných sazebníků. U každé karty uvádíme datum posledního ověření a odkaz na oficiální zdroj."}
           </p>
           <RatesDisclaimer className="mt-3" />
+          {variant === "home" ? (
+            <div className="mt-4 flex flex-wrap gap-2" role="tablist" aria-label="Fixace">
+              {[
+                [12, "1 rok"],
+                [36, "3 roky"],
+                [60, "5 let"],
+                [120, "10 let"],
+              ].map(([months, label]) => (
+                <button
+                  key={months}
+                  type="button"
+                  role="tab"
+                  aria-selected={query.fixationMonths === months}
+                  className={cn(
+                    "h-9 rounded-lg px-3 text-sm font-semibold",
+                    query.fixationMonths === months
+                      ? "bg-deep-teal text-white"
+                      : "bg-[#f4f6f5] text-gray-700"
+                  )}
+                  onClick={() =>
+                    applyQuery({ ...query, fixationMonths: Number(months) })
+                  }
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          ) : null}
         </div>
 
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -424,7 +454,37 @@ export function PublishedRatesPanel({
           </p>
         ) : null}
 
-        {canShowRates ? (
+        {canShowRates && variant === "home" ? (
+          <ul className="mt-6 divide-y divide-gray-100 rounded-[16px] border border-gray-200">
+            {[...matchedGroups, ...unspecifiedGroups].slice(0, 6).map((group) => {
+              const offer = group.scenarios[0];
+              const display = offer ? evaluatePublicRateDisplay(offer) : null;
+              return (
+                <li key={group.key}>
+                  <Link
+                    href={`/sazby?purpose=${query.purpose}&fixationMonths=${query.fixationMonths}`}
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-[#f7f6f3]"
+                  >
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f4f6f5] text-xs font-semibold text-deep-teal">
+                      {group.lenderName.slice(0, 1)}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-semibold text-text-dark">
+                        {group.lenderName}
+                      </span>
+                      <span className="block truncate text-xs text-gray-500">
+                        {display?.headline ?? "Sazbu právě ověřujeme"}
+                      </span>
+                    </span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-gray-400" aria-hidden />
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        ) : null}
+
+        {canShowRates && variant !== "home" ? (
           <>
             <div className="mt-8">
               <h3 className="font-heading text-lg font-semibold text-text-dark">
@@ -507,7 +567,7 @@ export function PublishedRatesPanel({
               href="/sazby"
               className="inline-flex h-11 min-h-11 items-center justify-center rounded-lg bg-deep-teal px-5 text-sm font-semibold text-white transition-colors hover:bg-deep-teal-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal focus-visible:ring-offset-2"
             >
-              Zobrazit všechny sazby
+              Zobrazit všechny banky →
             </Link>
           </div>
         ) : null}

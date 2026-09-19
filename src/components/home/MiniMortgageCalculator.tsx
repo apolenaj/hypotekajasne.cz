@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useCallback, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormattedMoneyInput } from "@/components/ui/FormattedMoneyInput";
 import { Label } from "@/components/ui/label";
@@ -36,6 +37,7 @@ import {
 } from "@/lib/mortgage-rates/mortgage-journey-context";
 import { MiniMortgageCalculatorSkeleton } from "@/components/home/MiniMortgageCalculatorSkeleton";
 import { getCalculatorDisclaimer } from "@/components/calculators/CalculatorDisclaimer";
+import { routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
 const fieldControlClassName = cn(
@@ -216,8 +218,10 @@ function bootstrapFromJourney(
 
 function MiniMortgageCalculatorCore({
   bootstrap,
+  variant = "page",
 }: {
   bootstrap: CalculatorBootstrap;
+  variant?: "page" | "hero";
 }) {
   const router = useRouter();
   const [propertyPrice, setPropertyPrice] = useState<number>(bootstrap.propertyPrice);
@@ -238,9 +242,12 @@ function MiniMortgageCalculatorCore({
   );
   const [isCalculating, setIsCalculating] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
-
   const startedRef = useRef(false);
   const ratesClickGuardRef = useRef(false);
+  const hero = variant === "hero";
+  const [heroMode, setHeroMode] = useState<"purchase" | "refinance" | "invest">(
+    bootstrap.purpose === "refinance" ? "refinance" : "purchase"
+  );
 
   const input = useMemo(
     () => ({
@@ -348,19 +355,92 @@ function MiniMortgageCalculatorCore({
   return (
     <article
       className={cn(
-        "box-border w-full min-w-0 max-w-full rounded-2xl border border-white/20 bg-white p-4 text-text-dark shadow-[0_20px_50px_-20px_rgba(0,0,0,0.45)]",
-        "ring-1 ring-black/5 sm:p-6 md:max-w-md"
+        "box-border w-full min-w-0 max-w-full text-text-dark",
+        hero
+          ? "rounded-[18px] border border-gray-200 bg-white p-5 shadow-[0_16px_40px_-28px_rgba(16,40,32,0.45)] sm:p-6"
+          : "rounded-2xl border border-white/20 bg-white p-4 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.45)] ring-1 ring-black/5 sm:p-6 md:max-w-md"
       )}
       aria-labelledby="mini-mortgage-heading"
     >
-      <p
-        id="mini-mortgage-heading"
-        className="text-[11px] font-bold uppercase tracking-[0.16em] text-deep-teal"
-      >
-        Hypoteční kalkulačka
-      </p>
+      {hero ? (
+        <div
+          className="grid grid-cols-3 gap-1 rounded-xl bg-[#f4f6f5] p-1"
+          role="tablist"
+          aria-label="Typ výpočtu"
+        >
+          {(
+            [
+              ["purchase", "Hypotéka"],
+              ["refinance", "Refinancování"],
+              ["invest", "Investice"],
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              aria-selected={heroMode === id}
+              className={cn(
+                "h-9 rounded-lg px-1 text-xs font-semibold sm:text-[13px]",
+                heroMode === id
+                  ? "bg-white text-deep-teal shadow-sm"
+                  : "text-gray-600 hover:text-deep-teal"
+              )}
+              onClick={() => {
+                setHeroMode(id);
+                if (id !== "invest") {
+                  onInputChange(setPurpose, id);
+                }
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      ) : (
+        <p
+          id="mini-mortgage-heading"
+          className="text-[11px] font-bold uppercase tracking-[0.16em] text-deep-teal"
+        >
+          Hypoteční kalkulačka
+        </p>
+      )}
+      {hero ? (
+        <h2 id="mini-mortgage-heading" className="sr-only">
+          Orientační kalkulačka
+        </h2>
+      ) : null}
 
+      {hero && heroMode === "invest" ? (
+        <div className="mt-5 space-y-4">
+          <p className="text-sm leading-relaxed text-gray-600">
+            Prověřte cash flow, financování a citlivost konkrétní nemovitosti.
+            Výnos se nepočítá z hypoteční splátky.
+          </p>
+          <ul className="space-y-2 text-sm text-gray-700">
+            {["Cash flow", "Scénáře", "Rizika"].map((item) => (
+              <li key={item} className="flex gap-2">
+                <span className="text-deep-teal" aria-hidden>
+                  ✓
+                </span>
+                {item}
+              </li>
+            ))}
+          </ul>
+          <Link
+            href={routes.investicniRentgen}
+            className="flex h-11 items-center justify-center rounded-lg bg-deep-teal text-sm font-semibold text-white hover:bg-deep-teal-light"
+          >
+            Analyzovat investici →
+          </Link>
+          <p className="text-center text-[11px] leading-snug text-gray-500">
+            Nezávazně a bez odeslání osobních údajů.
+          </p>
+        </div>
+      ) : (
+        <>
       <div className="mt-4 space-y-4">
+        {hero ? null : (
         <div className="grid min-w-0 grid-cols-2 gap-3">
           <div className="min-w-0 space-y-1.5">
             <Label
@@ -404,17 +484,22 @@ function MiniMortgageCalculatorCore({
             </select>
           </div>
         </div>
+        )}
 
         <MoneyField
           id="mini-mortgage-price"
           label="Cena nemovitosti"
           value={propertyPrice}
           onChange={(next) => onInputChange(setPropertyPrice, next)}
-          slider={{
-            min: MINI_MORTGAGE_PRICE_SLIDER.min,
-            max: MINI_MORTGAGE_PRICE_SLIDER.max,
-            step: MINI_MORTGAGE_PRICE_SLIDER.step,
-          }}
+          slider={
+            hero
+              ? undefined
+              : {
+                  min: MINI_MORTGAGE_PRICE_SLIDER.min,
+                  max: MINI_MORTGAGE_PRICE_SLIDER.max,
+                  step: MINI_MORTGAGE_PRICE_SLIDER.step,
+                }
+          }
         />
         <MoneyField
           id="mini-mortgage-equity"
@@ -422,11 +507,15 @@ function MiniMortgageCalculatorCore({
           value={ownFunds}
           shareLabel={ownFundsShareLabel}
           onChange={(next) => onInputChange(setOwnFunds, next)}
-          slider={{
-            min: 0,
-            max: propertyPrice > 0 ? propertyPrice : 0,
-            step: 50_000,
-          }}
+          slider={
+            hero
+              ? undefined
+              : {
+                  min: 0,
+                  max: propertyPrice > 0 ? propertyPrice : 0,
+                  step: 50_000,
+                }
+          }
         />
 
         <div className="min-w-0 space-y-1.5">
@@ -434,7 +523,7 @@ function MiniMortgageCalculatorCore({
             htmlFor="mini-mortgage-term"
             className="text-xs font-semibold text-text-dark"
           >
-            Doba splácení
+            {hero ? "Doba splatnosti" : "Doba splácení"}
           </Label>
           <select
             id="mini-mortgage-term"
@@ -450,13 +539,13 @@ function MiniMortgageCalculatorCore({
           </select>
         </div>
 
-        <div className="grid min-w-0 grid-cols-2 gap-3">
+        <div className={cn("grid min-w-0 gap-3", hero ? "grid-cols-1" : "grid-cols-2")}>
           <div className="min-w-0 space-y-1.5">
             <Label
               htmlFor="mini-mortgage-rate"
               className="text-xs font-semibold text-text-dark"
             >
-              Modelová sazba pro splátku
+              {hero ? "Úroková sazba" : "Modelová sazba pro splátku"}
             </Label>
             <div className="relative min-w-0">
               <input
@@ -491,7 +580,9 @@ function MiniMortgageCalculatorCore({
                     setAprDraft(formatPercentDraft(apr));
                   }
                 }}
-                aria-describedby="mini-mortgage-rate-hint mini-mortgage-market-hint"
+                aria-describedby={
+                  hero ? "mini-mortgage-rate-hint" : "mini-mortgage-rate-hint mini-mortgage-market-hint"
+                }
                 className={cn(fieldControlClassName, "pr-8 tabular-nums")}
                 title="Modelová sazba — nejde o aktuální nabídku banky"
               />
@@ -503,6 +594,7 @@ function MiniMortgageCalculatorCore({
               </span>
             </div>
           </div>
+          {hero ? null : (
           <div className="min-w-0 space-y-1.5">
             <Label
               htmlFor="mini-mortgage-apr"
@@ -544,16 +636,20 @@ function MiniMortgageCalculatorCore({
               </span>
             </div>
           </div>
+          )}
         </div>
+        {hero ? null : (
         <p id="mini-mortgage-market-hint" className="text-sm text-gray-500">
           Pro srovnání: Aktuální průměrná sazba na trhu se pohybuje kolem 5,3&nbsp;%.
         </p>
+        )}
         <p
           id="mini-mortgage-rate-hint"
           className="text-[11px] text-muted-foreground"
         >
-          Splátka se počítá z modelové sazby. RPSN slouží jen k odhadu celkové
-          zaplacené částky a můžete ho upravit.
+          {hero
+            ? "Modelová sazba pro orientační splátku. Není to nabídka banky."
+            : "Splátka se počítá z modelové sazby. RPSN slouží jen k odhadu celkové zaplacené částky a můžete ho upravit."}
         </p>
       </div>
 
@@ -625,6 +721,7 @@ function MiniMortgageCalculatorCore({
               </p>
             </div>
 
+            {hero ? null : (
             <div className="min-w-0">
               <p className="text-xs font-semibold text-muted-foreground">
                 Celková zaplacená částka
@@ -641,6 +738,7 @@ function MiniMortgageCalculatorCore({
                 za {committedResult.termYears} let. Není nabídka banky.
               </p>
             </div>
+            )}
           </>
         ) : (
           <div className="min-w-0 rounded-xl bg-muted-gold/15 px-3 py-3 ring-1 ring-muted-gold/30">
@@ -659,7 +757,9 @@ function MiniMortgageCalculatorCore({
           type="button"
           className={cn(
             primaryButtonClassName,
-            "bg-muted-gold text-text-dark hover:bg-muted-gold-light"
+            hero
+              ? "bg-deep-teal text-white hover:bg-deep-teal-light"
+              : "bg-muted-gold text-text-dark hover:bg-muted-gold-light"
           )}
           disabled={primaryDisabled}
           aria-busy={isCalculating}
@@ -668,7 +768,13 @@ function MiniMortgageCalculatorCore({
           }
           onClick={() => void handleCalculate()}
         >
-          {isCalculating ? "Počítám…" : MINI_MORTGAGE_CTA.calculate}
+          {isCalculating
+            ? "Počítám…"
+            : hero
+              ? heroMode === "refinance"
+                ? "Prověřit refinancování →"
+                : "Spočítat hypotéku →"
+              : MINI_MORTGAGE_CTA.calculate}
           <span className="sr-only">
             {isCalculating
               ? "Probíhá výpočet orientační splátky."
@@ -680,7 +786,9 @@ function MiniMortgageCalculatorCore({
           type="button"
           className={cn(
             primaryButtonClassName,
-            "bg-muted-gold text-text-dark hover:bg-muted-gold-light"
+            hero
+              ? "bg-deep-teal text-white hover:bg-deep-teal-light"
+              : "bg-muted-gold text-text-dark hover:bg-muted-gold-light"
           )}
           disabled={ratesDisabled}
           aria-busy={isNavigating}
@@ -696,11 +804,14 @@ function MiniMortgageCalculatorCore({
       )}
 
       <p className="mt-3 text-center text-[10px] leading-snug text-muted-foreground">
+        {hero ? "Nezávazně a bez odeslání osobních údajů. " : null}
         {getCalculatorDisclaimer("cs")}
         {hasCalculated
           ? " Sazby bank otevřete tlačítkem výše."
           : " Po výpočtu zobrazíte sazby pro stejné parametry."}
       </p>
+        </>
+      )}
     </article>
   );
 }
@@ -717,13 +828,17 @@ function MiniMortgageCalculatorUrlLoader() {
 export type MiniMortgageCalculatorProps = {
   /** Server-parsed journey removes Suspense/useSearchParams from the hero critical path. */
   serverJourney?: MortgageJourneyParseResult | null;
+  variant?: "page" | "hero";
 };
 
 export function MiniMortgageCalculator(props: MiniMortgageCalculatorProps = {}) {
-  const { serverJourney } = props;
+  const { serverJourney, variant = "page" } = props;
   if (serverJourney !== undefined) {
     return (
-      <MiniMortgageCalculatorCore bootstrap={bootstrapFromJourney(serverJourney)} />
+      <MiniMortgageCalculatorCore
+        bootstrap={bootstrapFromJourney(serverJourney)}
+        variant={variant}
+      />
     );
   }
   return (

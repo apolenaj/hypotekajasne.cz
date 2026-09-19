@@ -8,5 +8,5 @@ export function HeroCalculatorIsland({
 }: {
   serverJourney: MortgageJourneyParseResult;
 }) {
-  return <MiniMortgageCalculator serverJourney={serverJourney} />;
+  return <MiniMortgageCalculator serverJourney={serverJourney} variant="hero" />;
 }

@@ -28,6 +28,8 @@ export type NavGroup = {
   items: NavLinkItem[];
   /** Megamenu columns (desktop). Falls back to single column from items. */
   columns?: NavColumn[];
+  /** Když je nastaveno, položka v liště je odkaz, ne rozbalovací menu. */
+  href?: string;
 };
 
 /** Hypotéky — meglinks na existující routy. */
@@ -195,6 +197,49 @@ export const zahraniciNavItems: NavLinkItem[] = [
   { href: getCountryGuidePath("bali"), label: "Bali (Indonésie)" },
   { href: getCountryGuidePath("saudi"), label: "Saúdská Arábie" },
   { href: getCountryGuidePath("slovakia"), label: "Slovensko" },
+];
+
+export const refinancovaniNavItems: NavLinkItem[] = [
+  {
+    href: getLandingPath("refinancovani"),
+    label: "Refinancování hypotéky",
+    description: "Když končí fixace",
+  },
+  {
+    href: routes.refinanceRadar,
+    label: "Hlídač refinancování",
+    description: "Sledování konce fixace",
+  },
+  {
+    href: `${routes.kalkulacky.hypotecniKalkulacka}?purpose=refinance`,
+    label: "Spočítat refinancování",
+    description: "Orientační splátka pro refinancování",
+  },
+  {
+    href: `${routes.sazby}?purpose=refinance`,
+    label: "Sazby pro refinancování",
+    description: "Zveřejněné sazby s datem ověření",
+  },
+];
+
+export const cenyNavItems: NavLinkItem[] = [
+  {
+    href: routes.kalkulacky.historickyVyvoj,
+    label: "Historický vývoj",
+    description: "Modelová řada cen a porovnání aktiv",
+    icon: History,
+  },
+  {
+    href: routes.kalkulacky.potencialniVyvoj,
+    label: "Potenciální vývoj",
+    description: "Modelové scénáře, ne predikce",
+    icon: TrendingUp,
+  },
+  {
+    href: routes.marketPulse,
+    label: "Tržní puls",
+    description: "Přehled dostupných tržních metrik",
+  },
 ];
 
 export const analytikaNavItems: NavLinkItem[] = [
@@ -408,9 +453,41 @@ export const desktopNav = {
     ],
   } satisfies NavGroup,
 
+  refinancovani: {
+    id: "refinancovani",
+    label: "Refinancování",
+    items: refinancovaniNavItems,
+    columns: columnsFromItems(refinancovaniNavItems, ["Možnosti", "Výpočet"]),
+  } satisfies NavGroup,
+
+  sazbyGroup: {
+    id: "sazby-menu",
+    label: "Sazby",
+    href: routes.sazby,
+    items: [
+      {
+        href: routes.sazby,
+        label: "Aktuální sazby bank",
+        description: "Zveřejněné sazby s datem ověření",
+      },
+    ],
+  } satisfies NavGroup,
+
+  ceny: {
+    id: "ceny",
+    label: "Ceny nemovitostí",
+    items: cenyNavItems,
+    columns: [
+      {
+        title: "Vývoj",
+        items: cenyNavItems,
+      },
+    ],
+  } satisfies NavGroup,
+
   zahranici: {
     id: "zahranici",
-    label: "Zahraniční nemovitosti",
+    label: "Zahraničí",
     items: zahraniciNavItems,
     columns: [
       {
@@ -433,7 +510,7 @@ export const desktopNav = {
 
   pruvodci: {
     id: "pruvodci",
-    label: "Průvodci",
+    label: "Vzdělávání",
     items: pruvodciNavItems,
     columns: columnsFromItems(pruvodciNavItems, ["Vzdělání", "Důvěra a data"]),
   } satisfies NavGroup,
@@ -460,6 +537,13 @@ export const desktopNav = {
     items: oNasNavItems,
   } satisfies NavGroup,
 
+  kontakt: {
+    id: "kontakt",
+    label: "Kontakt",
+    href: routes.kontakt,
+    items: [{ href: routes.kontakt, label: "Kontakt" }],
+  } satisfies NavGroup,
+
   dalsiSluzby: {
     id: "dalsi-sluzby",
     label: "Další služby",
@@ -469,22 +553,20 @@ export const desktopNav = {
 
 export const primaryDesktopGroups: NavGroup[] = [
   desktopNav.hypoteky,
-  desktopNav.najem,
+  desktopNav.refinancovani,
   desktopNav.investice,
-  desktopNav.analytika,
-  desktopNav.zahranici,
   desktopNav.kalkulacky,
+  desktopNav.sazbyGroup,
+  desktopNav.ceny,
+  desktopNav.zahranici,
   desktopNav.pruvodci,
+  desktopNav.oNas,
+  desktopNav.kontakt,
 ];
 
-/** Mobilní accordion — produktové kategorie + utilita + nástroje. */
+/** Mobilní accordion — hlavní položky + nástroje, které nejsou v liště. */
 export const mobileNavGroups: NavGroup[] = [
   ...primaryDesktopGroups,
-  {
-    id: "o-nas",
-    label: "O nás / Kontakt",
-    items: oNasNavItems,
-  },
   {
     id: "nastroje",
     label: "Další nástroje",
@@ -501,8 +583,8 @@ export const notebookViceItems: NavLinkItem[] = [
 /** Primary CTA — diagnostika situace (ne jen kalkulačka). */
 export const navCta = {
   default: {
-    href: routes.mojeMoznosti,
-    label: "Najít ideální řešení",
+    href: routes.kontakt,
+    label: "Nezávazná poptávka",
   },
   returning: { href: routes.dashboard, label: "Pokračovat" },
 } as const;

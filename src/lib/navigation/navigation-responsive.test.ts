@@ -67,12 +67,15 @@ describe("navigation structure — produktové megamenu", () => {
     const labels = primaryDesktopGroups.map((g) => g.label);
     assert.deepEqual(labels, [
       "Hypotéky",
-      "Nájem vs. hypotéka",
+      "Refinancování",
       "Investice",
-      "Analytika trhu",
-      "Zahraniční nemovitosti",
       "Kalkulačky",
-      "Průvodci",
+      "Sazby",
+      "Ceny nemovitostí",
+      "Zahraničí",
+      "Vzdělávání",
+      "O nás",
+      "Kontakt",
     ]);
     assert.equal(desktopNav.kalkulacka.href, routes.kalkulacky.hypotecniKalkulacka);
     assert.equal(desktopNav.sazby.href, routes.sazby);
@@ -113,13 +116,15 @@ describe("navigation structure — produktové megamenu", () => {
     const ids = mobileNavGroups.map((g) => g.id);
     assert.deepEqual(ids, [
       "hypoteky",
-      "najem",
+      "refinancovani",
       "investice",
-      "analytika",
-      "zahranici",
       "kalkulacky",
+      "sazby-menu",
+      "ceny",
+      "zahranici",
       "pruvodci",
       "o-nas",
+      "kontakt",
       "nastroje",
     ]);
     assert.equal(
@@ -128,9 +133,9 @@ describe("navigation structure — produktové megamenu", () => {
     );
   });
 
-  it("CTA is Najít ideální řešení for anonymous users", () => {
-    assert.equal(navCta.default.label, "Najít ideální řešení");
-    assert.equal(navCta.default.href, routes.mojeMoznosti);
+  it("CTA is Nezávazná poptávka for anonymous users", () => {
+    assert.equal(navCta.default.label, "Nezávazná poptávka");
+    assert.equal(navCta.default.href, routes.kontakt);
     assert.ok(navCta.returning.href.includes("dashboard"));
   });
 

@@ -28,19 +28,19 @@ import { routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
 const ctaClassName = cn(
-  "inline-flex h-10 min-h-10 shrink-0 items-center justify-center rounded-full bg-emerald-800 px-4",
-  "text-sm font-bold text-white shadow-md shadow-emerald-900/15",
-  "transition-all hover:bg-emerald-700 active:bg-emerald-900",
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2"
+  "inline-flex h-10 min-h-10 shrink-0 items-center justify-center rounded-lg bg-deep-teal px-4",
+  "text-sm font-semibold text-white",
+  "transition-colors hover:bg-deep-teal-light active:bg-[#143d32]",
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal focus-visible:ring-offset-2"
 );
 
 const topLinkClass = (active: boolean) =>
   cn(
-    "inline-flex h-10 shrink-0 items-center rounded-lg px-2 text-sm font-medium transition-colors",
+    "inline-flex h-10 shrink-0 items-center rounded-lg px-2 text-[13px] font-medium transition-colors",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal focus-visible:ring-offset-2",
     active
       ? "bg-deep-teal/10 font-semibold text-deep-teal"
-      : "text-gray-600 hover:bg-deep-teal/5 hover:text-deep-teal"
+      : "text-gray-700 hover:bg-gray-50 hover:text-deep-teal"
   );
 
 function useHasReturningProfile() {
@@ -124,6 +124,24 @@ function NavItemLink({
       aria-current={active ? "page" : undefined}
     >
       {body}
+    </Link>
+  );
+}
+
+function DesktopDirectLink({
+  group,
+  pathname,
+  search,
+}: {
+  group: NavGroup;
+  pathname: string;
+  search: string;
+}) {
+  const href = group.href ?? group.items[0]?.href ?? routes.home;
+  const active = isNavItemActive(href, pathname, search);
+  return (
+    <Link href={href} className={topLinkClass(active)} aria-current={active ? "page" : undefined}>
+      {group.label}
     </Link>
   );
 }
@@ -320,58 +338,40 @@ export function Navbar() {
   return (
     <header
       data-site-header
-      className="sticky top-0 z-[100] w-full max-w-full overflow-visible border-b border-gray-100 bg-white/95 backdrop-blur-md"
+      className="sticky top-0 z-[100] w-full max-w-full overflow-visible border-b border-gray-200 bg-white"
     >
-      <div className="mx-auto hidden max-w-7xl items-center justify-end gap-4 px-4 pt-1.5 text-xs text-gray-500 lg:px-6 xl:flex xl:px-8">
-        <nav
-          aria-label="Sekundární navigace"
-          className="flex items-center gap-3"
-        >
-          {utilityNavItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "rounded px-1 py-0.5 transition-colors hover:text-deep-teal",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal",
-                isNavItemActive(item.href, pathname, search) &&
-                  "font-semibold text-deep-teal"
-              )}
-              aria-current={
-                isNavItemActive(item.href, pathname, search)
-                  ? "page"
-                  : undefined
-              }
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-      </div>
-
-      <div className="mx-auto flex h-14 w-full max-w-7xl min-w-0 items-center gap-2 overflow-visible px-3 sm:h-16 sm:gap-3 sm:px-4 lg:px-6 xl:px-8">
+      <div className="mx-auto flex h-16 w-full max-w-[90rem] min-w-0 items-center gap-3 overflow-visible px-4 sm:px-6 lg:px-8">
         <Logo />
 
         <nav
-          className="ml-auto hidden min-w-0 flex-1 items-center justify-center gap-0.5 overflow-visible xl:flex 2xl:gap-1"
+          className="ml-4 hidden min-w-0 flex-1 items-center gap-0.5 overflow-visible xl:flex"
           aria-label="Hlavní navigace"
           data-desktop-nav
         >
-          {primaryDesktopGroups.map((group) => (
-            <DesktopDisclosure
-              key={group.id}
-              group={group}
-              pathname={pathname}
-              search={search}
-              open={openDesktopId === group.id}
-              onOpenChange={(next) =>
-                setOpenDesktopId(next ? group.id : null)
-              }
-            />
-          ))}
+          {primaryDesktopGroups.map((group) =>
+            group.href ? (
+              <DesktopDirectLink
+                key={group.id}
+                group={group}
+                pathname={pathname}
+                search={search}
+              />
+            ) : (
+              <DesktopDisclosure
+                key={group.id}
+                group={group}
+                pathname={pathname}
+                search={search}
+                open={openDesktopId === group.id}
+                onOpenChange={(next) =>
+                  setOpenDesktopId(next ? group.id : null)
+                }
+              />
+            )
+          )}
         </nav>
 
-        <div className="hidden shrink-0 items-center xl:flex">
+        <div className="ml-auto hidden shrink-0 items-center xl:flex">
           <HeaderCta />
         </div>
 
@@ -430,6 +430,23 @@ export function Navbar() {
 
               <div className="space-y-2">
                 {mobileNavGroups.map((group) => {
+                  if (group.href) {
+                    const active = isNavItemActive(group.href, pathname, search);
+                    return (
+                      <Link
+                        key={group.id}
+                        href={group.href}
+                        onClick={closeMobile}
+                        aria-current={active ? "page" : undefined}
+                        className={cn(
+                          "flex min-h-11 items-center rounded-xl border border-gray-100 px-4 text-sm font-semibold",
+                          active ? "text-deep-teal" : "text-gray-800"
+                        )}
+                      >
+                        {group.label}
+                      </Link>
+                    );
+                  }
                   const isOpen = openMobileGroup === group.id;
                   const groupActive = isNavGroupActive(
                     group,
@@ -491,6 +508,21 @@ export function Navbar() {
                   );
                 })}
               </div>
+              <nav
+                aria-label="Sekundární navigace"
+                className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-gray-100 pt-4"
+              >
+                {utilityNavItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={closeMobile}
+                    className="text-sm text-gray-600 hover:text-deep-teal"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </nav>
             </div>
           </div>
         </div>
