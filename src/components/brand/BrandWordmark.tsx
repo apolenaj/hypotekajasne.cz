@@ -9,6 +9,8 @@ type BrandWordmarkProps = {
   showDomain?: boolean;
   /** Compact: HJ on xs, full wordmark from sm */
   compact?: boolean;
+  /** Extra classes on the home link. Header passes shrink-0 so the wordmark cannot collapse. */
+  rootClassName?: string;
   className?: string;
   onClick?: () => void;
 };
@@ -21,6 +23,7 @@ export function BrandWordmark({
   showIcon = true,
   showDomain = false,
   compact = false,
+  rootClassName,
   className,
   onClick,
 }: BrandWordmarkProps) {
@@ -64,7 +67,10 @@ export function BrandWordmark({
     <Link
       href={href}
       onClick={onClick}
-      className="inline-flex min-w-0 shrink items-center gap-2"
+      className={cn(
+        "inline-flex shrink-0 items-center gap-2",
+        rootClassName
+      )}
       aria-label={`${SITE_BRAND} — domů`}
     >
       {showIcon ? (

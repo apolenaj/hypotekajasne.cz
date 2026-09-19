@@ -6,6 +6,7 @@ import {
   useCallback,
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -23,6 +24,10 @@ import {
 } from "@/lib/navigation";
 import { useFocusTrap } from "@/lib/a11y/focus-trap";
 import { routes } from "@/lib/routes";
+import {
+  compactInlineCtaFits,
+  desktopHeaderFits,
+} from "@/lib/navigation/header-fit";
 import { cn } from "@/lib/utils";
 
 const ctaClassName = cn(
@@ -34,7 +39,7 @@ const ctaClassName = cn(
 
 const topLinkClass = (active: boolean) =>
   cn(
-    "inline-flex h-10 shrink-0 items-center gap-1 rounded-md px-2.5 text-sm font-medium transition-colors",
+    "inline-flex h-10 shrink-0 items-center gap-1 whitespace-nowrap rounded-md px-2 text-sm font-medium transition-colors",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal focus-visible:ring-offset-2",
     active
       ? "bg-deep-teal/10 font-semibold text-deep-teal"
@@ -276,9 +281,9 @@ function Logo({ onClick }: { onClick?: () => void }) {
     <BrandWordmark
       href={routes.home}
       onClick={onClick}
-      compact
       showDomain={false}
-      className="text-base sm:text-lg"
+      rootClassName="shrink-0"
+      className="whitespace-nowrap text-lg"
     />
   );
 }
@@ -296,10 +301,16 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openMobileGroup, setOpenMobileGroup] = useState<string | null>(null);
   const [openDesktopId, setOpenDesktopId] = useState<string | null>(null);
+  const [desktopFits, setDesktopFits] = useState(false);
+  const [inlineCta, setInlineCta] = useState(false);
   const [routeKey, setRouteKey] = useState(`${pathname}${search}`);
   const drawerTitleId = useId();
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const headerRowRef = useRef<HTMLDivElement>(null);
+  const logoRef = useRef<HTMLDivElement>(null);
+  const navProbeRef = useRef<HTMLDivElement>(null);
+  const ctaProbeRef = useRef<HTMLDivElement>(null);
 
   // Reset open disclosure when the route changes (render-time adjust, not an effect).
   const nextRouteKey = `${pathname}${search}`;
@@ -312,6 +323,62 @@ export function Navbar() {
     setMobileOpen(false);
     setOpenMobileGroup(null);
   }, []);
+
+  const measureHeader = useCallback(() => {
+    const row = headerRowRef.current;
+    const logo = logoRef.current;
+    const nav = navProbeRef.current;
+    const cta = ctaProbeRef.current;
+    if (!row || !logo || !nav || !cta) return;
+    const style = getComputedStyle(row);
+    const paddingX =
+      parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+    const zoneGap = parseFloat(style.columnGap) || 16;
+    const containerWidth = row.clientWidth;
+    const logoWidth = logo.offsetWidth;
+    const navWidth = nav.scrollWidth;
+    const ctaWidth = cta.offsetWidth;
+    const fits = desktopHeaderFits({
+      containerWidth,
+      logoWidth,
+      navWidth,
+      ctaWidth,
+      paddingX,
+      zoneGap,
+    });
+    const showInlineCta = compactInlineCtaFits({
+      containerWidth,
+      logoWidth,
+      ctaWidth,
+      menuButtonWidth: 44,
+      paddingX,
+      zoneGap,
+    });
+    setDesktopFits(fits);
+    setInlineCta(showInlineCta);
+  }, []);
+
+  useLayoutEffect(() => {
+    measureHeader();
+    const row = headerRowRef.current;
+    if (!row) return;
+    const observer = new ResizeObserver(() => measureHeader());
+    observer.observe(row);
+    const fonts = document.fonts;
+    if (fonts?.ready) {
+      void fonts.ready.then(() => measureHeader());
+    }
+    return () => observer.disconnect();
+  }, [measureHeader]);
+
+  useEffect(() => {
+    if (desktopFits) {
+      setMobileOpen(false);
+      setOpenMobileGroup(null);
+    } else {
+      setOpenDesktopId(null);
+    }
+  }, [desktopFits]);
 
   useFocusTrap(mobileOpen, drawerRef, {
     onEscape: closeMobile,
@@ -332,13 +399,27 @@ export function Navbar() {
       data-site-header
       className="sticky top-0 z-[100] w-full max-w-full overflow-visible border-b border-gray-200 bg-white"
     >
-      <div className="mx-auto flex h-[72px] w-full max-w-[1440px] min-w-0 items-center gap-2 overflow-visible px-4 sm:px-8 lg:px-10 xl:px-12">
-        <Logo />
+      <div
+        ref={headerRowRef}
+        data-header-row
+        className="relative mx-auto grid h-[72px] w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 px-4 sm:px-6"
+      >
+        <div ref={logoRef} className="shrink-0 justify-self-start">
+          <Logo />
+        </div>
 
         <nav
-          className="ml-4 hidden min-w-0 flex-1 items-center justify-center gap-x-5 overflow-visible xl:flex"
+          className={cn(
+            "flex min-w-0 items-center justify-center gap-x-2",
+            desktopFits
+              ? "overflow-visible"
+              : "invisible pointer-events-none overflow-hidden"
+          )}
           aria-label="Hlavní navigace"
+          aria-hidden={!desktopFits}
+          inert={!desktopFits}
           data-desktop-nav
+          data-header-fit={desktopFits ? "desktop" : "compact"}
         >
           {primaryDesktopGroups.map((group) =>
             group.href ? (
@@ -363,30 +444,50 @@ export function Navbar() {
           )}
         </nav>
 
-        <div className="ml-auto hidden shrink-0 items-center xl:flex">
-          <HeaderCta />
+        <div className="flex shrink-0 items-center justify-self-end gap-2">
+          {desktopFits || inlineCta ? <HeaderCta /> : null}
+          {desktopFits ? null : (
+            <button
+              type="button"
+              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-deep-teal transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal"
+              onClick={() => setMobileOpen(true)}
+              aria-expanded={mobileOpen}
+              aria-controls="mobile-nav-drawer"
+              aria-label="Otevřít menu"
+            >
+              <Menu className="h-6 w-6" aria-hidden />
+            </button>
+          )}
         </div>
+      </div>
 
-        <div className="ml-auto flex shrink-0 items-center gap-2 xl:hidden">
-          <HeaderCta className="inline-flex max-w-[9.2rem] truncate px-2.5 text-[11px] sm:max-w-none sm:px-4 sm:text-sm" />
-          <button
-            type="button"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-deep-teal transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal"
-            onClick={() => setMobileOpen(true)}
-            aria-expanded={mobileOpen}
-            aria-controls="mobile-nav-drawer"
-            aria-label="Otevřít menu"
-          >
-            <Menu className="h-6 w-6" aria-hidden />
-          </button>
-        </div>
+      <div
+        ref={navProbeRef}
+        aria-hidden
+        className="pointer-events-none fixed top-0 -left-[9999px] flex w-max items-center gap-x-2"
+      >
+        {primaryDesktopGroups.map((group) => (
+          <span key={group.id} className={topLinkClass(false)}>
+            {group.label}
+            {group.href ? null : (
+              <ChevronDown className="ml-1 h-3.5 w-3.5 shrink-0" aria-hidden />
+            )}
+          </span>
+        ))}
+      </div>
+      <div
+        ref={ctaProbeRef}
+        aria-hidden
+        className="pointer-events-none fixed top-0 -left-[9999px]"
+      >
+        <HeaderCta />
       </div>
 
       {mobileOpen ? (
         <div
           ref={drawerRef}
           id="mobile-nav-drawer"
-          className="fixed inset-0 z-[110] xl:hidden"
+          className="fixed inset-0 z-[110]"
           role="dialog"
           aria-modal="true"
           aria-labelledby={drawerTitleId}

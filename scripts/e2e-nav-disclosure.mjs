@@ -13,7 +13,7 @@ const BASE = (baseArg || process.env.E2E_BASE_URL || "http://127.0.0.1:3010").re
 
 async function main() {
   const browser = await chromium.launch({ headless: true });
-  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  const page = await browser.newPage({ viewport: { width: 1920, height: 900 } });
   const errors = [];
 
   try {

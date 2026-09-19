@@ -20,6 +20,10 @@ import {
   utilityNavItems,
 } from "@/lib/navigation";
 import { routes } from "@/lib/routes";
+import {
+  compactInlineCtaFits,
+  desktopHeaderFits,
+} from "@/lib/navigation/header-fit";
 
 const ROOT = join(process.cwd(), "src");
 
@@ -215,15 +219,20 @@ describe("navbar overflow guards (static source)", () => {
     assert.ok(panel.includes("[12, \"1 rok\"]"));
   });
 
-  it("desktop nav starts at xl with accessible disclosure megamenu", () => {
-    assert.ok(navbar.includes("xl:flex"));
+  it("desktop nav is shown only when measured zones fit", () => {
+    assert.ok(navbar.includes("data-header-row"));
+    assert.ok(navbar.includes("grid-cols-[auto_minmax(0,1fr)_auto]"));
+    assert.ok(navbar.includes("desktopHeaderFits"));
+    assert.ok(navbar.includes("data-desktop-nav"));
     assert.ok(navbar.includes('aria-label="Hlavní navigace"'));
     assert.ok(navbar.includes("aria-controls={panelId}"));
     assert.ok(navbar.includes("hidden={!open}"));
     assert.ok(!navbar.includes('role="menu"'));
+    assert.ok(!navbar.includes("xl:flex"));
     assert.ok(navbar.includes("isNavItemActive"));
     assert.ok(navbar.includes("primaryDesktopGroups"));
     assert.ok(navbar.includes("utilityNavItems"));
+    assert.ok(navbar.includes('rootClassName="shrink-0"'));
   });
 
   it("mobile drawer is closable without horizontal scroll", () => {
@@ -249,5 +258,60 @@ describe("navbar overflow guards (static source)", () => {
         assert.ok(items.length > 0, `${w}: secondary nav items`);
       }
     }
+  });
+});
+
+describe("header zone fit", () => {
+  it("rejects a row where nav would overlap logo or CTA", () => {
+    assert.equal(
+      desktopHeaderFits({
+        containerWidth: 1280,
+        logoWidth: 220,
+        navWidth: 1100,
+        ctaWidth: 190,
+        paddingX: 32,
+        zoneGap: 16,
+      }),
+      false
+    );
+  });
+
+  it("accepts a row only when all three zones fit", () => {
+    assert.equal(
+      desktopHeaderFits({
+        containerWidth: 1800,
+        logoWidth: 220,
+        navWidth: 1100,
+        ctaWidth: 190,
+        paddingX: 48,
+        zoneGap: 16,
+      }),
+      true
+    );
+  });
+
+  it("keeps the CTA in the compact bar only when it fits beside the menu button", () => {
+    assert.equal(
+      compactInlineCtaFits({
+        containerWidth: 360,
+        logoWidth: 200,
+        ctaWidth: 180,
+        menuButtonWidth: 44,
+        paddingX: 32,
+        zoneGap: 16,
+      }),
+      false
+    );
+    assert.equal(
+      compactInlineCtaFits({
+        containerWidth: 768,
+        logoWidth: 200,
+        ctaWidth: 180,
+        menuButtonWidth: 44,
+        paddingX: 48,
+        zoneGap: 16,
+      }),
+      true
+    );
   });
 });
