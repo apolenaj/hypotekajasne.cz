@@ -33,7 +33,7 @@ import {
   type MortgageJourneyCore,
 } from "@/lib/mortgage-rates/ltv-context";
 import { RatesDisclaimer } from "@/components/legal/RatesDisclaimer";
-import { evaluatePublicRateDisplay } from "@/lib/mortgage-market/public-rate-display";
+import { buildHomeRateRows } from "@/lib/mortgage-market/home-rate-row";
 import { cn } from "@/lib/utils";
 
 export type RatesQueryState = MortgageJourneyCore;
@@ -253,6 +253,14 @@ export function PublishedRatesPanel({
     () => groupOffersByLenderProduct(result?.unspecifiedLtvOffers ?? []),
     [result]
   );
+  const homeRows = useMemo(
+    () =>
+      buildHomeRateRows(
+        [...(result?.offers ?? []), ...(result?.unspecifiedLtvOffers ?? [])],
+        query.fixationMonths
+      ),
+    [result, query.fixationMonths]
+  );
   const pending = showPendingLenders ? pendingCards(result) : [];
 
   const canShowRates =
@@ -469,56 +477,107 @@ export function PublishedRatesPanel({
         ) : null}
 
         {canShowRates && variant === "home" ? (
-          <ul className="mt-6 divide-y divide-gray-100 rounded-[16px] border border-gray-200">
-            {[...matchedGroups, ...unspecifiedGroups].slice(0, 6).map((group) => {
-              const offer = group.scenarios[0];
-              const display = offer ? evaluatePublicRateDisplay(offer) : null;
-              return (
-                <li key={group.key}>
-                  <Link
-                    href={`/sazby?purpose=${query.purpose}&fixationMonths=${query.fixationMonths}`}
-                    className="flex items-center gap-3 px-4 py-3 hover:bg-[#f7f6f3]"
-                  >
+          <>
+            <p className="mt-3 text-xs leading-relaxed text-gray-500">
+              Nejde o osobní nabídku ani žebříček. Podmínky bank nejsou srovnatelné.
+            </p>
+            <ul className="mt-3 divide-y divide-gray-100 rounded-[16px] border border-gray-200 bg-white">
+              {homeRows.map((row) => (
+                <li key={row.key} className="px-3 py-3">
+                  <div className="flex items-start gap-3">
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f4f6f5] text-xs font-semibold text-deep-teal">
-                      {group.lenderName.slice(0, 1)}
+                      {row.lenderName.slice(0, 1)}
                     </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-semibold text-text-dark">
-                        {group.lenderName}
-                      </span>
-                      <span className="block truncate text-xs text-gray-500">
-                        {display?.headline ?? "Sazbu právě ověřujeme"}
-                      </span>
-                    </span>
-                    <ChevronRight className="h-4 w-4 shrink-0 text-gray-400" aria-hidden />
-                  </Link>
-                </li>
-              );
-            })}
-            {layout === "aside"
-              ? pending.map((p) => (
-                  <li key={p.slug}>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline justify-between gap-3">
+                        <p className="min-w-0 truncate text-sm font-semibold text-text-dark">
+                          {row.lenderName}
+                        </p>
+                        <p
+                          className={cn(
+                            "shrink-0 text-right font-heading text-lg font-bold tabular-nums leading-none",
+                            row.showNumeric ? "text-deep-teal" : "text-gray-500"
+                          )}
+                        >
+                          {row.rateLabel}
+                        </p>
+                      </div>
+                      {row.productLabel ? (
+                        <p className="mt-0.5 text-xs font-medium text-gray-700">
+                          {row.productLabel}
+                        </p>
+                      ) : null}
+                      <p className="mt-1 text-xs leading-relaxed text-gray-600">
+                        {row.fixationLabel}
+                        {row.conditionLabel ? ` · ${row.conditionLabel}` : ""}
+                      </p>
+                      {row.verifiedAtLabel && row.showNumeric && !row.ageWarning ? (
+                        <p className="mt-1 text-[11px] text-gray-500">
+                          Ověřeno {row.verifiedAtLabel}
+                        </p>
+                      ) : null}
+                      {row.ageWarning ? (
+                        <p className="mt-1 text-[11px] leading-relaxed text-amber-900">
+                          {row.ageWarning}
+                        </p>
+                      ) : null}
+                      {row.sourceUrl ? (
+                        <a
+                          href={row.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-1 inline-flex text-xs font-semibold text-deep-teal underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal"
+                        >
+                          Oficiální zdroj
+                        </a>
+                      ) : null}
+                    </div>
                     <Link
                       href={`/sazby?purpose=${query.purpose}&fixationMonths=${query.fixationMonths}`}
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-[#f7f6f3]"
+                      className="mt-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-gray-400 hover:bg-[#f7f6f3] hover:text-deep-teal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal"
+                      aria-label={`Detail sazeb: ${row.lenderName}`}
                     >
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f4f6f5] text-xs font-semibold text-deep-teal">
-                        {p.name.slice(0, 1)}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-semibold text-text-dark">
-                          {p.name}
-                        </span>
-                        <span className="block truncate text-xs text-gray-500">
-                          Sazbu právě ověřujeme
-                        </span>
-                      </span>
-                      <ChevronRight className="h-4 w-4 shrink-0 text-gray-400" aria-hidden />
+                      <ChevronRight className="h-4 w-4" aria-hidden />
                     </Link>
-                  </li>
-                ))
-              : null}
-          </ul>
+                  </div>
+                </li>
+              ))}
+              {layout === "aside"
+                ? pending
+                    .filter(
+                      (item) =>
+                        !homeRows.some((row) => row.lenderSlug === item.slug)
+                    )
+                    .map((item) => (
+                      <li key={item.slug} className="px-3 py-3">
+                        <div className="flex items-start gap-3">
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f4f6f5] text-xs font-semibold text-deep-teal">
+                            {item.name.slice(0, 1)}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-baseline justify-between gap-3">
+                              <p className="text-sm font-semibold text-text-dark">
+                                {item.name}
+                              </p>
+                              <p className="text-sm font-semibold text-gray-500">
+                                Sazba není dostupná
+                              </p>
+                            </div>
+                            <p className="mt-1 text-xs text-gray-600">
+                              Pro tuto fixaci nemáme použitelný ověřený údaj.
+                            </p>
+                          </div>
+                        </div>
+                      </li>
+                    ))
+                : null}
+            </ul>
+            {homeRows.length === 0 ? (
+              <p className="mt-3 text-sm text-gray-600">
+                Pro zvolenou fixaci nemáme ověřenou sazbu. Nenahrazujeme ji údajem z jiného období.
+              </p>
+            ) : null}
+          </>
         ) : null}
 
         {canShowRates && variant !== "home" ? (

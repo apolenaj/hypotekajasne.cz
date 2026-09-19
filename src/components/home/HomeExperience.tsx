@@ -45,7 +45,7 @@ export function HomeExperience({
               Vývoj cen nemovitostí v ČR
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-gray-600 sm:text-base">
-              Historický vývoj, současný trend a možné scénáře dalšího vývoje.
+              Ověřená historie v tomto přehledu není. U bytů a domů je oddělený modelový scénář.
             </p>
             <div className="mt-5">
               <HomePriceDeferred />

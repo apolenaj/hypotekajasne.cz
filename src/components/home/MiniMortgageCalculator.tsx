@@ -1,8 +1,9 @@
 "use client";
 
-import { Suspense, useCallback, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { ChevronDown } from "lucide-react";
 import { FormattedMoneyInput } from "@/components/ui/FormattedMoneyInput";
 import { Label } from "@/components/ui/label";
 import {
@@ -12,8 +13,10 @@ import {
 } from "@/lib/analytics/bands";
 import { trackEvent, trackEventOnce } from "@/lib/analytics/track-event";
 import { formatCurrency } from "@/lib/calculators";
+import { calculateInvestment } from "@/lib/investment-engine/calculate";
 import {
   buildSazbyHref,
+  compareRefinancePayments,
   computeMiniMortgage,
   formatExactLtvCs,
   formatLtvBandLabel,
@@ -70,6 +73,8 @@ function MoneyField({
   onChange,
   slider,
   shareLabel,
+  hint,
+  sliderClassName = "accent-muted-gold",
 }: {
   id: string;
   label: string;
@@ -78,6 +83,8 @@ function MoneyField({
   slider?: { min: number; max: number; step: number };
   /** Např. „20 %“ — šedě za názvem pole. */
   shareLabel?: string | null;
+  hint?: string | null;
+  sliderClassName?: string;
 }) {
   const sliderMax = slider == null ? value : Math.max(slider.min, slider.max);
   const sliderValue =
@@ -119,9 +126,10 @@ function MoneyField({
               ? `${formatCurrency(sliderValue, "CZK")}, ${shareLabel} z ceny nemovitosti`
               : formatCurrency(sliderValue, "CZK")
           }
-          className="h-2 w-full cursor-pointer accent-muted-gold"
+          className={cn("h-2 w-full cursor-pointer touch-pan-y", sliderClassName)}
         />
       ) : null}
+      {hint ? <p className="text-[11px] leading-snug text-gray-500">{hint}</p> : null}
     </div>
   );
 }
@@ -248,6 +256,34 @@ function MiniMortgageCalculatorCore({
   const [heroMode, setHeroMode] = useState<"purchase" | "refinance" | "invest">(
     bootstrap.purpose === "refinance" ? "refinance" : "purchase"
   );
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [refiBalance, setRefiBalance] = useState(4_800_000);
+  const [currentRate, setCurrentRate] = useState(5.5);
+  const [currentRateDraft, setCurrentRateDraft] = useState("5,50");
+  const [switchCost, setSwitchCost] = useState(0);
+  const [rentMonthly, setRentMonthly] = useState(25_000);
+  const [vacancyPct, setVacancyPct] = useState(5);
+  const [opexAnnual, setOpexAnnual] = useState(36_000);
+  const [maintenanceAnnual, setMaintenanceAnnual] = useState(12_000);
+  const [renoOnce, setRenoOnce] = useState(0);
+
+  useEffect(() => {
+    if (!hero) return;
+    const onMode = (event: Event) => {
+      const mode = (event as CustomEvent<{ mode?: string }>).detail?.mode;
+      if (mode === "purchase" || mode === "refinance" || mode === "invest") {
+        setHeroMode(mode);
+        if (mode !== "invest") setPurpose(mode);
+        trackEvent("cta_click", {
+          cta_id: "home_path_to_calculator",
+          calculator_type: mode,
+          situation: mode,
+        });
+      }
+    };
+    window.addEventListener("hj-hero-calc", onMode);
+    return () => window.removeEventListener("hj-hero-calc", onMode);
+  }, [hero]);
 
   const input = useMemo(
     () => ({
@@ -269,6 +305,62 @@ function MiniMortgageCalculatorCore({
       ? (Math.max(0, ownFunds) / propertyPrice) * 100
       : null;
   const ownFundsShareLabel = formatSharePercent(ownFundsPercentage);
+  const refiComparison = useMemo(
+    () =>
+      hero && heroMode === "refinance"
+        ? compareRefinancePayments({
+            balanceCzk: refiBalance,
+            currentRatePercent: currentRate,
+            newRatePercent: interestRate,
+            remainingYears: termYears,
+            switchCostCzk: switchCost,
+          })
+        : null,
+    [hero, heroMode, refiBalance, currentRate, interestRate, termYears, switchCost]
+  );
+  const investPreview = useMemo(() => {
+    if (!hero || heroMode !== "invest" || propertyPrice <= 0 || rentMonthly < 0) {
+      return null;
+    }
+    return calculateInvestment(
+      {
+        purchasePrice: propertyPrice,
+        downPayment: Math.min(ownFunds, propertyPrice),
+        loan: null,
+        rate: interestRate,
+        termYears,
+        rentMonthly,
+        vacancyRate: Math.min(1, Math.max(0, vacancyPct / 100)),
+        managementFeeRate: 0,
+        serviceChargesAnnual: opexAnnual,
+        insuranceAnnual: 0,
+        propertyTaxAnnual: 0,
+        incomeTaxRate: 0,
+        maintenanceAnnual,
+        capexReserveAnnual: 0,
+        furnishing: 0,
+        acquisitionCosts: renoOnce,
+        sellingCostRate: 0,
+        annualRentGrowth: 0,
+        annualPropertyGrowth: 0,
+        annualFxReturn: 0,
+        holdingPeriodYears: 1,
+      },
+      "base"
+    );
+  }, [
+    hero,
+    heroMode,
+    propertyPrice,
+    ownFunds,
+    interestRate,
+    termYears,
+    rentMonthly,
+    vacancyPct,
+    opexAnnual,
+    maintenanceAnnual,
+    renoOnce,
+  ]);
   const display = hasCalculated && committedResult ? committedResult : preview;
   const exactLtv = display.exactLtv;
   const ltvHigh = exactLtv != null && exactLtv > 80;
@@ -322,16 +414,38 @@ function MiniMortgageCalculatorCore({
   };
 
   const handleViewRates = () => {
-    if (!hasCalculated || !committedResult || isNavigating || ratesClickGuardRef.current) {
+    const resultForRates =
+      hero && heroMode === "refinance"
+        ? computeMiniMortgage({
+            propertyPriceCzk: refiBalance,
+            ownFundsCzk: 0,
+            termYears,
+            annualRatePercent: interestRate,
+            purpose: "refinance",
+            fixationMonths,
+          })
+        : hero && validation.valid
+          ? preview
+          : committedResult;
+    const heroBlocked =
+      hero &&
+      (heroMode === "refinance" ? refiComparison == null : !validation.valid);
+    if (
+      (!hero && !hasCalculated) ||
+      !resultForRates ||
+      isNavigating ||
+      ratesClickGuardRef.current ||
+      (hero && heroBlocked)
+    ) {
       return;
     }
     ratesClickGuardRef.current = true;
     setIsNavigating(true);
 
-    const payload = mortgageCalculationAnalyticsPayload(committedResult);
+    const payload = mortgageCalculationAnalyticsPayload(resultForRates);
     trackEventOnce(
       "mortgage_rates_cta_clicked",
-      `mortgage_rates_cta_clicked:${calculationDedupeKey(committedResult)}`,
+        `mortgage_rates_cta_clicked:${calculationDedupeKey(resultForRates)}`,
       {
         ...payload,
         cta_id: "mini_mortgage_view_rates",
@@ -344,7 +458,7 @@ function MiniMortgageCalculatorCore({
       ...payload,
     });
 
-    router.push(buildSazbyHref(committedResult));
+    router.push(buildSazbyHref(resultForRates));
   };
 
   const primaryDisabled =
@@ -412,29 +526,112 @@ function MiniMortgageCalculatorCore({
       ) : null}
 
       {hero && heroMode === "invest" ? (
-        <div className="mt-5 space-y-4">
-          <p className="text-sm leading-relaxed text-gray-600">
-            Prověřte cash flow, financování a citlivost konkrétní nemovitosti.
-            Výnos se nepočítá z hypoteční splátky.
+        <div className="mt-4 space-y-3">
+          <p className="text-xs leading-relaxed text-gray-600">
+            Orientační cash flow z investičního modelu. Daň, správa a pojištění jsou v tomto náhledu 0 — nezapočítávají se dvakrát s náklady níže.
           </p>
-          <ul className="space-y-2 text-sm text-gray-700">
-            {["Cash flow", "Scénáře", "Rizika"].map((item) => (
-              <li key={item} className="flex gap-2">
-                <span className="text-deep-teal" aria-hidden>
-                  ✓
-                </span>
-                {item}
-              </li>
-            ))}
-          </ul>
+          <div className="grid grid-cols-2 gap-3">
+            <MoneyField
+              id="invest-price"
+              label="Cena nemovitosti"
+              value={propertyPrice}
+              onChange={(next) => onInputChange(setPropertyPrice, next)}
+              slider={{ min: MINI_MORTGAGE_PRICE_SLIDER.min, max: MINI_MORTGAGE_PRICE_SLIDER.max, step: MINI_MORTGAGE_PRICE_SLIDER.step }}
+              sliderClassName="accent-deep-teal"
+            />
+            <MoneyField
+              id="invest-equity"
+              label="Vlastní prostředky"
+              value={ownFunds}
+              hint={ownFundsShareLabel ? `${ownFundsShareLabel} z ceny nemovitosti` : null}
+              onChange={(next) => onInputChange(setOwnFunds, next)}
+              slider={{ min: 0, max: propertyPrice > 0 ? propertyPrice : 0, step: 50_000 }}
+              sliderClassName="accent-deep-teal"
+            />
+            <MoneyField
+              id="invest-rent"
+              label="Měsíční nájem"
+              value={rentMonthly}
+              onChange={setRentMonthly}
+              slider={{ min: 0, max: 150_000, step: 500 }}
+              sliderClassName="accent-deep-teal"
+            />
+            <div className="min-w-0 space-y-1.5">
+              <Label htmlFor="invest-vacancy" className="text-xs font-semibold text-text-dark">
+                Neobsazenost
+              </Label>
+              <input
+                id="invest-vacancy"
+                type="text"
+                inputMode="decimal"
+                value={String(vacancyPct).replace(".", ",")}
+                onChange={(e) => {
+                  const parsed = parseInterestRate(e.target.value);
+                  if (parsed != null) setVacancyPct(Math.min(100, parsed));
+                }}
+                className={fieldControlClassName}
+              />
+              <input
+                type="range"
+                min={0}
+                max={40}
+                step={1}
+                value={Math.min(40, vacancyPct)}
+                onChange={(e) => setVacancyPct(Number(e.target.value))}
+                aria-label="Neobsazenost, posuvník"
+                className="h-2 w-full cursor-pointer accent-deep-teal"
+              />
+              <p className="text-[11px] text-gray-500">{vacancyPct} % z hrubého nájmu</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="flex w-full items-center justify-between rounded-lg px-1 py-2 text-sm font-semibold text-deep-teal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal"
+            aria-expanded={advancedOpen}
+            aria-controls="hero-advanced-invest"
+            onClick={() => {
+              setAdvancedOpen((open) => !open);
+              trackEvent("cta_click", { cta_id: "hero_advanced_toggle", calculator_type: "invest" });
+            }}
+          >
+            Rozšířené nastavení
+            <ChevronDown className={cn("h-4 w-4 transition-transform", advancedOpen && "rotate-180")} />
+          </button>
+          {advancedOpen ? (
+            <div id="hero-advanced-invest" className="grid grid-cols-2 gap-3">
+              <MoneyField id="invest-opex" label="Provozní náklady / rok" value={opexAnnual} onChange={setOpexAnnual} slider={{ min: 0, max: 200_000, step: 1_000 }} sliderClassName="accent-deep-teal" />
+              <MoneyField id="invest-maint" label="Opravy / rok" value={maintenanceAnnual} onChange={setMaintenanceAnnual} slider={{ min: 0, max: 200_000, step: 1_000 }} sliderClassName="accent-deep-teal" />
+              <MoneyField id="invest-reno" label="Jednorázová rekonstrukce" value={renoOnce} onChange={setRenoOnce} slider={{ min: 0, max: 2_000_000, step: 10_000 }} sliderClassName="accent-deep-teal" />
+            </div>
+          ) : null}
+          {investPreview ? (
+            <div className="rounded-xl bg-[#f4f7f5] px-3 py-3">
+              <p className="text-xs font-semibold text-gray-600">Orientační měsíční cash flow</p>
+              <p className="mt-1 font-heading text-3xl font-bold tabular-nums text-text-dark">
+                {formatCurrency(Math.round(investPreview.monthlyCashFlow), "CZK")}
+              </p>
+              <p className="mt-1 text-xs text-gray-600">
+                Po nájmu, neobsazenosti, provozu, opravách a splátce. Rekonstrukce je v počáteční investici, ne v měsíčním cash flow.
+              </p>
+            </div>
+          ) : (
+            <p className="text-sm text-amber-900">Zadejte cenu nemovitosti větší než nula.</p>
+          )}
           <Link
             href={routes.investicniRentgen}
-            className="flex h-11 items-center justify-center rounded-lg bg-deep-teal text-sm font-semibold text-white hover:bg-deep-teal-light"
+            onClick={() =>
+              trackEvent("cta_click", {
+                cta_id: "hero_invest_rentgen",
+                calculator_type: "invest",
+                price_band: "premium",
+              })
+            }
+            className="flex h-14 items-center justify-center rounded-lg bg-deep-teal text-[15px] font-semibold text-white hover:bg-deep-teal-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal"
           >
-            Analyzovat investici →
+            Prověřit investici →
           </Link>
           <p className="text-center text-[11px] leading-snug text-gray-500">
-            Nezávazně a bez odeslání osobních údajů.
+            Náhled je zdarma. Placený investiční rentgen je samostatný výstup.
           </p>
         </div>
       ) : (
@@ -486,37 +683,87 @@ function MiniMortgageCalculatorCore({
         </div>
         )}
 
+        {hero && heroMode === "refinance" ? (
+          <>
+            <MoneyField
+              id="refi-balance"
+              label="Zůstatek úvěru"
+              value={refiBalance}
+              onChange={setRefiBalance}
+              slider={{ min: 100_000, max: 20_000_000, step: 50_000 }}
+              sliderClassName="accent-deep-teal"
+            />
+            <div className="min-w-0 space-y-1.5">
+              <Label htmlFor="refi-current-rate" className="text-xs font-semibold text-text-dark">
+                Současná sazba
+              </Label>
+              <input
+                id="refi-current-rate"
+                type="text"
+                inputMode="decimal"
+                value={currentRateDraft}
+                onChange={(e) => {
+                  setCurrentRateDraft(e.target.value);
+                  const parsed = parseInterestRate(e.target.value);
+                  if (parsed != null) setCurrentRate(parsed);
+                }}
+                onBlur={() => {
+                  const parsed = parseInterestRate(currentRateDraft) ?? 0;
+                  setCurrentRate(parsed);
+                  setCurrentRateDraft(formatPercentDraft(parsed));
+                }}
+                className={fieldControlClassName}
+              />
+              <input
+                type="range"
+                min={0}
+                max={12}
+                step={0.1}
+                value={currentRate}
+                onChange={(e) => {
+                  const next = Number(e.target.value);
+                  setCurrentRate(next);
+                  setCurrentRateDraft(formatPercentDraft(next));
+                }}
+                aria-label="Současná sazba, posuvník"
+                className="h-2 w-full cursor-pointer accent-deep-teal"
+              />
+            </div>
+          </>
+        ) : (
+          <>
         <MoneyField
           id="mini-mortgage-price"
           label="Cena nemovitosti"
           value={propertyPrice}
           onChange={(next) => onInputChange(setPropertyPrice, next)}
-          slider={
-            hero
-              ? undefined
-              : {
-                  min: MINI_MORTGAGE_PRICE_SLIDER.min,
-                  max: MINI_MORTGAGE_PRICE_SLIDER.max,
-                  step: MINI_MORTGAGE_PRICE_SLIDER.step,
-                }
-          }
+          slider={{
+            min: MINI_MORTGAGE_PRICE_SLIDER.min,
+            max: MINI_MORTGAGE_PRICE_SLIDER.max,
+            step: MINI_MORTGAGE_PRICE_SLIDER.step,
+          }}
+          sliderClassName={hero ? "accent-deep-teal" : undefined}
         />
         <MoneyField
           id="mini-mortgage-equity"
           label="Vlastní prostředky"
           value={ownFunds}
-          shareLabel={ownFundsShareLabel}
-          onChange={(next) => onInputChange(setOwnFunds, next)}
-          slider={
-            hero
-              ? undefined
-              : {
-                  min: 0,
-                  max: propertyPrice > 0 ? propertyPrice : 0,
-                  step: 50_000,
-                }
+          shareLabel={hero ? null : ownFundsShareLabel}
+          hint={
+            hero && ownFundsShareLabel
+              ? `${ownFundsShareLabel} z ceny nemovitosti`
+              : null
           }
+          onChange={(next) => onInputChange(setOwnFunds, next)}
+          slider={{
+            min: 0,
+            max: propertyPrice > 0 ? propertyPrice : 0,
+            step: 50_000,
+          }}
+          sliderClassName={hero ? "accent-deep-teal" : undefined}
         />
+          </>
+        )}
 
         <div className="min-w-0 space-y-1.5">
           <Label
@@ -537,6 +784,18 @@ function MiniMortgageCalculatorCore({
               </option>
             ))}
           </select>
+          {hero ? (
+            <input
+              type="range"
+              min={5}
+              max={30}
+              step={1}
+              value={termYears}
+              onChange={(e) => onInputChange(setTermYears, Number(e.target.value))}
+              aria-label="Doba splatnosti, posuvník"
+              className="h-2 w-full cursor-pointer accent-deep-teal"
+            />
+          ) : null}
         </div>
 
         <div className={cn("grid min-w-0 gap-3", hero ? "grid-cols-1" : "grid-cols-2")}>
@@ -593,6 +852,35 @@ function MiniMortgageCalculatorCore({
                 %
               </span>
             </div>
+            {hero ? (
+              <>
+                <input
+                  type="range"
+                  min={0}
+                  max={12}
+                  step={0.1}
+                  value={interestRate}
+                  onChange={(e) => {
+                    const next = Number(e.target.value);
+                    markInteracted();
+                    setInterestRate(next);
+                    setRateDraft(formatPercentDraft(next));
+                    if (!aprTouchedRef.current) {
+                      const apr = suggestedAprPercent(next);
+                      setAprPercent(apr);
+                      setAprDraft(formatPercentDraft(apr));
+                    }
+                  }}
+                  aria-label="Úroková sazba, posuvník"
+                  className="mt-2 h-2 w-full cursor-pointer accent-deep-teal"
+                />
+                <p className="text-[11px] text-gray-500">
+                  {heroMode === "refinance"
+                    ? "Nová sazba je modelový předpoklad, ne nabídka banky."
+                    : "Modelový předpoklad, ne aktuální osobní nabídka banky."}
+                </p>
+              </>
+            ) : null}
           </div>
           {hero ? null : (
           <div className="min-w-0 space-y-1.5">
@@ -660,6 +948,76 @@ function MiniMortgageCalculatorCore({
         <p id="mini-mortgage-validation" className="mt-4 text-xs text-amber-900" role="alert">
           {validation.reason}
         </p>
+      ) : null}
+
+      {hero ? (
+        <div className="mt-3">
+          <button
+            type="button"
+            className="flex w-full items-center justify-between rounded-lg px-1 py-2 text-sm font-semibold text-deep-teal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal"
+            aria-expanded={advancedOpen}
+            aria-controls="hero-advanced-mortgage"
+            onClick={() => {
+              setAdvancedOpen((open) => !open);
+              trackEvent("cta_click", {
+                cta_id: "hero_advanced_toggle",
+                calculator_type: heroMode,
+              });
+            }}
+          >
+            Rozšířené nastavení
+            <ChevronDown className={cn("h-4 w-4 transition-transform", advancedOpen && "rotate-180")} />
+          </button>
+          {advancedOpen ? (
+            <div id="hero-advanced-mortgage" className="mt-2 grid grid-cols-2 gap-3">
+              {heroMode === "purchase" ? (
+                <div className="min-w-0 space-y-1.5">
+                  <Label htmlFor="hero-fixation" className="text-xs font-semibold">Fixace pro sazby</Label>
+                  <select
+                    id="hero-fixation"
+                    value={fixationMonths}
+                    onChange={(e) => onInputChange(setFixationMonths, Number(e.target.value))}
+                    className={fieldControlClassName}
+                  >
+                    {MINI_MORTGAGE_FIXATION_OPTIONS.map((m) => (
+                      <option key={m} value={m}>
+                        {m / 12} {m / 12 === 1 ? "rok" : m / 12 < 5 ? "roky" : "let"}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <MoneyField
+                  id="refi-switch-cost"
+                  label="Náklady změny"
+                  value={switchCost}
+                  onChange={setSwitchCost}
+                  slider={{ min: 0, max: 150_000, step: 1_000 }}
+                  sliderClassName="accent-deep-teal"
+                />
+              )}
+              <div className="min-w-0 space-y-1.5">
+                <Label htmlFor="hero-apr" className="text-xs font-semibold">RPSN pro celkovou částku</Label>
+                <input
+                  id="hero-apr"
+                  type="text"
+                  inputMode="decimal"
+                  value={aprDraft}
+                  onChange={(e) => {
+                    aprTouchedRef.current = true;
+                    setAprDraft(e.target.value);
+                    const parsed = parseInterestRate(e.target.value);
+                    if (parsed != null) setAprPercent(parsed);
+                  }}
+                  className={fieldControlClassName}
+                />
+                <p className="text-[11px] text-gray-500">
+                  Nemění měsíční splátku. Celkem modelově {formatCurrency(preview.totalPaidCzk, "CZK")}.
+                </p>
+              </div>
+            </div>
+          ) : null}
+        </div>
       ) : null}
 
       <hr className={cn(hero ? "my-3 border-gray-100" : "my-5 border-border/80")} />
@@ -754,9 +1112,36 @@ function MiniMortgageCalculatorCore({
             </div>
             )}
           </>
+        ) : hero && heroMode === "refinance" && refiComparison ? (
+          <div className="rounded-xl bg-[#f4f7f5] px-3 py-3">
+            <p className="text-xs font-semibold text-gray-600">Nová orientační splátka</p>
+            <p className="mt-1 font-heading text-3xl font-bold tabular-nums text-text-dark">
+              {formatCurrency(refiComparison.newMonthlyCzk, "CZK")}
+            </p>
+            <p className="mt-1 text-xs text-gray-600">
+              Současná splátka {formatCurrency(refiComparison.currentMonthlyCzk, "CZK")}. Rozdíl{" "}
+              {formatCurrency(refiComparison.differenceMonthlyCzk, "CZK")} měsíčně. Náklad změny{" "}
+              {formatCurrency(refiComparison.switchCostCzk, "CZK")} je jednorázový a není ve splátce.
+            </p>
+          </div>
+        ) : hero && validation.valid ? (
+          <div className="rounded-xl bg-[#f4f7f5] px-3 py-3">
+            <p className="text-xs font-semibold text-gray-600">Orientační měsíční splátka</p>
+            <p className="mt-1 font-heading text-3xl font-bold tabular-nums text-text-dark">
+              {formatCurrency(preview.monthlyPaymentCzk, "CZK")}
+            </p>
+            <p className="mt-1 text-xs leading-relaxed text-gray-600">
+              Úvěr {formatCurrency(preview.loanAmountCzk, "CZK")} · vlastní prostředky{" "}
+              {formatCurrency(preview.requiredOwnFundsCzk, "CZK")}
+              {preview.exactLtv != null
+                ? ` · poměr k ceně ${formatExactLtvCs(preview.exactLtv)} %, ne bankovní LTV`
+                : ""}
+              . Modelová sazba {preview.annualRatePercent.toFixed(2).replace(".", ",")} % p. a.
+            </p>
+          </div>
         ) : hero ? (
-          <p className="text-sm text-gray-500">
-            Orientační měsíční splátka se zobrazí po výpočtu.
+          <p className="text-sm text-amber-900" role="alert">
+            {validation.reason ?? "Doplňte vstupy pro orientační výpočet."}
           </p>
         ) : (
           <div className="min-w-0 rounded-xl bg-muted-gold/15 px-3 py-3 ring-1 ring-muted-gold/30">
@@ -770,7 +1155,23 @@ function MiniMortgageCalculatorCore({
         )}
       </div>
 
-      {!hasCalculated ? (
+      {hero ? (
+        <button
+          type="button"
+          className={cn(primaryButtonClassName, "h-14 bg-deep-teal text-[15px] text-white hover:bg-deep-teal-light")}
+          disabled={
+            isNavigating ||
+            (heroMode === "refinance" ? refiComparison == null : !validation.valid)
+          }
+          onClick={handleViewRates}
+        >
+          {isNavigating
+            ? "Otevírám sazby…"
+            : heroMode === "refinance"
+              ? "Porovnat sazby refinancování →"
+              : "Porovnat sazby pro toto zadání →"}
+        </button>
+      ) : !hasCalculated ? (
         <button
           type="button"
           className={cn(
@@ -820,14 +1221,9 @@ function MiniMortgageCalculatorCore({
       )}
 
       {hero ? (
-        <>
-          <p className="mt-3 text-center text-[11px] leading-snug text-gray-500">
-            Nezávazně a bez odeslání osobních údajů.
-          </p>
-          <p className="mt-1 text-center text-[10px] leading-snug text-gray-400">
-            {getCalculatorDisclaimer("cs")}
-          </p>
-        </>
+        <p className="mt-3 text-center text-[11px] leading-snug text-gray-500">
+          Orientační výpočet, ne nabídka banky. Základní kalkulace je bez registrace.
+        </p>
       ) : (
         <p className="mt-3 text-center text-[10px] leading-snug text-muted-foreground">
           {getCalculatorDisclaimer("cs")}

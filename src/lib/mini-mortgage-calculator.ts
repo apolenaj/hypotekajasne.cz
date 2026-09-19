@@ -208,6 +208,57 @@ export function computeMiniMortgage(input: MiniMortgageInput): MiniMortgageResul
   };
 }
 
+export type RefinanceComparison = {
+  balanceCzk: number;
+  currentMonthlyCzk: number;
+  newMonthlyCzk: number;
+  differenceMonthlyCzk: number;
+  /** Jednorázový náklad. Není přičtený k jistině ani ke splátce. */
+  switchCostCzk: number;
+};
+
+/**
+ * Porovnání dvou anuit ze stejné funkce jako hypoteční splátka.
+ * Náklad změny zůstává samostatně, aby se nezapočítal dvakrát.
+ */
+export function compareRefinancePayments(input: {
+  balanceCzk: number;
+  currentRatePercent: number;
+  newRatePercent: number;
+  remainingYears: number;
+  switchCostCzk: number;
+}): RefinanceComparison | null {
+  const balance = input.balanceCzk;
+  const years = input.remainingYears;
+  if (
+    !Number.isFinite(balance) ||
+    balance <= 0 ||
+    !Number.isFinite(years) ||
+    years <= 0 ||
+    !Number.isFinite(input.currentRatePercent) ||
+    input.currentRatePercent < 0 ||
+    !Number.isFinite(input.newRatePercent) ||
+    input.newRatePercent < 0 ||
+    !Number.isFinite(input.switchCostCzk) ||
+    input.switchCostCzk < 0
+  ) {
+    return null;
+  }
+  const currentMonthlyCzk = Math.round(
+    calculateAnnuityPayment(balance, input.currentRatePercent, years)
+  );
+  const newMonthlyCzk = Math.round(
+    calculateAnnuityPayment(balance, input.newRatePercent, years)
+  );
+  return {
+    balanceCzk: balance,
+    currentMonthlyCzk,
+    newMonthlyCzk,
+    differenceMonthlyCzk: currentMonthlyCzk - newMonthlyCzk,
+    switchCostCzk: input.switchCostCzk,
+  };
+}
+
 /** Backward-compatible alias for analytics callers. */
 export function miniMortgageLtvPct(result: MiniMortgageResult): number {
   return result.exactLtv ?? 0;

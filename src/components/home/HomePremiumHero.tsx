@@ -4,12 +4,12 @@ import { HeroCalculatorIsland } from "@/components/home/HeroCalculatorIsland";
 import type { MortgageJourneyParseResult } from "@/lib/mortgage-rates/mortgage-journey-context";
 
 const HERO_IMAGE =
-  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=2200&q=75";
+  "https://images.unsplash.com/photo-1571778200037-250828fe3eee?auto=format&fit=crop&w=2200&q=75";
 
 const TRUST = [
-  "Nezávislé informace",
-  "Reálná data a výpočty",
-  "Online a nezávazně",
+  "Srozumitelné výpočty",
+  "Přehledné předpoklady",
+  "Základní kalkulace bez registrace",
 ] as const;
 
 export function HomePremiumHero({
@@ -20,7 +20,7 @@ export function HomePremiumHero({
   return (
     <section
       aria-labelledby="home-hero-heading"
-      className="relative isolate min-h-[640px] overflow-hidden lg:min-h-[700px]"
+      className="relative isolate overflow-hidden"
     >
       <Image
         src={HERO_IMAGE}
@@ -28,14 +28,14 @@ export function HomePremiumHero({
         fill
         priority
         sizes="100vw"
-        className="object-cover object-center lg:object-[68%_center]"
+        className="object-cover object-[70%_40%] lg:object-[78%_center]"
       />
       <div
         className="absolute inset-0 hidden lg:block"
         aria-hidden
         style={{
           background:
-            "linear-gradient(90deg, #fafaf7 0%, rgba(250,250,247,0.94) 16%, rgba(250,250,247,0.62) 34%, rgba(250,250,247,0.22) 50%, rgba(250,250,247,0.04) 66%, rgba(250,250,247,0) 100%)",
+            "linear-gradient(90deg, #fafaf7 0%, #fafaf7 28%, rgba(250,250,247,0.94) 42%, rgba(250,250,247,0.55) 58%, rgba(250,250,247,0.08) 74%, rgba(250,250,247,0) 100%)",
         }}
       />
       <div
@@ -47,7 +47,7 @@ export function HomePremiumHero({
         }}
       />
 
-      <div className="relative mx-auto flex min-h-[640px] w-full max-w-[1440px] items-center px-4 py-8 sm:px-8 lg:min-h-[700px] lg:px-12 xl:px-14">
+      <div className="relative mx-auto flex w-full max-w-[1440px] items-center px-4 py-8 sm:px-8 lg:px-12 lg:py-10 xl:px-14">
         <div className="grid w-full items-center gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)] lg:gap-10">
           <div className="min-w-0 max-w-[720px]">
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-deep-teal">
@@ -55,17 +55,15 @@ export function HomePremiumHero({
             </p>
             <h1
               id="home-hero-heading"
-              className="mt-3 font-heading text-[2.35rem] font-bold leading-[1.02] tracking-[-0.02em] text-text-dark sm:text-5xl lg:text-[4rem] 2xl:text-[4.5rem]"
+              className="mt-3 max-w-[16ch] font-heading text-[2.15rem] font-bold leading-[1.05] tracking-[-0.02em] text-text-dark sm:text-[2.7rem] lg:text-[3.15rem] xl:text-[3.55rem]"
             >
-              Chytřejší rozhodnutí
+              Jasněji v hypotéce.
               <br />
-              o hypotéce, bydlení
-              <br />
-              a investicích
+              Jistěji při koupi.
             </h1>
-            <p className="mt-4 max-w-[590px] text-base leading-[1.55] text-gray-700 sm:text-[1.2rem]">
-              Spočítejte si možnosti, porovnejte financování a udělejte lepší
-              rozhodnutí na základě reálných dat.
+            <p className="mt-4 max-w-[34rem] text-base leading-[1.55] text-gray-800 sm:text-[1.15rem] lg:text-[1.25rem]">
+              Spočítejte si financování, porovnejte refinancování nebo prověřte
+              výnos a rizika investiční nemovitosti.
             </p>
             <ul className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-800">
               {TRUST.map((item) => (
@@ -75,9 +73,6 @@ export function HomePremiumHero({
                 </li>
               ))}
             </ul>
-            <p className="mt-4 max-w-[590px] text-[11px] leading-relaxed text-gray-500/90">
-              Informační platforma — nejsme banka. Konečné podmínky stanovuje banka.
-            </p>
           </div>
 
           <div id="hero-calculator" className="min-w-0 scroll-mt-24 lg:justify-self-end">

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   buildSazbyHref,
+  compareRefinancePayments,
   computeMiniMortgage,
   MINI_MORTGAGE_CTA,
   miniMortgageCtaLabel,
@@ -141,5 +142,28 @@ describe("mini mortgage calculator", () => {
     assert.equal(parsed.termYears, 25);
     assert.equal(parsed.purpose, "refinance");
     assert.equal(parsed.fixationMonths, 36);
+  });
+
+  it("compares refinance annuities without folding the switch cost into the payment", () => {
+    const same = compareRefinancePayments({
+      balanceCzk: 2_000_000,
+      currentRatePercent: 5,
+      newRatePercent: 5,
+      remainingYears: 20,
+      switchCostCzk: 30_000,
+    });
+    assert.ok(same);
+    assert.equal(same!.currentMonthlyCzk, same!.newMonthlyCzk);
+    assert.equal(same!.switchCostCzk, 30_000);
+    assert.equal(
+      compareRefinancePayments({
+        balanceCzk: 0,
+        currentRatePercent: 5,
+        newRatePercent: 4,
+        remainingYears: 20,
+        switchCostCzk: 0,
+      }),
+      null
+    );
   });
 });
