@@ -121,6 +121,80 @@ export function roundMoney(amount: number): number {
   return Math.round(amount);
 }
 
+export type KnownPaymentAmortization = {
+  interestCzk: number;
+  principalPaidCzk: number;
+  remainingPrincipalCzk: number;
+  paymentsAppliedCzk: number;
+};
+
+/**
+ * Whole-CZK amortization of a known monthly payment.
+ * Monthly rate uses the same convention as calculateAnnuityPayment
+ * (annual percent / 100 / 12). Interest is rounded each month so
+ * interest + principal paid equals cash applied, and remaining principal
+ * plus principal paid equals the opening principal — while the payment
+ * covers that month's interest and the loan is not yet repaid.
+ *
+ * Pass a published payment here. Do not replace it with a fresh call to
+ * calculateAnnuityPayment when the source already states the instalment.
+ */
+export function amortizeKnownMonthlyPayment(args: {
+  principal: number;
+  annualRatePercent: number;
+  monthlyPayment: number;
+  months: number;
+}): KnownPaymentAmortization {
+  const principal = roundMoney(args.principal);
+  const payment = roundMoney(args.monthlyPayment);
+  const months = Math.trunc(args.months);
+  const empty: KnownPaymentAmortization = {
+    interestCzk: 0,
+    principalPaidCzk: 0,
+    remainingPrincipalCzk: Math.max(0, principal),
+    paymentsAppliedCzk: 0,
+  };
+  if (
+    principal <= 0 ||
+    payment <= 0 ||
+    months <= 0 ||
+    !Number.isFinite(args.annualRatePercent) ||
+    args.annualRatePercent < 0
+  ) {
+    return empty;
+  }
+
+  const monthlyRate = args.annualRatePercent / 100 / 12;
+  let balance = principal;
+  let interestCzk = 0;
+  let principalPaidCzk = 0;
+  let paymentsAppliedCzk = 0;
+
+  for (let month = 0; month < months && balance > 0; month += 1) {
+    const interest =
+      monthlyRate === 0 ? 0 : roundMoney(balance * monthlyRate);
+    const principalPart = payment - interest;
+    if (principalPart < 0) {
+      interestCzk += payment;
+      paymentsAppliedCzk += payment;
+      balance += interest - payment;
+      continue;
+    }
+    const appliedPrincipal = Math.min(principalPart, balance);
+    interestCzk += interest;
+    principalPaidCzk += appliedPrincipal;
+    paymentsAppliedCzk += interest + appliedPrincipal;
+    balance -= appliedPrincipal;
+  }
+
+  return {
+    interestCzk,
+    principalPaidCzk,
+    remainingPrincipalCzk: balance,
+    paymentsAppliedCzk,
+  };
+}
+
 /** Round to 2 decimal places (rates, ratios display). */
 export function round2(amount: number): number {
   if (!Number.isFinite(amount)) return 0;
