@@ -3,6 +3,7 @@ import {
   absoluteUrl,
   DEFAULT_OG_IMAGE,
   getSiteOrigin,
+  OG_SITE_NAME,
   shouldNoIndex,
   SITE_BRAND,
   SITE_DOMAIN_LABEL,
@@ -99,7 +100,7 @@ export function buildPageMetadata(input: PageSeoInput): Metadata {
       type: input.type ?? "website",
       locale: LOCALE_HTML_LANG[locale] === "cs" ? "cs_CZ" : "en_US",
       url: absoluteUrl(input.path),
-      siteName: SITE_NAME,
+      siteName: OG_SITE_NAME,
       title: input.title,
       description: input.description,
       images: [

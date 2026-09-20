@@ -112,11 +112,14 @@ export function absoluteUrl(path: string): string {
 
 export { SITE_BRAND, SITE_DOMAIN_LABEL, SITE_NAME, SITE_NAME_SHORT };
 
+/** Open Graph site_name (compact brand form used in share cards). */
+export const OG_SITE_NAME = "HypotékaJasně";
+
 export const DEFAULT_OG_IMAGE = {
-  /** Versioned static share asset — see scripts/generate-og-share-v2.tsx */
-  url: "/og/hypotekajasne-share-v2.jpg",
+  /** Versioned static share asset — see scripts/generate-og-share-v3.tsx */
+  url: "/og/hypotekajasne-share-v3.png",
   width: 1200,
   height: 630,
-  alt: `${SITE_BRAND} — hypoteční kalkulačky a analýzy nemovitostí`,
-  type: "image/jpeg",
+  alt: `${OG_SITE_NAME} — hypoteční kalkulačky a analýzy nemovitostí`,
+  type: "image/png",
 } as const;

@@ -182,10 +182,10 @@ describe("metadata builder", () => {
   });
 
   it("default OG image points to versioned static share asset", () => {
-    assert.equal(DEFAULT_OG_IMAGE.url, "/og/hypotekajasne-share-v2.jpg");
+    assert.equal(DEFAULT_OG_IMAGE.url, "/og/hypotekajasne-share-v3.png");
     assert.equal(DEFAULT_OG_IMAGE.width, 1200);
     assert.equal(DEFAULT_OG_IMAGE.height, 630);
-    assert.equal(DEFAULT_OG_IMAGE.type, "image/jpeg");
+    assert.equal(DEFAULT_OG_IMAGE.type, "image/png");
   });
 
   it("homepage metadata uses share title, description and OG image", () => {
@@ -195,8 +195,12 @@ describe("metadata builder", () => {
     const images = (
       m.openGraph as { images?: Array<{ url?: string; type?: string }> }
     ).images;
-    assert.ok(images?.[0]?.url?.includes("/og/hypotekajasne-share-v2.jpg"));
-    assert.equal(images?.[0]?.type, "image/jpeg");
+    assert.ok(images?.[0]?.url?.includes("/og/hypotekajasne-share-v3.png"));
+    assert.equal(images?.[0]?.type, "image/png");
+    assert.equal(
+      (m.openGraph as { siteName?: string }).siteName,
+      "HypotékaJasně"
+    );
     assert.equal(
       (m.twitter as { card?: string }).card,
       "summary_large_image"
@@ -351,7 +355,7 @@ describe("json-ld — no fake reviews", () => {
       headline: "Test",
       description: "Desc",
       path: "/temata/refinancovani",
-      imageUrl: "/og/hypotekajasne-share-v2.jpg",
+      imageUrl: "/og/hypotekajasne-share-v3.png",
       datePublished: "2026-01-01",
       dateModified: "2026-01-02",
       authorName: "Redakce Hypotéka Jasně",

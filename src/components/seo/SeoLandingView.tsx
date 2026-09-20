@@ -73,7 +73,7 @@ export function SeoLandingView({ landing }: { landing: SeoLanding }) {
       headline: landing.h1,
       description: landing.description,
       path,
-      imageUrl: "/og/hypotekajasne-share-v2.jpg",
+      imageUrl: "/og/hypotekajasne-share-v3.png",
       datePublished: landing.publishedAt,
       dateModified: landing.updatedAt,
       authorName: author.name,
