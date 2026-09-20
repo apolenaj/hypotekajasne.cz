@@ -144,8 +144,14 @@ export function parseRentgenCheckoutMetadata(
   snapshot: RentgenCheckoutPropertySnapshot;
   address: string;
 } {
-  if (!metadata || metadata.product !== RENTGEN_PREMIUM_PRODUCT_CODE) {
-    throw new Error("Session metadata nepatří k produktu rentgen_premium.");
+  const product = metadata?.product?.trim() || metadata?.productCode?.trim();
+  const allowed = new Set([
+    RENTGEN_PREMIUM_PRODUCT_CODE,
+    "INVESTMENT_XRAY",
+    "INDIVIDUAL_ANALYSIS",
+  ]);
+  if (!metadata || !product || !allowed.has(product)) {
+    throw new Error("Session metadata nepatří k produktu Investičního rentgenu.");
   }
   if (!metadata.reportId?.trim()) {
     throw new Error("Chybí reportId v metadata.");

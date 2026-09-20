@@ -238,6 +238,68 @@ export function RentgenToolIsland() {
       experiment_id: "free_preview",
       variant_id: getExperimentVariant("free_preview"),
     });
+
+    if (premiumCfg.commerciallyActive) {
+      try {
+        const { startRentgenCheckout } = await import(
+          "@/lib/property-rentgen/start-checkout"
+        );
+        const price = input.priceCzk;
+        const rent = input.rentMonthlyCzk;
+        const equity = input.equityCzk;
+        if (price == null || price <= 0 || rent == null || rent < 0) {
+          setPremiumMsg(
+            "Pro platbu doplňte kupní cenu a měsíční nájem v náhledu výše."
+          );
+          setPremiumLoading(false);
+          return;
+        }
+        if (equity == null || equity < 0) {
+          setPremiumMsg(
+            "Pro platbu doplňte vlastní kapitál vůči kupní ceně."
+          );
+          setPremiumLoading(false);
+          return;
+        }
+        const result = await startRentgenCheckout({
+          productCode:
+            interestPackage === "premium"
+              ? "INDIVIDUAL_ANALYSIS"
+              : "INVESTMENT_XRAY",
+          email: premiumEmail.trim(),
+          name: premiumName.trim(),
+          phone: premiumPhone.trim(),
+          property: {
+            label: input.city || undefined,
+            city: input.city || undefined,
+            areaM2: input.areaM2 ?? undefined,
+            purchasePriceCzk: price,
+            monthlyGrossRentCzk: rent,
+            ownFundsCzk: equity,
+            annualRatePercent:
+              input.annualRatePercent ?? CUSTOMER_DIGITAL_DEFAULTS.annualRatePercent,
+            termYears: input.termYears ?? CUSTOMER_DIGITAL_DEFAULTS.termYears,
+          },
+          sourceUrl:
+            typeof window !== "undefined" ? window.location.href : undefined,
+        });
+        track("analysis_checkout_started", {
+          tool_id: "property_rentgen",
+          price_band: "premium",
+        });
+        window.location.href = result.url;
+        return;
+      } catch (err) {
+        setPremiumLoading(false);
+        setPremiumMsg(
+          err instanceof Error
+            ? err.message
+            : "Platbu se nepodařilo spustit. Zkuste to znovu."
+        );
+        return;
+      }
+    }
+
     const res = await submitLead({
       name: premiumName.trim(),
       email: premiumEmail.trim(),
@@ -276,9 +338,7 @@ export function RentgenToolIsland() {
     setPremiumLoading(false);
     setPremiumMsg(
       res.ok
-        ? premiumCfg.commerciallyActive
-          ? "Poptávka odeslána. Ozveme se s potvrzením rozsahu a postupem dodání."
-          : "Poptávka uložena. Placené balíčky zatím nejsou v prodeji — ozveme se s potvrzením, až bude plnění připravené. Toto není platba ani objednávka s termínem dodání."
+        ? "Poptávka uložena. Placené balíčky zatím nejsou v prodeji — ozveme se s potvrzením, až bude plnění připravené. Toto není platba ani objednávka s termínem dodání."
         : res.error
     );
     if (res.ok) {
@@ -758,15 +818,41 @@ export function RentgenToolIsland() {
             )}
 
             {preview ? (
-              <p className="mt-4 text-xs text-muted-foreground">
-                30letý modelář (alternativní scénáře):{" "}
-                <Link
-                  href={routes.investicniRentgenModelar}
-                  className="font-semibold text-deep-teal underline"
-                >
-                  Otevřít modelář
-                </Link>
-              </p>
+              <div className="mt-6 rounded-2xl border border-muted-gold/50 bg-muted-gold/10 p-4">
+                <p className="text-sm font-bold text-text-dark">
+                  Chcete znát skutečné cash flow, rizika a scénáře této
+                  nemovitosti?
+                </p>
+                <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                  <a
+                    href="#premium-objednavka"
+                    onClick={() => setInterestPackage("digital")}
+                    className="inline-flex flex-1 items-center justify-center rounded-xl bg-muted-gold px-4 py-2.5 text-sm font-bold text-text-dark"
+                  >
+                    Odemknout celý Rentgen – {formatDigitalRentgenPrice()}
+                  </a>
+                  <a
+                    href="#premium-objednavka"
+                    onClick={() => setInterestPackage("premium")}
+                    className="inline-flex flex-1 items-center justify-center rounded-xl border border-deep-teal/30 px-4 py-2.5 text-sm font-bold text-deep-teal"
+                  >
+                    Individuální rozbor – {formatAnalysisPrice()}
+                  </a>
+                </div>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Potřebujete hlubší rozbor podkladů a lokality? Zvolte
+                  individuální rozbor.
+                </p>
+                <p className="mt-3 text-xs text-muted-foreground">
+                  30letý modelář:{" "}
+                  <Link
+                    href={routes.investicniRentgenModelar}
+                    className="font-semibold text-deep-teal underline"
+                  >
+                    Otevřít modelář
+                  </Link>
+                </p>
+              </div>
             ) : (
               <p className="mt-6 text-sm text-muted-foreground">
                 Chcete placený výstup?{" "}
@@ -774,7 +860,7 @@ export function RentgenToolIsland() {
                   href="#premium-objednavka"
                   className="font-semibold text-deep-teal underline-offset-2 hover:underline"
                 >
-                  Přejít na poptávku
+                  Přejít na objednávku
                 </a>
               </p>
             )}
@@ -787,7 +873,7 @@ export function RentgenToolIsland() {
           className="mt-10 scroll-mt-28 rounded-2xl border border-muted-gold/40 bg-muted-gold/10 p-5 sm:p-6"
         >
           <p className="text-sm font-bold text-text-dark">
-            Poptávka:{" "}
+            {premiumCfg.commerciallyActive ? "Objednávka: " : "Poptávka: "}
             {interestPackage === "premium"
               ? `Individuální rozbor (${formatAnalysisPrice()})`
               : `Investiční rentgen (${formatDigitalRentgenPrice()})`}
@@ -825,7 +911,11 @@ export function RentgenToolIsland() {
             </p>
           ) : (
             <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-              Elektronický výstup — ne investiční doporučení.
+              Shrnutí před platbou: {interestPackage === "premium"
+                ? formatAnalysisPrice()
+                : formatDigitalRentgenPrice()}{" "}
+              jednorázově / 1 nemovitost. Budete přesměrováni na zabezpečenou
+              platební stránku Stripe. ✓ Bez předplatného
             </p>
           )}
           <p className="mt-2 text-xs text-muted-foreground">

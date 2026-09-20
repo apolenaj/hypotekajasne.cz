@@ -244,8 +244,8 @@ export function rentgenPrimaryCtaLabel(tier: AnalysisProductTierId): string {
     return tier === "digital" ? "Poptat Rentgen" : "Poptat rozbor";
   }
   return tier === "digital"
-    ? `Koupit model za ${formatDigitalRentgenPrice()}`
-    : `Objednat rozbor za ${formatAnalysisPrice()}`;
+    ? `Získat celý Rentgen – ${formatDigitalRentgenPrice()}`
+    : `Objednat individuální rozbor – ${formatAnalysisPrice()}`;
 }
 
 export function withAnalysisPrice(text: string): string {

@@ -82,35 +82,37 @@ export function RentgenPricing() {
 
         <div className="mt-8 grid gap-5 lg:grid-cols-2 lg:items-stretch">
           {/* 999 */}
-          <article className="flex h-full flex-col rounded-2xl border-2 border-muted-gold bg-white p-6 shadow-sm">
+          <article className="relative flex h-full flex-col rounded-2xl border-2 border-muted-gold bg-white p-6 shadow-sm">
+            <p className="absolute -top-3 left-6 rounded-full bg-deep-teal px-3 py-0.5 text-[11px] font-bold text-white">
+              Nejčastější volba
+            </p>
             <h3 className="font-heading text-xl font-bold text-text-dark">
               Investiční rentgen
             </h3>
             <p className="mt-2 font-heading text-3xl font-bold tabular-nums text-deep-teal">
               {digitalPrice}
             </p>
-            <p className="text-xs text-muted-foreground">za jednu nemovitost</p>
-            <p className="mt-3 text-sm text-text-dark">
+            <p className="text-xs text-muted-foreground">
+              jednorázově / 1 nemovitost
+            </p>
+            <p className="mt-3 text-sm font-semibold text-text-dark">
+              Zjistěte, co s investicí udělají skutečné náklady.
+            </p>
+            <p className="mt-2 text-sm text-text-dark">
               Pro koho: chcete rychle spočítat hotovost, měsíční tok a citlivost
               z vlastních čísel.
             </p>
-            <p className="mt-2 text-sm font-semibold text-deep-teal">
-              Hlavní přínos: víte, kolik doplácíte nebo vám zbývá — ještě před
-              koupí.
-            </p>
             <ul className="mt-4 flex-1 space-y-2 text-sm text-muted-foreground">
               <li>· Potřebná vlastní hotovost</li>
-              <li>· Měsíční výsledek po nákladech, splátce a rezervách</li>
-              <li>· Scénáře a citlivost</li>
-              <li>· Bod zvratu a cenové podmínky modelu</li>
-              <li>· Interaktivní výstup a souhrnné PDF</li>
+              <li>· Cash flow po splátce</li>
+              <li>· Výnos, scénáře a stress test</li>
+              <li>· Bod zvratu</li>
+              <li>· Interaktivní výstup a PDF</li>
             </ul>
             <p className="mt-4 text-xs text-muted-foreground">
               Forma: automatický model ze zadaných údajů. Dodání: po úhradě a
               kompletních vstupech
-              {!live ? " — aktuálně formou poptávky" : ""}. Oprava zjevně
-              chybných vstupů v rámci objednávky; rozsah následných dotazů
-              potvrdíme při převzetí.
+              {!live ? " — aktuálně formou poptávky" : ""}.
             </p>
             <div className="mt-5 flex flex-col gap-2 sm:flex-row lg:mt-auto lg:pt-6">
               <Link
@@ -126,6 +128,11 @@ export function RentgenPricing() {
                 {rentgenPrimaryCtaLabel("digital")}
               </Link>
             </div>
+            {live ? (
+              <p className="mt-2 text-center text-[11px] text-muted-foreground">
+                ✓ Jednorázová platba · ✓ Bez předplatného · ✓ Stripe
+              </p>
+            ) : null}
             <p className="mt-2 text-center text-[11px] text-muted-foreground">
               <a
                 href="/api/rentgen-sample-pdf?balicek=999"
@@ -144,28 +151,27 @@ export function RentgenPricing() {
             <p className="mt-2 font-heading text-3xl font-bold tabular-nums text-deep-teal">
               {premiumPrice}
             </p>
-            <p className="text-xs text-muted-foreground">za jednu nemovitost</p>
-            <p className="mt-3 text-sm text-text-dark">
+            <p className="text-xs text-muted-foreground">
+              jednorázově / 1 nemovitost
+            </p>
+            <p className="mt-3 text-sm font-semibold text-text-dark">
+              Když chcete jít před koupí ještě hlouběji.
+            </p>
+            <p className="mt-2 text-sm text-text-dark">
               Pro koho: potřebujete k modelu ještě dohledání nabídek a rozbor
               dodaných podkladů.
             </p>
-            <p className="mt-2 text-sm font-semibold text-deep-teal">
-              Hlavní přínos: konkrétní otázky a mezery v podkladech před
-              rozhodnutím o koupi.
-            </p>
             <ul className="mt-4 flex-1 space-y-2 text-sm text-muted-foreground">
-              <li>· Vše z automatického modelu</li>
-              <li>· Dohledání místních nabídek se zdroji a datem</li>
-              <li>· Posouzení předpokladů příjmů a výdajů</li>
-              <li>· Rozbor dodaných podkladů v dohodnutém rozsahu</li>
-              <li>· Individuálně komentovaný závěr a co ještě prověřit</li>
+              <li>· Vše z Rentgenu</li>
+              <li>· Rozbor podkladů</li>
+              <li>· Dohledané nabídky/data</li>
+              <li>· Kontrola předpokladů</li>
+              <li>· Individuální komentář a oblasti k prověření</li>
             </ul>
             <p className="mt-4 text-xs text-muted-foreground">
               Forma: model + individuální práce s podklady. Dodání: termín
               potvrdíme po kontrole rozsahu a podkladů
-              {!live ? " — aktuálně formou poptávky" : ""}. Oprava zjevně
-              chybných vstupů v rámci objednávky; následné dotazy v dohodnutém
-              rozsahu.
+              {!live ? " — aktuálně formou poptávky" : ""}.
             </p>
             <div className="mt-5 flex flex-col gap-2 sm:flex-row lg:mt-auto lg:pt-6">
               <Link
@@ -181,6 +187,11 @@ export function RentgenPricing() {
                 {rentgenPrimaryCtaLabel("premium")}
               </Link>
             </div>
+            {live ? (
+              <p className="mt-2 text-center text-[11px] text-muted-foreground">
+                ✓ Jednorázová platba · ✓ Bez předplatného · ✓ Stripe
+              </p>
+            ) : null}
             <p className="mt-2 text-center text-[11px] text-muted-foreground">
               <a
                 href="/api/rentgen-sample-pdf?balicek=4990"

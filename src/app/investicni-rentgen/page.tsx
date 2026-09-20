@@ -13,8 +13,10 @@ import {
 } from "@/components/property-rentgen/RentgenLandingSections";
 import { RentgenControlPreview } from "@/components/property-rentgen/RentgenControlPreview";
 import { RentgenToolIsland } from "@/components/property-rentgen/RentgenToolIsland";
+import { RentgenStickyMobileCta } from "@/components/property-rentgen/RentgenStickyMobileCta";
 import {
   formatAnalysisPriceLabel,
+  getRentgenPremiumConfig,
   RENTGEN_FAQ,
   withAnalysisPrice,
 } from "@/lib/property-rentgen";
@@ -29,9 +31,10 @@ export default function InvesticniRentgenPage() {
       answer: withAnalysisPrice(item.a),
     }))
   );
+  const checkoutLive = getRentgenPremiumConfig().commerciallyActive;
 
   return (
-    <div className="overflow-x-hidden bg-white">
+    <div className="overflow-x-hidden bg-white pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0">
       <JsonLdScript data={faqSchema} />
       <div className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
         <Breadcrumbs
@@ -57,6 +60,7 @@ export default function InvesticniRentgenPage() {
       <RentgenHowItWorks />
       <RentgenFaq />
       <RentgenBottomCta />
+      <RentgenStickyMobileCta live={checkoutLive} />
       <p className="sr-only">{formatAnalysisPriceLabel()}</p>
     </div>
   );

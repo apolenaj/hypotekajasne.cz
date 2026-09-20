@@ -16,6 +16,8 @@ export const routes = {
   investicniRentgenUkazka: "/investicni-rentgen/ukazka",
   investicniRentgenModelar: "/investicni-rentgen/modelar",
   investicniRentgenPorovnani: "/investicni-rentgen/porovnani",
+  investicniRentgenDekujeme: "/investicni-rentgen/dekujeme",
+  investicniRentgenObjednavka: "/investicni-rentgen/objednavka",
   investicniPas: "/investicni-pas",
   hypotecniAkademie: "/hypotecni-akademie",
   akademie: "/akademie",
