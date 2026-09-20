@@ -157,6 +157,16 @@ export function ConstructionMortgagePage({
             <li>rezerva a financování během výstavby;</li>
             <li>současný nájem nebo jiné souběžné bydlení.</li>
           </ul>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Souběh nájmu a čerpání ověřte i v{" "}
+            <a
+              className="font-medium text-deep-teal hover:underline"
+              href={routes.kalkulacky.rodinnyRozpocet}
+            >
+              kalkulačce rodinného rozpočtu
+            </a>
+            .
+          </p>
         </section>
 
         <section id="developer" className="mt-10 scroll-mt-28">

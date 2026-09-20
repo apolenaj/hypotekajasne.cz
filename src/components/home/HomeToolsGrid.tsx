@@ -2,10 +2,8 @@ import Link from "next/link";
 import {
   ArrowRight,
   Calculator,
-  GitCompare,
   Home,
   Percent,
-  RefreshCw,
   Wallet,
 } from "lucide-react";
 import { routes } from "@/lib/routes";
@@ -16,6 +14,18 @@ const TOOLS = [
     text: "Orientační měsíční splátka.",
     href: routes.kalkulacky.hypotecniKalkulacka,
     icon: Calculator,
+  },
+  {
+    title: "Rodinný rozpočet",
+    text: "Zvládneme hypotéku i s rodinou?",
+    href: routes.kalkulacky.rodinnyRozpocet,
+    icon: Wallet,
+  },
+  {
+    title: "Odhad vs. cena",
+    text: "Vlastní peníze při nižším odhadu.",
+    href: routes.kalkulacky.odhadVersusKupniCena,
+    icon: Percent,
   },
   {
     title: "Financování firmy",
@@ -34,18 +44,6 @@ const TOOLS = [
     text: "Rozpočet, čerpání a úroky.",
     href: routes.kalkulacky.vystavba,
     icon: Home,
-  },
-  {
-    title: "Koupě vs. nájem",
-    text: "Porovnání nákladů vlastního bydlení a nájmu.",
-    href: routes.kalkulacky.koupeVsNajem,
-    icon: GitCompare,
-  },
-  {
-    title: "Refinanční kalkulačka",
-    text: "Splátka pro refinancování.",
-    href: `${routes.kalkulacky.hypotecniKalkulacka}?purpose=refinance`,
-    icon: RefreshCw,
   },
 ] as const;
 

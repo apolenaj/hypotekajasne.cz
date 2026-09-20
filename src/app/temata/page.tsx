@@ -9,10 +9,23 @@ import {
 } from "@/lib/seo/landings";
 import { formatDate } from "@/lib/i18n/format";
 import { scenarioRoutes } from "@/lib/scenarios/sources";
+import { routes } from "@/lib/routes";
 
 export const metadata = getStaticPageSeo(SEO_LANDING_HUB.path);
 
 const EXTRA_SCENARIOS = [
+  {
+    href: routes.pruvodce.praktickeSituace,
+    h1: "Praktické situace",
+    lead: "Cizinci, společná hypotéka, odhad, rodina, firma a financování přes hranice.",
+    updatedAt: "2026-09-20",
+  },
+  {
+    href: `${routes.temata}/hypoteka-a-rodina`,
+    h1: "Hypotéka a plánování rodiny",
+    lead: "Jak splátka snese rodičovství, výpadek příjmu nebo refixaci.",
+    updatedAt: "2026-09-20",
+  },
   {
     href: scenarioRoutes.companyTopic,
     h1: "Hypotéka na firmu",

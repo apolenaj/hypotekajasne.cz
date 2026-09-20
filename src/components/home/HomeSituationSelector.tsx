@@ -56,6 +56,20 @@ const SITUATIONS = [
     hint: "Rozpočet, čerpání a úroky během výstavby.",
   },
   {
+    id: "family_budget",
+    situation: "family_budget",
+    label: "Plánuji rodinu a hypotéku",
+    href: routes.kalkulacky.rodinnyRozpocet,
+    hint: "Kolik zbude po splátce a jak rozpočet ovlivní rodičovství nebo výpadek příjmu.",
+  },
+  {
+    id: "practical",
+    situation: "practical_situations",
+    label: "Mám specifickou situaci",
+    href: routes.pruvodce.praktickeSituace,
+    hint: "Cizinci, společná hypotéka, odhad, firma, nájemník a financování přes hranice.",
+  },
+  {
     id: "foreign",
     situation: "foreign_markets",
     label: "Chci investovat v zahraničí",

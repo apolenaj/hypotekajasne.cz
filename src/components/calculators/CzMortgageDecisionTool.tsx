@@ -647,6 +647,14 @@ export function CzMortgageDecisionTool() {
             </span>{". "}
             {recommended.description}
           </p>
+          <div className="mt-4">
+            <a
+              href={`${routes.kalkulacky.rodinnyRozpocet}?splatka=${Math.round(recommended.monthlyPayment ?? 0)}&jistina=${Math.round(recommended.loanAmount ?? 0)}&sazba=${decision.rateUsed ?? ""}&splatnost=${termYears}`}
+              className="inline-flex min-h-11 items-center justify-center rounded-xl border border-deep-teal/30 bg-white px-4 text-sm font-semibold text-deep-teal hover:border-deep-teal"
+            >
+              Zvládne tuto splátku náš rozpočet?
+            </a>
+          </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <Metric
               label="Orientační maximum"

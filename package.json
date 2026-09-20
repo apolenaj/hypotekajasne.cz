@@ -51,7 +51,7 @@
     "test:country-data": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/country-data/country-contamination.test.ts",
     "test:trust": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/trust/trust-methodology.test.ts",
     "test:money": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/money.test.ts src/lib/affordability.test.ts",
-    "test:finance-math": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/finance-math/finance-math.test.ts src/lib/scenarios/scenarios-finance.test.ts",
+    "test:finance-math": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/finance-math/finance-math.test.ts src/lib/scenarios/scenarios-finance.test.ts src/lib/family-budget/family-budget.test.ts",
     "test:rate-engine": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/rates/rate-engine.test.ts",
     "test:mortgage-rates": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/rates/mortgageRateService.test.ts src/lib/mortgage-rates/mortgage-rates.test.ts src/lib/mortgage-rates/ltv-context.test.ts src/lib/mortgage-rates/mortgage-journey-context.integration.test.ts src/lib/mortgage-rates/mortgage-journey-summary.test.ts src/lib/leads/lead-funnel-e2e.test.ts",
     "test:mortgage-market": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/mortgage-market/mortgage-market.test.ts src/lib/mortgage-market/offers.test.ts src/lib/mortgage-market/offers.live.test.ts src/lib/mortgage-market/phase3-ux.test.ts src/lib/mortgage-market/public-rate-display.test.ts src/lib/mortgage-market/bank-rate-monthly-payment.test.ts src/lib/mortgage-market/fixation-cost-comparison.test.ts src/lib/mini-mortgage-calculator.test.ts",

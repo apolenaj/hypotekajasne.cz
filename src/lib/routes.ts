@@ -41,6 +41,9 @@ export const routes = {
   b2bPortal: "/profesionalni-portal",
   opravyAAktualizace: "/opravy-a-aktualizace",
   temata: "/temata",
+  pruvodce: {
+    praktickeSituace: "/pruvodce/prakticke-situace",
+  },
   legal: {
     gdpr: "/pravni/gdpr",
     smlouvy: "/pravni/smlouvy",
@@ -59,6 +62,8 @@ export const routes = {
     hypotekaNaFirmu: "/kalkulacky/hypoteka-na-firmu",
     budouciPrijemZNajmu: "/kalkulacky/budouci-prijem-z-najmu",
     vystavba: "/kalkulacky/vystavba",
+    rodinnyRozpocet: "/kalkulacky/rodinny-rozpocet",
+    odhadVersusKupniCena: "/kalkulacky/odhad-versus-kupni-cena",
   },
 } as const;
 

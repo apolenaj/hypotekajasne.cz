@@ -133,6 +133,24 @@ export function CompanyMortgagePage({
               — tento průvodce.
             </li>
             <li>
+              <strong className="text-text-dark">Zahraniční právnická osoba</strong>{" "}
+              — struktura, KYC a účetnictví se posuzují individuálně; viz{" "}
+              <a
+                className="text-deep-teal hover:underline"
+                href={`${routes.temata}/nemovitost-pres-zahranicni-firmu`}
+              >
+                Nemovitost v ČR přes zahraniční firmu
+              </a>{" "}
+              a rozcestník{" "}
+              <a
+                className="text-deep-teal hover:underline"
+                href={routes.pruvodce.praktickeSituace}
+              >
+                Praktické situace
+              </a>
+              .
+            </li>
+            <li>
               <strong className="text-text-dark">Developerské financování projektu</strong>{" "}
               — výnos z prodeje a etapizace stavby vyžadují individuální model, ne běžnou anuitu z nájmu.
             </li>

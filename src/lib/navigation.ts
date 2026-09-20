@@ -38,6 +38,16 @@ export const hypotekyNavItems: NavLinkItem[] = [
     description: "Orientační měsíční splátka",
   },
   {
+    href: routes.kalkulacky.rodinnyRozpocet,
+    label: "Rodinný rozpočet",
+    description: "Zvládneme hypotéku i s rodinou?",
+  },
+  {
+    href: routes.pruvodce.praktickeSituace,
+    label: "Praktické situace",
+    description: "Konkrétní konstelace žadatelů a nemovitosti",
+  },
+  {
     href: routes.akademie,
     label: "Jak hypotéka funguje",
     description: "Základy z Hypoteční akademie",
@@ -107,15 +117,15 @@ export const hypotekyNavItems: NavLinkItem[] = [
 export const hypotekyNavColumns: NavColumn[] = [
   {
     title: "Orientace",
-    items: hypotekyNavItems.slice(0, 4),
+    items: hypotekyNavItems.slice(0, 6),
   },
   {
     title: "Účel financování",
-    items: hypotekyNavItems.slice(4, 9),
+    items: hypotekyNavItems.slice(6, 11),
   },
   {
     title: "Příjmy a žadatel",
-    items: hypotekyNavItems.slice(9, 13),
+    items: hypotekyNavItems.slice(11),
   },
 ];
 
@@ -287,6 +297,16 @@ export const kalkulackyNavItems: NavLinkItem[] = [
     description: "Orientační měsíční splátka",
   },
   {
+    href: routes.kalkulacky.rodinnyRozpocet,
+    label: "Rodinný rozpočet",
+    description: "Zvládneme hypotéku i s rodinou?",
+  },
+  {
+    href: routes.kalkulacky.odhadVersusKupniCena,
+    label: "Odhad versus kupní cena",
+    description: "Vlastní peníze při nižším odhadu",
+  },
+  {
     href: routes.kalkulacky.hypotekaNaFirmu,
     label: "Financování firmy",
     description: "Anuita a LTV pro firemní úvěr",
@@ -329,6 +349,11 @@ export const kalkulackyNavItems: NavLinkItem[] = [
 ];
 
 export const pruvodciNavItems: NavLinkItem[] = [
+  {
+    href: routes.pruvodce.praktickeSituace,
+    label: "Praktické situace",
+    description: "Cizinci, rodina, odhad, firma, hranice",
+  },
   {
     href: routes.akademie,
     label: "Hypoteční akademie",
