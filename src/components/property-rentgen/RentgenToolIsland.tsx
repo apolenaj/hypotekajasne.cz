@@ -28,6 +28,18 @@ import {
   type RentgenInputMode,
 } from "@/lib/property-rentgen";
 import {
+  EMPTY_ORDER_PROPERTY_FORM,
+  buildPropertyAddressLine,
+  formStateToOrderSnapshot,
+  parseLooseNumber,
+  validateOrderPropertyForCheckout,
+  type OrderPropertyFormState,
+} from "@/lib/property-rentgen/order-property";
+import {
+  RentgenOrderPropertyFields,
+  type LocalPhotoItem,
+} from "@/components/property-rentgen/RentgenOrderPropertyFields";
+import {
   formatModelCzk,
   formatModelPct,
 } from "@/lib/property-rentgen/control-model";
@@ -143,15 +155,22 @@ export function RentgenToolIsland({
   const [premiumName, setPremiumName] = useState("");
   const [premiumEmail, setPremiumEmail] = useState("");
   const [premiumPhone, setPremiumPhone] = useState("");
-  const [orderCity, setOrderCity] = useState("");
-  const [orderPrice, setOrderPrice] = useState("");
-  const [orderRent, setOrderRent] = useState("");
-  const [orderEquity, setOrderEquity] = useState("");
+  const [orderForm, setOrderForm] = useState<OrderPropertyFormState>(
+    EMPTY_ORDER_PROPERTY_FORM
+  );
+  const [orderPhotos, setOrderPhotos] = useState<LocalPhotoItem[]>([]);
+  const [draftOrder, setDraftOrder] = useState<{
+    orderId: string;
+    publicId: string;
+    accessToken: string;
+  } | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [premiumLoading, setPremiumLoading] = useState(false);
   const [premiumMsg, setPremiumMsg] = useState<string | null>(null);
   const [consent, setConsent] = useState(() =>
     emptyFormConsentState(defaultPartnerScope("property_analysis"))
   );
+  const prefillDoneRef = useRef(false);
   const startedRef = useRef(false);
   const freeViewedRef = useRef(false);
   const premiumViewedRef = useRef(false);
@@ -159,6 +178,27 @@ export function RentgenToolIsland({
 
   const premiumCfg = useMemo(() => getRentgenPremiumConfig(), []);
   const live = checkoutLive || premiumCfg.commerciallyActive;
+
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("hj-rentgen-draft");
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as {
+        orderId?: string;
+        publicId?: string;
+        accessToken?: string;
+      };
+      if (parsed.orderId && parsed.accessToken) {
+        setDraftOrder({
+          orderId: parsed.orderId,
+          publicId: parsed.publicId || "",
+          accessToken: parsed.accessToken,
+        });
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   useEffect(() => {
     setInterestPackage(analysisPackageFromQuery(searchParams.get("balicek")));
@@ -174,6 +214,76 @@ export function RentgenToolIsland({
     }, 120);
     return () => window.clearTimeout(t);
   }, [searchParams]);
+
+  // Prefill order form from free-preview inputs (once, then user can edit).
+  useEffect(() => {
+    if (prefillDoneRef.current) return;
+    const hasPreviewData =
+      Boolean(input.listingUrl?.trim()) ||
+      Boolean(input.city?.trim()) ||
+      input.priceCzk != null ||
+      input.rentMonthlyCzk != null ||
+      input.equityCzk != null ||
+      input.areaM2 != null;
+    if (!hasPreviewData) return;
+    prefillDoneRef.current = true;
+    setOrderForm((prev) => {
+      const listing = input.listingUrl?.trim() || prev.listingUrl;
+      const city = input.city?.trim() || prev.city;
+      const hasUrl = Boolean(listing);
+      const hasCity = Boolean(city);
+      return {
+        ...prev,
+        listingUrl: listing,
+        city,
+        street: prev.street,
+        identificationMode: hasUrl && hasCity ? "both" : hasUrl ? "url" : "address",
+        purchasePrice:
+          prev.purchasePrice ||
+          (input.priceCzk != null ? formatNumber(input.priceCzk) : ""),
+        monthlyRent:
+          prev.monthlyRent ||
+          (input.rentMonthlyCzk != null
+            ? formatNumber(input.rentMonthlyCzk)
+            : ""),
+        equity:
+          prev.equity ||
+          (input.equityCzk != null ? formatNumber(input.equityCzk) : ""),
+        floorArea:
+          prev.floorArea ||
+          (input.areaM2 != null ? String(input.areaM2) : ""),
+        propertyType:
+          prev.propertyType ||
+          (input.propertyType === "Byt"
+            ? "Byt"
+            : input.propertyType === "Dům"
+              ? "Rodinný dům"
+              : input.propertyType === "Komerce"
+                ? "Komerční"
+                : prev.propertyType),
+      };
+    });
+  }, [input]);
+
+  // Re-sync financial prefill when user runs preview again.
+  useEffect(() => {
+    if (!ran) return;
+    setOrderForm((prev) => ({
+      ...prev,
+      listingUrl: input.listingUrl?.trim() || prev.listingUrl,
+      city: input.city?.trim() || prev.city,
+      purchasePrice:
+        input.priceCzk != null ? formatNumber(input.priceCzk) : prev.purchasePrice,
+      monthlyRent:
+        input.rentMonthlyCzk != null
+          ? formatNumber(input.rentMonthlyCzk)
+          : prev.monthlyRent,
+      equity:
+        input.equityCzk != null ? formatNumber(input.equityCzk) : prev.equity,
+      floorArea:
+        input.areaM2 != null ? String(input.areaM2) : prev.floorArea,
+    }));
+  }, [ran, input.listingUrl, input.city, input.priceCzk, input.rentMonthlyCzk, input.equityCzk, input.areaM2]);
 
   const patch = <K extends keyof ManualPropertyInput>(
     key: K,
@@ -243,8 +353,32 @@ export function RentgenToolIsland({
       !premiumName.trim() ||
       !premiumEmail.includes("@") ||
       premiumPhone.trim().length < 6
-    )
+    ) {
+      setPremiumMsg("Doplňte jméno, e-mail a telefon.");
       return;
+    }
+
+    const validPhotos = orderPhotos.filter((p) => p.status !== "error");
+    const validation = validateOrderPropertyForCheckout({
+      form: orderForm,
+      photoCount: validPhotos.length,
+      requirePhotoWithoutListing: true,
+    });
+    if (!validation.ok) {
+      setPremiumMsg(validation.errors[0] || "Doplňte údaje o nemovitosti.");
+      const errs: Record<string, string> = {};
+      for (const e of validation.errors) {
+        if (/adres|inzerát/i.test(e)) errs.identity = e;
+        else if (/popis/i.test(e)) errs.propertyDescription = e;
+        else if (/kupní/i.test(e)) errs.purchasePrice = e;
+        else if (/nájem/i.test(e)) errs.monthlyRent = e;
+        else if (/kapitál/i.test(e)) errs.equity = e;
+        else if (/fotograf/i.test(e)) errs.photos = e;
+      }
+      setFieldErrors(errs);
+      return;
+    }
+    setFieldErrors({});
     setPremiumLoading(true);
     setPremiumMsg(null);
     track("premium_cta_clicked", {
@@ -262,63 +396,127 @@ export function RentgenToolIsland({
 
     if (live) {
       try {
+        const productCode =
+          interestPackage === "premium"
+            ? "INDIVIDUAL_ANALYSIS"
+            : "INVESTMENT_XRAY";
+        const snapshot = formStateToOrderSnapshot(orderForm, {
+          annualRatePercent:
+            input.annualRatePercent ??
+            CUSTOMER_DIGITAL_DEFAULTS.annualRatePercent,
+          termYears: input.termYears ?? CUSTOMER_DIGITAL_DEFAULTS.termYears,
+          areaM2Fallback: input.areaM2,
+          productCode,
+        });
+
+        // 1) Create / update DRAFT order
+        const draftRes = await fetch("/api/checkout/rentgen/draft", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            productCode,
+            email: premiumEmail.trim(),
+            name: premiumName.trim(),
+            phone: premiumPhone.trim(),
+            property: snapshot,
+            orderId: draftOrder?.orderId,
+            resumePublicId: draftOrder?.publicId,
+            resumeAccess: draftOrder?.accessToken,
+            sourceUrl:
+              typeof window !== "undefined" ? window.location.href : undefined,
+          }),
+        });
+        const draftJson = (await draftRes.json()) as {
+          error?: string;
+          orderId?: string;
+          publicId?: string;
+          accessToken?: string;
+        };
+        if (!draftRes.ok || !draftJson.orderId || !draftJson.accessToken) {
+          throw new Error(draftJson.error || "Objednávku se nepodařilo uložit.");
+        }
+        const credentials = {
+          orderId: draftJson.orderId,
+          publicId: draftJson.publicId || "",
+          accessToken: draftJson.accessToken,
+        };
+        setDraftOrder(credentials);
+        try {
+          sessionStorage.setItem(
+            "hj-rentgen-draft",
+            JSON.stringify(credentials)
+          );
+        } catch {
+          /* ignore */
+        }
+
+        // 2) Upload pending photos bound to orderId
+        const uploadedRefs = [...(snapshot.photos || [])];
+        const nextPhotos = [...orderPhotos];
+        for (let i = 0; i < nextPhotos.length; i++) {
+          const item = nextPhotos[i]!;
+          if (item.status === "error") continue;
+          if (item.remote) {
+            uploadedRefs.push(item.remote);
+            continue;
+          }
+          nextPhotos[i] = { ...item, status: "uploading" };
+          setOrderPhotos([...nextPhotos]);
+          const fd = new FormData();
+          fd.set("file", item.file);
+          fd.set("orderId", credentials.orderId);
+          fd.set("publicId", credentials.publicId);
+          fd.set("accessToken", credentials.accessToken);
+          const up = await fetch("/api/checkout/rentgen/photos", {
+            method: "POST",
+            body: fd,
+          });
+          const upJson = (await up.json()) as {
+            error?: string;
+            photo?: (typeof uploadedRefs)[number];
+          };
+          if (!up.ok || !upJson.photo) {
+            nextPhotos[i] = {
+              ...item,
+              status: "error",
+              error: upJson.error || "Upload selhal",
+            };
+            setOrderPhotos([...nextPhotos]);
+            throw new Error(
+              upJson.error || `Nahrání fotografie „${item.file.name}“ selhalo.`
+            );
+          }
+          uploadedRefs.push(upJson.photo);
+          nextPhotos[i] = {
+            ...item,
+            status: "done",
+            remote: upJson.photo,
+          };
+          setOrderPhotos([...nextPhotos]);
+        }
+
+        // Photo rule after uploads
+        const hasListing = Boolean(snapshot.listingUrl);
+        if (!hasListing && uploadedRefs.length < 1) {
+          throw new Error(
+            "Nahrajte alespoň jednu fotografii objektu, nebo vložte odkaz na inzerát."
+          );
+        }
+
         const { startRentgenCheckout } = await import(
           "@/lib/property-rentgen/start-checkout"
         );
-        const priceFromOrder = orderPrice.trim()
-          ? Number(parseNumber(orderPrice))
-          : NaN;
-        const rentFromOrder = orderRent.trim()
-          ? Number(parseNumber(orderRent))
-          : NaN;
-        const equityFromOrder = orderEquity.trim()
-          ? Number(parseNumber(orderEquity))
-          : NaN;
-        const price =
-          Number.isFinite(priceFromOrder) && priceFromOrder > 0
-            ? priceFromOrder
-            : input.priceCzk ?? null;
-        const rent =
-          Number.isFinite(rentFromOrder) && rentFromOrder >= 0
-            ? rentFromOrder
-            : input.rentMonthlyCzk ?? null;
-        const equity =
-          Number.isFinite(equityFromOrder) && equityFromOrder >= 0
-            ? equityFromOrder
-            : input.equityCzk ?? null;
-        const city = orderCity.trim() || input.city || undefined;
-        if (price == null || price <= 0 || rent == null || rent < 0) {
-          setPremiumMsg(
-            "Pro platbu doplňte kupní cenu a měsíční nájem (v objednávce nebo v náhledu výše)."
-          );
-          setPremiumLoading(false);
-          return;
-        }
-        if (equity == null || equity < 0) {
-          setPremiumMsg(
-            "Pro platbu doplňte vlastní kapitál vůči kupní ceně."
-          );
-          setPremiumLoading(false);
-          return;
-        }
         const result = await startRentgenCheckout({
-          productCode:
-            interestPackage === "premium"
-              ? "INDIVIDUAL_ANALYSIS"
-              : "INVESTMENT_XRAY",
+          productCode,
           email: premiumEmail.trim(),
           name: premiumName.trim(),
           phone: premiumPhone.trim(),
+          orderId: credentials.orderId,
+          resumePublicId: credentials.publicId,
+          resumeAccess: credentials.accessToken,
           property: {
-            label: city,
-            city,
-            areaM2: input.areaM2 ?? undefined,
-            purchasePriceCzk: price,
-            monthlyGrossRentCzk: rent,
-            ownFundsCzk: equity,
-            annualRatePercent:
-              input.annualRatePercent ?? CUSTOMER_DIGITAL_DEFAULTS.annualRatePercent,
-            termYears: input.termYears ?? CUSTOMER_DIGITAL_DEFAULTS.termYears,
+            ...snapshot,
+            photos: uploadedRefs,
           },
           sourceUrl:
             typeof window !== "undefined" ? window.location.href : undefined,
@@ -350,9 +548,12 @@ export function RentgenToolIsland({
         formatAnalysisPriceLabel(),
         `zajembalicek=${interestPackage}`,
         `mode=${mode}`,
-        input.listingUrl ? `url=${input.listingUrl}` : null,
-        input.city ? `city=${input.city}` : null,
-        input.priceCzk != null ? `price=${input.priceCzk}` : null,
+        orderForm.listingUrl ? `url=${orderForm.listingUrl}` : null,
+        orderForm.city ? `city=${orderForm.city}` : null,
+        orderForm.street ? `street=${orderForm.street}` : null,
+        parseLooseNumber(orderForm.purchasePrice) != null
+          ? `price=${parseLooseNumber(orderForm.purchasePrice)}`
+          : null,
       ]
         .filter(Boolean)
         .join(" | "),
@@ -367,10 +568,10 @@ export function RentgenToolIsland({
             : 999,
         interest_package: interestPackage,
         input_mode: mode,
-        city: input.city,
-        price_czk: input.priceCzk,
-        area_m2: input.areaM2,
-        listing_url: input.listingUrl || null,
+        city: orderForm.city || input.city,
+        price_czk: parseLooseNumber(orderForm.purchasePrice) ?? input.priceCzk,
+        area_m2: parseLooseNumber(orderForm.floorArea) ?? input.areaM2,
+        listing_url: orderForm.listingUrl || input.listingUrl || null,
         preview_ran: ran,
       },
       consent: toConsentRecord(consent),
@@ -987,33 +1188,27 @@ export function RentgenToolIsland({
             </>
           )}
 
-          <div className="mt-6 rounded-xl border border-border bg-[#f7f9f8] p-4">
-            <p className="text-sm font-semibold text-text-dark">
-              Souhrn objednávky
+          <div className="mt-6 space-y-6">
+            <RentgenOrderPropertyFields
+              form={orderForm}
+              onChange={(patchForm) =>
+                setOrderForm((prev) => ({ ...prev, ...patchForm }))
+              }
+              photos={orderPhotos}
+              onPhotosChange={setOrderPhotos}
+              isPremium={interestPackage === "premium"}
+              fieldErrors={fieldErrors}
+            />
+            <p className="text-[11px] text-muted-foreground">
+              Pokud jste už vyplnili náhled výše, údaje se použijí automaticky —
+              zde je můžete upravit nebo doplnit.
             </p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {interestPackage === "premium"
-                ? "Individuální rozbor"
-                : "Investiční rentgen"}{" "}
-              · 1 nemovitost ·{" "}
-              <span className="font-bold text-text-dark">
-                {interestPackage === "premium"
-                  ? formatAnalysisPrice()
-                  : formatDigitalRentgenPrice()}
-              </span>
-            </p>
-            <p className="mt-2 text-xs text-muted-foreground">
-              Platba proběhne bezpečně prostřednictvím Stripe. Nejde o
-              předplatné.
-            </p>
-          </div>
 
-          <div className="mt-5 space-y-4">
-            <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Základní údaje
-              </p>
-              <div className="grid gap-3 sm:grid-cols-3">
+            <section className="rounded-2xl border border-border bg-white p-5 sm:p-6">
+              <h4 className="font-heading text-lg font-bold text-text-dark">
+                Kontaktní údaje
+              </h4>
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
                 <TextField
                   label="Jméno"
                   value={premiumName}
@@ -1035,77 +1230,133 @@ export function RentgenToolIsland({
                   inputMode="tel"
                 />
               </div>
+            </section>
+
+            <div className="space-y-2">
+              <FormConsentFields
+                state={consent}
+                onChange={setConsent}
+                showPartnerTransfer
+              />
+              <p className="text-[11px] text-muted-foreground">
+                Podmínky:{" "}
+                <Link
+                  href={routes.legal.placenaAnalyza}
+                  className="text-deep-teal underline"
+                >
+                  Obchodní podmínky placené analýzy
+                </Link>
+                {" · "}
+                <Link
+                  href={routes.legal.gdpr}
+                  className="text-deep-teal underline"
+                >
+                  Ochrana osobních údajů
+                </Link>
+              </p>
             </div>
-            <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Informace o nemovitosti
+
+            <div className="rounded-2xl border border-deep-teal/15 bg-[#f7f9f8] p-5 sm:p-6">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Souhrn objednávky
               </p>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <TextField
-                  label="Město / lokalita"
-                  value={orderCity}
-                  onChange={setOrderCity}
-                  placeholder={input.city || "např. Brno"}
-                />
-                <TextField
-                  label="Kupní cena (Kč)"
-                  value={orderPrice}
-                  onChange={setOrderPrice}
-                  placeholder={
-                    input.priceCzk != null
-                      ? formatNumber(input.priceCzk)
-                      : "např. 4 500 000"
-                  }
-                  inputMode="decimal"
-                />
-                <TextField
-                  label="Měsíční nájem (Kč)"
-                  value={orderRent}
-                  onChange={setOrderRent}
-                  placeholder={
-                    input.rentMonthlyCzk != null
-                      ? formatNumber(input.rentMonthlyCzk)
-                      : "např. 18 000"
-                  }
-                  inputMode="decimal"
-                />
-                <TextField
-                  label="Vlastní kapitál (Kč)"
-                  value={orderEquity}
-                  onChange={setOrderEquity}
-                  placeholder={
-                    input.equityCzk != null
-                      ? formatNumber(input.equityCzk)
-                      : "např. 900 000"
-                  }
-                  inputMode="decimal"
-                />
-              </div>
-              <p className="mt-2 text-[11px] text-muted-foreground">
-                Pokud jste už vyplnili náhled výše, údaje se použijí automaticky —
-                zde je můžete upravit nebo doplnit.
-              </p>
+              <h4 className="mt-1 font-heading text-xl font-bold text-text-dark">
+                {interestPackage === "premium"
+                  ? "Individuální rozbor"
+                  : "Investiční rentgen"}
+              </h4>
+              <dl className="mt-4 space-y-2 text-sm">
+                {(orderForm.layout ||
+                  orderForm.floorArea ||
+                  orderForm.propertyType) && (
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-muted-foreground">Nemovitost</dt>
+                    <dd className="text-right font-medium text-text-dark">
+                      {[
+                        orderForm.propertyType,
+                        orderForm.layout,
+                        orderForm.floorArea
+                          ? `${orderForm.floorArea} m²`
+                          : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </dd>
+                  </div>
+                )}
+                {(orderForm.street || orderForm.city) && (
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-muted-foreground">Adresa</dt>
+                    <dd className="text-right font-medium text-text-dark">
+                      {buildPropertyAddressLine({
+                        street: orderForm.street,
+                        city: orderForm.city,
+                        postalCode: orderForm.postalCode,
+                      })}
+                    </dd>
+                  </div>
+                )}
+                {orderForm.listingUrl.trim() ? (
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-muted-foreground">Inzerát</dt>
+                    <dd className="max-w-[60%] truncate text-right font-medium text-deep-teal">
+                      {orderForm.listingUrl}
+                    </dd>
+                  </div>
+                ) : null}
+                {parseLooseNumber(orderForm.purchasePrice) != null ? (
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-muted-foreground">Kupní cena</dt>
+                    <dd className="font-medium tabular-nums text-text-dark">
+                      {formatNumber(parseLooseNumber(orderForm.purchasePrice)!)}{" "}
+                      Kč
+                    </dd>
+                  </div>
+                ) : null}
+                {parseLooseNumber(orderForm.monthlyRent) != null ? (
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-muted-foreground">
+                      Předpokládaný nájem
+                    </dt>
+                    <dd className="font-medium tabular-nums text-text-dark">
+                      {formatNumber(parseLooseNumber(orderForm.monthlyRent)!)} Kč
+                      / měsíc
+                    </dd>
+                  </div>
+                ) : null}
+                {parseLooseNumber(orderForm.equity) != null ? (
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-muted-foreground">Vlastní kapitál</dt>
+                    <dd className="font-medium tabular-nums text-text-dark">
+                      {formatNumber(parseLooseNumber(orderForm.equity)!)} Kč
+                    </dd>
+                  </div>
+                ) : null}
+                <div className="flex justify-between gap-4">
+                  <dt className="text-muted-foreground">Fotografie</dt>
+                  <dd className="font-medium text-text-dark">
+                    {orderPhotos.filter((p) => p.status !== "error").length}{" "}
+                    nahráno
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-4 border-t border-border pt-2">
+                  <dt className="font-semibold text-text-dark">Cena analýzy</dt>
+                  <dd className="font-bold tabular-nums text-deep-teal">
+                    {interestPackage === "premium"
+                      ? formatAnalysisPrice()
+                      : formatDigitalRentgenPrice()}
+                  </dd>
+                </div>
+              </dl>
             </div>
           </div>
-          <div className="mt-3 space-y-2">
-            <FormConsentFields
-              state={consent}
-              onChange={setConsent}
-              showPartnerTransfer
-            />
-            <p className="text-[11px] text-muted-foreground">
-              Podmínky:{" "}
-              <Link
-                href={routes.legal.placenaAnalyza}
-                className="text-deep-teal underline"
-              >
-                Obchodní podmínky placené analýzy
-              </Link>
-              {" · "}
-              <Link href={routes.legal.gdpr} className="text-deep-teal underline">
-                Ochrana osobních údajů
-              </Link>
-            </p>
+          <div className="mt-4 space-y-2">
+            {interestPackage === "premium" ? (
+              <p className="rounded-xl bg-deep-teal/5 px-3 py-2 text-xs text-deep-teal">
+                Po platbě budete moci doplnit další podklady k rozboru (půdorys,
+                PENB, dokumenty SVJ, plán rekonstrukce aj.).
+              </p>
+            ) : null}
             <button
               type="button"
               disabled={
@@ -1137,7 +1388,7 @@ export function RentgenToolIsland({
               předplatné.
             </p>
             {premiumMsg ? (
-              <p className="text-xs text-muted-foreground" role="status">
+              <p className="text-xs text-red-700" role="status">
                 {premiumMsg}
               </p>
             ) : null}

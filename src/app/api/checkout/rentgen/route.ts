@@ -13,8 +13,11 @@ import {
 import {
   checkoutBaseUrl,
   parseEmail,
+  parseOrderInputSnapshot,
   parsePropertyPayload,
 } from "@/lib/property-rentgen/checkout-parse";
+import type { RentgenOrderInputSnapshot } from "@/lib/property-rentgen/order-property";
+import { toCheckoutPropertySnapshot } from "@/lib/property-rentgen/order-property";
 import { isPaidAnalysisCommerciallyAvailable } from "@/lib/legal/operator";
 import {
   createDraftOrder,
@@ -156,6 +159,7 @@ export async function POST(request: Request) {
 
   let order: InvestmentAnalysisOrderRow | null = null;
   let property: RentgenCheckoutPropertySnapshot;
+  let fullSnapshot: RentgenOrderInputSnapshot | null = null;
 
   try {
     if (resumePublicId && resumeAccess) {
@@ -168,13 +172,15 @@ export async function POST(request: Request) {
       }
       if (isPaidLike(existing.status)) return alreadyPaidResponse(existing);
       order = existing;
-      const resumed = parsePropertyPayload(
-        existing.input_snapshot as Record<string, unknown>
+      const resumed = parseOrderInputSnapshot(
+        existing.input_snapshot as Record<string, unknown>,
+        { requireIdentity: true, requireDescription: false }
       );
       if ("error" in resumed) {
         return NextResponse.json({ error: resumed.error }, { status: 400 });
       }
-      property = resumed;
+      fullSnapshot = resumed;
+      property = toCheckoutPropertySnapshot(resumed);
     } else if (orderIdRaw) {
       const existing = await getOrderById(orderIdRaw);
       if (!existing) {
@@ -185,24 +191,52 @@ export async function POST(request: Request) {
       }
       if (isPaidLike(existing.status)) return alreadyPaidResponse(existing);
       order = existing;
-      const fromBody = parsePropertyPayload(body);
+      const fromBody = parseOrderInputSnapshot(body, {
+        requireIdentity: true,
+        requireDescription: true,
+      });
       if (!("error" in fromBody)) {
-        property = fromBody;
+        const existingPhotos = (
+          existing.input_snapshot as { photos?: unknown }
+        )?.photos;
+        fullSnapshot = {
+          ...fromBody,
+          photos:
+            fromBody.photos && fromBody.photos.length > 0
+              ? fromBody.photos
+              : Array.isArray(existingPhotos)
+                ? (existingPhotos as RentgenOrderInputSnapshot["photos"])
+                : [],
+        };
+        property = toCheckoutPropertySnapshot(fullSnapshot);
       } else {
-        const fromStore = parsePropertyPayload(
-          existing.input_snapshot as Record<string, unknown>
+        const fromStore = parseOrderInputSnapshot(
+          existing.input_snapshot as Record<string, unknown>,
+          { requireIdentity: true, requireDescription: false }
         );
         if ("error" in fromStore) {
           return NextResponse.json({ error: fromStore.error }, { status: 400 });
         }
-        property = fromStore;
+        fullSnapshot = fromStore;
+        property = toCheckoutPropertySnapshot(fromStore);
       }
     } else {
-      const fromBody = parsePropertyPayload(body);
+      const fromBody = parseOrderInputSnapshot(body, {
+        requireIdentity: true,
+        requireDescription: true,
+      });
       if ("error" in fromBody) {
-        return NextResponse.json({ error: fromBody.error }, { status: 400 });
+        // Backward-compatible: allow legacy financial-only payloads.
+        const legacy = parsePropertyPayload(body);
+        if ("error" in legacy) {
+          return NextResponse.json({ error: fromBody.error }, { status: 400 });
+        }
+        property = legacy;
+        fullSnapshot = { ...legacy };
+      } else {
+        fullSnapshot = fromBody;
+        property = toCheckoutPropertySnapshot(fromBody);
       }
-      property = fromBody;
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : "DB error";
@@ -282,7 +316,7 @@ export async function POST(request: Request) {
         billingAddress,
         propertyLabel,
         inputSnapshot: {
-          ...property,
+          ...(fullSnapshot ?? property),
           productCode: product.code,
         },
         sourceUrl:
@@ -388,8 +422,19 @@ export async function POST(request: Request) {
       phone: phone ?? order.phone,
       property_label: propertyLabel,
       input_snapshot: {
-        ...property,
+        ...(typeof order.input_snapshot === "object" && order.input_snapshot
+          ? order.input_snapshot
+          : {}),
+        ...(fullSnapshot ?? property),
         productCode: product.code,
+        photos:
+          fullSnapshot?.photos && fullSnapshot.photos.length > 0
+            ? fullSnapshot.photos
+            : Array.isArray(
+                  (order.input_snapshot as { photos?: unknown } | null)?.photos
+                )
+              ? (order.input_snapshot as { photos: unknown }).photos
+              : [],
       },
     });
 

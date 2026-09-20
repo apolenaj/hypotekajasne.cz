@@ -3,11 +3,12 @@
  */
 
 import type { RentgenCheckoutPropertySnapshot } from "@/lib/property-rentgen/checkout-metadata";
+import type { RentgenOrderInputSnapshot } from "@/lib/property-rentgen/order-property";
 import type { ProductCode } from "@/lib/property-rentgen/products";
 
 export type StartRentgenCheckoutArgs = {
   productCode: ProductCode | "digital" | "premium" | "999" | "4990";
-  property: RentgenCheckoutPropertySnapshot;
+  property: RentgenCheckoutPropertySnapshot | RentgenOrderInputSnapshot;
   email: string;
   name?: string;
   phone?: string;
@@ -17,6 +18,8 @@ export type StartRentgenCheckoutArgs = {
   billingDic?: string;
   billingAddress?: string;
   orderId?: string;
+  resumePublicId?: string;
+  resumeAccess?: string;
   sourceUrl?: string;
   utm?: Record<string, string | undefined>;
 };
