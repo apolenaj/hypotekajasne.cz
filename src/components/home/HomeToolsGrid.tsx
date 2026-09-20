@@ -18,10 +18,22 @@ const TOOLS = [
     icon: Calculator,
   },
   {
-    title: "Kolik si mohu půjčit?",
-    text: "Diagnostika podle vaší situace.",
-    href: routes.mojeMoznosti,
+    title: "Financování firmy",
+    text: "Anuita a LTV pro firemní úvěr.",
+    href: routes.kalkulacky.hypotekaNaFirmu,
     icon: Wallet,
+  },
+  {
+    title: "Budoucí nájem",
+    text: "Uznání nájmu a tok po splátce.",
+    href: routes.kalkulacky.budouciPrijemZNajmu,
+    icon: Percent,
+  },
+  {
+    title: "Výstavba",
+    text: "Rozpočet, čerpání a úroky.",
+    href: routes.kalkulacky.vystavba,
+    icon: Home,
   },
   {
     title: "Koupě vs. nájem",
@@ -30,22 +42,10 @@ const TOOLS = [
     icon: GitCompare,
   },
   {
-    title: "Investiční kalkulačka",
-    text: "Model výnosu a cash flow.",
-    href: routes.investicniRentgenModelar,
-    icon: Home,
-  },
-  {
     title: "Refinanční kalkulačka",
     text: "Splátka pro refinancování.",
     href: `${routes.kalkulacky.hypotecniKalkulacka}?purpose=refinance`,
     icon: RefreshCw,
-  },
-  {
-    title: "LTV kalkulačka",
-    text: "Poměr úvěru k ceně nemovitosti.",
-    href: `${routes.akademie}/ltv`,
-    icon: Percent,
   },
 ] as const;
 

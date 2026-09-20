@@ -35,6 +35,7 @@ import { useMortgageRateEngine } from "@/lib/rates";
 import { track } from "@/lib/analytics/track";
 import { scoreToBucket } from "@/lib/analytics/events";
 import { routes } from "@/lib/routes";
+import { scenarioRoutes } from "@/lib/scenarios/sources";
 import { FormattedMoneyInput } from "@/components/ui/FormattedMoneyInput";
 import { cn } from "@/lib/utils";
 import { MojeMoznostiResultView } from "@/components/moje-moznosti/MojeMoznostiResultView";
@@ -426,6 +427,37 @@ export function MojeMoznostiWizard() {
                 </li>
               ))}
             </ul>
+            <div className="mt-5 rounded-xl border border-border bg-[#f7f8f7] p-4">
+              <p className="text-sm font-semibold text-text-dark">
+                Další scénáře financování
+              </p>
+              <ul className="mt-2 space-y-1 text-sm">
+                <li>
+                  <Link
+                    href={scenarioRoutes.companyTopic}
+                    className="text-deep-teal hover:underline"
+                  >
+                    Hypotéka na firmu
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href={scenarioRoutes.rentTopic}
+                    className="text-deep-teal hover:underline"
+                  >
+                    Budoucí příjem z nájmu
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href={scenarioRoutes.constructionTopic}
+                    className="text-deep-teal hover:underline"
+                  >
+                    Výstavba a novostavba
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </fieldset>
         )}
 

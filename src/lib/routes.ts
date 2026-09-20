@@ -56,6 +56,9 @@ export const routes = {
     historickyVyvoj: "/kalkulacky/historicky-vyvoj",
     potencialniVyvoj: "/kalkulacky/potencialni-vyvoj",
     hypotecniKalkulacka: "/kalkulacky/hypotecni",
+    hypotekaNaFirmu: "/kalkulacky/hypoteka-na-firmu",
+    budouciPrijemZNajmu: "/kalkulacky/budouci-prijem-z-najmu",
+    vystavba: "/kalkulacky/vystavba",
   },
 } as const;
 

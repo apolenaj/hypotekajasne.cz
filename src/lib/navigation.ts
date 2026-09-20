@@ -63,14 +63,9 @@ export const hypotekyNavItems: NavLinkItem[] = [
     description: "Když končí fixace",
   },
   {
-    href: getLandingPath("hypoteka-osvc"),
-    label: "Hypotéka pro OSVČ",
-    description: "Příjmy a doklady podnikatelů",
-  },
-  {
-    href: getLandingPath("hypoteka-ze-zahranicniho-prijmu"),
-    label: "Příjem ze zahraničí",
-    description: "Zahraniční příjem u bank",
+    href: `${routes.temata}/hypoteka-na-vystavbu`,
+    label: "Výstavba a novostavba",
+    description: "Od pozemku a projektu po čerpání a dokončení",
   },
   {
     href: getLandingPath("investicni-hypoteka"),
@@ -83,9 +78,44 @@ export const hypotekyNavItems: NavLinkItem[] = [
     description: "Neúčelový úvěr se zástavou",
   },
   {
+    href: getLandingPath("hypoteka-osvc"),
+    label: "Hypotéka pro OSVČ",
+    description: "Příjmy a doklady podnikatelů",
+  },
+  {
+    href: `${routes.temata}/hypoteka-na-firmu`,
+    label: "Hypotéka na firmu",
+    description: "Financování nemovitosti přes s.r.o. a další firmy",
+  },
+  {
+    href: getLandingPath("hypoteka-ze-zahranicniho-prijmu"),
+    label: "Příjem ze zahraničí",
+    description: "Zahraniční příjem u bank",
+  },
+  {
+    href: `${routes.temata}/budouci-prijem-z-najmu`,
+    label: "Budoucí příjem z nájmu",
+    description: "Jak může plánovaný nájem vstoupit do posouzení",
+  },
+  {
     href: `${routes.akademie}/ltv`,
     label: "LTV, RPSN a fixace",
     description: "Klíčové pojmy vysvětlené jasně",
+  },
+];
+
+export const hypotekyNavColumns: NavColumn[] = [
+  {
+    title: "Orientace",
+    items: hypotekyNavItems.slice(0, 4),
+  },
+  {
+    title: "Účel financování",
+    items: hypotekyNavItems.slice(4, 9),
+  },
+  {
+    title: "Příjmy a žadatel",
+    items: hypotekyNavItems.slice(9, 13),
   },
 ];
 
@@ -257,19 +287,24 @@ export const kalkulackyNavItems: NavLinkItem[] = [
     description: "Orientační měsíční splátka",
   },
   {
+    href: routes.kalkulacky.hypotekaNaFirmu,
+    label: "Financování firmy",
+    description: "Anuita a LTV pro firemní úvěr",
+  },
+  {
+    href: routes.kalkulacky.budouciPrijemZNajmu,
+    label: "Budoucí nájem",
+    description: "Uznání nájmu a tok po splátce",
+  },
+  {
+    href: routes.kalkulacky.vystavba,
+    label: "Výstavba",
+    description: "Rozpočet, čerpání a úroky",
+  },
+  {
     href: routes.mojeMoznosti,
     label: "Kolik si mohu půjčit",
     description: "Diagnostika podle situace",
-  },
-  {
-    href: `${routes.kalkulacky.hypotecniKalkulacka}#vysledky`,
-    label: "Výpočet měsíční splátky",
-    description: "Anuita z modelu",
-  },
-  {
-    href: `${routes.akademie}/ltv`,
-    label: "LTV",
-    description: "Poměr úvěru k hodnotě nemovitosti",
   },
   {
     href: routes.kalkulacky.koupeVsNajem,
@@ -280,11 +315,6 @@ export const kalkulackyNavItems: NavLinkItem[] = [
     href: routes.investicniRentgenModelar,
     label: "Investiční výnos",
     description: "Modelář výnosu",
-  },
-  {
-    href: `${routes.akademie}/cash-flow`,
-    label: "Cash-flow",
-    description: "Lekce a model cash-flow",
   },
   {
     href: routes.sazby,
@@ -409,12 +439,14 @@ export const desktopNav = {
   hypoteky: {
     id: "hypoteky",
     label: "Hypotéky",
-    items: hypotekyNavItems,
-    columns: columnsFromItems(hypotekyNavItems, [
-      "Orientace",
-      "Scénáře",
-      "Parametry",
-    ]),
+    items: [...hypotekyNavItems],
+    columns: [
+      ...hypotekyNavColumns,
+      {
+        title: "Pojmy",
+        items: [hypotekyNavItems[13]!],
+      },
+    ],
   } satisfies NavGroup,
 
   najem: {

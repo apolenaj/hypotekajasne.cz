@@ -6,6 +6,7 @@ import { HomePremiumHero } from "@/components/home/HomePremiumHero";
 import { HomePriceDeferred } from "@/components/home/HomePriceDeferred";
 import { HomeRatesDeferred } from "@/components/home/HomeRatesDeferred";
 import { HomeRentgenBand } from "@/components/home/HomeRentgenBand";
+import { HomeSituationSelector } from "@/components/home/HomeSituationSelector";
 import { HomeToolsGrid } from "@/components/home/HomeToolsGrid";
 import { HomeTrustStrip } from "@/components/home/HomeTrustStrip";
 import { RpsnEducationBlock } from "@/components/mortgage-market/RpsnEducationBlock";
@@ -35,6 +36,7 @@ export function HomeExperience({
     <>
       <HomePremiumHero serverJourney={serverJourney} />
       <HomePathCards />
+      <HomeSituationSelector />
       <section className="border-b border-gray-200 bg-[#fafaf7]">
         <div className="mx-auto grid max-w-[1440px] items-start gap-5 px-4 py-12 sm:px-8 lg:grid-cols-[minmax(0,1.7fr)_minmax(280px,1fr)] lg:px-12 lg:py-14 xl:px-14">
           <div className="min-w-0">

@@ -100,10 +100,14 @@ describe("navigation structure — produktové megamenu", () => {
     assert.ok(labels.some((l) => l.includes("Refinancování")));
     assert.ok(labels.some((l) => l.includes("OSVČ")));
     assert.ok(labels.some((l) => l.includes("zahraničí")));
+    assert.ok(labels.some((l) => l.includes("firmu")));
+    assert.ok(labels.some((l) => l.includes("nájmu")));
+    assert.ok(labels.some((l) => l.includes("Výstavba")));
     assert.ok(
       hypotekyNavItems.some((i) => i.href.includes("purpose=purchase"))
     );
     assert.ok(hypotekyNavItems.some((i) => i.href.includes("/temata/refinancovani")));
+    assert.ok(hypotekyNavItems.some((i) => i.href.includes("/temata/hypoteka-na-firmu")));
   });
 
   it("investice a AI nástroje nejsou v Hypotéky; AI je v Další nástroje", () => {

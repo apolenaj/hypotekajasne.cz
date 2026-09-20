@@ -35,6 +35,27 @@ const SITUATIONS = [
     hint: "Financování investice odděleně od vlastního bydlení.",
   },
   {
+    id: "company",
+    situation: "company",
+    label: "Kupuji nemovitost na firmu",
+    href: `${routes.temata}/hypoteka-na-firmu`,
+    hint: "Firemní úvěr zajištěný nemovitostí — odděleně od hypotéky OSVČ.",
+  },
+  {
+    id: "future_rent",
+    situation: "future_rent",
+    label: "Chci započítat budoucí nájem",
+    href: `${routes.temata}/budouci-prijem-z-najmu`,
+    hint: "Model uznání nájmu a tok po nákladech a splátce.",
+  },
+  {
+    id: "construction",
+    situation: "construction",
+    label: "Stavím dům nebo kupuji novostavbu",
+    href: `${routes.temata}/hypoteka-na-vystavbu`,
+    hint: "Rozpočet, čerpání a úroky během výstavby.",
+  },
+  {
     id: "foreign",
     situation: "foreign_markets",
     label: "Chci investovat v zahraničí",

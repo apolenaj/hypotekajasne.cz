@@ -65,6 +65,54 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     priority: 0.97,
   },
   {
+    path: routes.kalkulacky.hypotekaNaFirmu,
+    title: "Kalkulačka financování firmy",
+    description:
+      "Orientační anuitní model firemního úvěru zajištěného nemovitostí včetně LTV a volitelného DSCR.",
+    changeFrequency: "weekly",
+    priority: 0.9,
+  },
+  {
+    path: routes.kalkulacky.budouciPrijemZNajmu,
+    title: "Kalkulačka budoucího příjmu z nájmu",
+    description:
+      "Modelově uznaný nájem a tok po nákladech a splátce. Podíl uznání je ilustrativní scénář.",
+    changeFrequency: "weekly",
+    priority: 0.9,
+  },
+  {
+    path: routes.kalkulacky.vystavba,
+    title: "Kalkulačka výstavby a novostavby",
+    description:
+      "Rozpočet výstavby, vlastní pozemek, čerpání a úroky během stavby — orientační model.",
+    changeFrequency: "weekly",
+    priority: 0.9,
+  },
+  {
+    path: `${routes.temata}/hypoteka-na-firmu`,
+    title: "Hypotéka na firmu — financování nemovitosti přes s.r.o.",
+    description:
+      "Jak financovat nemovitost přes firmu: rozdíl oproti OSVČ, doklady, rizika a orientační kalkulačka.",
+    changeFrequency: "monthly",
+    priority: 0.92,
+  },
+  {
+    path: `${routes.temata}/budouci-prijem-z-najmu`,
+    title: "Budoucí příjem z nájmu při hypotéce",
+    description:
+      "Kdy může budoucí nebo existující nájem pomoci při žádosti a jak oddělit uznání příjmu od cash flow.",
+    changeFrequency: "monthly",
+    priority: 0.92,
+  },
+  {
+    path: `${routes.temata}/hypoteka-na-vystavbu`,
+    title: "Hypotéka na výstavbu a novostavbu",
+    description:
+      "Od pozemku po nastěhování: postup, rozpočet, čerpání a kalkulačka výstavby.",
+    changeFrequency: "monthly",
+    priority: 0.92,
+  },
+  {
     path: routes.navrhNaMiru,
     title: "Hypoteční připravenost",
     description:

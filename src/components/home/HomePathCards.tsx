@@ -79,7 +79,7 @@ export function HomePathCards() {
 
   return (
     <section
-      id="situace"
+      id="situace-cesty"
       aria-labelledby="home-paths-heading"
       className="relative z-10 -mt-8 scroll-mt-24 bg-transparent pb-2 lg:-mt-12"
     >

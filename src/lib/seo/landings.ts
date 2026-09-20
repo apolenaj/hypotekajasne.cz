@@ -73,7 +73,7 @@ export const SEO_LANDING_HUB = {
   path: "/temata",
   title: "Témata hypoték — přehled průvodců",
   description:
-    "Průvodce hypotékou: OSVČ, refinancování, investiční a americká hypotéka, zahraniční příjem, koupě vs. nájem a hypotéka v zahraničí.",
+    "Průvodce hypotékou: OSVČ, firma, výstavba, budoucí nájem, refinancování, investiční a americká hypotéka, zahraniční příjem, koupě vs. nájem a hypotéka v zahraničí.",
 } as const;
 
 const CNB_MACRO =
