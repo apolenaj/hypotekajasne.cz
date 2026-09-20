@@ -34,9 +34,9 @@ export type StaticPageSeo = {
 export const STATIC_PAGE_SEO: StaticPageSeo[] = [
   {
     path: "/",
-    title: "Hypotéka Jasně | Hypotéky, nájem, investice a zahraničí",
+    title: "HypotékaJasně | Hypotéky, bydlení a investice",
     description:
-      "Porovnejte hypotéku s nájmem, spočítejte financování a vyhodnoťte investice v Česku i zahraničí. Sazby, data a pomoc na jednom místě.",
+      "Spočítejte si hypotéku, porovnejte vlastní bydlení s nájmem a prověřte investiční nemovitost. Srozumitelně a na jednom místě.",
     changeFrequency: "daily",
     priority: 1,
   },

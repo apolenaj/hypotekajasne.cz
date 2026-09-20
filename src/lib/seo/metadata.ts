@@ -24,7 +24,13 @@ export type PageSeoInput = {
   locale?: Locale;
   /** Alternate path for other locale (if published) */
   alternatePath?: Partial<Record<Locale, string>>;
-  ogImage?: { url: string; alt?: string; width?: number; height?: number };
+  ogImage?: {
+    url: string;
+    alt?: string;
+    width?: number;
+    height?: number;
+    type?: string;
+  };
   type?: "website" | "article";
   publishedTime?: string;
   modifiedTime?: string;
@@ -70,7 +76,8 @@ export function buildPageMetadata(input: PageSeoInput): Metadata {
   const titleAlreadyBranded =
     input.title.includes(SITE_NAME) ||
     input.title.includes(SITE_BRAND) ||
-    input.title.includes(SITE_DOMAIN_LABEL);
+    input.title.includes(SITE_DOMAIN_LABEL) ||
+    input.title.includes("HypotékaJasně");
   const title = titleAlreadyBranded
     ? input.title
     : `${input.title} | ${SITE_NAME}`;
@@ -101,6 +108,11 @@ export function buildPageMetadata(input: PageSeoInput): Metadata {
           width: og.width ?? 1200,
           height: og.height ?? 630,
           alt: og.alt ?? input.title,
+          type: og.type ?? (ogUrl.endsWith(".jpg") || ogUrl.endsWith(".jpeg")
+            ? "image/jpeg"
+            : ogUrl.endsWith(".png")
+              ? "image/png"
+              : undefined),
         },
       ],
       ...(input.publishedTime
@@ -118,9 +130,9 @@ export function buildPageMetadata(input: PageSeoInput): Metadata {
 }
 
 export const rootMetadata = buildPageMetadata({
-  title: "Hypotéka Jasně | Hypotéky, nájem, investice a zahraničí",
+  title: "HypotékaJasně | Hypotéky, bydlení a investice",
   description:
-    "Porovnejte hypotéku s nájmem, spočítejte financování a vyhodnoťte investice v Česku i zahraničí. Sazby, data a pomoc na jednom místě.",
+    "Spočítejte si hypotéku, porovnejte vlastní bydlení s nájmem a prověřte investiční nemovitost. Srozumitelně a na jednom místě.",
   path: "/",
   alternatePath: { cs: "/", en: "/en" },
 });

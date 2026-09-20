@@ -7,6 +7,7 @@ import fs from "node:fs";
 import path from "node:path";
 import {
   absoluteUrl,
+  DEFAULT_OG_IMAGE,
   getSiteOrigin,
   normalizeProductionOrigin,
   PRODUCTION_HOST,
@@ -113,7 +114,7 @@ describe("unique titles & descriptions", () => {
     assert.notEqual(home.title, sazby.title);
     assert.notEqual(home.title, calc.title);
     assert.notEqual(sazby.title, calc.title);
-    assert.match(home.title, /Hypoték|nájem|investic|zahrani/i);
+    assert.match(home.title, /Hypoték|bydlení|investic/i);
   });
 });
 
@@ -177,6 +178,28 @@ describe("metadata builder", () => {
     assert.equal(
       (rootMetadata.alternates as { canonical?: string })?.canonical,
       "https://www.hypotekajasne.cz"
+    );
+  });
+
+  it("default OG image points to versioned static share asset", () => {
+    assert.equal(DEFAULT_OG_IMAGE.url, "/og/hypotekajasne-share-v2.jpg");
+    assert.equal(DEFAULT_OG_IMAGE.width, 1200);
+    assert.equal(DEFAULT_OG_IMAGE.height, 630);
+    assert.equal(DEFAULT_OG_IMAGE.type, "image/jpeg");
+  });
+
+  it("homepage metadata uses share title, description and OG image", () => {
+    const m = rootMetadata;
+    assert.equal(m.title, "HypotékaJasně | Hypotéky, bydlení a investice");
+    assert.match(String(m.description), /Spočítejte si hypotéku/);
+    const images = (
+      m.openGraph as { images?: Array<{ url?: string; type?: string }> }
+    ).images;
+    assert.ok(images?.[0]?.url?.includes("/og/hypotekajasne-share-v2.jpg"));
+    assert.equal(images?.[0]?.type, "image/jpeg");
+    assert.equal(
+      (m.twitter as { card?: string }).card,
+      "summary_large_image"
     );
   });
 
@@ -328,7 +351,7 @@ describe("json-ld — no fake reviews", () => {
       headline: "Test",
       description: "Desc",
       path: "/temata/refinancovani",
-      imageUrl: "/opengraph-image",
+      imageUrl: "/og/hypotekajasne-share-v2.jpg",
       datePublished: "2026-01-01",
       dateModified: "2026-01-02",
       authorName: "Redakce Hypotéka Jasně",

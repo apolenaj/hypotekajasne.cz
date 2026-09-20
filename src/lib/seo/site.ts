@@ -113,9 +113,10 @@ export function absoluteUrl(path: string): string {
 export { SITE_BRAND, SITE_DOMAIN_LABEL, SITE_NAME, SITE_NAME_SHORT };
 
 export const DEFAULT_OG_IMAGE = {
-  /** Resolved via app/opengraph-image.tsx — metadataBase + /opengraph-image */
-  url: "/opengraph-image",
+  /** Versioned static share asset — see scripts/generate-og-share-v2.tsx */
+  url: "/og/hypotekajasne-share-v2.jpg",
   width: 1200,
   height: 630,
-  alt: `${SITE_BRAND} (${SITE_DOMAIN_LABEL}) — hypoteční data a investiční nástroje`,
+  alt: `${SITE_BRAND} — hypoteční kalkulačky a analýzy nemovitostí`,
+  type: "image/jpeg",
 } as const;

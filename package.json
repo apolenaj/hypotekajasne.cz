@@ -9,6 +9,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "postinstall": "node scripts/patch-react-pdf-hyphenate.mjs",
+    "generate:og-share": "tsx --tsconfig tsconfig.json scripts/generate-og-share-v2.tsx",
     "generate:rentgen-pdfs": "tsx --tsconfig tsconfig.json scripts/generate-rentgen-sample-pdfs.ts",
     "check:data": "node scripts/verify-data-catalog.mjs",
     "test:pipeline": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/mortgage-pipeline/pipeline.test.ts",
