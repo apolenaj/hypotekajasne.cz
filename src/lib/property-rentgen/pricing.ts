@@ -52,10 +52,10 @@ export const PROPERTY_ANALYSIS_PRICING: PropertyAnalysisPricing = {
     CANONICAL_PREMIUM_ANALYSIS_PRICE_CZK
   ),
   currency: "CZK",
-  ctaLabel: "Poptat rozbor",
+  ctaLabel: "Koupit individuální rozbor",
   ctaNextSteps: [
-    "Zanecháte kontakt a souhlas.",
-    "Upřesníme rozsah podle podkladů.",
+    "Vyplníte kontakt a údaje o nemovitosti.",
+    "Zaplatíte jednorázově přes Stripe.",
     "Elektronický výstup — ne schválení banky ani investiční doporučení.",
   ],
   includes: [
@@ -86,7 +86,7 @@ export const DIGITAL_RENTGEN_PRICING = {
     CANONICAL_DIGITAL_RENTGEN_PRICE_CZK
   ),
   currency: "CZK" as const,
-  ctaLabel: "Poptat Rentgen",
+  ctaLabel: "Získat celý Rentgen",
   summary:
     "Rozpočet koupě, cash flow, tři scénáře, citlivost a bod zvratu — ze zadaných údajů.",
   includes: [
@@ -163,7 +163,9 @@ export function getAnalysisTier(): AnalysisProductTier[] {
         name: DIGITAL_RENTGEN_PRICING.productName,
         deliveryExpectation: live
           ? ["Po úhradě a kompletních vstupech."]
-          : ["Online nákup zatím není spuštěný — můžete zanechat poptávku."],
+          : [
+              "Online objednávka přes Stripe — dokončete údaje a platbu na stránce produktu.",
+            ],
       };
     }
     if (tier.id === "premium") {
@@ -180,7 +182,7 @@ export function getAnalysisTier(): AnalysisProductTier[] {
           : [
               live
                 ? premiumCfg.deliverySla.note
-                : "Poptávka — termín a rozsah potvrdíme po kontrole podkladů.",
+                : "Termín a rozsah potvrdíme po úhradě a kontrole podkladů.",
               ...PROPERTY_ANALYSIS_PRICING.ctaNextSteps,
             ],
       };
@@ -236,16 +238,12 @@ export function formatTierPrice(tier: AnalysisProductTier): string {
   })}\u00a0Kč`;
 }
 
-/** CTA copy — never look “sold” when checkout is not live. */
+/** CTA copy — online nákup (Stripe). */
 export function rentgenPrimaryCtaLabel(tier: AnalysisProductTierId): string {
-  const live = isPaidAnalysisCommerciallyAvailable();
   if (tier === "free") return "Spočítat náhled zdarma";
-  if (!live) {
-    return tier === "digital" ? "Poptat Rentgen" : "Poptat rozbor";
-  }
   return tier === "digital"
     ? `Získat celý Rentgen – ${formatDigitalRentgenPrice()}`
-    : `Objednat individuální rozbor – ${formatAnalysisPrice()}`;
+    : `Koupit individuální rozbor – ${formatAnalysisPrice()}`;
 }
 
 export function withAnalysisPrice(text: string): string {

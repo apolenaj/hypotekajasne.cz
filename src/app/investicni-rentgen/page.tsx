@@ -55,7 +55,7 @@ export default function InvesticniRentgenPage() {
           </div>
         }
       >
-        <RentgenToolIsland />
+        <RentgenToolIsland checkoutLive={checkoutLive} />
       </Suspense>
       <RentgenHowItWorks />
       <RentgenFaq />

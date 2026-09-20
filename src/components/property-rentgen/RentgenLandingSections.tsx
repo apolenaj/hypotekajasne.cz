@@ -2,7 +2,6 @@ import Link from "next/link";
 import {
   formatAnalysisPrice,
   formatDigitalRentgenPrice,
-  getRentgenPremiumConfig,
   rentgenPrimaryCtaLabel,
   withAnalysisPrice,
   RENTGEN_FAQ,
@@ -52,7 +51,6 @@ export function RentgenHero() {
 }
 
 export function RentgenPricing() {
-  const live = getRentgenPremiumConfig().commerciallyActive;
   const digitalPrice = formatDigitalRentgenPrice();
   const premiumPrice = formatAnalysisPrice();
 
@@ -70,15 +68,9 @@ export function RentgenPricing() {
           Co si můžete objednat
         </h2>
         <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
-          Dva placené výstupy pro jednu nemovitost. Nejdřív si prohlédněte
-          ukázku — uvidíte skutečný rozsah čísel.
+          Vyberte rozsah analýzy a dokončete objednávku online. Bezpečná
+          jednorázová platba přes Stripe.
         </p>
-        {!live ? (
-          <p className="mt-4 text-sm text-muted-foreground">
-            Online nákup zatím není spuštěný. Můžete zanechat poptávku — ozveme
-            se s potvrzením rozsahu.
-          </p>
-        ) : null}
 
         <div className="mt-8 grid gap-5 lg:grid-cols-2 lg:items-stretch">
           {/* 999 */}
@@ -98,10 +90,6 @@ export function RentgenPricing() {
             <p className="mt-3 text-sm font-semibold text-text-dark">
               Zjistěte, co s investicí udělají skutečné náklady.
             </p>
-            <p className="mt-2 text-sm text-text-dark">
-              Pro koho: chcete rychle spočítat hotovost, měsíční tok a citlivost
-              z vlastních čísel.
-            </p>
             <ul className="mt-4 flex-1 space-y-2 text-sm text-muted-foreground">
               <li>· Potřebná vlastní hotovost</li>
               <li>· Cash flow po splátce</li>
@@ -111,32 +99,29 @@ export function RentgenPricing() {
             </ul>
             <p className="mt-4 text-xs text-muted-foreground">
               Forma: automatický model ze zadaných údajů. Dodání: po úhradě a
-              kompletních vstupech
-              {!live ? " — aktuálně formou poptávky" : ""}.
+              kompletních vstupech.
             </p>
-            <div className="mt-5 flex flex-col gap-2 sm:flex-row lg:mt-auto lg:pt-6">
-              <Link
-                href={`${routes.investicniRentgenUkazka}?balicek=999`}
-                className="inline-flex flex-1 items-center justify-center rounded-xl border border-deep-teal/30 px-4 py-3 text-sm font-bold text-deep-teal"
-              >
-                Ukázka výstupu
-              </Link>
+            <div className="mt-5 flex flex-col gap-2 lg:mt-auto lg:pt-6">
               <Link
                 href={`${routes.investicniRentgen}?balicek=999#premium-objednavka`}
-                className="inline-flex flex-1 items-center justify-center rounded-xl bg-muted-gold px-4 py-3 text-sm font-bold text-text-dark"
+                className="inline-flex w-full items-center justify-center rounded-xl bg-muted-gold px-4 py-3.5 text-sm font-bold text-text-dark shadow-sm"
               >
                 {rentgenPrimaryCtaLabel("digital")}
               </Link>
+              <Link
+                href={`${routes.investicniRentgenUkazka}?balicek=999`}
+                className="inline-flex w-full items-center justify-center rounded-xl border border-deep-teal/30 px-4 py-2.5 text-sm font-semibold text-deep-teal"
+              >
+                Prohlédnout ukázku výstupu
+              </Link>
             </div>
-            {live ? (
-              <p className="mt-2 text-center text-[11px] text-muted-foreground">
-                ✓ Jednorázová platba · ✓ Bez předplatného · ✓ Stripe
-              </p>
-            ) : null}
             <p className="mt-2 text-center text-[11px] text-muted-foreground">
+              ✓ Jednorázová platba · ✓ Bez předplatného · ✓ Stripe
+            </p>
+            <p className="mt-1 text-center text-[11px] text-muted-foreground">
               <a
                 href="/api/rentgen-sample-pdf?balicek=999"
-                className="font-semibold text-deep-teal underline-offset-2 hover:underline"
+                className="underline-offset-2 hover:underline"
               >
                 Stáhnout modelové PDF ({DIGITAL_SAMPLE_PAGE_COUNT} stran)
               </a>
@@ -144,7 +129,7 @@ export function RentgenPricing() {
           </article>
 
           {/* 4990 */}
-          <article className="flex h-full flex-col rounded-2xl border border-border bg-[#f7f9f8] p-6 shadow-sm">
+          <article className="flex h-full flex-col rounded-2xl border border-border bg-[#f7f9f8] p-6 shadow-sm ring-1 ring-deep-teal/10">
             <h3 className="font-heading text-xl font-bold text-text-dark">
               Individuální rozbor
             </h3>
@@ -157,55 +142,42 @@ export function RentgenPricing() {
             <p className="mt-3 text-sm font-semibold text-text-dark">
               Když chcete jít před koupí ještě hlouběji.
             </p>
-            <p className="mt-2 text-sm text-text-dark">
-              Pro koho: potřebujete k modelu ještě dohledání nabídek a rozbor
-              dodaných podkladů.
-            </p>
             <ul className="mt-4 flex-1 space-y-2 text-sm text-muted-foreground">
-              <li>· Vše z Rentgenu</li>
-              <li>· Rozbor podkladů</li>
-              <li>· Dohledané nabídky/data</li>
-              <li>· Kontrola předpokladů</li>
-              <li>· Individuální komentář a oblasti k prověření</li>
+              <li>· Kompletní Investiční rentgen</li>
+              <li>· Rozbor dodaných podkladů</li>
+              <li>· Kontrola finančních předpokladů</li>
+              <li>· Dohledání relevantních veřejných dat a nabídek</li>
+              <li>· Individuální komentář a rizika k prověření</li>
+              <li>· Výstup v PDF</li>
             </ul>
             <p className="mt-4 text-xs text-muted-foreground">
-              Forma: model + individuální práce s podklady. Dodání: termín
-              potvrdíme po kontrole rozsahu a podkladů
-              {!live ? " — aktuálně formou poptávky" : ""}.
+              Forma: model + individuální práce s podklady. Termín dodání
+              potvrdíme po kontrole rozsahu a podkladů.
             </p>
-            <div className="mt-5 flex flex-col gap-2 sm:flex-row lg:mt-auto lg:pt-6">
-              <Link
-                href={`${routes.investicniRentgenUkazka}?balicek=4990`}
-                className="inline-flex flex-1 items-center justify-center rounded-xl bg-deep-teal px-4 py-3 text-sm font-bold text-white"
-              >
-                Prohlédnout celý modelový rozbor
-              </Link>
+            <div className="mt-5 flex flex-col gap-2 lg:mt-auto lg:pt-6">
               <Link
                 href={`${routes.investicniRentgen}?balicek=4990#premium-objednavka`}
-                className="inline-flex flex-1 items-center justify-center rounded-xl border border-deep-teal/30 px-4 py-3 text-sm font-bold text-deep-teal"
+                className="inline-flex w-full items-center justify-center rounded-xl bg-deep-teal px-4 py-3.5 text-sm font-bold text-white shadow-sm"
               >
                 {rentgenPrimaryCtaLabel("premium")}
               </Link>
+              <Link
+                href={`${routes.investicniRentgenUkazka}?balicek=4990`}
+                className="inline-flex w-full items-center justify-center rounded-xl border border-deep-teal/30 px-4 py-2.5 text-sm font-semibold text-deep-teal"
+              >
+                Prohlédnout celý modelový rozbor
+              </Link>
             </div>
-            {live ? (
-              <p className="mt-2 text-center text-[11px] text-muted-foreground">
-                ✓ Jednorázová platba · ✓ Bez předplatného · ✓ Stripe
-              </p>
-            ) : null}
             <p className="mt-2 text-center text-[11px] text-muted-foreground">
+              🔒 Bezpečná platba přes Stripe · Jednorázová · Bez předplatného
+            </p>
+            <p className="mt-1 text-center text-[11px] text-muted-foreground">
               <a
                 href="/api/rentgen-sample-pdf?balicek=4990"
-                className="font-semibold text-deep-teal underline-offset-2 hover:underline"
+                className="underline-offset-2 hover:underline"
               >
                 Stáhnout modelové PDF ({PREMIUM_SAMPLE_PAGE_COUNT} stran)
               </a>
-              {" · "}
-              <Link
-                href={`${routes.investicniRentgenUkazka}?balicek=4990`}
-                className="underline-offset-2 hover:underline"
-              >
-                Ukázka na webu
-              </Link>
             </p>
           </article>
         </div>
@@ -309,7 +281,7 @@ export function RentgenHowItWorks() {
             {
               n: "3",
               t: "Výstup",
-              d: "Náhled ihned. Placený výstup po úhradě a kompletních vstupech — nebo po potvrzení poptávky, dokud není online nákup spuštěný.",
+              d: "Náhled ihned. Placený výstup po úhradě přes Stripe a kompletních vstupech. Individuální rozbor pokračuje doplněním podkladů.",
             },
           ].map((s) => (
             <li
@@ -398,21 +370,22 @@ export function RentgenBottomCta() {
           Spočítejte svou nemovitost
         </h2>
         <p className="mt-3 text-sm text-white/80">
-          Začněte náhledem zdarma, nebo si prohlédněte hotovou ukázku výstupu.
+          Začněte náhledem zdarma, nebo rovnou dokončete online objednávku přes
+          Stripe.
         </p>
         <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Link
+            href={`${routes.investicniRentgen}?balicek=4990#premium-objednavka`}
+            className="inline-flex rounded-xl bg-muted-gold px-6 py-3.5 text-sm font-bold text-[#0b3d3a]"
+          >
+            {rentgenPrimaryCtaLabel("premium")}
+          </Link>
           <a
             href="#nastroj"
-            className="inline-flex rounded-xl bg-muted-gold px-6 py-3.5 text-sm font-bold text-[#0b3d3a]"
+            className="inline-flex rounded-xl border border-white/30 px-6 py-3.5 text-sm font-bold text-white"
           >
             Spočítat náhled zdarma
           </a>
-          <Link
-            href={routes.investicniRentgenUkazka}
-            className="inline-flex rounded-xl border border-white/30 px-6 py-3.5 text-sm font-bold text-white"
-          >
-            Zobrazit ukázku výsledku
-          </Link>
         </div>
       </div>
     </section>

@@ -138,11 +138,29 @@ export function operatorDisplayName(op: OperatorIdentity): string {
   return op.dataControllerName || legalOperator.companyName;
 }
 
-/** Placená analýza ke koupi — jen když je provozovatel i checkout připraven. */
+/** Placená analýza ke koupi — Stripe Checkout aktivní. */
 export function isPaidAnalysisCommerciallyAvailable(): boolean {
-  const op = getOperatorIdentity();
-  const checkoutLive =
+  const explicitlyOff =
+    process.env.PAID_ANALYSIS_CHECKOUT_LIVE === "false" ||
+    process.env.NEXT_PUBLIC_PAID_ANALYSIS_CHECKOUT_LIVE === "false";
+  if (explicitlyOff) return false;
+
+  const explicitlyOn =
     process.env.PAID_ANALYSIS_CHECKOUT_LIVE === "true" ||
     process.env.NEXT_PUBLIC_PAID_ANALYSIS_CHECKOUT_LIVE === "true";
-  return op.isProductionReady && checkoutLive;
+
+  // Client bundle cannot read STRIPE_SECRET_KEY — trust public flag only.
+  if (typeof window !== "undefined") {
+    return explicitlyOn;
+  }
+
+  const hasStripe = Boolean(process.env.STRIPE_SECRET_KEY?.trim());
+  if (!hasStripe) return false;
+
+  if (explicitlyOn) return true;
+
+  // Production + Stripe configured → online nákup běží (vypnutí: LIVE=false).
+  if (process.env.VERCEL_ENV === "production") return true;
+
+  return false;
 }

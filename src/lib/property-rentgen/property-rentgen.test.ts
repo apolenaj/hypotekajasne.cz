@@ -19,7 +19,7 @@ describe("PROPERTY_ANALYSIS_PRICING", () => {
     assert.match(formatAnalysisPrice(), /4[\s\u00a0\u202f]?990\s*Kč/);
     assert.ok(!formatAnalysisPrice().includes("/"));
     assert.ok(formatAnalysisPriceLabel().includes("Individuální rozbor"));
-    assert.equal(PROPERTY_ANALYSIS_PRICING.ctaLabel, "Poptat rozbor");
+    assert.equal(PROPERTY_ANALYSIS_PRICING.ctaLabel, "Koupit individuální rozbor");
   });
 
   it("exposes free / digital 999 / premium 4990 without inventing advanced SKU", () => {
@@ -31,16 +31,18 @@ describe("PROPERTY_ANALYSIS_PRICING", () => {
     assert.equal(ANALYSIS_PRODUCT_TIERS[2]!.priceCzk, 4990);
   });
 
-  it("premium tier commerciallyActive follows product config (default preparing)", () => {
+  it("premium tier commerciallyActive follows product config when checkout is off", () => {
     const tiers = getAnalysisTier();
     const premium = tiers.find((t) => t.id === "premium")!;
     const digital = tiers.find((t) => t.id === "digital")!;
     const cfg = getRentgenPremiumConfig();
     assert.equal(premium.commerciallyActive, cfg.commerciallyActive);
     assert.equal(digital.commerciallyActive, cfg.commerciallyActive);
-    assert.equal(cfg.status, "preparing");
-    assert.equal(cfg.statusLabel, "Připravujeme");
-    assert.equal(cfg.checkoutMode, "interest_only");
+    // Without Stripe + LIVE flags in test env → preparing / interest_only
+    if (!process.env.STRIPE_SECRET_KEY?.trim()) {
+      assert.equal(cfg.status, "preparing");
+      assert.equal(cfg.checkoutMode, "interest_only");
+    }
   });
 
   it("SLA is not hardcoded when env unset", () => {

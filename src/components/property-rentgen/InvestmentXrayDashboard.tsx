@@ -466,10 +466,8 @@ function PreviewPaywall() {
                   <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
                   Přesměrovávám na platební bránu…
                 </>
-              ) : live ? (
-                `Objednat kompletní analýzu za ${formatAnalysisPrice()}`
               ) : (
-                "Chci vědět, až bude Rentgen dostupný"
+                `Koupit individuální rozbor – ${formatAnalysisPrice()}`
               )}
             </button>
             {error ? (

@@ -103,7 +103,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "Online nákup zatím není spuštěný. Zanechte poptávku na stránce Investičního rentgenu.",
+          "Platební brána není připravená. Zkontrolujte STRIPE_SECRET_KEY a PAID_ANALYSIS_CHECKOUT_LIVE.",
         code: "CHECKOUT_NOT_LIVE",
       },
       { status: 503 }

@@ -14,7 +14,7 @@ export const RENTGEN_FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Jak rychle dostanu výsledek?",
-    a: "Náhled ihned. Placený výstup po úhradě a kompletních vstupech — nebo po potvrzení poptávky, dokud není online nákup spuštěný. Termín individuálního rozboru potvrdíme podle rozsahu podkladů.",
+    a: "Náhled ihned. Placené balíčky objednáte online přes Stripe. Po úhradě a kompletních vstupech získáte výstup; u individuálního rozboru termín potvrdíme podle rozsahu podkladů.",
   },
   {
     q: "Odkud berete srovnání nabídek?",
