@@ -1,0 +1,55 @@
+{
+  "label": "after-v2",
+  "url": "http://localhost:3002/",
+  "runs": 3,
+  "performance": 49,
+  "fcp": 1415.62,
+  "lcp": 4641.118000000002,
+  "tbt": 2902.3095,
+  "cls": 0,
+  "ttfb": 114,
+  "lcpElements": [
+    "<p class=\"mt-2 text-sm leading-relaxed text-muted-foreground\">"
+  ],
+  "lcpSelectors": [
+    "body.flex > div.fixed > div.mx-auto > p.mt-2"
+  ],
+  "lcpLabels": [
+    "Nezbytné cookies potřebujeme pro fungování webu. Analytiku a marketing spouštím…"
+  ],
+  "raw": [
+    {
+      "performance": 47,
+      "fcp": 1385.3809999999999,
+      "lcp": 4717.4525,
+      "tbt": 2902.3095,
+      "cls": 0,
+      "ttfb": 2791,
+      "lcpElement": "<p class=\"mt-2 text-sm leading-relaxed text-muted-foreground\">",
+      "lcpElementSelector": "body.flex > div.fixed > div.mx-auto > p.mt-2",
+      "lcpElementLabel": "Nezbytné cookies potřebujeme pro fungování webu. Analytiku a marketing spouštím…"
+    },
+    {
+      "performance": 51,
+      "fcp": 1415.62,
+      "lcp": 4640.239999999999,
+      "tbt": 2941.19,
+      "cls": 0,
+      "ttfb": 111,
+      "lcpElement": "<p class=\"mt-2 text-sm leading-relaxed text-muted-foreground\">",
+      "lcpElementSelector": "body.flex > div.fixed > div.mx-auto > p.mt-2",
+      "lcpElementLabel": "Nezbytné cookies potřebujeme pro fungování webu. Analytiku a marketing spouštím…"
+    },
+    {
+      "performance": 49,
+      "fcp": 2740.0294999999996,
+      "lcp": 4641.118000000002,
+      "tbt": 1974.5147500000007,
+      "cls": 0,
+      "ttfb": 114,
+      "lcpElement": "<p class=\"mt-2 text-sm leading-relaxed text-muted-foreground\">",
+      "lcpElementSelector": "body.flex > div.fixed > div.mx-auto > p.mt-2",
+      "lcpElementLabel": "Nezbytné cookies potřebujeme pro fungování webu. Analytiku a marketing spouštím…"
+    }
+  ]
+}

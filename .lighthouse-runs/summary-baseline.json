@@ -1,0 +1,55 @@
+{
+  "label": "baseline",
+  "url": "http://localhost:3000/",
+  "runs": 3,
+  "performance": 79,
+  "fcp": 1593.9344999999998,
+  "lcp": 4182.372,
+  "tbt": 286,
+  "cls": 0,
+  "ttfb": 371,
+  "lcpElements": [
+    "<h1 id=\"home-hero-heading\" class=\"home-reveal home-reveal-delay-1 mt-3 font-heading text-[1.55rem] font-bold…\">"
+  ],
+  "lcpSelectors": [
+    "div.relative > div.grid > div.order-1 > h1#home-hero-heading"
+  ],
+  "lcpLabels": [
+    "Zjistěte, jak může vypadat vaše hypotéka."
+  ],
+  "raw": [
+    {
+      "performance": 85,
+      "fcp": 1593.9344999999998,
+      "lcp": 3710.8035,
+      "tbt": 198.99999999999955,
+      "cls": 0,
+      "ttfb": 355,
+      "lcpElement": "<h1 id=\"home-hero-heading\" class=\"home-reveal home-reveal-delay-1 mt-3 font-heading text-[1.55rem] font-bold…\">",
+      "lcpElementSelector": "div.relative > div.grid > div.order-1 > h1#home-hero-heading",
+      "lcpElementLabel": "Zjistěte, jak může vypadat vaše hypotéka."
+    },
+    {
+      "performance": 79,
+      "fcp": 1585.1860000000001,
+      "lcp": 4182.372,
+      "tbt": 286,
+      "cls": 0,
+      "ttfb": 371,
+      "lcpElement": "<h1 id=\"home-hero-heading\" class=\"home-reveal home-reveal-delay-1 mt-3 font-heading text-[1.55rem] font-bold…\">",
+      "lcpElementSelector": "div.relative > div.grid > div.order-1 > h1#home-hero-heading",
+      "lcpElementLabel": "Zjistěte, jak může vypadat vaše hypotéka."
+    },
+    {
+      "performance": 77,
+      "fcp": 1628.7795,
+      "lcp": 4207.559,
+      "tbt": 313.99999999999955,
+      "cls": 0,
+      "ttfb": 407,
+      "lcpElement": "<h1 id=\"home-hero-heading\" class=\"home-reveal home-reveal-delay-1 mt-3 font-heading text-[1.55rem] font-bold…\">",
+      "lcpElementSelector": "div.relative > div.grid > div.order-1 > h1#home-hero-heading",
+      "lcpElementLabel": "Zjistěte, jak může vypadat vaše hypotéka."
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "label": "final",
+  "url": "http://localhost:3007/",
+  "runs": 3,
+  "performance": 65,
+  "fcp": 1485.072,
+  "lcp": 4295.072,
+  "tbt": 794.952,
+  "cls": 0,
+  "ttfb": 93,
+  "lcpElements": [
+    "<p class=\"max-w-xl text-sm leading-relaxed text-white/85 sm:text-base lg:max-w-lg\">"
+  ],
+  "lcpSelectors": [
+    "div.grid > div.order-3 > div.space-y-6 > p.max-w-xl"
+  ],
+  "lcpLabels": [
+    "Za dvě minuty uvidíte orientační splátku a veřejně dostupné sazby bank. Pokud c…"
+  ],
+  "raw": [
+    {
+      "performance": 65,
+      "fcp": 1485.072,
+      "lcp": 4295.072,
+      "tbt": 794.952,
+      "cls": 0,
+      "ttfb": 1130,
+      "lcpElement": "<p class=\"max-w-xl text-sm leading-relaxed text-white/85 sm:text-base lg:max-w-lg\">",
+      "lcpElementSelector": "div.grid > div.order-3 > div.space-y-6 > p.max-w-xl",
+      "lcpElementLabel": "Za dvě minuty uvidíte orientační splátku a veřejně dostupné sazby bank. Pokud c…"
+    },
+    {
+      "performance": 66,
+      "fcp": 1477.0620000000001,
+      "lcp": 4263.062000000001,
+      "tbt": 649.2919999999999,
+      "cls": 0,
+      "ttfb": 85,
+      "lcpElement": "<p class=\"max-w-xl text-sm leading-relaxed text-white/85 sm:text-base lg:max-w-lg\">",
+      "lcpElementSelector": "div.grid > div.order-3 > div.space-y-6 > p.max-w-xl",
+      "lcpElementLabel": "Za dvě minuty uvidíte orientační splátku a veřejně dostupné sazby bank. Pokud c…"
+    },
+    {
+      "performance": 64,
+      "fcp": 1516.6200000000001,
+      "lcp": 4559.48,
+      "tbt": 812.5000000000007,
+      "cls": 0,
+      "ttfb": 93,
+      "lcpElement": "<p class=\"max-w-xl text-sm leading-relaxed text-white/85 sm:text-base lg:max-w-lg\">",
+      "lcpElementSelector": "div.grid > div.order-3 > div.space-y-6 > p.max-w-xl",
+      "lcpElementLabel": "Za dvě minuty uvidíte orientační splátku a veřejně dostupné sazby bank. Pokud c…"
+    }
+  ]
+}
