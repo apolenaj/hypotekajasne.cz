@@ -48,6 +48,11 @@ export const hypotekyNavItems: NavLinkItem[] = [
     description: "Konkrétní konstelace žadatelů a nemovitosti",
   },
   {
+    href: routes.hypotekyVPraxi,
+    label: "Hypotéky v praxi",
+    description: "První žádost, příjmy, odhad, refinancování",
+  },
+  {
     href: routes.akademie,
     label: "Jak hypotéka funguje",
     description: "Základy z Hypoteční akademie",
@@ -117,15 +122,15 @@ export const hypotekyNavItems: NavLinkItem[] = [
 export const hypotekyNavColumns: NavColumn[] = [
   {
     title: "Orientace",
-    items: hypotekyNavItems.slice(0, 6),
+    items: hypotekyNavItems.slice(0, 7),
   },
   {
     title: "Účel financování",
-    items: hypotekyNavItems.slice(6, 11),
+    items: hypotekyNavItems.slice(7, 12),
   },
   {
     title: "Příjmy a žadatel",
-    items: hypotekyNavItems.slice(11),
+    items: hypotekyNavItems.slice(12),
   },
 ];
 
@@ -350,6 +355,11 @@ export const kalkulackyNavItems: NavLinkItem[] = [
 
 export const pruvodciNavItems: NavLinkItem[] = [
   {
+    href: routes.hypotekyVPraxi,
+    label: "Hypotéky v praxi",
+    description: "Odpovědi na konkrétní situace žadatelů",
+  },
+  {
     href: routes.pruvodce.praktickeSituace,
     label: "Praktické situace",
     description: "Cizinci, rodina, odhad, firma, hranice",
@@ -357,7 +367,7 @@ export const pruvodciNavItems: NavLinkItem[] = [
   {
     href: routes.akademie,
     label: "Hypoteční akademie",
-    description: "Lekce a vzdělávací cesty",
+    description: "Pojmy, lekce a vzdělávací cesty",
   },
   {
     href: routes.clanky,

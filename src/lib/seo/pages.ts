@@ -301,6 +301,13 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     priority: 0.85,
   },
   {
+    path: routes.hypotekyVPraxi,
+    title: "Hypotéky v praxi | Hypoteční akademie",
+    description:
+      "Jasné odpovědi na konkrétní situace: první hypotéka, dostupnost, vlastní peníze, příjmy, registry, RPSN, refinancování, pojištění, rozvod a daně.",
+    priority: 0.88,
+  },
+  {
     path: `${routes.akademie}/cesty`,
     title: "Vzdělávací cesty | Hypoteční akademie",
     description:

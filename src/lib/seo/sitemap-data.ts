@@ -7,6 +7,7 @@ import {
 import { getAllArticleSlugs, getArticle } from "@/lib/magazine";
 import { ACADEMY_LESSONS } from "@/lib/academy";
 import { LEARNING_PATHS } from "@/lib/academy/gamification";
+import { PRACTICE_GUIDES, practiceGuidePath } from "@/lib/academy/practice";
 import { routes } from "@/lib/routes";
 
 export type SitemapBucketId = "pages" | "articles" | "academy" | "countries";
@@ -60,14 +61,20 @@ export function buildSitemapBucket(
       changeFrequency: "monthly" as const,
       priority: 0.7,
     }));
-    // Hub /akademie/cesty is in pages sitemap via STATIC_PAGE_SEO.
+    // Hub /akademie/cesty and /akademie/hypoteky-v-praxi are in pages sitemap via STATIC_PAGE_SEO.
     const paths = LEARNING_PATHS.map((p) => ({
       url: absoluteUrl(`${routes.akademie}/cesty/${p.id}`),
       lastModified: now,
       changeFrequency: "monthly" as const,
       priority: 0.65,
     }));
-    return [...paths, ...lessons];
+    const practice = PRACTICE_GUIDES.map((guide) => ({
+      url: absoluteUrl(practiceGuidePath(guide.slug)),
+      lastModified: new Date(guide.updatedAt),
+      changeFrequency: "monthly" as const,
+      priority: 0.75,
+    }));
+    return [...paths, ...practice, ...lessons];
   }
 
   return countryGuideSeoEntries().map((p) => ({

@@ -2,6 +2,7 @@ import { HomeBottomCta } from "@/components/home/HomeBottomCta";
 import { HomeEditorial } from "@/components/home/HomeEditorial";
 import { HomeFaq } from "@/components/home/HomeFaq";
 import { HomePathCards } from "@/components/home/HomePathCards";
+import { HomePracticeTeaser } from "@/components/home/HomePracticeTeaser";
 import { HomePremiumHero } from "@/components/home/HomePremiumHero";
 import { HomePriceDeferred } from "@/components/home/HomePriceDeferred";
 import { HomeRatesDeferred } from "@/components/home/HomeRatesDeferred";
@@ -64,6 +65,7 @@ export function HomeExperience({
         </div>
       </section>
       <RpsnEducationBlock />
+      <HomePracticeTeaser />
       <HomeToolsGrid />
       <HomeRentgenBand />
       <HomeEditorial />

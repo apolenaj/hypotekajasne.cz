@@ -262,9 +262,7 @@ describe("navbar overflow guards (static source)", () => {
       "html must use min-h-full, not h-full"
     );
     assert.ok(
-      !/\$\{inter\.variable\} \$\{playfair\.variable\} h-full antialiased/.test(
-        layout
-      ),
+      !/playfair\.variable\} h-full antialiased/.test(layout),
       "html must not use Tailwind h-full (locks viewport height)"
     );
     assert.ok(css.includes("overflow-y: auto"), "html overflow-y auto");

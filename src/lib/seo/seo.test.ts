@@ -296,12 +296,16 @@ describe("sitemap index", () => {
     }
   });
 
-  it("academy bucket includes cesty hub and path pages", () => {
+  it("academy bucket includes cesty hub, practice guides and path pages", () => {
     const pageUrls = buildSitemapBucket("pages").map((e) => e.url);
     const urls = buildSitemapBucket("academy").map((e) => e.url);
     assert.ok(pageUrls.some((u) => u.endsWith("/akademie/cesty")));
+    assert.ok(pageUrls.some((u) => u.endsWith("/akademie/hypoteky-v-praxi")));
     assert.ok(urls.some((u) => u.includes("/akademie/cesty/first_home")));
     assert.ok(urls.some((u) => u.includes("/akademie/ltv")));
+    assert.ok(
+      urls.some((u) => u.includes("/akademie/hypoteky-v-praxi/prvni-hypoteka"))
+    );
   });
 
   it("articles and academy buckets are non-empty", () => {
@@ -470,6 +474,7 @@ describe("app pages must not inherit homepage-only raw metadata", () => {
     for (const required of [
       "/investicni-rentgen",
       "/akademie/cesty",
+      "/akademie/hypoteky-v-praxi",
       "/faq",
       "/kontakt",
       "/temata",

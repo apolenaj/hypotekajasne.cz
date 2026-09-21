@@ -22,7 +22,7 @@
     "test:matching": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/market-matching/market-matching.test.ts",
     "test:rentgen": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/property-rentgen/property-rentgen.test.ts src/lib/property-rentgen/rentgen-math-engine.test.ts src/lib/property-rentgen/checkout-metadata.test.ts src/lib/property-rentgen/control-model.test.ts src/lib/property-rentgen/customer-digital-model.test.ts src/lib/property-rentgen/package-query.test.ts src/lib/property-rentgen/case-study-analytics.test.ts src/lib/property-rentgen/products.test.ts src/lib/property-rentgen/order-property.test.ts",
     "test:majetio": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/majetio/majetio.test.ts",
-    "test:academy": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/academy/academy.test.ts",
+    "test:academy": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/academy/academy.test.ts src/lib/academy/practice/practice.test.ts",
     "test:academy-gamification": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/academy/gamification/gamification.test.ts",
     "test:magazine": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/magazine/magazine.test.ts",
     "test:seo": "tsx --tsconfig tsconfig.pipeline-tests.json --test src/lib/seo/seo.test.ts src/lib/seo/landings.test.ts src/lib/seo/phase6-commercial.test.ts src/lib/phase61-hardening.test.ts src/lib/phase62-operations.test.ts",

@@ -138,6 +138,7 @@ export const footerLinks = {
     { href: routes.copilot, label: "Finanční AI průvodce" },
   ],
   pruvodci: [
+    { href: routes.hypotekyVPraxi, label: "Hypotéky v praxi" },
     { href: routes.akademie, label: "Hypoteční akademie" },
     { href: routes.clanky, label: "Články" },
     { href: routes.faq, label: "Časté otázky" },

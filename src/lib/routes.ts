@@ -21,6 +21,8 @@ export const routes = {
   investicniPas: "/investicni-pas",
   hypotecniAkademie: "/hypotecni-akademie",
   akademie: "/akademie",
+  /** Hypotéky v praxi — praktické průvodce uvnitř Akademie */
+  hypotekyVPraxi: "/akademie/hypoteky-v-praxi",
   oMajetio: "/o-majetio",
   kontakt: "/kontakt",
   faq: "/faq",
