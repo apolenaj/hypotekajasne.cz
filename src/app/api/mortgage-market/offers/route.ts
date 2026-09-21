@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
-import { getMortgageOffersFromSupabase } from "@/lib/mortgage-market/offers.server";
+import { getPublishedCatalogOffers } from "@/lib/mortgage-market/published-catalog-offers";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * Normalized mortgage-market catalog offers (Phase 2).
- * Separate from /api/rates/mortgage (legacy simple orientation layer).
- * Not wired into production UI yet.
+ * Normalized mortgage-market catalog offers for /sazby client filter reloads.
+ * Same SoT as SSR /sazby: audited CZ manifest catalog (not Supabase rows).
  *
  * GET /api/mortgage-market/offers?country=CZ&purpose=purchase&fixationMonths=36&ltv=75
  * Optional: lender, product, productType, borrowerScope, pricingScenarioKey, includeLtvUnspecified=1
@@ -52,7 +51,7 @@ export async function GET(request: Request) {
     }
   }
 
-  const result = await getMortgageOffersFromSupabase({
+  const result = getPublishedCatalogOffers({
     countryCode,
     purpose,
     fixationMonths,
@@ -64,16 +63,6 @@ export async function GET(request: Request) {
     pricingScenarioKey,
     includeLtvUnspecified,
   });
-
-  if (!result) {
-    return NextResponse.json(
-      {
-        error:
-          "Mortgage market catalog unavailable (missing Supabase service role env).",
-      },
-      { status: 503 }
-    );
-  }
 
   return NextResponse.json(
     {

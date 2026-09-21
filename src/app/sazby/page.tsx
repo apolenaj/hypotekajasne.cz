@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { SazbyExperience } from "@/components/mortgage-market/SazbyExperience";
-import { getCz20260809Catalog } from "@/lib/mortgage-market/catalog-from-manifest";
-import { getMortgageOffers } from "@/lib/mortgage-market/offers";
-import { CZ_MANIFEST_CHECKED_AT } from "@/lib/mortgage-market/import/data/cz-2026-08-09";
+import { getPublishedCatalogOffers } from "@/lib/mortgage-market/published-catalog-offers";
 import {
   buildLeadMetadataFromJourney,
   parseMortgageJourneyParams,
@@ -18,9 +16,9 @@ import { routes } from "@/lib/routes";
  * Canonical search document is always /sazby (no query variants).
  * Filters (fixation, property, loan, purpose…) personalize the UI only.
  *
- * Production SoT for rendered rates = verified CZ import manifest catalog.
- * (Supabase mortgage_rate_variants can lag behind the audited manifest;
- *  /sazby must not serve stale DB rows over fresh primary-source audit data.)
+ * Production SoT for rendered rates = verified CZ import manifest catalog
+ * (shared with GET /api/mortgage-market/offers so client reloads cannot
+ * overwrite SSR with lagging Supabase rows).
  */
 export const metadata: Metadata = getStaticPageSeo(routes.sazby);
 
@@ -31,14 +29,11 @@ type PageProps = {
 };
 
 async function loadOffers(query: MortgageJourneyCore, ltvFilter: number) {
-  return getMortgageOffers(getCz20260809Catalog(), {
-    countryCode: "CZ",
+  return getPublishedCatalogOffers({
     purpose: query.purpose,
     fixationMonths: query.fixationMonths,
     ltv: ltvFilter,
     includeLtvUnspecified: true,
-    // Align freshness window with the audit snapshot (not wall-clock alone).
-    nowMs: Date.parse(CZ_MANIFEST_CHECKED_AT) + 12 * 60 * 60 * 1000,
   });
 }
 

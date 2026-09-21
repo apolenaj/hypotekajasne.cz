@@ -1,16 +1,11 @@
-import { getCz20260809Catalog } from "@/lib/mortgage-market/catalog-from-manifest";
-import {
-  getMortgageOffers,
-  type GetMortgageOffersResult,
-} from "@/lib/mortgage-market/offers";
+import { getPublishedCatalogOffers } from "@/lib/mortgage-market/published-catalog-offers";
+import type { GetMortgageOffersResult } from "@/lib/mortgage-market/offers";
 import {
   buildLtvContext,
   rateFilterLtvFromContext,
   SAZBY_DEFAULT_QUERY,
 } from "@/lib/mortgage-rates/ltv-context";
 import { unstable_cache } from "next/cache";
-
-const MANIFEST_NOW_MS = Date.parse("2026-09-21T12:00:00.000Z");
 
 async function loadHomeOffersUncached(): Promise<GetMortgageOffersResult | null> {
   const ltvContext = buildLtvContext({
@@ -20,17 +15,13 @@ async function loadHomeOffersUncached(): Promise<GetMortgageOffersResult | null>
   const filterLtv = rateFilterLtvFromContext(ltvContext);
   if (filterLtv == null) return null;
 
-  const query = {
-    countryCode: "CZ",
+  // Same SoT as /sazby + /api/mortgage-market/offers.
+  return getPublishedCatalogOffers({
     purpose: SAZBY_DEFAULT_QUERY.purpose,
     fixationMonths: SAZBY_DEFAULT_QUERY.fixationMonths,
     ltv: filterLtv,
     includeLtvUnspecified: true,
-    nowMs: MANIFEST_NOW_MS,
-  } as const;
-
-  // Same SoT as /sazby: audited manifest catalog (not lagging Supabase rows).
-  return getMortgageOffers(getCz20260809Catalog(), query);
+  });
 }
 
 /** Cached homepage offers from the verified manifest catalog. */

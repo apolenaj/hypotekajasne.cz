@@ -187,10 +187,12 @@ export function PublishedRatesPanel({
     [marketing, syncUrl, variant]
   );
 
+  // Sync local filter state from the URL (browser back/forward + shared links).
   useEffect(() => {
     if (variant === "home") return;
     const raw = Object.fromEntries(searchParams.entries());
     const parsed = parseMortgageJourneyParams(raw);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- URL is an external system; mirror into local state.
     setQuery((prev) =>
       journeyCoreEqual(parsed.context, prev) ? prev : parsed.context
     );
@@ -223,17 +225,38 @@ export function PublishedRatesPanel({
   );
 
   useEffect(() => {
+    // Whenever filters still match the SSR snapshot, keep initialResult and
+    // do not refetch. This blocks the post-hydration overwrite path even if
+    // URL sync re-runs the effect with a new ltvContext object identity.
+    const sameAsSsr =
+      queriesEqual(query, initialQuery) &&
+      rateFilterLtvFromContext(ltvContext) ===
+        rateFilterLtvFromContext(initialLtvContext) &&
+      Boolean(initialResult) &&
+      paramErrors.length === 0;
+
+    if (sameAsSsr) {
+      skipInitialReloadRef.current = false;
+      return;
+    }
+
     if (skipInitialReloadRef.current) {
       skipInitialReloadRef.current = false;
-      if (queriesEqual(query, initialQuery) && initialResult && paramErrors.length === 0) {
-        return;
-      }
     }
+
     const t = setTimeout(() => {
       void reload(query, ltvContext);
     }, 350);
     return () => clearTimeout(t);
-  }, [query, ltvContext, initialQuery, initialResult, reload, paramErrors.length]);
+  }, [
+    query,
+    ltvContext,
+    initialQuery,
+    initialLtvContext,
+    initialResult,
+    reload,
+    paramErrors.length,
+  ]);
 
   useEffect(() => {
     if (!result || ltvContext.exactLtv == null) return;
