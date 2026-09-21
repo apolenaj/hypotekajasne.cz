@@ -94,12 +94,22 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /*
+   * Document scroll root: never lock html to height:100% without overflow-y.
+   * Tailwind `h-full` on <html> made the viewport unscrollable when body grew
+   * taller than the screen (short laptop heights / browser zoom).
+   */
+  html {
+    @apply font-sans scroll-smooth;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
   body {
     @apply bg-background text-foreground antialiased;
     background: linear-gradient(180deg, #fafbfc 0%, #ffffff 40%, #f8faf9 100%);
-  }
-  html {
-    @apply font-sans scroll-smooth;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: visible;
   }
   h1,
   h2,

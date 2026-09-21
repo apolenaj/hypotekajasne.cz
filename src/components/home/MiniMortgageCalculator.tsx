@@ -203,7 +203,15 @@ function bootstrapFromJourney(
     hasCalculated: false,
     committedResult: null,
   };
-  if (!journey || journey.fromDefaults || journey.paramErrors.length > 0) {
+  if (!journey || journey.fromDefaults) {
+    return defaults;
+  }
+  // Soft URL warnings (e.g. unknown fixation) must not wipe a valid Majetio prefill.
+  if (
+    journey.ltvContext.validationCode === "invalid_property" ||
+    journey.ltvContext.validationCode === "loan_exceeds_property" ||
+    journey.ltvContext.validationCode === "negative_loan"
+  ) {
     return defaults;
   }
   const input = journeyContextToMiniMortgageInput(journey.context);

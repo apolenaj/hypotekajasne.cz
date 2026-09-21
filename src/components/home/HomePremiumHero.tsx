@@ -20,7 +20,7 @@ export function HomePremiumHero({
   return (
     <section
       aria-labelledby="home-hero-heading"
-      className="relative isolate overflow-hidden"
+      className="relative isolate min-h-0 overflow-x-hidden overflow-y-visible"
     >
       <Image
         src={HERO_IMAGE}
@@ -47,8 +47,8 @@ export function HomePremiumHero({
         }}
       />
 
-      <div className="relative mx-auto flex w-full max-w-[1440px] items-center px-4 py-8 sm:px-8 lg:px-12 lg:py-10 xl:px-14">
-        <div className="grid w-full items-center gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)] lg:gap-10">
+      <div className="relative mx-auto flex w-full max-w-[1440px] items-start px-4 py-8 sm:px-8 lg:items-center lg:px-12 lg:py-10 xl:px-14 [@media(min-width:1024px)_and_(max-height:800px)]:items-start [@media(min-width:1024px)_and_(max-height:800px)]:py-6">
+        <div className="grid w-full items-start gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)] lg:items-center lg:gap-10 [@media(min-width:1024px)_and_(max-height:800px)]:items-start">
           <div className="min-w-0 max-w-[720px]">
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-deep-teal">
               Hypotéka Jasně

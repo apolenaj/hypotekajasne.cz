@@ -254,6 +254,30 @@ describe("navbar overflow guards (static source)", () => {
     assert.ok(!/contain-intrinsic-size:\s*auto\s+420px/.test(css));
   });
 
+  it("document scroll root is not locked by html h-full", () => {
+    const layout = readFileSync(join(ROOT, "app/layout.tsx"), "utf8");
+    const css = readFileSync(join(ROOT, "app/globals.css"), "utf8");
+    assert.ok(
+      layout.includes("min-h-full antialiased"),
+      "html must use min-h-full, not h-full"
+    );
+    assert.ok(
+      !/\$\{inter\.variable\} \$\{playfair\.variable\} h-full antialiased/.test(
+        layout
+      ),
+      "html must not use Tailwind h-full (locks viewport height)"
+    );
+    assert.ok(css.includes("overflow-y: auto"), "html overflow-y auto");
+    assert.ok(
+      /html\s*\{[\s\S]*?overflow-x:\s*hidden/.test(css),
+      "html overflow-x hidden"
+    );
+    assert.ok(
+      !/body\s*\{[\s\S]*?overflow:\s*hidden/.test(css),
+      "body must not globally lock overflow"
+    );
+  });
+
   it("breakpoint matrix is documented for QA", () => {
     assert.equal(NAV_BREAKPOINTS.length, 14);
     for (const w of NAV_BREAKPOINTS) {

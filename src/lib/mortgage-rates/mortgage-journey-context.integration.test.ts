@@ -205,4 +205,37 @@ describe("mortgage journey context — bank selection to lead", () => {
     assert.equal(lead.utm_campaign, "retarget");
     assert.equal(lead.exactLtv, 80);
   });
+
+  it("accepts Majetio / English aliases for property equity loan term rate", () => {
+    const parsed = parseMortgageJourneyParams({
+      price: "6500000",
+      ownFunds: "1300000",
+      loan: "5200000",
+      term: "30",
+      rate: "5.25",
+      utm_source: "majetio",
+    });
+    assert.equal(parsed.fromDefaults, false);
+    assert.equal(parsed.context.propertyValueCzk, 6_500_000);
+    assert.equal(parsed.context.ownFundsCzk, 1_300_000);
+    assert.equal(parsed.context.loanAmountCzk, 5_200_000);
+    assert.equal(parsed.context.termYears, 30);
+    assert.equal(parsed.context.modelRatePercent, 5.25);
+    assert.equal(parsed.context.utm_source, "majetio");
+  });
+
+  it("accepts Czech Majetio aliases cena / vlastniZdroje / splatnost / sazba", () => {
+    const parsed = parseMortgageJourneyParams({
+      cena: "6500000",
+      vlastniZdroje: "1300000",
+      uver: "5200000",
+      splatnost: "30",
+      sazba: "5,25",
+    });
+    assert.equal(parsed.context.propertyValueCzk, 6_500_000);
+    assert.equal(parsed.context.ownFundsCzk, 1_300_000);
+    assert.equal(parsed.context.loanAmountCzk, 5_200_000);
+    assert.equal(parsed.context.termYears, 30);
+    assert.equal(parsed.context.modelRatePercent, 5.25);
+  });
 });

@@ -42,9 +42,9 @@ export default async function RootLayout({
   return (
     <html
       lang={lang}
-      className={`${inter.variable} ${playfair.variable} h-full antialiased`}
+      className={`${inter.variable} ${playfair.variable} min-h-full antialiased`}
     >
-      <body className="flex min-h-full max-w-full min-w-0 flex-col font-sans">
+      <body className="flex min-h-full min-h-dvh max-w-full min-w-0 flex-col font-sans">
         <ConsentDefaultsScript />
         <JsonLdScript data={[organizationJsonLd(), webSiteJsonLd()]} />
         <Providers>

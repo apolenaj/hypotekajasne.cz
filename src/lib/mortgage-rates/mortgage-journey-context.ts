@@ -87,12 +87,35 @@ const MORTGAGE_PARAM_KEYS = [
   "purpose",
   "fixationMonths",
   "property",
+  "price",
+  "cena",
   "loan",
+  "uver",
   "equity",
+  "ownFunds",
+  "vlastniZdroje",
   "termYears",
+  "term",
+  "splatnost",
   "modelRate",
+  "rate",
+  "sazba",
   "ltv",
 ] as const;
+
+/** Normalize Majetio / partner aliases onto the canonical journey keys. */
+function normalizeJourneyAliases(
+  raw: Record<string, string | undefined>
+): Record<string, string | undefined> {
+  return {
+    ...raw,
+    property: raw.property ?? raw.price ?? raw.cena,
+    loan: raw.loan ?? raw.uver,
+    equity: raw.equity ?? raw.ownFunds ?? raw.vlastniZdroje,
+    termYears: raw.termYears ?? raw.term ?? raw.splatnost,
+    modelRate: raw.modelRate ?? raw.rate ?? raw.sazba,
+  };
+}
 
 function sanitizeMarketingToken(raw: string | null | undefined): string | undefined {
   if (!raw) return undefined;
@@ -174,8 +197,9 @@ function deriveOwnFunds(
 
 /** Parse full journey context from URL search params (server + client safe). */
 export function parseMortgageJourneyParams(
-  raw: Record<string, string | undefined>
+  rawInput: Record<string, string | undefined>
 ): MortgageJourneyParseResult {
+  const raw = normalizeJourneyAliases(rawInput);
   const marketing = parseMarketing(raw);
   const paramErrors: string[] = [];
 
