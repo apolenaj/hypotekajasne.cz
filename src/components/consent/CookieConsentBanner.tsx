@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useCookieConsent } from "@/components/consent/CookieConsentProvider";
 import { COOKIE_POLICY_VERSION } from "@/lib/legal/consent-versions";
 import type { CookieConsentRecord } from "@/lib/consent/records";
@@ -67,32 +67,17 @@ function CookieSettingsPanel({
   );
 }
 
-export function CookieConsentBanner() {
-  const {
-    ready,
-    openBanner,
-    openSettings,
-    setOpenSettings,
-    acceptAll,
-    rejectOptional,
-    saveSettings,
-    record,
-  } = useCookieConsent();
-  const [bannerVisible, setBannerVisible] = useState(false);
+function DelayedCookieMount({ children }: { children: ReactNode }) {
+  const [show, setShow] = useState(false);
 
   // Banner až po load + 6 s — mimo okno LCP, consent režim beze změny.
   useEffect(() => {
-    if (!ready || !openBanner) {
-      setBannerVisible(false);
-      return;
-    }
     let cancelled = false;
     let timer: number | undefined;
-    const show = () => {
-      if (!cancelled) setBannerVisible(true);
-    };
     const schedule = () => {
-      timer = window.setTimeout(show, 6000);
+      timer = window.setTimeout(() => {
+        if (!cancelled) setShow(true);
+      }, 6000);
     };
     if (document.readyState === "complete") {
       schedule();
@@ -104,14 +89,11 @@ export function CookieConsentBanner() {
       if (timer) window.clearTimeout(timer);
       window.removeEventListener("load", schedule);
     };
-  }, [ready, openBanner]);
+  }, []);
 
   // Reserve space so fixed banner does not cover bottom CTAs
   useEffect(() => {
-    if (!openBanner || !bannerVisible) {
-      document.documentElement.style.removeProperty("--cookie-banner-pad");
-      return;
-    }
+    if (!show) return;
     document.documentElement.style.setProperty(
       "--cookie-banner-pad",
       "calc(12rem + env(safe-area-inset-bottom, 0px))"
@@ -119,97 +101,115 @@ export function CookieConsentBanner() {
     return () => {
       document.documentElement.style.removeProperty("--cookie-banner-pad");
     };
-  }, [openBanner, bannerVisible]);
+  }, [show]);
 
-  if (!ready || !openBanner || !bannerVisible) return null;
+  if (!show) return null;
+  return children;
+}
+
+export function CookieConsentBanner() {
+  const {
+    ready,
+    openBanner,
+    openSettings,
+    setOpenSettings,
+    acceptAll,
+    rejectOptional,
+    saveSettings,
+    record,
+  } = useCookieConsent();
+
+  if (!ready || !openBanner) return null;
 
   return (
-    <div
-      role="dialog"
-      aria-labelledby="cookie-consent-title"
-      aria-modal="false"
-      className="fixed inset-x-0 bottom-0 z-[90] max-h-[min(70dvh,32rem)] overflow-y-auto p-3 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] sm:p-5 sm:pb-[max(1.25rem,env(safe-area-inset-bottom,0px))]"
-    >
-      <div className="mx-auto max-w-3xl rounded-2xl border border-border bg-white p-4 shadow-2xl shadow-black/15 sm:p-6">
-        <p
-          id="cookie-consent-title"
-          className="font-heading text-lg font-bold text-text-dark"
-        >
-          Cookies a soukromí
-        </p>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Nezbytné cookies potřebujeme pro fungování webu. Analytiku a marketing
-          spouštíme{" "}
-          <strong className="font-semibold text-text-dark">
-            jen po vašem souhlasu
-          </strong>{" "}
-          (ne na základě oprávněného zájmu). Verze zásad: {COOKIE_POLICY_VERSION}.{" "}
-          <Link
-            href={routes.legal.cookies}
-            className="font-semibold text-deep-teal underline"
+    <DelayedCookieMount>
+      <div
+        role="dialog"
+        aria-labelledby="cookie-consent-title"
+        aria-modal="false"
+        className="fixed inset-x-0 bottom-0 z-[90] max-h-[min(70dvh,32rem)] overflow-y-auto p-3 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] sm:p-5 sm:pb-[max(1.25rem,env(safe-area-inset-bottom,0px))]"
+      >
+        <div className="mx-auto max-w-3xl rounded-2xl border border-border bg-white p-4 shadow-2xl shadow-black/15 sm:p-6">
+          <p
+            id="cookie-consent-title"
+            className="font-heading text-lg font-bold text-text-dark"
           >
-            Zásady cookies
-          </Link>
-          {" · "}
-          <Link
-            href={routes.legal.gdpr}
-            className="font-semibold text-deep-teal underline"
-          >
-            GDPR
-          </Link>
-        </p>
+            Cookies a soukromí
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            Nezbytné cookies potřebujeme pro fungování webu. Analytiku a marketing
+            spouštíme{" "}
+            <strong className="font-semibold text-text-dark">
+              jen po vašem souhlasu
+            </strong>{" "}
+            (ne na základě oprávněného zájmu). Verze zásad: {COOKIE_POLICY_VERSION}.{" "}
+            <Link
+              href={routes.legal.cookies}
+              className="font-semibold text-deep-teal underline"
+            >
+              Zásady cookies
+            </Link>
+            {" · "}
+            <Link
+              href={routes.legal.gdpr}
+              className="font-semibold text-deep-teal underline"
+            >
+              GDPR
+            </Link>
+          </p>
 
-        {openSettings ? (
-          <CookieSettingsPanel
-            key={record?.decidedAt ?? "unset"}
-            record={record}
-            onSave={saveSettings}
-          />
-        ) : null}
+          {openSettings ? (
+            <CookieSettingsPanel
+              key={record?.decidedAt ?? "unset"}
+              record={record}
+              onSave={saveSettings}
+            />
+          ) : null}
 
-        {/* Stejná UX prominence — tři rovnocenné akce */}
-        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-          <button
-            type="button"
-            onClick={() => {
-              try {
-                acceptAll();
-              } catch (err) {
-                console.warn("[cookie-consent] acceptAll failed", err);
-              }
-            }}
-            className={cn(btnBase, "bg-deep-teal text-white hover:opacity-95")}
-          >
-            Přijmout vše
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              try {
-                rejectOptional();
-              } catch (err) {
-                console.warn("[cookie-consent] rejectOptional failed", err);
-              }
-            }}
-            className={cn(
-              btnBase,
-              "border-2 border-deep-teal bg-white text-deep-teal hover:bg-deep-teal/5"
-            )}
-          >
-            Odmítnout volitelné
-          </button>
-          <button
-            type="button"
-            onClick={() => setOpenSettings(true)}
-            className={cn(
-              btnBase,
-              "border-2 border-border bg-white text-text-dark hover:bg-slate-50"
-            )}
-          >
-            Nastavení
-          </button>
+          {/* Stejná UX prominence — tři rovnocenné akce */}
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            <button
+              type="button"
+              onClick={() => {
+                try {
+                  acceptAll();
+                } catch (err) {
+                  console.warn("[cookie-consent] acceptAll failed", err);
+                }
+              }}
+              className={cn(btnBase, "bg-deep-teal text-white hover:opacity-95")}
+            >
+              Přijmout vše
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                try {
+                  rejectOptional();
+                } catch (err) {
+                  console.warn("[cookie-consent] rejectOptional failed", err);
+                }
+              }}
+              className={cn(
+                btnBase,
+                "border-2 border-deep-teal bg-white text-deep-teal hover:bg-deep-teal/5"
+              )}
+            >
+              Odmítnout volitelné
+            </button>
+            <button
+              type="button"
+              onClick={() => setOpenSettings(true)}
+              className={cn(
+                btnBase,
+                "border-2 border-border bg-white text-text-dark hover:bg-slate-50"
+              )}
+            >
+              Nastavení
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </DelayedCookieMount>
   );
 }

@@ -1,0 +1,339 @@
+{
+  "critical": [],
+  "high": [],
+  "medium": [],
+  "low": [],
+  "priorFixes": {
+    "menuZIndex": "130",
+    "scrollLockAfterClose": "(empty)",
+    "menuOpenClose": true,
+    "homeOverflow": {
+      "scrollDiff": 0,
+      "offenders": [],
+      "canScrollY": true
+    },
+    "rechartsNeg1": 0
+  },
+  "routes": {
+    "checked": 37,
+    "status": {
+      "/": 200,
+      "/sazby": 200,
+      "/kalkulacky": 200,
+      "/kalkulacky/hypotecni": 200,
+      "/kalkulacky/koupe-vs-najem": 200,
+      "/kalkulacky/rodinny-rozpocet": 200,
+      "/kalkulacky/odhad-versus-kupni-cena": 200,
+      "/kalkulacky/historicky-vyvoj": 200,
+      "/kalkulacky/potencialni-vyvoj": 200,
+      "/kalkulacky/hypoteka-na-firmu": 200,
+      "/kalkulacky/budouci-prijem-z-najmu": 200,
+      "/kalkulacky/vystavba": 200,
+      "/investicni-rentgen": 200,
+      "/investicni-rentgen/ukazka": 200,
+      "/investicni-rentgen/modelar": 200,
+      "/investicni-rentgen/objednavka": 200,
+      "/investicni-rentgen/porovnani": 200,
+      "/akademie": 200,
+      "/akademie/ltv": 200,
+      "/akademie/hypoteky-v-praxi": 200,
+      "/akademie/hypoteky-v-praxi/prvni-hypoteka": 200,
+      "/akademie/cesty": 200,
+      "/faq": 200,
+      "/kontakt": 200,
+      "/navrh-na-miru": 200,
+      "/moje-moznosti": 200,
+      "/clanky": 200,
+      "/temata": 200,
+      "/pruvodce/prakticke-situace": 200,
+      "/pruvodce-investora": 200,
+      "/pruvodce-investora/ceska-republika": 200,
+      "/refinancovani-radar": 200,
+      "/o-nas": 200,
+      "/duvera": 200,
+      "/dashboard": 200,
+      "/hypotecni-akademie": 200,
+      "/en": 200
+    }
+  },
+  "cta": {
+    "checked": 698,
+    "broken": []
+  },
+  "calculators": {
+    "tested": [
+      "/kalkulacky/hypotecni",
+      "/kalkulacky/rodinny-rozpocet",
+      "/kalkulacky/koupe-vs-najem",
+      "/kalkulacky/odhad-versus-kupni-cena",
+      "/kalkulacky/vystavba",
+      "/kalkulacky/hypoteka-na-firmu",
+      "/kalkulacky/budouci-prijem-z-najmu"
+    ],
+    "math": [
+      {
+        "name": "annuity",
+        "principal": 4000000,
+        "rate": 5,
+        "years": 30,
+        "pay": 21473,
+        "ok": true
+      },
+      {
+        "name": "annuity",
+        "principal": 1000000,
+        "rate": 0,
+        "years": 20,
+        "pay": 4167,
+        "ok": true
+      },
+      {
+        "name": "annuity",
+        "principal": 5000000,
+        "rate": 8,
+        "years": 15,
+        "pay": 47783,
+        "ok": true
+      },
+      {
+        "name": "annuity",
+        "principal": 10000000,
+        "rate": 3.5,
+        "years": 25,
+        "pay": 50062,
+        "ok": true
+      },
+      {
+        "name": "mini-mortgage LTV+payment",
+        "loan": 4000000,
+        "payment": 21473,
+        "ltv": 80,
+        "ok": true
+      },
+      {
+        "name": "mini zero price",
+        "payment": 0,
+        "ok": true
+      }
+    ],
+    "ui": [
+      {
+        "path": "/kalkulacky/hypotecni",
+        "inputs": 5,
+        "brokenText": {
+          "nan": false,
+          "undef": false,
+          "inf": false
+        },
+        "after": {
+          "nan": false,
+          "undef": false,
+          "inf": false
+        },
+        "pageErrors": []
+      },
+      {
+        "path": "/kalkulacky/rodinny-rozpocet",
+        "inputs": 2,
+        "brokenText": {
+          "nan": false,
+          "undef": false,
+          "inf": false
+        },
+        "after": {
+          "nan": false,
+          "undef": false,
+          "inf": false
+        },
+        "pageErrors": []
+      },
+      {
+        "path": "/kalkulacky/koupe-vs-najem",
+        "inputs": 12,
+        "brokenText": {
+          "nan": false,
+          "undef": false,
+          "inf": false
+        },
+        "after": {
+          "nan": false,
+          "undef": false,
+          "inf": false
+        },
+        "pageErrors": []
+      },
+      {
+        "path": "/kalkulacky/odhad-versus-kupni-cena",
+        "inputs": 6,
+        "brokenText": {
+          "nan": false,
+          "undef": false,
+          "inf": false
+        },
+        "after": {
+          "nan": false,
+          "undef": false,
+          "inf": false
+        },
+        "pageErrors": []
+      },
+      {
+        "path": "/kalkulacky/vystavba",
+        "inputs": 16,
+        "brokenText": {
+          "nan": false,
+          "undef": false,
+          "inf": false
+        },
+        "after": {
+          "nan": false,
+          "undef": false,
+          "inf": false
+        },
+        "pageErrors": []
+      },
+      {
+        "path": "/kalkulacky/hypoteka-na-firmu",
+        "inputs": 9,
+        "brokenText": {
+          "nan": false,
+          "undef": false,
+          "inf": false
+        },
+        "after": {
+          "nan": false,
+          "undef": false,
+          "inf": false
+        },
+        "pageErrors": []
+      },
+      {
+        "path": "/kalkulacky/budouci-prijem-z-najmu",
+        "inputs": 9,
+        "brokenText": {
+          "nan": false,
+          "undef": false,
+          "inf": false
+        },
+        "after": {
+          "nan": false,
+          "undef": false,
+          "inf": false
+        },
+        "pageErrors": []
+      }
+    ]
+  },
+  "forms": {
+    "tested": [
+      "/kontakt",
+      "/navrh-na-miru"
+    ],
+    "results": [
+      {
+        "path": "/kontakt",
+        "name": "ContactView",
+        "emptySubmitShowsError": true
+      },
+      {
+        "path": "/navrh-na-miru",
+        "name": "LeadCapture/navrh",
+        "emptySubmitShowsError": null,
+        "note": "no submit button"
+      }
+    ]
+  },
+  "auth": {
+    "found": false,
+    "notes": "No public registration/login pages; dashboard exists without classic email signup UI."
+  },
+  "rentgen": {
+    "steps": [
+      {
+        "step": "landing",
+        "status": 200,
+        "url": "http://127.0.0.1:3000/investicni-rentgen"
+      },
+      {
+        "step": "balicek=digital",
+        "url": "http://127.0.0.1:3000/investicni-rentgen?balicek=digital"
+      },
+      {
+        "step": "ukazka",
+        "hasContent": true,
+        "nan": false
+      },
+      {
+        "step": "objednavka",
+        "hasForm": false,
+        "mentionsPrice": false
+      },
+      {
+        "step": "payCtaPresent",
+        "count": 0
+      }
+    ],
+    "ok": true
+  },
+  "console": {
+    "projectErrors": [],
+    "thirdParty": []
+  },
+  "network": {
+    "failed": []
+  },
+  "responsive": {
+    "viewports": [
+      "320x568",
+      "360x800",
+      "375x667",
+      "390x844",
+      "393x852",
+      "412x915",
+      "430x932",
+      "600x960",
+      "768x1024",
+      "800x1280",
+      "820x1180",
+      "834x1194",
+      "1024x1366",
+      "1280x800",
+      "1440x900",
+      "1920x1080"
+    ],
+    "landscape": [
+      "568x320",
+      "800x360",
+      "844x390",
+      "1024x768",
+      "1366x1024"
+    ],
+    "failures": []
+  },
+  "a11y": [
+    {
+      "type": "input-no-label",
+      "name": "name"
+    },
+    {
+      "type": "input-no-label",
+      "name": "email"
+    },
+    {
+      "type": "input-no-label",
+      "name": "phone"
+    },
+    {
+      "type": "input-no-label",
+      "name": "message"
+    },
+    {
+      "type": "input-no-label",
+      "name": "checkbox"
+    },
+    {
+      "type": "input-no-label",
+      "name": "checkbox"
+    }
+  ]
+}
