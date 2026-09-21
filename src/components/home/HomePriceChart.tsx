@@ -403,8 +403,8 @@ export function HomePriceChart() {
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_200px]">
         {hasModel ? (
-          <div className="h-72 min-w-0 touch-pan-y">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-72 min-w-0 w-full touch-pan-y">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <LineChart data={chart} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                 <CartesianGrid stroke="#e7ebe9" vertical={false} />
                 <XAxis dataKey="year" tick={{ fontSize: 12, fill: "#66706b" }} />
@@ -464,8 +464,8 @@ export function HomePriceChart() {
             </ResponsiveContainer>
           </div>
         ) : marketSeries ? (
-          <div className="h-72 min-w-0 touch-pan-y">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-72 min-w-0 w-full touch-pan-y">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <LineChart
                 data={marketChart}
                 margin={{ top: 8, right: 8, left: 4, bottom: 0 }}

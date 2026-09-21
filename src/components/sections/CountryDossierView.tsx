@@ -708,7 +708,7 @@ export function CountryDossierView({
         </div>
       </header>
 
-      <div className="sticky top-14 z-30 border-b border-border bg-[#f4f5f4]/95 px-4 py-3 backdrop-blur sm:top-16 lg:hidden">
+      <div className="sticky top-[72px] z-30 border-b border-border bg-[#f4f5f4]/95 px-4 py-3 backdrop-blur lg:hidden">
         <label htmlFor="country-section-nav" className="sr-only">
           Přeskočit na sekci
         </label>

@@ -375,15 +375,6 @@ export function Navbar() {
     initialFocusRef: closeButtonRef,
   });
 
-  useEffect(() => {
-    if (!mobileOpen) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previous;
-    };
-  }, [mobileOpen]);
-
   return (
     <header
       data-site-header
@@ -455,6 +446,7 @@ export function Navbar() {
         ref={navProbeRef}
         aria-hidden
         className="pointer-events-none fixed top-0 -left-[9999px] flex w-max items-center gap-x-2"
+        data-measure-probe="nav"
       >
         {primaryDesktopGroups.map((group) => (
           <span key={group.id} className={topLinkClass(false)}>
@@ -469,6 +461,7 @@ export function Navbar() {
         ref={ctaProbeRef}
         aria-hidden
         className="pointer-events-none fixed top-0 -left-[9999px]"
+        data-measure-probe="cta"
       >
         <HeaderCta />
       </div>
@@ -477,7 +470,7 @@ export function Navbar() {
         <div
           ref={drawerRef}
           id="mobile-nav-drawer"
-          className="fixed inset-0 z-[110]"
+          className="fixed inset-0 z-[130]"
           role="dialog"
           aria-modal="true"
           aria-labelledby={drawerTitleId}
@@ -485,7 +478,7 @@ export function Navbar() {
           <button
             type="button"
             className="absolute inset-0 bg-black/40"
-            aria-label="Zavřít menu"
+            aria-hidden="true"
             onClick={closeMobile}
             tabIndex={-1}
           />

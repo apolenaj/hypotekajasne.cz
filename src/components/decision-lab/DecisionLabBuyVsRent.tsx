@@ -599,7 +599,7 @@ export function DecisionLabBuyVsRent({ countryId }: Props) {
           Kumulativní náklady na bydlení v čase
         </p>
         <div className="h-[300px] w-full min-h-0 sm:h-[340px]">
-          <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             <LineChart data={result.series}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="label" tick={{ fontSize: 11 }} />
@@ -675,7 +675,7 @@ export function DecisionLabBuyVsRent({ countryId }: Props) {
           Vývoj čistého majetku u obou variant
         </p>
         <div className="h-[300px] w-full min-h-0 sm:h-[340px]">
-          <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             <LineChart data={result.series}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="label" tick={{ fontSize: 11 }} />

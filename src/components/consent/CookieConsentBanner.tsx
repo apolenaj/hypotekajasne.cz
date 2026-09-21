@@ -112,7 +112,10 @@ export function CookieConsentBanner() {
       document.documentElement.style.removeProperty("--cookie-banner-pad");
       return;
     }
-    document.documentElement.style.setProperty("--cookie-banner-pad", "12rem");
+    document.documentElement.style.setProperty(
+      "--cookie-banner-pad",
+      "calc(12rem + env(safe-area-inset-bottom, 0px))"
+    );
     return () => {
       document.documentElement.style.removeProperty("--cookie-banner-pad");
     };
@@ -125,7 +128,7 @@ export function CookieConsentBanner() {
       role="dialog"
       aria-labelledby="cookie-consent-title"
       aria-modal="false"
-      className="fixed inset-x-0 bottom-0 z-[100] max-h-[min(70vh,32rem)] overflow-y-auto p-3 sm:p-5"
+      className="fixed inset-x-0 bottom-0 z-[90] max-h-[min(70dvh,32rem)] overflow-y-auto p-3 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] sm:p-5 sm:pb-[max(1.25rem,env(safe-area-inset-bottom,0px))]"
     >
       <div className="mx-auto max-w-3xl rounded-2xl border border-border bg-white p-4 shadow-2xl shadow-black/15 sm:p-6">
         <p

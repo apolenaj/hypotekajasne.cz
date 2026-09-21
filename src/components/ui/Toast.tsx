@@ -34,7 +34,7 @@ export function Toast({
       role="status"
       aria-live="polite"
       className={cn(
-        "fixed bottom-4 left-1/2 z-[60] flex w-[calc(100%-2rem)] max-w-md -translate-x-1/2 items-start gap-3 rounded-2xl border border-emerald-200 bg-white px-4 py-3 shadow-lg ring-1 ring-emerald-900/5",
+        "fixed bottom-4 left-1/2 z-[60] flex w-[calc(100%-2rem)] max-w-md -translate-x-1/2 items-start gap-3 rounded-2xl border border-emerald-200 bg-white px-4 py-3 shadow-lg ring-1 ring-emerald-900/5 mb-[env(safe-area-inset-bottom,0px)]",
         "animate-in fade-in slide-in-from-bottom-2 duration-200 motion-reduce:animate-none",
         className
       )}

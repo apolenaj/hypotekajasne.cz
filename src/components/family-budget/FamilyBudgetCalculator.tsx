@@ -574,7 +574,7 @@ export function FamilyBudgetCalculator() {
                 Graf měsíčních příjmů a výdajů. Typické saldo {formatMoney(result.typicalMonthlySurplusCzk)}.
               </p>
               <div className="mt-3 h-64 min-w-0">
-                <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                   <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" tick={{ fontSize: 11 }} label={{ value: "Měsíc", position: "insideBottom", offset: -2 }} />
@@ -593,7 +593,7 @@ export function FamilyBudgetCalculator() {
                 Vývoj rezervy. Nejnižší stav {formatMoney(result.lowestReserveCzk)}.
               </p>
               <div className="mt-3 h-64 min-w-0">
-                <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                   <AreaChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" tick={{ fontSize: 11 }} />

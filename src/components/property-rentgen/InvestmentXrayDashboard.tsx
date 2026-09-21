@@ -332,7 +332,7 @@ function CashFlowModel() {
         aria-labelledby={`${tabId}-${scenarioId}`}
         className="mt-5 h-[260px] w-full min-h-0 sm:h-[280px]"
       >
-        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
           <BarChart
             data={waterfall}
             margin={{ top: 8, right: 4, left: 0, bottom: 4 }}

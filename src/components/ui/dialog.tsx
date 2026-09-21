@@ -47,7 +47,7 @@ export function Dialog({
         aria-labelledby={title ? titleId : undefined}
         aria-label={title ? undefined : "Dialog"}
         className={cn(
-          "absolute left-1/2 top-1/2 flex max-h-[min(90vh,40rem)] w-[calc(100%-2rem)] max-w-3xl -translate-x-1/2 -translate-y-1/2 flex-col",
+          "absolute left-1/2 top-1/2 flex max-h-[min(90dvh,40rem)] w-[calc(100%-2rem)] max-w-3xl -translate-x-1/2 -translate-y-1/2 flex-col",
           "rounded-3xl bg-white shadow-2xl ring-1 ring-gray-900/10 overflow-hidden",
           "animate-in fade-in zoom-in-95 duration-200 motion-reduce:animate-none"
         )}

@@ -1,0 +1,1169 @@
+{
+  "base": "http://127.0.0.1:3000",
+  "checked": 187,
+  "failures": 22,
+  "failureSamples": [
+    {
+      "path": "/kalkulacky",
+      "vp": "320x568",
+      "status": 200,
+      "error": null,
+      "scrollDiff": 0,
+      "offenders": [
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9999,
+          "right": -9897,
+          "width": 102,
+          "vw": 320
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9889,
+          "right": -9756,
+          "width": 133,
+          "vw": 320
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9748,
+          "right": -9649,
+          "width": 98,
+          "vw": 320
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9641,
+          "right": -9531,
+          "width": 111,
+          "vw": 320
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9523,
+          "right": -9465,
+          "width": 57,
+          "vw": 320
+        }
+      ],
+      "nav": {
+        "open": true,
+        "drawerH": 568,
+        "vh": 568,
+        "bodyOverflow": "hidden",
+        "scrollH": 723,
+        "clientH": 512,
+        "canScrollMenu": true,
+        "scrolled": true
+      },
+      "bad": true
+    },
+    {
+      "path": "/kalkulacky",
+      "vp": "360x800",
+      "status": 200,
+      "error": null,
+      "scrollDiff": 0,
+      "offenders": [
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9999,
+          "right": -9897,
+          "width": 102,
+          "vw": 360
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9889,
+          "right": -9756,
+          "width": 133,
+          "vw": 360
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9748,
+          "right": -9649,
+          "width": 98,
+          "vw": 360
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9641,
+          "right": -9531,
+          "width": 111,
+          "vw": 360
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9523,
+          "right": -9465,
+          "width": 57,
+          "vw": 360
+        }
+      ],
+      "nav": {
+        "open": true,
+        "drawerH": 800,
+        "vh": 800,
+        "bodyOverflow": "hidden",
+        "scrollH": 744,
+        "clientH": 744,
+        "canScrollMenu": false,
+        "scrolled": false
+      },
+      "bad": true
+    },
+    {
+      "path": "/kalkulacky",
+      "vp": "390x844",
+      "status": 200,
+      "error": null,
+      "scrollDiff": 0,
+      "offenders": [
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9999,
+          "right": -9897,
+          "width": 102,
+          "vw": 390
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9889,
+          "right": -9756,
+          "width": 133,
+          "vw": 390
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9748,
+          "right": -9649,
+          "width": 98,
+          "vw": 390
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9641,
+          "right": -9531,
+          "width": 111,
+          "vw": 390
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9523,
+          "right": -9465,
+          "width": 57,
+          "vw": 390
+        }
+      ],
+      "nav": {
+        "open": true,
+        "drawerH": 844,
+        "vh": 844,
+        "bodyOverflow": "hidden",
+        "scrollH": 788,
+        "clientH": 788,
+        "canScrollMenu": false,
+        "scrolled": false
+      },
+      "bad": true
+    },
+    {
+      "path": "/kalkulacky",
+      "vp": "430x932",
+      "status": 200,
+      "error": null,
+      "scrollDiff": 0,
+      "offenders": [
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9999,
+          "right": -9897,
+          "width": 102,
+          "vw": 430
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9889,
+          "right": -9756,
+          "width": 133,
+          "vw": 430
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9748,
+          "right": -9649,
+          "width": 98,
+          "vw": 430
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9641,
+          "right": -9531,
+          "width": 111,
+          "vw": 430
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9523,
+          "right": -9465,
+          "width": 57,
+          "vw": 430
+        }
+      ],
+      "nav": {
+        "open": true,
+        "drawerH": 932,
+        "vh": 932,
+        "bodyOverflow": "hidden",
+        "scrollH": 876,
+        "clientH": 876,
+        "canScrollMenu": false,
+        "scrolled": false
+      },
+      "bad": true
+    },
+    {
+      "path": "/kalkulacky/koupe-vs-najem",
+      "vp": "320x568",
+      "status": 200,
+      "error": null,
+      "scrollDiff": 0,
+      "offenders": [
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9999,
+          "right": -9897,
+          "width": 102,
+          "vw": 320
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9889,
+          "right": -9756,
+          "width": 133,
+          "vw": 320
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9748,
+          "right": -9649,
+          "width": 98,
+          "vw": 320
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9641,
+          "right": -9531,
+          "width": 111,
+          "vw": 320
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9523,
+          "right": -9465,
+          "width": 57,
+          "vw": 320
+        }
+      ],
+      "nav": {
+        "open": true,
+        "drawerH": 568,
+        "vh": 568,
+        "bodyOverflow": "hidden",
+        "scrollH": 723,
+        "clientH": 512,
+        "canScrollMenu": true,
+        "scrolled": true
+      },
+      "bad": true
+    },
+    {
+      "path": "/kalkulacky/koupe-vs-najem",
+      "vp": "360x800",
+      "status": 200,
+      "error": null,
+      "scrollDiff": 0,
+      "offenders": [
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9999,
+          "right": -9897,
+          "width": 102,
+          "vw": 360
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9889,
+          "right": -9756,
+          "width": 133,
+          "vw": 360
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9748,
+          "right": -9649,
+          "width": 98,
+          "vw": 360
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9641,
+          "right": -9531,
+          "width": 111,
+          "vw": 360
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9523,
+          "right": -9465,
+          "width": 57,
+          "vw": 360
+        }
+      ],
+      "nav": {
+        "open": true,
+        "drawerH": 800,
+        "vh": 800,
+        "bodyOverflow": "hidden",
+        "scrollH": 744,
+        "clientH": 744,
+        "canScrollMenu": false,
+        "scrolled": false
+      },
+      "bad": true
+    },
+    {
+      "path": "/kalkulacky/koupe-vs-najem",
+      "vp": "390x844",
+      "status": 200,
+      "error": null,
+      "scrollDiff": 0,
+      "offenders": [
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9999,
+          "right": -9897,
+          "width": 102,
+          "vw": 390
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9889,
+          "right": -9756,
+          "width": 133,
+          "vw": 390
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9748,
+          "right": -9649,
+          "width": 98,
+          "vw": 390
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9641,
+          "right": -9531,
+          "width": 111,
+          "vw": 390
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9523,
+          "right": -9465,
+          "width": 57,
+          "vw": 390
+        }
+      ],
+      "nav": {
+        "open": true,
+        "drawerH": 844,
+        "vh": 844,
+        "bodyOverflow": "hidden",
+        "scrollH": 788,
+        "clientH": 788,
+        "canScrollMenu": false,
+        "scrolled": false
+      },
+      "bad": true
+    },
+    {
+      "path": "/kalkulacky/koupe-vs-najem",
+      "vp": "430x932",
+      "status": 200,
+      "error": null,
+      "scrollDiff": 0,
+      "offenders": [
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9999,
+          "right": -9897,
+          "width": 102,
+          "vw": 430
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9889,
+          "right": -9756,
+          "width": 133,
+          "vw": 430
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9748,
+          "right": -9649,
+          "width": 98,
+          "vw": 430
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9641,
+          "right": -9531,
+          "width": 111,
+          "vw": 430
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9523,
+          "right": -9465,
+          "width": 57,
+          "vw": 430
+        }
+      ],
+      "nav": {
+        "open": true,
+        "drawerH": 932,
+        "vh": 932,
+        "bodyOverflow": "hidden",
+        "scrollH": 876,
+        "clientH": 876,
+        "canScrollMenu": false,
+        "scrolled": false
+      },
+      "bad": true
+    },
+    {
+      "path": "/investicni-rentgen",
+      "vp": "320x568",
+      "status": 200,
+      "error": null,
+      "scrollDiff": 0,
+      "offenders": [
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9999,
+          "right": -9897,
+          "width": 102,
+          "vw": 320
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9889,
+          "right": -9756,
+          "width": 133,
+          "vw": 320
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9748,
+          "right": -9649,
+          "width": 98,
+          "vw": 320
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9641,
+          "right": -9531,
+          "width": 111,
+          "vw": 320
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9523,
+          "right": -9465,
+          "width": 57,
+          "vw": 320
+        }
+      ],
+      "nav": {
+        "open": true,
+        "drawerH": 568,
+        "vh": 568,
+        "bodyOverflow": "hidden",
+        "scrollH": 723,
+        "clientH": 512,
+        "canScrollMenu": true,
+        "scrolled": true
+      },
+      "bad": true
+    },
+    {
+      "path": "/investicni-rentgen",
+      "vp": "360x800",
+      "status": 200,
+      "error": null,
+      "scrollDiff": 0,
+      "offenders": [
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9999,
+          "right": -9897,
+          "width": 102,
+          "vw": 360
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9889,
+          "right": -9756,
+          "width": 133,
+          "vw": 360
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9748,
+          "right": -9649,
+          "width": 98,
+          "vw": 360
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9641,
+          "right": -9531,
+          "width": 111,
+          "vw": 360
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9523,
+          "right": -9465,
+          "width": 57,
+          "vw": 360
+        }
+      ],
+      "nav": {
+        "open": true,
+        "drawerH": 800,
+        "vh": 800,
+        "bodyOverflow": "hidden",
+        "scrollH": 744,
+        "clientH": 744,
+        "canScrollMenu": false,
+        "scrolled": false
+      },
+      "bad": true
+    },
+    {
+      "path": "/investicni-rentgen",
+      "vp": "390x844",
+      "status": 200,
+      "error": null,
+      "scrollDiff": 0,
+      "offenders": [
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9999,
+          "right": -9897,
+          "width": 102,
+          "vw": 390
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9889,
+          "right": -9756,
+          "width": 133,
+          "vw": 390
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9748,
+          "right": -9649,
+          "width": 98,
+          "vw": 390
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9641,
+          "right": -9531,
+          "width": 111,
+          "vw": 390
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9523,
+          "right": -9465,
+          "width": 57,
+          "vw": 390
+        }
+      ],
+      "nav": {
+        "open": true,
+        "drawerH": 844,
+        "vh": 844,
+        "bodyOverflow": "hidden",
+        "scrollH": 788,
+        "clientH": 788,
+        "canScrollMenu": false,
+        "scrolled": false
+      },
+      "bad": true
+    },
+    {
+      "path": "/investicni-rentgen",
+      "vp": "430x932",
+      "status": 200,
+      "error": null,
+      "scrollDiff": 0,
+      "offenders": [
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9999,
+          "right": -9897,
+          "width": 102,
+          "vw": 430
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9889,
+          "right": -9756,
+          "width": 133,
+          "vw": 430
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9748,
+          "right": -9649,
+          "width": 98,
+          "vw": 430
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9641,
+          "right": -9531,
+          "width": 111,
+          "vw": 430
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9523,
+          "right": -9465,
+          "width": 57,
+          "vw": 430
+        }
+      ],
+      "nav": {
+        "open": true,
+        "drawerH": 932,
+        "vh": 932,
+        "bodyOverflow": "hidden",
+        "scrollH": 876,
+        "clientH": 876,
+        "canScrollMenu": false,
+        "scrolled": false
+      },
+      "bad": true
+    },
+    {
+      "path": "/investicni-rentgen/ukazka",
+      "vp": "320x568",
+      "status": 200,
+      "error": null,
+      "scrollDiff": 0,
+      "offenders": [
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9999,
+          "right": -9897,
+          "width": 102,
+          "vw": 320
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9889,
+          "right": -9756,
+          "width": 133,
+          "vw": 320
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9748,
+          "right": -9649,
+          "width": 98,
+          "vw": 320
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9641,
+          "right": -9531,
+          "width": 111,
+          "vw": 320
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9523,
+          "right": -9465,
+          "width": 57,
+          "vw": 320
+        }
+      ],
+      "nav": {
+        "open": true,
+        "drawerH": 568,
+        "vh": 568,
+        "bodyOverflow": "hidden",
+        "scrollH": 723,
+        "clientH": 512,
+        "canScrollMenu": true,
+        "scrolled": true
+      },
+      "bad": true
+    },
+    {
+      "path": "/investicni-rentgen/ukazka",
+      "vp": "360x800",
+      "status": 200,
+      "error": null,
+      "scrollDiff": 0,
+      "offenders": [
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9999,
+          "right": -9897,
+          "width": 102,
+          "vw": 360
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9889,
+          "right": -9756,
+          "width": 133,
+          "vw": 360
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9748,
+          "right": -9649,
+          "width": 98,
+          "vw": 360
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9641,
+          "right": -9531,
+          "width": 111,
+          "vw": 360
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9523,
+          "right": -9465,
+          "width": 57,
+          "vw": 360
+        }
+      ],
+      "nav": {
+        "open": true,
+        "drawerH": 800,
+        "vh": 800,
+        "bodyOverflow": "hidden",
+        "scrollH": 744,
+        "clientH": 744,
+        "canScrollMenu": false,
+        "scrolled": false
+      },
+      "bad": true
+    },
+    {
+      "path": "/investicni-rentgen/ukazka",
+      "vp": "390x844",
+      "status": 200,
+      "error": null,
+      "scrollDiff": 0,
+      "offenders": [
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9999,
+          "right": -9897,
+          "width": 102,
+          "vw": 390
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9889,
+          "right": -9756,
+          "width": 133,
+          "vw": 390
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9748,
+          "right": -9649,
+          "width": 98,
+          "vw": 390
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9641,
+          "right": -9531,
+          "width": 111,
+          "vw": 390
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9523,
+          "right": -9465,
+          "width": 57,
+          "vw": 390
+        }
+      ],
+      "nav": {
+        "open": true,
+        "drawerH": 844,
+        "vh": 844,
+        "bodyOverflow": "hidden",
+        "scrollH": 788,
+        "clientH": 788,
+        "canScrollMenu": false,
+        "scrolled": false
+      },
+      "bad": true
+    },
+    {
+      "path": "/investicni-rentgen/ukazka",
+      "vp": "430x932",
+      "status": 200,
+      "error": null,
+      "scrollDiff": 0,
+      "offenders": [
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9999,
+          "right": -9897,
+          "width": 102,
+          "vw": 430
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9889,
+          "right": -9756,
+          "width": 133,
+          "vw": 430
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9748,
+          "right": -9649,
+          "width": 98,
+          "vw": 430
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9641,
+          "right": -9531,
+          "width": 111,
+          "vw": 430
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9523,
+          "right": -9465,
+          "width": 57,
+          "vw": 430
+        }
+      ],
+      "nav": {
+        "open": true,
+        "drawerH": 932,
+        "vh": 932,
+        "bodyOverflow": "hidden",
+        "scrollH": 876,
+        "clientH": 876,
+        "canScrollMenu": false,
+        "scrolled": false
+      },
+      "bad": true
+    },
+    {
+      "path": "/investicni-rentgen/ukazka",
+      "vp": "768x1024",
+      "status": 200,
+      "error": null,
+      "scrollDiff": 0,
+      "offenders": [
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9999,
+          "right": -9897,
+          "width": 102,
+          "vw": 768
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9889,
+          "right": -9756,
+          "width": 133,
+          "vw": 768
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9748,
+          "right": -9649,
+          "width": 98,
+          "vw": 768
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9641,
+          "right": -9531,
+          "width": 111,
+          "vw": 768
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9523,
+          "right": -9465,
+          "width": 57,
+          "vw": 768
+        }
+      ],
+      "nav": {
+        "open": true,
+        "drawerH": 1024,
+        "vh": 1024,
+        "bodyOverflow": "hidden",
+        "scrollH": 968,
+        "clientH": 968,
+        "canScrollMenu": false,
+        "scrolled": false
+      },
+      "bad": true
+    },
+    {
+      "path": "/investicni-rentgen",
+      "vp": "340x700",
+      "status": 200,
+      "scrollDiff": 0,
+      "offenders": [
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9999,
+          "right": -9897,
+          "width": 102,
+          "vw": 340
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9889,
+          "right": -9756,
+          "width": 133,
+          "vw": 340
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9748,
+          "right": -9649,
+          "width": 98,
+          "vw": 340
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9641,
+          "right": -9531,
+          "width": 111,
+          "vw": 340
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9523,
+          "right": -9465,
+          "width": 57,
+          "vw": 340
+        }
+      ],
+      "bad": true,
+      "sweep": true
+    },
+    {
+      "path": "/investicni-rentgen",
+      "vp": "375x667",
+      "status": 200,
+      "scrollDiff": 0,
+      "offenders": [
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9999,
+          "right": -9897,
+          "width": 102,
+          "vw": 375
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9889,
+          "right": -9756,
+          "width": 133,
+          "vw": 375
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9748,
+          "right": -9649,
+          "width": 98,
+          "vw": 375
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9641,
+          "right": -9531,
+          "width": 111,
+          "vw": 375
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9523,
+          "right": -9465,
+          "width": 57,
+          "vw": 375
+        }
+      ],
+      "bad": true,
+      "sweep": true
+    },
+    {
+      "path": "/investicni-rentgen",
+      "vp": "393x852",
+      "status": 200,
+      "scrollDiff": 0,
+      "offenders": [
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9999,
+          "right": -9897,
+          "width": 102,
+          "vw": 393
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9889,
+          "right": -9756,
+          "width": 133,
+          "vw": 393
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9748,
+          "right": -9649,
+          "width": 98,
+          "vw": 393
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9641,
+          "right": -9531,
+          "width": 111,
+          "vw": 393
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9523,
+          "right": -9465,
+          "width": 57,
+          "vw": 393
+        }
+      ],
+      "bad": true,
+      "sweep": true
+    },
+    {
+      "path": "/investicni-rentgen",
+      "vp": "412x915",
+      "status": 200,
+      "scrollDiff": 0,
+      "offenders": [
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9999,
+          "right": -9897,
+          "width": 102,
+          "vw": 412
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9889,
+          "right": -9756,
+          "width": 133,
+          "vw": 412
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9748,
+          "right": -9649,
+          "width": 98,
+          "vw": 412
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9641,
+          "right": -9531,
+          "width": 111,
+          "vw": 412
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9523,
+          "right": -9465,
+          "width": 57,
+          "vw": 412
+        }
+      ],
+      "bad": true,
+      "sweep": true
+    },
+    {
+      "path": "/investicni-rentgen",
+      "vp": "480x800",
+      "status": 200,
+      "scrollDiff": 0,
+      "offenders": [
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9999,
+          "right": -9897,
+          "width": 102,
+          "vw": 480
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9889,
+          "right": -9756,
+          "width": 133,
+          "vw": 480
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9748,
+          "right": -9649,
+          "width": 98,
+          "vw": 480
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9641,
+          "right": -9531,
+          "width": 111,
+          "vw": 480
+        },
+        {
+          "sel": "span.inline-flex.h-10.shrink-0.items-center",
+          "left": -9523,
+          "right": -9465,
+          "width": 57,
+          "vw": 480
+        }
+      ],
+      "bad": true,
+      "sweep": true
+    }
+  ],
+  "navIssues": [],
+  "bodyScrollLockLeaks": []
+}

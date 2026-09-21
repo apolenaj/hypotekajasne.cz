@@ -245,7 +245,14 @@ describe("navbar overflow guards (static source)", () => {
     assert.ok(navbar.includes("overflow-x-hidden"));
     assert.ok(navbar.includes('aria-label="Zavřít menu"'));
     assert.ok(navbar.includes("min-h-11"));
-    assert.ok(navbar.includes('document.body.style.overflow = "hidden"'));
+    // Scroll lock lives in useFocusTrap (default lockScroll=true) — do not
+    // double-lock in Navbar (cleanup order would leave body overflow:hidden).
+    assert.ok(!navbar.includes('document.body.style.overflow = "hidden"'));
+    const focusTrap = readFileSync(
+      join(ROOT, "lib/a11y/focus-trap.ts"),
+      "utf8"
+    );
+    assert.ok(focusTrap.includes("lockScroll = true"));
   });
 
   it("home-below-fold does not reserve remembered inline size (mobile overflow)", () => {

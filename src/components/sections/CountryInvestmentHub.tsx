@@ -371,7 +371,7 @@ export function CountryInvestmentHub({ countryId }: CountryInvestmentHubProps) {
         </div>
       </div>
 
-      <div className="sticky top-14 z-40 bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm sm:top-16">
+      <div className="sticky top-[72px] z-40 border-b border-gray-200 bg-white/90 shadow-sm backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4">
           <ul className="-mx-4 flex gap-6 overflow-x-auto px-4 text-sm font-bold text-gray-600 py-4 [scrollbar-width:thin] sm:mx-0 sm:px-0">
             {SUB_NAV_LINKS.map((link) => (

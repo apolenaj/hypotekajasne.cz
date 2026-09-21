@@ -503,7 +503,7 @@ function MiniMortgageCalculatorCore({
               role="tab"
               aria-selected={heroMode === id}
               className={cn(
-                "h-9 rounded-lg px-1 text-xs font-semibold sm:text-[13px]",
+                "min-h-10 rounded-lg px-0.5 py-1.5 text-[11px] font-semibold leading-tight sm:px-1 sm:text-[13px]",
                 heroMode === id
                   ? "bg-white text-deep-teal shadow-sm"
                   : "text-gray-600 hover:text-deep-teal"
