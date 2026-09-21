@@ -38,9 +38,9 @@ if (report.difference !== 0) {
   process.exit(1);
 }
 if (
-  report.forbiddenValuesPresent.csStale509 ||
+  report.forbiddenValuesPresent.csStale494 ||
   report.forbiddenValuesPresent.kbStale539 ||
-  report.forbiddenValuesPresent.kbStale579 ||
+  report.forbiddenValuesPresent.kbStale524 ||
   report.forbiddenValuesPresent.csobHoldRates ||
   report.forbiddenValuesPresent.rbKlasikRates
 ) {

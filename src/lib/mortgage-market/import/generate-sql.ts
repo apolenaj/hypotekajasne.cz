@@ -37,11 +37,11 @@ export type SqlGenerationReport = {
   excludedHoldRateIds: string[];
   ratesMissingPrimaryEvidence: string[];
   forbiddenValuesPresent: {
-    /** Stale prior CS Oznámení 3y 5.09 (replaced by current 4.94). */
-    csStale509: boolean;
+    /** Stale prior CS Oznámení 3y 4.94 (replaced by current 5.09). */
+    csStale494: boolean;
     /** Stale prior KB 3y matrix values. */
     kbStale539: boolean;
-    kbStale579: boolean;
+    kbStale524: boolean;
     csobHoldRates: boolean;
     rbKlasikRates: boolean;
   };
@@ -555,7 +555,7 @@ from public.mortgage_rate_variants
 where is_active
   and ((ltv_min is null) <> (ltv_max is null));
 
--- H) Česká spořitelna — current Oznámení matrix (incl. 4.94 at 2y/3y)
+-- H) Česká spořitelna — current Oznámení matrix (incl. 5.09 at 2y/3y)
 select v.fixation_months, v.nominal_interest_rate, v.pricing_scenario_key
 from public.mortgage_rate_variants v
 join public.mortgage_catalog_products p on p.id = v.product_id
@@ -563,17 +563,17 @@ join public.mortgage_lenders l on l.id = p.lender_id
 where v.is_active and l.slug = 'ceska-sporitelna'
 order by v.fixation_months nulls last;
 
-select count(*)::int as cs_3y_494_count
+select count(*)::int as cs_3y_509_count
 from public.mortgage_rate_variants v
 join public.mortgage_catalog_products p on p.id = v.product_id
 join public.mortgage_lenders l on l.id = p.lender_id
 where v.is_active
   and l.slug = 'ceska-sporitelna'
   and v.fixation_months = 36
-  and v.nominal_interest_rate = 4.94
+  and v.nominal_interest_rate = 5.09
   and v.pricing_scenario_key = 'oznameni_account_ppi_budoucnost';
 
--- I) KB — confirm stale 3y matrix absent; current 3y <=80 = 5.24 present
+-- I) KB — confirm stale 3y matrix absent; current 3y <=80 = 5.69 present
 select count(*)::int as kb_stale_3y_539_count
 from public.mortgage_rate_variants v
 join public.mortgage_catalog_products p on p.id = v.product_id
@@ -583,14 +583,14 @@ where v.is_active
   and v.fixation_months = 36
   and v.nominal_interest_rate = 5.39;
 
-select count(*)::int as kb_current_3y_524_count
+select count(*)::int as kb_current_3y_569_count
 from public.mortgage_rate_variants v
 join public.mortgage_catalog_products p on p.id = v.product_id
 join public.mortgage_lenders l on l.id = p.lender_id
 where v.is_active
   and l.slug = 'komercni-banka'
   and v.fixation_months = 36
-  and v.nominal_interest_rate = 5.24
+  and v.nominal_interest_rate = 5.69
   and v.pricing_scenario_key = 'minimum_rate_by_fixation_ltv_le_80';
 
 -- J) CSOB active retail rate variants (expect 0)
@@ -638,21 +638,23 @@ export function generateMortgageMarketImportSql(
   for (const r of readyRates) {
     if (
       r.recordId === "kb-mortgage-3y-le80" &&
-      Math.abs(r.nominalInterestRate - 5.39) < 1e-9
+      (Math.abs(r.nominalInterestRate - 5.24) < 1e-9 ||
+        Math.abs(r.nominalInterestRate - 5.39) < 1e-9)
     ) {
-      throw new Error("STOP: stale KB 3y 5.39 must not be IMPORT_READY");
+      throw new Error("STOP: stale KB 3y le80 matrix must not be IMPORT_READY");
     }
     if (
       r.recordId === "kb-mortgage-3y-gt80-90" &&
-      Math.abs(r.nominalInterestRate - 5.79) < 1e-9
+      (Math.abs(r.nominalInterestRate - 5.64) < 1e-9 ||
+        Math.abs(r.nominalInterestRate - 5.79) < 1e-9)
     ) {
-      throw new Error("STOP: stale KB 3y 5.79 must not be IMPORT_READY");
+      throw new Error("STOP: stale KB 3y gt80 matrix must not be IMPORT_READY");
     }
     if (
       r.recordId === "cs-oznameni-3y" &&
-      Math.abs(r.nominalInterestRate - 5.09) < 1e-9
+      Math.abs(r.nominalInterestRate - 4.94) < 1e-9
     ) {
-      throw new Error("STOP: stale CS Oznámení 3y 5.09 must not be IMPORT_READY");
+      throw new Error("STOP: stale CS Oznámení 3y 4.94 must not be IMPORT_READY");
     }
     if (r.pricingScenarioKey.includes("unreconciled")) {
       throw new Error("STOP: unreconciled campaign scenario must not be IMPORT_READY");
@@ -914,17 +916,17 @@ begin
     raise exception 'IMPORT ASSERT: duplicate active identities: %', dupes;
   end if;
 
-  -- Current CS Oznámení 3y must be 4.94 (not stale 5.09)
+  -- Current CS Oznámení 3y must be 5.09 (not stale 4.94)
   select count(*) into cs_494 from public.mortgage_rate_variants v
   join public.mortgage_catalog_products p on p.id = v.product_id
   join public.mortgage_lenders l on l.id = p.lender_id
   where v.is_active and l.slug = 'ceska-sporitelna'
     and v.fixation_months = 36
-    and v.nominal_interest_rate = 4.94
+    and v.nominal_interest_rate = 5.09
     and v.pricing_scenario_key = 'oznameni_account_ppi_budoucnost';
-  if cs_494 <> 1 then raise exception 'IMPORT ASSERT: expected CS 3y Oznámení 4.94'; end if;
+  if cs_494 <> 1 then raise exception 'IMPORT ASSERT: expected CS 3y Oznámení 5.09'; end if;
 
-  -- Stale KB 3y 5.39 must be gone; current 5.24 must exist
+  -- Stale KB 3y 5.39 must be gone; current 5.69 must exist
   select count(*) into kb_514 from public.mortgage_rate_variants v
   join public.mortgage_catalog_products p on p.id = v.product_id
   join public.mortgage_lenders l on l.id = p.lender_id
@@ -967,20 +969,20 @@ commit;
       .filter((r) => !PRIMARY.has(r.evidence.sourceType))
       .map((r) => r.recordId),
     forbiddenValuesPresent: {
-      csStale509: readyRates.some(
+      csStale494: readyRates.some(
         (r) =>
           r.recordId === "cs-oznameni-3y" &&
-          Math.abs(r.nominalInterestRate - 5.09) < 1e-9
+          Math.abs(r.nominalInterestRate - 4.94) < 1e-9
       ),
       kbStale539: readyRates.some(
         (r) =>
           r.recordId === "kb-mortgage-3y-le80" &&
           Math.abs(r.nominalInterestRate - 5.39) < 1e-9
       ),
-      kbStale579: readyRates.some(
+      kbStale524: readyRates.some(
         (r) =>
-          r.recordId === "kb-mortgage-3y-gt80-90" &&
-          Math.abs(r.nominalInterestRate - 5.79) < 1e-9
+          r.recordId === "kb-mortgage-3y-le80" &&
+          Math.abs(r.nominalInterestRate - 5.24) < 1e-9
       ),
       csobHoldRates: readyRates.some((r) => r.lenderSlug === "csob"),
       rbKlasikRates: readyRates.some((r) => r.productSlug === "retail-klasik"),

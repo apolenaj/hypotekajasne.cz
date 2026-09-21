@@ -42,7 +42,7 @@ async function loadOffers(query: MortgageJourneyCore, ltvFilter: number) {
   }
   return getMortgageOffers(getCz20260809Catalog(), {
     ...base,
-    nowMs: Date.parse("2026-08-09T12:00:00.000Z"),
+    nowMs: Date.parse("2026-09-21T12:00:00.000Z"),
   });
 }
 

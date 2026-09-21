@@ -14,18 +14,18 @@ import {
 import { PUBLIC_RATE_FRESH_MAX_AGE_MS } from "@/lib/rates/mortgage-rate-freshness";
 
 const catalog = getCz20260809Catalog();
-const NOW = Date.parse("2026-08-09T12:00:00.000Z");
+const NOW = Date.parse("2026-09-21T12:00:00.000Z");
 const OFFICIAL_URL = "https://www.example-bank.test/rates";
 
 function sampleOffer(overrides: Record<string, unknown> = {}) {
   return {
-    checkedAt: "2026-08-09T00:00:00.000Z",
+    checkedAt: "2026-09-21T00:00:00.000Z",
     evidence: {
       id: "ev-1",
       sourceType: "official_lender_web",
       sourceName: "Bank",
       sourceUrl: OFFICIAL_URL,
-      checkedAt: "2026-08-09T00:00:00.000Z",
+      checkedAt: "2026-09-21T00:00:00.000Z",
       reliabilityTier: "primary",
     },
     nominalInterestRate: 4.79,
@@ -183,11 +183,11 @@ describe("getMortgageOffers — purchase vs refinance product rates", () => {
     });
     assert.deepEqual(
       purchase.offers.map((o) => o.nominalInterestRate).sort(),
-      [4.79, 4.89]
+      [4.99, 5.09]
     );
     assert.deepEqual(
       refinance.offers.map((o) => o.nominalInterestRate).sort(),
-      [4.69, 4.79]
+      [4.79, 4.89]
     );
     assert.ok(purchase.offers.every((o) => o.financingPurpose === "purchase"));
     assert.ok(refinance.offers.every((o) => o.financingPurpose === "refinance"));

@@ -18,7 +18,7 @@ import {
 import { PUBLIC_RATE_FRESH_MAX_AGE_MS } from "@/lib/rates/mortgage-rate-freshness";
 
 const catalog = getCz20260809Catalog();
-const NOW = Date.parse("2026-08-09T12:00:00.000Z");
+const NOW = Date.parse("2026-09-21T12:00:00.000Z");
 const OFFICIAL_URL = "https://www.example-bank.test/rates";
 
 const ACCEPTANCE = {
@@ -28,13 +28,13 @@ const ACCEPTANCE = {
 
 function sampleOffer(overrides: Record<string, unknown> = {}) {
   return {
-    checkedAt: "2026-08-09T00:00:00.000Z",
+    checkedAt: "2026-09-21T00:00:00.000Z",
     evidence: {
       id: "ev-1",
       sourceType: "official_lender_web",
       sourceName: "Bank",
       sourceUrl: OFFICIAL_URL,
-      checkedAt: "2026-08-09T00:00:00.000Z",
+      checkedAt: "2026-09-21T00:00:00.000Z",
       reliabilityTier: "primary",
     },
     nominalInterestRate: 4.89,
@@ -177,27 +177,27 @@ describe("resolveBankRatePaymentDisplay", () => {
 });
 
 describe("getMortgageOffers — purchase product payments integration", () => {
-  it("6M / 25y at 4,89 % and 5,09 % through public display pipeline", () => {
+  it("6M / 25y at 4,99 % and 5,09 % through public display pipeline", () => {
     const purchase = getMortgageOffers(catalog, {
       purpose: "purchase",
       fixationMonths: 36,
       lenderSlug: "air-bank",
       nowMs: NOW,
     });
-    const rate489 = purchase.offers.find((o) => o.nominalInterestRate === 4.89);
-    assert.ok(rate489, "expected purchase offer at 4.89 %");
+    const rate499 = purchase.offers.find((o) => o.nominalInterestRate === 4.99);
+    assert.ok(rate499, "expected purchase offer at 4.99 %");
     assert.ok(purchase.offers.every((o) => o.financingPurpose === "purchase"));
 
-    const payment489 = resolveBankRatePaymentDisplay(rate489!, ACCEPTANCE, NOW);
+    const payment499 = resolveBankRatePaymentDisplay(rate499!, ACCEPTANCE, NOW);
     const payment509 = resolveBankRatePaymentDisplay(
       sampleOffer({ nominalInterestRate: 5.09, rateType: "advertised_from" }),
       ACCEPTANCE,
       NOW
     );
 
-    assert.equal(payment489?.monthlyPaymentCzk, 34_692);
+    assert.equal(payment499?.monthlyPaymentCzk, 35_040);
     assert.equal(payment509?.monthlyPaymentCzk, 35_391);
-    assert.notEqual(payment489?.monthlyPaymentCzk, payment509?.monthlyPaymentCzk);
+    assert.notEqual(payment499?.monthlyPaymentCzk, payment509?.monthlyPaymentCzk);
   });
 
   it("refinance Air Bank rate differs from purchase at same nominal band", () => {
@@ -214,24 +214,24 @@ describe("getMortgageOffers — purchase product payments integration", () => {
       nowMs: NOW,
     });
 
-    const purchase479 = purchase.offers.find((o) => o.nominalInterestRate === 4.79);
-    const refinance469 = refinance.offers.find((o) => o.nominalInterestRate === 4.69);
-    assert.ok(purchase479);
-    assert.ok(refinance469);
+    const purchase499 = purchase.offers.find((o) => o.nominalInterestRate === 4.99);
+    const refinance479 = refinance.offers.find((o) => o.nominalInterestRate === 4.79);
+    assert.ok(purchase499);
+    assert.ok(refinance479);
 
     const purchasePayment = resolveBankRatePaymentDisplay(
-      purchase479!,
+      purchase499!,
       ACCEPTANCE,
       NOW
     );
     const refinancePayment = resolveBankRatePaymentDisplay(
-      refinance469!,
+      refinance479!,
       ACCEPTANCE,
       NOW
     );
 
-    assert.equal(purchasePayment?.monthlyPaymentCzk, 34_345);
-    assert.equal(refinancePayment?.monthlyPaymentCzk, 34_000);
+    assert.equal(purchasePayment?.monthlyPaymentCzk, 35_040);
+    assert.equal(refinancePayment?.monthlyPaymentCzk, 34_345);
     assert.notEqual(
       purchasePayment?.monthlyPaymentCzk,
       refinancePayment?.monthlyPaymentCzk

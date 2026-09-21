@@ -11,7 +11,7 @@ import {
 } from "@/lib/mortgage-rates/ltv-context";
 import { unstable_cache } from "next/cache";
 
-const MANIFEST_NOW_MS = Date.parse("2026-08-09T12:00:00.000Z");
+const MANIFEST_NOW_MS = Date.parse("2026-09-21T12:00:00.000Z");
 
 async function loadHomeOffersUncached(): Promise<GetMortgageOffersResult | null> {
   const ltvContext = buildLtvContext({

@@ -19,9 +19,9 @@ describe("generateMortgageMarketImportSql", () => {
     assert.equal(report.difference, 0);
     assert.equal(report.excludedHoldRateIds.length, 7);
 
-    assert.equal(report.forbiddenValuesPresent.csStale509, false);
+    assert.equal(report.forbiddenValuesPresent.csStale494, false);
     assert.equal(report.forbiddenValuesPresent.kbStale539, false);
-    assert.equal(report.forbiddenValuesPresent.kbStale579, false);
+    assert.equal(report.forbiddenValuesPresent.kbStale524, false);
     assert.equal(report.forbiddenValuesPresent.csobHoldRates, false);
     assert.equal(report.forbiddenValuesPresent.rbKlasikRates, false);
 
@@ -58,7 +58,7 @@ describe("generateMortgageMarketImportSql", () => {
 
     // Verify SQL is read-only
     assert.doesNotMatch(report.verifySql, /^\s*(insert|update|delete|truncate)\b/im);
-    assert.match(report.verifySql, /cs_3y_494_count/);
-    assert.match(report.verifySql, /kb_current_3y_524_count/);
+    assert.match(report.verifySql, /cs_3y_509_count/);
+    assert.match(report.verifySql, /kb_current_3y_569_count/);
   });
 });

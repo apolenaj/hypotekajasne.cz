@@ -8,7 +8,7 @@ import {
 import { getMortgageOffers } from "@/lib/mortgage-market/offers";
 
 const catalog = getCz20260809Catalog();
-const CHECKED = Date.parse("2026-08-09T12:00:00.000Z");
+const CHECKED = Date.parse("2026-09-21T12:00:00.000Z");
 const STALE = Date.parse("2026-09-19T12:00:00.000Z");
 
 function offersFor(fixationMonths: number, nowMs: number) {

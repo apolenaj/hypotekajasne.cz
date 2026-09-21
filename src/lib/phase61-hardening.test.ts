@@ -69,7 +69,7 @@ describe("Phase 6.1 — evidence sourceUrl invariant", () => {
   it("IMPORT_READY primary evidence used by active rates has https sourceUrl", () => {
     const catalog = catalogFromImportManifest(CZ_2026_08_09_MANIFEST);
     // Within the 72h public freshness window of the import snapshot.
-    const now = Date.parse("2026-08-09T12:00:00.000Z");
+    const now = Date.parse("2026-09-21T12:00:00.000Z");
     const result = getMortgageOffers(catalog as MortgageMarketCatalog, {
       purpose: "purchase",
       fixationMonths: 36,
@@ -96,9 +96,9 @@ describe("Phase 6.1 — evidence sourceUrl invariant", () => {
 
   it("Air / UniCredit / MONETA evidence rows carry official URLs in manifest", () => {
     for (const id of [
-      "ev-air-bank-rates-2026-03-27",
+      "ev-air-bank-rates-2026-08-21",
       "ev-unicredit-purpose-rates",
-      "ev-moneta-rates-2026-07-23",
+      "ev-moneta-rates-2026-09-10",
     ]) {
       const ev = CZ_2026_08_09_EVIDENCE.find((e) => e.evidenceId === id);
       assert.ok(ev, id);

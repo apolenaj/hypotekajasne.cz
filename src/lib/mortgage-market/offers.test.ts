@@ -14,10 +14,10 @@ import { DEFAULT_CZ_MODEL_RATE } from "@/lib/rates/mortgage-rate-defaults";
 import { rateFreshnessFromCheckedAt } from "@/lib/rates/mortgage-rate-freshness";
 
 const catalog = getCz20260809Catalog();
-const NOW = Date.parse("2026-08-09T12:00:00.000Z");
+const NOW = Date.parse("2026-09-21T12:00:00.000Z");
 
 describe("getMortgageOffers — Air purchase / refinance scenarios", () => {
-  it("A: Air purchase 36m returns both PPI scenarios (4.79 and 4.89)", () => {
+  it("A: Air purchase 36m returns both PPI scenarios (4.99 and 5.09)", () => {
     const result = getMortgageOffers(catalog, {
       countryCode: "CZ",
       purpose: "purchase",
@@ -27,7 +27,7 @@ describe("getMortgageOffers — Air purchase / refinance scenarios", () => {
     });
     assert.equal(result.usedModelFallback, false);
     const rates = result.offers.map((o) => o.nominalInterestRate).sort();
-    assert.deepEqual(rates, [4.79, 4.89]);
+    assert.deepEqual(rates, [4.99, 5.09]);
     const keys = new Set(result.offers.map((o) => o.pricingScenarioKey));
     assert.ok(keys.has("with_repayment_insurance"));
     assert.ok(keys.has("without_repayment_insurance"));
@@ -43,7 +43,7 @@ describe("getMortgageOffers — Air purchase / refinance scenarios", () => {
     assert.ok(withPpi.validFrom);
   });
 
-  it("B: Air refinance 36m returns 4.69 / 4.79 and does not mix purchase", () => {
+  it("B: Air refinance 36m returns 4.79 / 4.89 and does not mix purchase", () => {
     const result = getMortgageOffers(catalog, {
       countryCode: "CZ",
       purpose: "refinance",
@@ -52,9 +52,9 @@ describe("getMortgageOffers — Air purchase / refinance scenarios", () => {
       nowMs: NOW,
     });
     const rates = result.offers.map((o) => o.nominalInterestRate).sort();
-    assert.deepEqual(rates, [4.69, 4.79]);
+    assert.deepEqual(rates, [4.79, 4.89]);
     assert.ok(result.offers.every((o) => o.financingPurpose === "refinance"));
-    assert.ok(!result.offers.some((o) => o.nominalInterestRate === 4.89));
+    assert.ok(!result.offers.some((o) => o.nominalInterestRate === 5.09));
   });
 });
 
@@ -128,7 +128,7 @@ describe("getMortgageOffers — UniCredit / KB LTV boundaries", () => {
     assert.equal(over90.offers.length, 0);
   });
 
-  it("E/F: KB 36m LTV 75 → 5.24; LTV 85 → 5.64; conditional 5.19 not personalized", () => {
+  it("E/F: KB 36m LTV 75 → 5.69; LTV 85 → 6.09; conditional 5.19 not personalized", () => {
     const at75 = getMortgageOffers(catalog, {
       lenderSlug: "komercni-banka",
       fixationMonths: 36,
@@ -138,7 +138,7 @@ describe("getMortgageOffers — UniCredit / KB LTV boundaries", () => {
     });
     assert.deepEqual(
       at75.offers.map((o) => o.nominalInterestRate),
-      [5.24]
+      [5.69]
     );
     assert.ok(
       at75.offers.every(
@@ -173,7 +173,7 @@ describe("getMortgageOffers — UniCredit / KB LTV boundaries", () => {
     });
     assert.deepEqual(
       at85.offers.map((o) => o.nominalInterestRate),
-      [5.64]
+      [6.09]
     );
     assert.ok(
       at85.offers.every(
@@ -220,7 +220,7 @@ describe("getMortgageOffers — UniCredit / KB LTV boundaries", () => {
 });
 
 describe("getMortgageOffers — residential vs entrepreneur product audience", () => {
-  it("ordinary purchase / 36m keeps MONETA housing 4.99 and excludes trade 5.59", () => {
+  it("ordinary purchase / 36m keeps MONETA housing 4.79 and excludes trade 5.39", () => {
     const ordinary = getMortgageOffers(catalog, {
       purpose: "purchase",
       fixationMonths: 36,
@@ -236,21 +236,21 @@ describe("getMortgageOffers — residential vs entrepreneur product audience", (
       moneta.some(
         (o) =>
           o.productSlug === "mortgage-housing" &&
-          o.nominalInterestRate === 4.99
+          o.nominalInterestRate === 4.79
       )
     );
     assert.ok(
       !moneta.some(
         (o) =>
           o.productSlug === "mortgage-trade-entrepreneur" ||
-          o.nominalInterestRate === 5.59 ||
+          o.nominalInterestRate === 5.39 ||
           o.productType === "business_secured" ||
           o.borrowerScope === "entrepreneur"
       )
     );
   });
 
-  it("explicit entrepreneur / business path still returns MONETA trade 5.59", () => {
+  it("explicit entrepreneur / business path still returns MONETA trade 5.39", () => {
     const bySlug = getMortgageOffers(catalog, {
       purpose: "purchase",
       fixationMonths: 36,
@@ -266,7 +266,7 @@ describe("getMortgageOffers — residential vs entrepreneur product audience", (
       tradeBySlug.some(
         (o) =>
           o.productSlug === "mortgage-trade-entrepreneur" &&
-          o.nominalInterestRate === 5.59
+          o.nominalInterestRate === 5.39
       )
     );
 
@@ -287,7 +287,7 @@ describe("getMortgageOffers — residential vs entrepreneur product audience", (
         (o) =>
           o.lenderSlug === "moneta" &&
           o.productSlug === "mortgage-trade-entrepreneur" &&
-          o.nominalInterestRate === 5.59
+          o.nominalInterestRate === 5.39
       )
     );
   });
@@ -326,7 +326,7 @@ describe("getMortgageOffers — unknown LTV safety", () => {
     );
   });
 
-  it("H: CS 36m Oznámení 4.94 stays LTV unspecified; headline 5.09 not active", () => {
+  it("H: CS 36m Oznámení 5.09 stays LTV unspecified; headline 5.39 not active", () => {
     const withBucket = getMortgageOffers(catalog, {
       lenderSlug: "ceska-sporitelna",
       fixationMonths: 36,
@@ -338,15 +338,15 @@ describe("getMortgageOffers — unknown LTV safety", () => {
     const rates = withBucket.unspecifiedLtvOffers.map(
       (o) => o.nominalInterestRate
     );
-    assert.ok(rates.includes(4.94));
-    assert.ok(!rates.includes(5.09));
+    assert.ok(rates.includes(5.09));
+    assert.ok(!rates.includes(5.39));
     assert.ok(
       withBucket.unspecifiedLtvOffers.every(
         (o) => o.ltvScope === "unspecified" && !o.claimsPersonalizedLtvMatch
       )
     );
     assert.ok(
-      !catalog.rates.some(
+      catalog.rates.some(
         (r) =>
           r.id === "cs-oznameni-3y" &&
           Math.abs(r.nominalInterestRate - 5.09) < 1e-9
@@ -487,7 +487,7 @@ describe("getMortgageOffers — conditions, RPSN, evidence, freshness", () => {
       assert.notEqual(o.freshness, "fallback" as string);
     }
 
-    const staleNow = Date.parse("2026-09-01T12:00:00.000Z");
+    const staleNow = Date.parse("2026-10-15T12:00:00.000Z");
     const aging = getMortgageOffers(catalog, {
       lenderSlug: "air-bank",
       purpose: "purchase",
@@ -506,6 +506,6 @@ describe("getMortgageOffers — conditions, RPSN, evidence, freshness", () => {
       nowMs: NOW,
     });
     assert.equal(onlyWith.offers.length, 1);
-    assert.equal(onlyWith.offers[0]!.nominalInterestRate, 4.79);
+    assert.equal(onlyWith.offers[0]!.nominalInterestRate, 4.99);
   });
 });

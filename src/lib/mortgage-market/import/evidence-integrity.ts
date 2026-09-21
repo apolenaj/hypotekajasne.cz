@@ -11,9 +11,10 @@ import type {
 } from "@/lib/mortgage-market/import/types";
 import { PRIMARY_LENDER_EVIDENCE_TYPES } from "@/lib/mortgage-market/import/types";
 import { validateMortgageMarketImport } from "@/lib/mortgage-market/import/validate";
+import { CZ_MANIFEST_CHECKED_AT } from "@/lib/mortgage-market/import/data/cz-2026-08-09";
 
 const PRIMARY = new Set<string>(PRIMARY_LENDER_EVIDENCE_TYPES);
-const CHECKED_AT = "2026-08-09T00:00:00.000Z";
+const CHECKED_AT = CZ_MANIFEST_CHECKED_AT;
 
 export type RateStatusCounts = {
   total: number;
@@ -158,7 +159,7 @@ export function documentedCsCampaignCollision(
     rateB: campaign.nominalInterestRate,
     recordB: campaign.recordId,
     likelyExplanation:
-      "Oznámení fixation table vs product-page headline od 5,09% without fixation; do not invent fixation for the headline",
+      "Oznámení fixation table vs product-page headline od 5,39% without fixation; do not invent fixation for the headline",
     status: "NEEDS_RECONCILIATION",
   };
 }

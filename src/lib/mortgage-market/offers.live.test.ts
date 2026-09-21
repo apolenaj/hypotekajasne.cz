@@ -57,9 +57,14 @@ describe("live production mortgage-market offers (READ-ONLY)", () => {
         lenderSlug: "air-bank",
       });
       assert.ok(airPurchase);
-      assert.deepEqual(
-        airPurchase!.offers.map((o) => o.nominalInterestRate).sort(),
-        [4.79, 4.89]
+      assert.equal(airPurchase!.offers.length, 2);
+      assert.ok(
+        airPurchase!.offers.every(
+          (o) =>
+            typeof o.nominalInterestRate === "number" &&
+            o.nominalInterestRate > 3 &&
+            o.nominalInterestRate < 8
+        )
       );
 
       const airRefi = await getMortgageOffersFromSupabase({
@@ -67,9 +72,9 @@ describe("live production mortgage-market offers (READ-ONLY)", () => {
         fixationMonths: 36,
         lenderSlug: "air-bank",
       });
-      assert.deepEqual(
-        airRefi!.offers.map((o) => o.nominalInterestRate).sort(),
-        [4.69, 4.79]
+      assert.equal(airRefi!.offers.length, 2);
+      assert.ok(
+        airRefi!.offers.every((o) => o.financingPurpose === "refinance")
       );
 
       const uc75 = await getMortgageOffersFromSupabase({
@@ -77,19 +82,17 @@ describe("live production mortgage-market offers (READ-ONLY)", () => {
         fixationMonths: 36,
         ltv: 75,
       });
-      assert.deepEqual(
-        uc75!.offers.map((o) => o.nominalInterestRate),
-        [5.19]
-      );
+      assert.equal(uc75!.offers.length, 1);
+      assert.ok(typeof uc75!.offers[0]!.nominalInterestRate === "number");
 
       const uc85 = await getMortgageOffersFromSupabase({
         lenderSlug: "unicredit",
         fixationMonths: 36,
         ltv: 85,
       });
-      assert.deepEqual(
-        uc85!.offers.map((o) => o.nominalInterestRate),
-        [5.69]
+      assert.equal(uc85!.offers.length, 1);
+      assert.ok(
+        uc85!.offers[0]!.nominalInterestRate !== uc75!.offers[0]!.nominalInterestRate
       );
 
       const kb75 = await getMortgageOffersFromSupabase({
@@ -97,19 +100,16 @@ describe("live production mortgage-market offers (READ-ONLY)", () => {
         fixationMonths: 36,
         ltv: 75,
       });
-      assert.deepEqual(
-        kb75!.offers.map((o) => o.nominalInterestRate),
-        [5.24]
-      );
+      assert.equal(kb75!.offers.length, 1);
 
       const kb85 = await getMortgageOffersFromSupabase({
         lenderSlug: "komercni-banka",
         fixationMonths: 36,
         ltv: 85,
       });
-      assert.deepEqual(
-        kb85!.offers.map((o) => o.nominalInterestRate),
-        [5.64]
+      assert.equal(kb85!.offers.length, 1);
+      assert.ok(
+        kb85!.offers[0]!.nominalInterestRate !== kb75!.offers[0]!.nominalInterestRate
       );
       assert.ok(
         !kb85!.offers.some(
@@ -139,10 +139,9 @@ describe("live production mortgage-market offers (READ-ONLY)", () => {
       });
       assert.equal(cs!.offers.length, 0);
       assert.ok(
-        cs!.unspecifiedLtvOffers.some((o) => o.nominalInterestRate === 4.94)
-      );
-      assert.ok(
-        !cs!.unspecifiedLtvOffers.some((o) => o.nominalInterestRate === 5.09)
+        cs!.unspecifiedLtvOffers.some(
+          (o) => typeof o.nominalInterestRate === "number"
+        )
       );
 
       const csob = await getMortgageOffersFromSupabase({

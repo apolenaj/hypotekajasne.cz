@@ -17,7 +17,7 @@ import { DEFAULT_CZ_MODEL_RATE } from "@/lib/rates/mortgage-rate-defaults";
 import { statusBadgeLabel } from "@/lib/data/display";
 
 const catalog = getCz20260809Catalog();
-const NOW = Date.parse("2026-08-09T12:00:00.000Z");
+const NOW = Date.parse("2026-09-21T12:00:00.000Z");
 
 describe("Phase 3 UX — purchase LTV75 / 36m", () => {
   it("A: explicit UniCredit/KB matches; Air scenarios; MONETA/CS unspecified", () => {
@@ -34,7 +34,7 @@ describe("Phase 3 UX — purchase LTV75 / 36m", () => {
       rate: o.nominalInterestRate,
     }));
     assert.ok(matchedRates.some((r) => r.lender === "unicredit" && r.rate === 5.19));
-    assert.ok(matchedRates.some((r) => r.lender === "komercni-banka" && r.rate === 5.24));
+    assert.ok(matchedRates.some((r) => r.lender === "komercni-banka" && r.rate === 5.69));
     assert.ok(
       result.unspecifiedLtvOffers.some(
         (o) =>
@@ -53,7 +53,7 @@ describe("Phase 3 UX — purchase LTV75 / 36m", () => {
     assert.equal(airGroup.scenarios.length, 2);
     assert.deepEqual(
       airGroup.scenarios.map((s) => s.nominalInterestRate).sort(),
-      [4.79, 4.89]
+      [4.99, 5.09]
     );
 
     assert.equal(
@@ -65,7 +65,7 @@ describe("Phase 3 UX — purchase LTV75 / 36m", () => {
         (o) =>
           o.lenderSlug === "moneta" &&
           o.productSlug === "mortgage-housing" &&
-          o.nominalInterestRate === 4.99
+          o.nominalInterestRate === 4.79
       )
     );
     assert.ok(
@@ -73,17 +73,17 @@ describe("Phase 3 UX — purchase LTV75 / 36m", () => {
         (o) =>
           o.lenderSlug === "moneta" &&
           (o.productSlug === "mortgage-trade-entrepreneur" ||
-            o.nominalInterestRate === 5.59)
+            o.nominalInterestRate === 5.39)
       )
     );
     assert.ok(
       result.unspecifiedLtvOffers.some(
-        (o) => o.lenderSlug === "ceska-sporitelna" && o.nominalInterestRate === 4.94
+        (o) => o.lenderSlug === "ceska-sporitelna" && o.nominalInterestRate === 5.09
       )
     );
     assert.ok(
       !result.unspecifiedLtvOffers.some(
-        (o) => o.lenderSlug === "ceska-sporitelna" && o.nominalInterestRate === 5.09
+        (o) => o.lenderSlug === "ceska-sporitelna" && o.nominalInterestRate === 5.39
       )
     );
     for (const o of result.unspecifiedLtvOffers) {
@@ -101,7 +101,7 @@ describe("Phase 3 UX — purchase LTV75 / 36m", () => {
       nowMs: NOW,
     });
     assert.ok(result.offers.some((o) => o.lenderSlug === "unicredit" && o.nominalInterestRate === 5.69));
-    assert.ok(result.offers.some((o) => o.lenderSlug === "komercni-banka" && o.nominalInterestRate === 5.64));
+    assert.ok(result.offers.some((o) => o.lenderSlug === "komercni-banka" && o.nominalInterestRate === 6.09));
     assert.ok(!result.offers.some((o) => o.lenderSlug === "unicredit" && o.nominalInterestRate === 5.19));
   });
 
@@ -114,7 +114,7 @@ describe("Phase 3 UX — purchase LTV75 / 36m", () => {
     });
     assert.deepEqual(
       result.offers.map((o) => o.nominalInterestRate).sort(),
-      [4.69, 4.79]
+      [4.79, 4.89]
     );
     assert.ok(result.offers.every((o) => o.financingPurpose === "refinance"));
   });
@@ -167,7 +167,7 @@ describe("Phase 3 UX — labels", () => {
       includeLtvUnspecified: true,
       nowMs: NOW,
     });
-    const matrix = result.offers.find((o) => o.nominalInterestRate === 5.24)!;
+    const matrix = result.offers.find((o) => o.nominalInterestRate === 5.69)!;
     const conditional = result.unspecifiedLtvOffers.find(
       (o) =>
         o.nominalInterestRate === 5.19 &&

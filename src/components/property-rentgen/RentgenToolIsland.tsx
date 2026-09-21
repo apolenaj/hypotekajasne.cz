@@ -650,7 +650,7 @@ export function RentgenToolIsland({
                 )}
                 {mode === "url" ? (
                   <p className="text-[11px] leading-relaxed text-muted-foreground">
-                    Odkaz slouží jen jako poznámka k poptávce. Obsah inzerátu
+                    Odkaz slouží jen jako reference k nemovitosti. Obsah inzerátu
                     automaticky nenačítáme.
                   </p>
                 ) : null}
