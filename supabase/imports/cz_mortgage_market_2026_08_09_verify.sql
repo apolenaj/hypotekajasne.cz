@@ -70,7 +70,7 @@ from public.mortgage_rate_variants
 where is_active
   and ((ltv_min is null) <> (ltv_max is null));
 
--- H) Česká spořitelna — current Oznámení matrix (incl. 4.94 at 2y/3y)
+-- H) Česká spořitelna — current Oznámení matrix (incl. 5.09 at 2y/3y)
 select v.fixation_months, v.nominal_interest_rate, v.pricing_scenario_key
 from public.mortgage_rate_variants v
 join public.mortgage_catalog_products p on p.id = v.product_id
@@ -78,17 +78,17 @@ join public.mortgage_lenders l on l.id = p.lender_id
 where v.is_active and l.slug = 'ceska-sporitelna'
 order by v.fixation_months nulls last;
 
-select count(*)::int as cs_3y_494_count
+select count(*)::int as cs_3y_509_count
 from public.mortgage_rate_variants v
 join public.mortgage_catalog_products p on p.id = v.product_id
 join public.mortgage_lenders l on l.id = p.lender_id
 where v.is_active
   and l.slug = 'ceska-sporitelna'
   and v.fixation_months = 36
-  and v.nominal_interest_rate = 4.94
+  and v.nominal_interest_rate = 5.09
   and v.pricing_scenario_key = 'oznameni_account_ppi_budoucnost';
 
--- I) KB — confirm stale 3y matrix absent; current 3y <=80 = 5.24 present
+-- I) KB — confirm stale 3y matrix absent; current 3y <=80 = 5.69 present
 select count(*)::int as kb_stale_3y_539_count
 from public.mortgage_rate_variants v
 join public.mortgage_catalog_products p on p.id = v.product_id
@@ -98,14 +98,14 @@ where v.is_active
   and v.fixation_months = 36
   and v.nominal_interest_rate = 5.39;
 
-select count(*)::int as kb_current_3y_524_count
+select count(*)::int as kb_current_3y_569_count
 from public.mortgage_rate_variants v
 join public.mortgage_catalog_products p on p.id = v.product_id
 join public.mortgage_lenders l on l.id = p.lender_id
 where v.is_active
   and l.slug = 'komercni-banka'
   and v.fixation_months = 36
-  and v.nominal_interest_rate = 5.24
+  and v.nominal_interest_rate = 5.69
   and v.pricing_scenario_key = 'minimum_rate_by_fixation_ltv_le_80';
 
 -- J) CSOB active retail rate variants (expect 0)

@@ -33,13 +33,13 @@ describe("Phase 3 UX — purchase LTV75 / 36m", () => {
       lender: o.lenderSlug,
       rate: o.nominalInterestRate,
     }));
-    assert.ok(matchedRates.some((r) => r.lender === "unicredit" && r.rate === 5.19));
+    assert.ok(matchedRates.some((r) => r.lender === "unicredit" && r.rate === 5.09));
     assert.ok(matchedRates.some((r) => r.lender === "komercni-banka" && r.rate === 5.69));
     assert.ok(
       result.unspecifiedLtvOffers.some(
         (o) =>
           o.lenderSlug === "komercni-banka" &&
-          o.nominalInterestRate === 5.19 &&
+          o.nominalInterestRate === 5.49 &&
           o.pricingScenarioKey === "product_page_advertised_from_conditional" &&
           !o.claimsPersonalizedLtvMatch
       )
@@ -100,9 +100,9 @@ describe("Phase 3 UX — purchase LTV75 / 36m", () => {
       ltv: 85,
       nowMs: NOW,
     });
-    assert.ok(result.offers.some((o) => o.lenderSlug === "unicredit" && o.nominalInterestRate === 5.69));
+    assert.ok(result.offers.some((o) => o.lenderSlug === "unicredit" && o.nominalInterestRate === 5.59));
     assert.ok(result.offers.some((o) => o.lenderSlug === "komercni-banka" && o.nominalInterestRate === 6.09));
-    assert.ok(!result.offers.some((o) => o.lenderSlug === "unicredit" && o.nominalInterestRate === 5.19));
+    assert.ok(!result.offers.some((o) => o.lenderSlug === "unicredit" && o.nominalInterestRate === 5.09));
   });
 
   it("C: refinance Air is not purchase", () => {
@@ -170,7 +170,7 @@ describe("Phase 3 UX — labels", () => {
     const matrix = result.offers.find((o) => o.nominalInterestRate === 5.69)!;
     const conditional = result.unspecifiedLtvOffers.find(
       (o) =>
-        o.nominalInterestRate === 5.19 &&
+        o.nominalInterestRate === 5.49 &&
         o.pricingScenarioKey === "product_page_advertised_from_conditional"
     )!;
     assert.equal(scenarioLabelCs(matrix), "Minimální sazba dle sazebníku");

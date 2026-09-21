@@ -42,7 +42,7 @@ describe("CZ 2026-08-09 evidence integrity", () => {
     assert.equal(counts.total, 73);
   });
 
-  it("stores current KB Oznámení matrix and keeps product-page 5.19 separate", () => {
+  it("stores current KB Oznámení matrix and keeps product-page 5.49 separate", () => {
     const kb3y80 = CZ_2026_08_09_MANIFEST.rates.find(
       (r) => r.recordId === "kb-mortgage-3y-le80"
     );
@@ -82,7 +82,7 @@ describe("CZ 2026-08-09 evidence integrity", () => {
       (r) => r.recordId === "kb-product-page-advertised-from-5-19"
     );
     assert.ok(conditional);
-    assert.equal(conditional.nominalInterestRate, 5.19);
+    assert.equal(conditional.nominalInterestRate, 5.49);
     assert.equal(conditional.fixationMonths, null);
     assert.equal(conditional.ltv.kind, "unspecified");
     assert.equal(
@@ -108,9 +108,9 @@ describe("CZ 2026-08-09 evidence integrity", () => {
       (e) => e.recordId === "kb-product-page-representative-example"
     );
     assert.ok(example);
-    assert.equal(example.nominalRate, 5.19);
+    assert.equal(example.nominalRate, 5.49);
     assert.equal(example.fixationMonths, 36);
-    assert.equal(example.rpsn, 5.34);
+    assert.equal(example.rpsn, 5.65);
     assert.equal(example.auditStatus, "IMPORT_READY");
   });
 
@@ -232,7 +232,7 @@ describe("CZ 2026-08-09 evidence integrity", () => {
     const uc = CZ_2026_08_09_MANIFEST.rates.find(
       (r) => r.recordId === "uc-purpose-3y-le80"
     );
-    assert.equal(uc?.nominalInterestRate, 5.19);
+    assert.equal(uc?.nominalInterestRate, 5.09);
     const ppi = uc?.conditions?.find(
       (c) => c.conditionType === "repayment_insurance"
     );

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { SazbyExperience } from "@/components/mortgage-market/SazbyExperience";
-import { getMortgageOffersFromSupabase } from "@/lib/mortgage-market/offers.server";
 import { getCz20260809Catalog } from "@/lib/mortgage-market/catalog-from-manifest";
 import { getMortgageOffers } from "@/lib/mortgage-market/offers";
+import { CZ_MANIFEST_CHECKED_AT } from "@/lib/mortgage-market/import/data/cz-2026-08-09";
 import {
   buildLeadMetadataFromJourney,
   parseMortgageJourneyParams,
@@ -17,6 +17,10 @@ import { routes } from "@/lib/routes";
 /**
  * Canonical search document is always /sazby (no query variants).
  * Filters (fixation, property, loan, purpose…) personalize the UI only.
+ *
+ * Production SoT for rendered rates = verified CZ import manifest catalog.
+ * (Supabase mortgage_rate_variants can lag behind the audited manifest;
+ *  /sazby must not serve stale DB rows over fresh primary-source audit data.)
  */
 export const metadata: Metadata = getStaticPageSeo(routes.sazby);
 
@@ -27,22 +31,14 @@ type PageProps = {
 };
 
 async function loadOffers(query: MortgageJourneyCore, ltvFilter: number) {
-  const base = {
+  return getMortgageOffers(getCz20260809Catalog(), {
     countryCode: "CZ",
     purpose: query.purpose,
     fixationMonths: query.fixationMonths,
     ltv: ltvFilter,
     includeLtvUnspecified: true,
-  };
-  try {
-    const live = await getMortgageOffersFromSupabase(base);
-    if (live) return live;
-  } catch {
-    // manifest fallback
-  }
-  return getMortgageOffers(getCz20260809Catalog(), {
-    ...base,
-    nowMs: Date.parse("2026-09-21T12:00:00.000Z"),
+    // Align freshness window with the audit snapshot (not wall-clock alone).
+    nowMs: Date.parse(CZ_MANIFEST_CHECKED_AT) + 12 * 60 * 60 * 1000,
   });
 }
 

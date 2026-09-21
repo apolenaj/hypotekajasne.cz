@@ -184,14 +184,14 @@ insert into public.mortgage_source_evidence (
   id, lender_id, product_id, source_type, source_name, source_url,
   document_title, checked_at, reliability_tier
 ) values (
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   '8aafc397-2e4c-5add-b104-4765d12723c4',
   null,
   'official_lender_web',
-  'Air Bank official mortgage rate publication (valid from 2026-03-27)',
+  'Air Bank official mortgage rate publication (valid from 2026-08-21; verified 2026-09-21)',
   'https://www.airbank.cz/co-vas-nejvic-zajima/urokove-sazby-u-hypoteky/',
   'Air Bank hypotéka — sazby',
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   'primary'
 )
 on conflict (id) do update set
@@ -207,14 +207,14 @@ insert into public.mortgage_source_evidence (
   id, lender_id, product_id, source_type, source_name, source_url,
   document_title, checked_at, reliability_tier
 ) values (
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   'cdfc2fd6-ea53-5eae-9481-db4bc6cb2e3b',
   null,
-  'official_lender_web',
-  'MONETA Money Bank official rate sheet (valid from 2026-07-23)',
-  'https://www.moneta.cz/dokumenty-ke-stazeni/sazebniky',
-  'MONETA sazebník hypoték',
-  '2026-08-09T00:00:00.000Z',
+  'official_lender_pdf',
+  'MONETA Money Bank — Úrokový lístek hypotéky (platnost od 10. 9. 2026; verified 2026-09-21)',
+  'https://www.moneta.cz/documents/20143/11740791/mmb-ul-hypoteky.pdf',
+  'MONETA úrokový lístek hypoték',
+  '2026-09-21T00:00:00.000Z',
   'primary'
 )
 on conflict (id) do update set
@@ -234,10 +234,10 @@ insert into public.mortgage_source_evidence (
   '350794e2-06d5-59bc-bffa-37e1f60b338c',
   null,
   'official_lender_web',
-  'UniCredit Bank official purpose-mortgage advertised rates (primary audit)',
-  'https://www.unicreditbank.cz/cs/obcane/hypoteky/hypoteka-nove-penize.html',
-  'UniCredit účelová hypotéka — sazby',
-  '2026-08-09T00:00:00.000Z',
+  'UniCredit Bank official mortgage rate table (re-verified 2026-09-21) — purpose LTV × fixation matrix',
+  'https://www.unicreditbank.cz/cs/ostatni/urokove-sazby.html',
+  'UniCredit úrokové sazby hypoték',
+  '2026-09-21T00:00:00.000Z',
   'primary'
 )
 on conflict (id) do update set
@@ -257,10 +257,10 @@ insert into public.mortgage_source_evidence (
   '15ee8ba6-5803-59fd-a9c8-f3a0ef976a19',
   null,
   'official_lender_pdf',
-  'Česká spořitelna — Oznámení o úrokových sazbách (účinnost od 29. 5. 2026)',
+  'Česká spořitelna — Oznámení o úrokových sazbách (účinnost od 11. 8. 2026; re-verified 2026-09-21)',
   'https://www.csas.cz/banka/content/inet/internet/cs/RR_SK.ANN..xml,pdf_IE',
   'ČS Oznámení o úrokových sazbách',
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   'primary'
 )
 on conflict (id) do update set
@@ -280,10 +280,10 @@ insert into public.mortgage_source_evidence (
   '874616e6-064e-5e6c-a8ef-6b47d67fd041',
   null,
   'official_lender_pdf',
-  'Komerční banka — Oznámení o úrokových sazbách (účinnost od 24. 7. 2026)',
-  'https://www.kb.cz/getmedia/72c05c27-6ecd-4383-8c02-63d679fa4d00/oznameni-o-urokovych-sazbach.pdf',
+  'Komerční banka — Oznámení o úrokových sazbách (účinnost od 7. 9. 2026)',
+  'https://www.kb.cz/getmedia/e4ce0397-7f95-4160-bede-84e4d652d465/oznameni-o-urokovych-sazbach.pdf',
   'KB minimální výše úrokové sazby podle doby fixace',
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   'primary'
 )
 on conflict (id) do update set
@@ -302,11 +302,11 @@ insert into public.mortgage_source_evidence (
   '5c3caad6-f0d7-5204-8990-e35594e9a6b4',
   '054eae58-a072-5f43-a557-d500a0ae48af',
   null,
-  'official_rate_page',
-  'ČSOB official rate page displays LTV-point rates — HOLD until fixation/rate_type/conditions fully evidenced',
-  null,
+  'official_lender_web',
+  'ČSOB official rates page Hypotéky table (dated 3. 8. 2026; re-verified 2026-09-21) — LTV-point rates without fixation — HOLD',
+  'https://www.csob.cz/lide/poplatky-a-sazby/sazby',
   'ČSOB Hypotéka — sazby (HOLD)',
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   'primary'
 )
 on conflict (id) do update set
@@ -329,7 +329,7 @@ insert into public.mortgage_source_evidence (
   'Raiffeisenbank official product / eligibility pages (primary audit)',
   'https://www.rb.cz/osobni/hypoteky',
   'Raiffeisenbank hypotéky — produkty',
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   'primary'
 )
 on conflict (id) do update set
@@ -352,7 +352,7 @@ insert into public.mortgage_source_evidence (
   'Raiffeisenbank — Hypotéka s nižší splátkou official representative example',
   'https://www.rb.cz/osobni/hypoteky/nabidka-hypotek/hypoteka-s-nizsi-splatkou',
   'RB Hypotéka s nižší splátkou — reprezentativní příklad',
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   'primary'
 )
 on conflict (id) do update set
@@ -372,10 +372,10 @@ insert into public.mortgage_source_evidence (
   '874616e6-064e-5e6c-a8ef-6b47d67fd041',
   null,
   'official_lender_web',
-  'Komerční banka — Hypotéka product page (conditional advertised-from 5,19 % p.a.)',
+  'Komerční banka — Hypotéka product page (conditional advertised-from 5,49 % p.a.; re-verified 2026-09-21)',
   'https://www.kb.cz/cs/obcane/pujcky/hypoteky/hypoteka',
   'KB Hypotéka — produktová stránka',
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   'primary'
 )
 on conflict (id) do update set
@@ -395,10 +395,10 @@ insert into public.mortgage_source_evidence (
   'cdfc2fd6-ea53-5eae-9481-db4bc6cb2e3b',
   null,
   'official_lender_web',
-  'MONETA Money Bank official representative RPSN example (primary audit)',
+  'MONETA housing with/without-PPI representative RPSN pair — prior primary audit retained (product page bot-blocked 2026-09-21; Hypotéka.cz FAQ is a different product)',
   'https://www.moneta.cz/hypoteky/hypoteka',
-  'MONETA reprezentativní příklad',
-  '2026-08-09T00:00:00.000Z',
+  'MONETA reprezentativní příklad (prior audit)',
+  '2026-09-21T00:00:00.000Z',
   'primary'
 )
 on conflict (id) do update set
@@ -431,8 +431,8 @@ insert into public.mortgage_catalog_products (
   null,
   null,
   true,
-  '2026-08-09T00:00:00.000Z',
-  '2f7deb25-4be2-5763-854e-826c4bbda866'
+  '2026-09-21T00:00:00.000Z',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b'
 )
 on conflict (id) do update set
   name = excluded.name,
@@ -466,8 +466,8 @@ insert into public.mortgage_catalog_products (
   null,
   null,
   true,
-  '2026-08-09T00:00:00.000Z',
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d'
+  '2026-09-21T00:00:00.000Z',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6'
 )
 on conflict (id) do update set
   name = excluded.name,
@@ -501,8 +501,8 @@ insert into public.mortgage_catalog_products (
   null,
   null,
   true,
-  '2026-08-09T00:00:00.000Z',
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d'
+  '2026-09-21T00:00:00.000Z',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6'
 )
 on conflict (id) do update set
   name = excluded.name,
@@ -536,8 +536,8 @@ insert into public.mortgage_catalog_products (
   null,
   null,
   true,
-  '2026-08-09T00:00:00.000Z',
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d'
+  '2026-09-21T00:00:00.000Z',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6'
 )
 on conflict (id) do update set
   name = excluded.name,
@@ -571,7 +571,7 @@ insert into public.mortgage_catalog_products (
   null,
   null,
   true,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   '4642db37-5575-5296-a827-889cce9805e6'
 )
 on conflict (id) do update set
@@ -606,7 +606,7 @@ insert into public.mortgage_catalog_products (
   null,
   null,
   true,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   '467c05fd-0729-57a1-b4f0-060eee6fa49e'
 )
 on conflict (id) do update set
@@ -641,7 +641,7 @@ insert into public.mortgage_catalog_products (
   null,
   null,
   true,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   '467c05fd-0729-57a1-b4f0-060eee6fa49e'
 )
 on conflict (id) do update set
@@ -676,7 +676,7 @@ insert into public.mortgage_catalog_products (
   null,
   null,
   true,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f'
 )
 on conflict (id) do update set
@@ -711,7 +711,7 @@ insert into public.mortgage_catalog_products (
   null,
   20,
   true,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f'
 )
 on conflict (id) do update set
@@ -746,7 +746,7 @@ insert into public.mortgage_catalog_products (
   null,
   null,
   true,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   '5c3caad6-f0d7-5204-8990-e35594e9a6b4'
 )
 on conflict (id) do update set
@@ -781,7 +781,7 @@ insert into public.mortgage_catalog_products (
   null,
   null,
   true,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   '5c3caad6-f0d7-5204-8990-e35594e9a6b4'
 )
 on conflict (id) do update set
@@ -816,7 +816,7 @@ insert into public.mortgage_catalog_products (
   5,
   30,
   true,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   '4c39a68d-cecf-52a2-9678-084f2d94aac4'
 )
 on conflict (id) do update set
@@ -851,7 +851,7 @@ insert into public.mortgage_catalog_products (
   null,
   null,
   true,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   '4c39a68d-cecf-52a2-9678-084f2d94aac4'
 )
 on conflict (id) do update set
@@ -886,7 +886,7 @@ insert into public.mortgage_catalog_products (
   5,
   20,
   true,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   '4c39a68d-cecf-52a2-9678-084f2d94aac4'
 )
 on conflict (id) do update set
@@ -921,7 +921,7 @@ insert into public.mortgage_catalog_products (
   null,
   25,
   true,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   '4c39a68d-cecf-52a2-9678-084f2d94aac4'
 )
 on conflict (id) do update set
@@ -956,7 +956,7 @@ insert into public.mortgage_catalog_products (
   null,
   null,
   true,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   '4538e3aa-c077-58aa-9f30-a9cd2f058e10'
 )
 on conflict (id) do update set
@@ -978,22 +978,22 @@ on conflict (id) do update set
 
 update public.mortgage_source_evidence
 set product_id = '21348311-a3f4-5e86-877d-732aba85bac8'
-where id = '2f7deb25-4be2-5763-854e-826c4bbda866'
+where id = 'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b'
   and (product_id is null or product_id = '21348311-a3f4-5e86-877d-732aba85bac8');
 
 update public.mortgage_source_evidence
 set product_id = '6b2c007b-f774-5dde-aaa0-94cadcb9dc97'
-where id = '6186cf87-157c-5912-85ea-9de81f9aaa3d'
+where id = 'bae7adc5-19c3-57dd-a560-f9ab054535d6'
   and (product_id is null or product_id = '6b2c007b-f774-5dde-aaa0-94cadcb9dc97');
 
 update public.mortgage_source_evidence
 set product_id = 'f32422c8-86ca-5717-af63-6efa55761c63'
-where id = '6186cf87-157c-5912-85ea-9de81f9aaa3d'
+where id = 'bae7adc5-19c3-57dd-a560-f9ab054535d6'
   and (product_id is null or product_id = 'f32422c8-86ca-5717-af63-6efa55761c63');
 
 update public.mortgage_source_evidence
 set product_id = '25864e97-a23c-5318-9c5d-a8c06912ea5f'
-where id = '6186cf87-157c-5912-85ea-9de81f9aaa3d'
+where id = 'bae7adc5-19c3-57dd-a560-f9ab054535d6'
   and (product_id is null or product_id = '25864e97-a23c-5318-9c5d-a8c06912ea5f');
 
 update public.mortgage_source_evidence
@@ -1077,15 +1077,15 @@ insert into public.mortgage_rate_variants (
   90,
   false,
   false,
-  4.79,
+  4.99,
   'standard',
   null,
   null,
-  '2026-03-27T00:00:00.000Z',
+  '2026-08-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   '[manifest:air-purchase-2y-with-ppi]'
 )
 on conflict (id) do update set
@@ -1124,15 +1124,15 @@ insert into public.mortgage_rate_variants (
   90,
   false,
   false,
-  4.89,
+  5.09,
   'standard',
   null,
   null,
-  '2026-03-27T00:00:00.000Z',
+  '2026-08-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   '[manifest:air-purchase-2y-without-ppi]'
 )
 on conflict (id) do update set
@@ -1171,15 +1171,15 @@ insert into public.mortgage_rate_variants (
   90,
   false,
   false,
-  4.79,
+  4.99,
   'standard',
   null,
   null,
-  '2026-03-27T00:00:00.000Z',
+  '2026-08-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   '[manifest:air-purchase-3y-with-ppi]'
 )
 on conflict (id) do update set
@@ -1218,15 +1218,15 @@ insert into public.mortgage_rate_variants (
   90,
   false,
   false,
-  4.89,
+  5.09,
   'standard',
   null,
   null,
-  '2026-03-27T00:00:00.000Z',
+  '2026-08-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   '[manifest:air-purchase-3y-without-ppi]'
 )
 on conflict (id) do update set
@@ -1265,15 +1265,15 @@ insert into public.mortgage_rate_variants (
   90,
   false,
   false,
-  4.89,
+  5.09,
   'standard',
   null,
   null,
-  '2026-03-27T00:00:00.000Z',
+  '2026-08-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   '[manifest:air-purchase-5y-with-ppi]'
 )
 on conflict (id) do update set
@@ -1312,15 +1312,15 @@ insert into public.mortgage_rate_variants (
   90,
   false,
   false,
-  4.99,
+  5.19,
   'standard',
   null,
   null,
-  '2026-03-27T00:00:00.000Z',
+  '2026-08-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   '[manifest:air-purchase-5y-without-ppi]'
 )
 on conflict (id) do update set
@@ -1359,15 +1359,15 @@ insert into public.mortgage_rate_variants (
   90,
   false,
   false,
-  5.09,
+  5.29,
   'standard',
   null,
   null,
-  '2026-03-27T00:00:00.000Z',
+  '2026-08-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   '[manifest:air-purchase-7y-with-ppi]'
 )
 on conflict (id) do update set
@@ -1406,15 +1406,15 @@ insert into public.mortgage_rate_variants (
   90,
   false,
   false,
-  5.19,
+  5.39,
   'standard',
   null,
   null,
-  '2026-03-27T00:00:00.000Z',
+  '2026-08-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   '[manifest:air-purchase-7y-without-ppi]'
 )
 on conflict (id) do update set
@@ -1453,15 +1453,15 @@ insert into public.mortgage_rate_variants (
   90,
   false,
   false,
-  5.29,
+  5.49,
   'standard',
   null,
   null,
-  '2026-03-27T00:00:00.000Z',
+  '2026-08-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   '[manifest:air-purchase-10y-with-ppi]'
 )
 on conflict (id) do update set
@@ -1500,15 +1500,15 @@ insert into public.mortgage_rate_variants (
   90,
   false,
   false,
-  5.39,
+  5.59,
   'standard',
   null,
   null,
-  '2026-03-27T00:00:00.000Z',
+  '2026-08-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   '[manifest:air-purchase-10y-without-ppi]'
 )
 on conflict (id) do update set
@@ -1547,15 +1547,15 @@ insert into public.mortgage_rate_variants (
   90,
   false,
   false,
-  4.69,
+  4.79,
   'standard',
   null,
   null,
-  '2026-03-27T00:00:00.000Z',
+  '2026-08-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   '[manifest:air-refinance-2y-with-ppi]'
 )
 on conflict (id) do update set
@@ -1594,15 +1594,15 @@ insert into public.mortgage_rate_variants (
   90,
   false,
   false,
-  4.79,
+  4.89,
   'standard',
   null,
   null,
-  '2026-03-27T00:00:00.000Z',
+  '2026-08-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   '[manifest:air-refinance-2y-without-ppi]'
 )
 on conflict (id) do update set
@@ -1641,15 +1641,15 @@ insert into public.mortgage_rate_variants (
   90,
   false,
   false,
-  4.69,
+  4.79,
   'standard',
   null,
   null,
-  '2026-03-27T00:00:00.000Z',
+  '2026-08-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   '[manifest:air-refinance-3y-with-ppi]'
 )
 on conflict (id) do update set
@@ -1688,15 +1688,15 @@ insert into public.mortgage_rate_variants (
   90,
   false,
   false,
-  4.79,
+  4.89,
   'standard',
   null,
   null,
-  '2026-03-27T00:00:00.000Z',
+  '2026-08-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   '[manifest:air-refinance-3y-without-ppi]'
 )
 on conflict (id) do update set
@@ -1735,15 +1735,15 @@ insert into public.mortgage_rate_variants (
   90,
   false,
   false,
-  4.79,
+  4.89,
   'standard',
   null,
   null,
-  '2026-03-27T00:00:00.000Z',
+  '2026-08-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   '[manifest:air-refinance-5y-with-ppi]'
 )
 on conflict (id) do update set
@@ -1782,15 +1782,15 @@ insert into public.mortgage_rate_variants (
   90,
   false,
   false,
-  4.89,
+  4.99,
   'standard',
   null,
   null,
-  '2026-03-27T00:00:00.000Z',
+  '2026-08-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   '[manifest:air-refinance-5y-without-ppi]'
 )
 on conflict (id) do update set
@@ -1829,15 +1829,15 @@ insert into public.mortgage_rate_variants (
   90,
   false,
   false,
-  4.99,
+  5.09,
   'standard',
   null,
   null,
-  '2026-03-27T00:00:00.000Z',
+  '2026-08-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   '[manifest:air-refinance-7y-with-ppi]'
 )
 on conflict (id) do update set
@@ -1876,15 +1876,15 @@ insert into public.mortgage_rate_variants (
   90,
   false,
   false,
-  5.09,
+  5.19,
   'standard',
   null,
   null,
-  '2026-03-27T00:00:00.000Z',
+  '2026-08-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   '[manifest:air-refinance-7y-without-ppi]'
 )
 on conflict (id) do update set
@@ -1923,15 +1923,15 @@ insert into public.mortgage_rate_variants (
   90,
   false,
   false,
-  5.19,
+  5.29,
   'standard',
   null,
   null,
-  '2026-03-27T00:00:00.000Z',
+  '2026-08-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   '[manifest:air-refinance-10y-with-ppi]'
 )
 on conflict (id) do update set
@@ -1970,15 +1970,15 @@ insert into public.mortgage_rate_variants (
   90,
   false,
   false,
-  5.29,
+  5.39,
   'standard',
   null,
   null,
-  '2026-03-27T00:00:00.000Z',
+  '2026-08-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   '[manifest:air-refinance-10y-without-ppi]'
 )
 on conflict (id) do update set
@@ -2017,15 +2017,15 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  4.79,
+  4.59,
   'standard',
   null,
   null,
-  '2026-07-23T00:00:00.000Z',
+  '2026-09-10T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   '[manifest:moneta-housing-1y]'
 )
 on conflict (id) do update set
@@ -2064,15 +2064,15 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  4.99,
+  4.79,
   'standard',
   null,
   null,
-  '2026-07-23T00:00:00.000Z',
+  '2026-09-10T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   '[manifest:moneta-housing-3y]'
 )
 on conflict (id) do update set
@@ -2111,15 +2111,15 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  5.09,
+  4.89,
   'standard',
   null,
   null,
-  '2026-07-23T00:00:00.000Z',
+  '2026-09-10T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   '[manifest:moneta-housing-5y]'
 )
 on conflict (id) do update set
@@ -2158,15 +2158,15 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  5.39,
+  5.19,
   'standard',
   null,
   null,
-  '2026-07-23T00:00:00.000Z',
+  '2026-09-10T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   '[manifest:moneta-housing-7y]'
 )
 on conflict (id) do update set
@@ -2205,15 +2205,15 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  5.59,
+  5.39,
   'standard',
   null,
   null,
-  '2026-07-23T00:00:00.000Z',
+  '2026-09-10T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   '[manifest:moneta-housing-10y]'
 )
 on conflict (id) do update set
@@ -2252,15 +2252,15 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  5.39,
+  5.19,
   'standard',
   null,
   null,
-  '2026-07-23T00:00:00.000Z',
+  '2026-09-10T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   '[manifest:moneta-trade-1y]'
 )
 on conflict (id) do update set
@@ -2299,15 +2299,15 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  5.59,
+  5.39,
   'standard',
   null,
   null,
-  '2026-07-23T00:00:00.000Z',
+  '2026-09-10T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   '[manifest:moneta-trade-3y]'
 )
 on conflict (id) do update set
@@ -2346,15 +2346,15 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  5.69,
+  5.49,
   'standard',
   null,
   null,
-  '2026-07-23T00:00:00.000Z',
+  '2026-09-10T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   '[manifest:moneta-trade-5y]'
 )
 on conflict (id) do update set
@@ -2393,15 +2393,15 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  5.99,
+  5.79,
   'standard',
   null,
   null,
-  '2026-07-23T00:00:00.000Z',
+  '2026-09-10T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   '[manifest:moneta-trade-7y]'
 )
 on conflict (id) do update set
@@ -2440,15 +2440,15 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  6.19,
+  5.99,
   'standard',
   null,
   null,
-  '2026-07-23T00:00:00.000Z',
+  '2026-09-10T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   '[manifest:moneta-trade-10y]'
 )
 on conflict (id) do update set
@@ -2487,15 +2487,15 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  5.19,
+  4.99,
   'standard',
   null,
   null,
-  '2026-07-23T00:00:00.000Z',
+  '2026-09-10T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   '[manifest:moneta-american-1y]'
 )
 on conflict (id) do update set
@@ -2534,15 +2534,15 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  5.39,
+  5.19,
   'standard',
   null,
   null,
-  '2026-07-23T00:00:00.000Z',
+  '2026-09-10T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   '[manifest:moneta-american-3y]'
 )
 on conflict (id) do update set
@@ -2581,15 +2581,15 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  5.49,
+  5.29,
   'standard',
   null,
   null,
-  '2026-07-23T00:00:00.000Z',
+  '2026-09-10T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   '[manifest:moneta-american-5y]'
 )
 on conflict (id) do update set
@@ -2628,15 +2628,15 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  5.79,
+  5.59,
   'standard',
   null,
   null,
-  '2026-07-23T00:00:00.000Z',
+  '2026-09-10T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   '[manifest:moneta-american-7y]'
 )
 on conflict (id) do update set
@@ -2675,15 +2675,15 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  5.99,
+  5.79,
   'standard',
   null,
   null,
-  '2026-07-23T00:00:00.000Z',
+  '2026-09-10T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   '[manifest:moneta-american-10y]'
 )
 on conflict (id) do update set
@@ -2722,13 +2722,13 @@ insert into public.mortgage_rate_variants (
   80,
   false,
   false,
-  5.09,
+  4.99,
   'advertised_from',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   '4642db37-5575-5296-a827-889cce9805e6',
   '[manifest:uc-purpose-2y-le80]'
@@ -2769,13 +2769,13 @@ insert into public.mortgage_rate_variants (
   90,
   true,
   false,
-  5.59,
+  5.49,
   'advertised_from',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   '4642db37-5575-5296-a827-889cce9805e6',
   '[manifest:uc-purpose-2y-gt80-90]'
@@ -2816,13 +2816,13 @@ insert into public.mortgage_rate_variants (
   80,
   false,
   false,
-  5.19,
+  5.09,
   'advertised_from',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   '4642db37-5575-5296-a827-889cce9805e6',
   '[manifest:uc-purpose-3y-le80]'
@@ -2863,13 +2863,13 @@ insert into public.mortgage_rate_variants (
   90,
   true,
   false,
-  5.69,
+  5.59,
   'advertised_from',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   '4642db37-5575-5296-a827-889cce9805e6',
   '[manifest:uc-purpose-3y-gt80-90]'
@@ -2910,13 +2910,13 @@ insert into public.mortgage_rate_variants (
   80,
   false,
   false,
-  5.59,
+  5.49,
   'advertised_from',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   '4642db37-5575-5296-a827-889cce9805e6',
   '[manifest:uc-purpose-5y-le80]'
@@ -2957,13 +2957,13 @@ insert into public.mortgage_rate_variants (
   90,
   true,
   false,
-  6.09,
+  5.99,
   'advertised_from',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   '4642db37-5575-5296-a827-889cce9805e6',
   '[manifest:uc-purpose-5y-gt80-90]'
@@ -3004,16 +3004,16 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  5.14,
+  5.29,
   'standard',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
-  'Do not mix with product-page headline od 5,09% (see HOLD collision). [manifest:cs-oznameni-1y]'
+  'Do not mix with product-page headline od 5,39% (see HOLD collision). [manifest:cs-oznameni-1y]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3051,16 +3051,16 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  4.94,
+  5.09,
   'standard',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
-  'Do not mix with product-page headline od 5,09% (see HOLD collision). [manifest:cs-oznameni-2y]'
+  'Do not mix with product-page headline od 5,39% (see HOLD collision). [manifest:cs-oznameni-2y]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3098,16 +3098,16 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  4.94,
+  5.09,
   'standard',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
-  'Do not mix with product-page headline od 5,09% (see HOLD collision). [manifest:cs-oznameni-3y]'
+  'Do not mix with product-page headline od 5,39% (see HOLD collision). [manifest:cs-oznameni-3y]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3145,16 +3145,16 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  5.04,
+  5.19,
   'standard',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
-  'Do not mix with product-page headline od 5,09% (see HOLD collision). [manifest:cs-oznameni-4y]'
+  'Do not mix with product-page headline od 5,39% (see HOLD collision). [manifest:cs-oznameni-4y]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3192,16 +3192,16 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  5.14,
+  5.29,
   'standard',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
-  'Do not mix with product-page headline od 5,09% (see HOLD collision). [manifest:cs-oznameni-5y]'
+  'Do not mix with product-page headline od 5,39% (see HOLD collision). [manifest:cs-oznameni-5y]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3239,16 +3239,16 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  5.34,
+  5.49,
   'standard',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
-  'Do not mix with product-page headline od 5,09% (see HOLD collision). [manifest:cs-oznameni-8y]'
+  'Do not mix with product-page headline od 5,39% (see HOLD collision). [manifest:cs-oznameni-8y]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3286,16 +3286,16 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  5.54,
+  5.69,
   'standard',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
-  'Do not mix with product-page headline od 5,09% (see HOLD collision). [manifest:cs-oznameni-10y]'
+  'Do not mix with product-page headline od 5,39% (see HOLD collision). [manifest:cs-oznameni-10y]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3333,16 +3333,16 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  5.74,
+  5.89,
   'standard',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
-  'Do not mix with product-page headline od 5,09% (see HOLD collision). [manifest:cs-oznameni-15y]'
+  'Do not mix with product-page headline od 5,39% (see HOLD collision). [manifest:cs-oznameni-15y]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3380,16 +3380,16 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  5.94,
+  6.09,
   'standard',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
-  'Do not mix with product-page headline od 5,09% (see HOLD collision). [manifest:cs-oznameni-20y]'
+  'Do not mix with product-page headline od 5,39% (see HOLD collision). [manifest:cs-oznameni-20y]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -3427,13 +3427,13 @@ insert into public.mortgage_rate_variants (
   80,
   false,
   false,
-  5.14,
+  5.49,
   'advertised_from',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
   'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-mortgage-1y-le80]'
@@ -3474,13 +3474,13 @@ insert into public.mortgage_rate_variants (
   90,
   true,
   false,
-  5.54,
+  5.89,
   'advertised_from',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
   'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-mortgage-1y-gt80-90]'
@@ -3521,13 +3521,13 @@ insert into public.mortgage_rate_variants (
   80,
   false,
   false,
-  5.19,
+  5.59,
   'advertised_from',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
   'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-mortgage-2y-le80]'
@@ -3568,13 +3568,13 @@ insert into public.mortgage_rate_variants (
   90,
   true,
   false,
-  5.59,
+  5.99,
   'advertised_from',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
   'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-mortgage-2y-gt80-90]'
@@ -3615,13 +3615,13 @@ insert into public.mortgage_rate_variants (
   80,
   false,
   false,
-  5.24,
+  5.69,
   'advertised_from',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
   'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-mortgage-3y-le80]'
@@ -3662,13 +3662,13 @@ insert into public.mortgage_rate_variants (
   90,
   true,
   false,
-  5.64,
+  6.09,
   'advertised_from',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
   'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-mortgage-3y-gt80-90]'
@@ -3709,13 +3709,13 @@ insert into public.mortgage_rate_variants (
   80,
   false,
   false,
-  5.54,
+  5.84,
   'advertised_from',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
   'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-mortgage-4y-le80]'
@@ -3756,13 +3756,13 @@ insert into public.mortgage_rate_variants (
   90,
   true,
   false,
-  5.94,
+  6.24,
   'advertised_from',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
   'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-mortgage-4y-gt80-90]'
@@ -3803,13 +3803,13 @@ insert into public.mortgage_rate_variants (
   80,
   false,
   false,
-  5.74,
+  6.04,
   'advertised_from',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
   'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-mortgage-5y-le80]'
@@ -3850,13 +3850,13 @@ insert into public.mortgage_rate_variants (
   90,
   true,
   false,
-  6.14,
+  6.44,
   'advertised_from',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
   'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-mortgage-5y-gt80-90]'
@@ -3897,13 +3897,13 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  5.54,
+  5.99,
   'advertised_from',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
   'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-american-1y]'
@@ -3944,13 +3944,13 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  5.59,
+  5.99,
   'advertised_from',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
   'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-american-2y]'
@@ -3991,13 +3991,13 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  5.64,
+  5.99,
   'advertised_from',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
   'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-american-3y]'
@@ -4038,13 +4038,13 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  5.94,
+  6.29,
   'advertised_from',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
   'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-american-4y]'
@@ -4085,13 +4085,13 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  6.14,
+  6.29,
   'advertised_from',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
   'From KB Oznámení matrix. Distinct from product-page conditional od 5,19%. [manifest:kb-american-5y]'
@@ -4132,16 +4132,16 @@ insert into public.mortgage_rate_variants (
   null,
   false,
   false,
-  5.19,
+  5.49,
   'advertised_from',
   null,
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   null,
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   true,
   'ea271d28-bc5a-5e71-a91d-6502192c41ad',
-  'Product-page conditional od 5,19%. Fixation and LTV not stated on page — must not personalized-match LTV or replace Oznámení matrix. [manifest:kb-product-page-advertised-from-5-19]'
+  'Product-page conditional od 5,49% (re-verified 2026-09-21). Fixation and LTV not stated on headline — must not personalized-match LTV or replace Oznámení matrix. [manifest:kb-product-page-advertised-from-5-19]'
 )
 on conflict (id) do update set
   pricing_scenario_key = excluded.pricing_scenario_key,
@@ -4186,9 +4186,9 @@ insert into public.mortgage_rate_conditions (
   'PPI / repayment insurance — published effect −10 bp.',
   true,
   false,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -4223,9 +4223,9 @@ insert into public.mortgage_rate_conditions (
   'Published rate without repayment insurance (PPI).',
   false,
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -4260,9 +4260,9 @@ insert into public.mortgage_rate_conditions (
   'PPI / repayment insurance — published effect −10 bp.',
   true,
   false,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -4297,9 +4297,9 @@ insert into public.mortgage_rate_conditions (
   'Published rate without repayment insurance (PPI).',
   false,
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -4334,9 +4334,9 @@ insert into public.mortgage_rate_conditions (
   'PPI / repayment insurance — published effect −10 bp.',
   true,
   false,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -4371,9 +4371,9 @@ insert into public.mortgage_rate_conditions (
   'Published rate without repayment insurance (PPI).',
   false,
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -4408,9 +4408,9 @@ insert into public.mortgage_rate_conditions (
   'PPI / repayment insurance — published effect −10 bp.',
   true,
   false,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -4445,9 +4445,9 @@ insert into public.mortgage_rate_conditions (
   'Published rate without repayment insurance (PPI).',
   false,
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -4482,9 +4482,9 @@ insert into public.mortgage_rate_conditions (
   'PPI / repayment insurance — published effect −10 bp.',
   true,
   false,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -4519,9 +4519,9 @@ insert into public.mortgage_rate_conditions (
   'Published rate without repayment insurance (PPI).',
   false,
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -4556,9 +4556,9 @@ insert into public.mortgage_rate_conditions (
   'PPI / repayment insurance — published effect −10 bp.',
   true,
   false,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -4593,9 +4593,9 @@ insert into public.mortgage_rate_conditions (
   'Published rate without repayment insurance (PPI).',
   false,
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -4630,9 +4630,9 @@ insert into public.mortgage_rate_conditions (
   'PPI / repayment insurance — published effect −10 bp.',
   true,
   false,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -4667,9 +4667,9 @@ insert into public.mortgage_rate_conditions (
   'Published rate without repayment insurance (PPI).',
   false,
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -4704,9 +4704,9 @@ insert into public.mortgage_rate_conditions (
   'PPI / repayment insurance — published effect −10 bp.',
   true,
   false,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -4741,9 +4741,9 @@ insert into public.mortgage_rate_conditions (
   'Published rate without repayment insurance (PPI).',
   false,
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -4778,9 +4778,9 @@ insert into public.mortgage_rate_conditions (
   'PPI / repayment insurance — published effect −10 bp.',
   true,
   false,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -4815,9 +4815,9 @@ insert into public.mortgage_rate_conditions (
   'Published rate without repayment insurance (PPI).',
   false,
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -4852,9 +4852,9 @@ insert into public.mortgage_rate_conditions (
   'PPI / repayment insurance — published effect −10 bp.',
   true,
   false,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -4889,9 +4889,9 @@ insert into public.mortgage_rate_conditions (
   'Published rate without repayment insurance (PPI).',
   false,
   true,
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -4926,9 +4926,9 @@ insert into public.mortgage_rate_conditions (
   'Active account — published effect −50 bp (included in housing published rates).',
   true,
   false,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -4963,9 +4963,9 @@ insert into public.mortgage_rate_conditions (
   'Optional repayment insurance — published effect −20 bp (housing).',
   false,
   true,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -5000,9 +5000,9 @@ insert into public.mortgage_rate_conditions (
   'Active account — published effect −50 bp (included in housing published rates).',
   true,
   false,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -5037,9 +5037,9 @@ insert into public.mortgage_rate_conditions (
   'Optional repayment insurance — published effect −20 bp (housing).',
   false,
   true,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -5074,9 +5074,9 @@ insert into public.mortgage_rate_conditions (
   'Active account — published effect −50 bp (included in housing published rates).',
   true,
   false,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -5111,9 +5111,9 @@ insert into public.mortgage_rate_conditions (
   'Optional repayment insurance — published effect −20 bp (housing).',
   false,
   true,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -5148,9 +5148,9 @@ insert into public.mortgage_rate_conditions (
   'Active account — published effect −50 bp (included in housing published rates).',
   true,
   false,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -5185,9 +5185,9 @@ insert into public.mortgage_rate_conditions (
   'Optional repayment insurance — published effect −20 bp (housing).',
   false,
   true,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -5222,9 +5222,9 @@ insert into public.mortgage_rate_conditions (
   'Active account — published effect −50 bp (included in housing published rates).',
   true,
   false,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -5259,9 +5259,9 @@ insert into public.mortgage_rate_conditions (
   'Optional repayment insurance — published effect −20 bp (housing).',
   false,
   true,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -5296,9 +5296,9 @@ insert into public.mortgage_rate_conditions (
   'PPI discount does NOT apply to published Trade/entrepreneur mortgage rates.',
   false,
   true,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -5333,9 +5333,9 @@ insert into public.mortgage_rate_conditions (
   'PPI discount does NOT apply to published Trade/entrepreneur mortgage rates.',
   false,
   true,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -5370,9 +5370,9 @@ insert into public.mortgage_rate_conditions (
   'PPI discount does NOT apply to published Trade/entrepreneur mortgage rates.',
   false,
   true,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -5407,9 +5407,9 @@ insert into public.mortgage_rate_conditions (
   'PPI discount does NOT apply to published Trade/entrepreneur mortgage rates.',
   false,
   true,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -5444,9 +5444,9 @@ insert into public.mortgage_rate_conditions (
   'PPI discount does NOT apply to published Trade/entrepreneur mortgage rates.',
   false,
   true,
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -5483,7 +5483,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '4642db37-5575-5296-a827-889cce9805e6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -5520,7 +5520,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '4642db37-5575-5296-a827-889cce9805e6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -5557,7 +5557,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '4642db37-5575-5296-a827-889cce9805e6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -5594,7 +5594,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '4642db37-5575-5296-a827-889cce9805e6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -5631,7 +5631,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '4642db37-5575-5296-a827-889cce9805e6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -5668,7 +5668,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '4642db37-5575-5296-a827-889cce9805e6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -5705,7 +5705,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '4642db37-5575-5296-a827-889cce9805e6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -5742,7 +5742,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '4642db37-5575-5296-a827-889cce9805e6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -5779,7 +5779,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '4642db37-5575-5296-a827-889cce9805e6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -5816,7 +5816,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '4642db37-5575-5296-a827-889cce9805e6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -5853,7 +5853,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '4642db37-5575-5296-a827-889cce9805e6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -5890,7 +5890,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '4642db37-5575-5296-a827-889cce9805e6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -5927,7 +5927,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -5964,7 +5964,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -6001,7 +6001,7 @@ insert into public.mortgage_rate_conditions (
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -6038,7 +6038,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -6075,7 +6075,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -6112,7 +6112,7 @@ insert into public.mortgage_rate_conditions (
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -6149,7 +6149,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -6186,7 +6186,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -6223,7 +6223,7 @@ insert into public.mortgage_rate_conditions (
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -6260,7 +6260,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -6297,7 +6297,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -6334,7 +6334,7 @@ insert into public.mortgage_rate_conditions (
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -6371,7 +6371,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -6408,7 +6408,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -6445,7 +6445,7 @@ insert into public.mortgage_rate_conditions (
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -6482,7 +6482,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -6519,7 +6519,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -6556,7 +6556,7 @@ insert into public.mortgage_rate_conditions (
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -6593,7 +6593,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -6630,7 +6630,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -6667,7 +6667,7 @@ insert into public.mortgage_rate_conditions (
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -6704,7 +6704,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -6741,7 +6741,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -6778,7 +6778,7 @@ insert into public.mortgage_rate_conditions (
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -6815,7 +6815,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -6852,7 +6852,7 @@ insert into public.mortgage_rate_conditions (
   false,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -6889,7 +6889,7 @@ insert into public.mortgage_rate_conditions (
   true,
   '467c05fd-0729-57a1-b4f0-060eee6fa49e',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -6926,7 +6926,7 @@ insert into public.mortgage_rate_conditions (
   false,
   'ea271d28-bc5a-5e71-a91d-6502192c41ad',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -6963,7 +6963,7 @@ insert into public.mortgage_rate_conditions (
   false,
   'ea271d28-bc5a-5e71-a91d-6502192c41ad',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -7000,7 +7000,7 @@ insert into public.mortgage_rate_conditions (
   false,
   'ea271d28-bc5a-5e71-a91d-6502192c41ad',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -7037,7 +7037,7 @@ insert into public.mortgage_rate_conditions (
   false,
   'ea271d28-bc5a-5e71-a91d-6502192c41ad',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   condition_type = excluded.condition_type,
@@ -7068,10 +7068,10 @@ insert into public.mortgage_product_fees (
   'monthly',
   false,
   'PPI cost = 8.7% of current/prescribed monthly mortgage payment (published). Not merged into nominal interest. Published share of monthly payment: 8.7%. Amount left NULL (not converted to fixed CZK).',
-  '2026-08-09T00:00:00.000Z',
-  '2f7deb25-4be2-5763-854e-826c4bbda866',
+  '2026-09-21T00:00:00.000Z',
+  'a8ee5f91-2d81-52ff-ae5b-c18f06d58d3b',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   fee_type = excluded.fee_type,
@@ -7097,11 +7097,11 @@ insert into public.mortgage_product_fees (
   'CZK',
   'monthly',
   false,
-  'PPI cost = 10.99% of monthly payment (published). Not merged into nominal interest. Published share of monthly payment: 10.99%. Amount left NULL (not converted to fixed CZK).',
-  '2026-08-09T00:00:00.000Z',
-  '6186cf87-157c-5912-85ea-9de81f9aaa3d',
+  'PPI cost = 8.99% of monthly payment (published; verified 2026-09-21). Not merged into nominal interest. Published share of monthly payment: 8.99%. Amount left NULL (not converted to fixed CZK).',
+  '2026-09-21T00:00:00.000Z',
+  'bae7adc5-19c3-57dd-a560-f9ab054535d6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   fee_type = excluded.fee_type,
@@ -7126,7 +7126,7 @@ insert into public.mortgage_representative_examples (
 ) values (
   'c9868347-f7db-5eb4-80af-9c6ddcbe90a4',
   '6b2c007b-f774-5dde-aaa0-94cadcb9dc97',
-  'cda6d59c-4458-520a-9e41-fa32e39d403d',
+  null,
   2500000,
   30,
   36,
@@ -7222,18 +7222,18 @@ insert into public.mortgage_representative_examples (
   4000000,
   30,
   36,
-  5.19,
-  5.34,
-  21966,
-  7903819.83,
+  5.49,
+  5.65,
+  22712,
+  8169872.14,
   360,
   null,
   null,
   null,
   null,
   'Published representative example [product_page_advertised_from_conditional] [manifest:kb-product-page-representative-example]',
-  '2026-08-09T00:00:00.000Z',
-  '2026-08-09T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
+  '2026-09-21T00:00:00.000Z',
   'ea271d28-bc5a-5e71-a91d-6502192c41ad',
   true
 )
@@ -7275,7 +7275,7 @@ insert into public.mortgage_eligibility_rules (
   null,
   '4642db37-5575-5296-a827-889cce9805e6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   rule_category = excluded.rule_category,
@@ -7305,7 +7305,7 @@ insert into public.mortgage_eligibility_rules (
   null,
   '4c39a68d-cecf-52a2-9678-084f2d94aac4',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   rule_category = excluded.rule_category,
@@ -7335,7 +7335,7 @@ insert into public.mortgage_eligibility_rules (
   null,
   '4c39a68d-cecf-52a2-9678-084f2d94aac4',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   rule_category = excluded.rule_category,
@@ -7365,7 +7365,7 @@ insert into public.mortgage_eligibility_rules (
   null,
   '4c39a68d-cecf-52a2-9678-084f2d94aac4',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   rule_category = excluded.rule_category,
@@ -7395,7 +7395,7 @@ insert into public.mortgage_eligibility_rules (
   null,
   '4c39a68d-cecf-52a2-9678-084f2d94aac4',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   rule_category = excluded.rule_category,
@@ -7425,7 +7425,7 @@ insert into public.mortgage_eligibility_rules (
   null,
   'dc8f3ec4-9079-5494-b1e4-98e209cf339f',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   rule_category = excluded.rule_category,
@@ -7455,7 +7455,7 @@ insert into public.mortgage_eligibility_rules (
   null,
   '4642db37-5575-5296-a827-889cce9805e6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   rule_category = excluded.rule_category,
@@ -7485,7 +7485,7 @@ insert into public.mortgage_eligibility_rules (
   null,
   '4642db37-5575-5296-a827-889cce9805e6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   rule_category = excluded.rule_category,
@@ -7515,7 +7515,7 @@ insert into public.mortgage_eligibility_rules (
   null,
   '4642db37-5575-5296-a827-889cce9805e6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   rule_category = excluded.rule_category,
@@ -7545,7 +7545,7 @@ insert into public.mortgage_eligibility_rules (
   null,
   '4642db37-5575-5296-a827-889cce9805e6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   rule_category = excluded.rule_category,
@@ -7575,7 +7575,7 @@ insert into public.mortgage_eligibility_rules (
   null,
   '4642db37-5575-5296-a827-889cce9805e6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   rule_category = excluded.rule_category,
@@ -7605,7 +7605,7 @@ insert into public.mortgage_eligibility_rules (
   null,
   '4642db37-5575-5296-a827-889cce9805e6',
   true,
-  '2026-08-09T00:00:00.000Z'
+  '2026-09-21T00:00:00.000Z'
 )
 on conflict (id) do update set
   rule_category = excluded.rule_category,
@@ -7689,17 +7689,17 @@ begin
     raise exception 'IMPORT ASSERT: duplicate active identities: %', dupes;
   end if;
 
-  -- Current CS Oznámení 3y must be 4.94 (not stale 5.09)
+  -- Current CS Oznámení 3y must be 5.09 (not stale 4.94)
   select count(*) into cs_494 from public.mortgage_rate_variants v
   join public.mortgage_catalog_products p on p.id = v.product_id
   join public.mortgage_lenders l on l.id = p.lender_id
   where v.is_active and l.slug = 'ceska-sporitelna'
     and v.fixation_months = 36
-    and v.nominal_interest_rate = 4.94
+    and v.nominal_interest_rate = 5.09
     and v.pricing_scenario_key = 'oznameni_account_ppi_budoucnost';
-  if cs_494 <> 1 then raise exception 'IMPORT ASSERT: expected CS 3y Oznámení 4.94'; end if;
+  if cs_494 <> 1 then raise exception 'IMPORT ASSERT: expected CS 3y Oznámení 5.09'; end if;
 
-  -- Stale KB 3y 5.39 must be gone; current 5.24 must exist
+  -- Stale KB 3y 5.39 must be gone; current 5.69 must exist
   select count(*) into kb_514 from public.mortgage_rate_variants v
   join public.mortgage_catalog_products p on p.id = v.product_id
   join public.mortgage_lenders l on l.id = p.lender_id

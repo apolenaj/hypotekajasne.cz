@@ -1,5 +1,4 @@
 import { getCz20260809Catalog } from "@/lib/mortgage-market/catalog-from-manifest";
-import { getMortgageOffersFromSupabase } from "@/lib/mortgage-market/offers.server";
 import {
   getMortgageOffers,
   type GetMortgageOffersResult,
@@ -27,24 +26,16 @@ async function loadHomeOffersUncached(): Promise<GetMortgageOffersResult | null>
     fixationMonths: SAZBY_DEFAULT_QUERY.fixationMonths,
     ltv: filterLtv,
     includeLtvUnspecified: true,
+    nowMs: MANIFEST_NOW_MS,
   } as const;
 
-  try {
-    const live = await getMortgageOffersFromSupabase(query);
-    if (live) return live;
-  } catch {
-    // Manifest mirror for build/dev without service role.
-  }
-
-  return getMortgageOffers(getCz20260809Catalog(), {
-    ...query,
-    nowMs: MANIFEST_NOW_MS,
-  });
+  // Same SoT as /sazby: audited manifest catalog (not lagging Supabase rows).
+  return getMortgageOffers(getCz20260809Catalog(), query);
 }
 
-/** Cached homepage offers — avoids Supabase round-trip on every TTFB. */
+/** Cached homepage offers from the verified manifest catalog. */
 export const getCachedHomeOffers = unstable_cache(
   loadHomeOffersUncached,
-  ["home-page-offers-v1"],
+  ["home-page-offers-v2-manifest"],
   { revalidate: 3600, tags: ["home-offers"] }
 );

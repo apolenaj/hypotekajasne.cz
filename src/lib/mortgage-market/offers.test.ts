@@ -59,7 +59,7 @@ describe("getMortgageOffers — Air purchase / refinance scenarios", () => {
 });
 
 describe("getMortgageOffers — UniCredit / KB LTV boundaries", () => {
-  it("C/D: UniCredit 36m LTV 75 → 5.19; LTV 85 → 5.69", () => {
+  it("C/D: UniCredit 36m LTV 75 → 5.09; LTV 85 → 5.59", () => {
     const at75 = getMortgageOffers(catalog, {
       lenderSlug: "unicredit",
       fixationMonths: 36,
@@ -68,7 +68,7 @@ describe("getMortgageOffers — UniCredit / KB LTV boundaries", () => {
     });
     assert.deepEqual(
       at75.offers.map((o) => o.nominalInterestRate),
-      [5.19]
+      [5.09]
     );
     assert.equal(at75.offers[0]!.claimsPersonalizedLtvMatch, true);
     assert.equal(at75.offers[0]!.ltvScope, "explicit");
@@ -81,7 +81,7 @@ describe("getMortgageOffers — UniCredit / KB LTV boundaries", () => {
     });
     assert.deepEqual(
       at85.offers.map((o) => o.nominalInterestRate),
-      [5.69]
+      [5.59]
     );
   });
 
@@ -94,7 +94,7 @@ describe("getMortgageOffers — UniCredit / KB LTV boundaries", () => {
     });
     assert.deepEqual(
       at80.offers.map((o) => o.nominalInterestRate),
-      [5.19]
+      [5.09]
     );
 
     const justOver80 = getMortgageOffers(catalog, {
@@ -105,7 +105,7 @@ describe("getMortgageOffers — UniCredit / KB LTV boundaries", () => {
     });
     assert.deepEqual(
       justOver80.offers.map((o) => o.nominalInterestRate),
-      [5.69]
+      [5.59]
     );
 
     const at90 = getMortgageOffers(catalog, {
@@ -116,7 +116,7 @@ describe("getMortgageOffers — UniCredit / KB LTV boundaries", () => {
     });
     assert.deepEqual(
       at90.offers.map((o) => o.nominalInterestRate),
-      [5.69]
+      [5.59]
     );
 
     const over90 = getMortgageOffers(catalog, {
@@ -128,7 +128,7 @@ describe("getMortgageOffers — UniCredit / KB LTV boundaries", () => {
     assert.equal(over90.offers.length, 0);
   });
 
-  it("E/F: KB 36m LTV 75 → 5.69; LTV 85 → 6.09; conditional 5.19 not personalized", () => {
+  it("E/F: KB 36m LTV 75 → 5.69; LTV 85 → 6.09; conditional 5.49 not personalized", () => {
     const at75 = getMortgageOffers(catalog, {
       lenderSlug: "komercni-banka",
       fixationMonths: 36,
@@ -150,7 +150,7 @@ describe("getMortgageOffers — UniCredit / KB LTV boundaries", () => {
     assert.ok(
       at75.unspecifiedLtvOffers.some(
         (o) =>
-          o.nominalInterestRate === 5.19 &&
+          o.nominalInterestRate === 5.49 &&
           o.pricingScenarioKey === "product_page_advertised_from_conditional" &&
           o.claimsPersonalizedLtvMatch === false &&
           o.fixationMonths == null
@@ -159,7 +159,7 @@ describe("getMortgageOffers — UniCredit / KB LTV boundaries", () => {
     assert.ok(
       !at75.offers.some(
         (o) =>
-          o.nominalInterestRate === 5.19 &&
+          o.nominalInterestRate === 5.49 &&
           o.pricingScenarioKey === "product_page_advertised_from_conditional"
       )
     );
@@ -185,14 +185,14 @@ describe("getMortgageOffers — UniCredit / KB LTV boundaries", () => {
     assert.ok(
       at85.unspecifiedLtvOffers.some(
         (o) =>
-          o.nominalInterestRate === 5.19 &&
+          o.nominalInterestRate === 5.49 &&
           o.pricingScenarioKey === "product_page_advertised_from_conditional" &&
           o.claimsPersonalizedLtvMatch === false &&
           o.fixationMonths == null
       )
     );
     assert.ok(
-      !at85.offers.some((o) => o.nominalInterestRate === 5.19)
+      !at85.offers.some((o) => o.nominalInterestRate === 5.49)
     );
 
     const conditional = catalog.rates.find(
