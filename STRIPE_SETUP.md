@@ -35,13 +35,26 @@ STRIPE_PRICE_INDIVIDUAL_ANALYSIS=price_…
 
 Pokud Price ID chybí, server použije `price_data` s kanonickou částkou **99900** / **499000** haléřů CZK. Klient **nemůže** částku přepsat.
 
-E-mail po platbě:
+E-mail po platbě (zákazník):
 
 ```
 RESEND_API_KEY=…
 RESEND_EMAIL_DOMAIN=…
 RENTGEN_AUDIT_FROM_EMAIL=…   # nebo LEAD_OPS_FROM_EMAIL
 ```
+
+Interní ops e-maily (nové zadání + ZAPLACENO) — **pouze server-side**:
+
+```
+ADMIN_ORDER_EMAIL=…           # doporučeno; fallback: LEAD_OPS_RECIPIENT_EMAIL
+LEAD_OPS_FROM_EMAIL=…
+RESEND_API_KEY=…
+RESEND_EMAIL_DOMAIN=…
+```
+
+Nikdy nepoužívejte `NEXT_PUBLIC_*` pro interní adresu. Po nasazení spusťte také:
+
+`supabase/rentgen_admin_notifications.sql`
 
 ## 2. Stripe Products / Prices
 
@@ -62,9 +75,13 @@ Spusťte SQL:
 
 `supabase/investment_analysis_orders.sql`
 
+a migraci notifikací:
+
+`supabase/rentgen_admin_notifications.sql`
+
 Tabulky:
 
-- `investment_analysis_orders`
+- `investment_analysis_orders` (+ `admin_checkout_notification_sent_at`, `admin_payment_notification_sent_at`)
 - `stripe_webhook_events` (idempotence podle `event_id`)
 
 ## 4. Webhook

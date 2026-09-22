@@ -247,6 +247,31 @@ export async function fulfillRentgenOrderFromSession(
     order.status === "AWAITING_DOCUMENTS" ||
     (order.status === "PROCESSING" && order.storage_path)
   ) {
+    // Idempotent retry path: still attempt unpaid admin payment notice once.
+    if (!order.admin_payment_notification_sent_at) {
+      try {
+        const { sendAdminOrderEmail } = await import(
+          "@/lib/property-rentgen/send-admin-order-email"
+        );
+        const pi =
+          typeof session.payment_intent === "string"
+            ? session.payment_intent
+            : session.payment_intent?.id ?? order.stripe_payment_intent_id;
+        const adminMail = await sendAdminOrderEmail({
+          kind: "payment_confirmed",
+          order,
+          stripeSessionId: session.id,
+          paymentIntentId: pi,
+        });
+        if (adminMail.delivered) {
+          await updateOrder(order.id, {
+            admin_payment_notification_sent_at: new Date().toISOString(),
+          });
+        }
+      } catch {
+        /* best-effort */
+      }
+    }
     return {
       orderId: order.id,
       publicId: order.public_id,
@@ -297,6 +322,41 @@ export async function fulfillRentgenOrderFromSession(
         : session.customer?.id ?? order.stripe_customer_id,
     last_stripe_event_id: opts?.eventId ?? order.last_stripe_event_id,
   });
+
+  // Internal ops: payment confirmed — once per order (idempotent flag).
+  try {
+    const paidOrder = await getOrderById(order.id);
+    if (paidOrder && !paidOrder.admin_payment_notification_sent_at) {
+      const { sendAdminOrderEmail } = await import(
+        "@/lib/property-rentgen/send-admin-order-email"
+      );
+      const pi =
+        typeof session.payment_intent === "string"
+          ? session.payment_intent
+          : session.payment_intent?.id ?? null;
+      const adminMail = await sendAdminOrderEmail({
+        kind: "payment_confirmed",
+        order: paidOrder,
+        stripeSessionId: session.id,
+        paymentIntentId: pi,
+      });
+      if (adminMail.delivered) {
+        await updateOrder(order.id, {
+          admin_payment_notification_sent_at: new Date().toISOString(),
+        });
+      } else {
+        console.info("[fulfill] admin payment email skipped", {
+          orderId: order.id,
+          errorCode: adminMail.errorCode ?? null,
+        });
+      }
+    }
+  } catch (err) {
+    console.warn("[fulfill] admin payment email failed", {
+      orderId: order.id,
+      message: err instanceof Error ? err.message : String(err),
+    });
+  }
 
   let snap: RentgenCheckoutPropertySnapshot;
   try {

@@ -9,6 +9,7 @@ import {
   formatDigitalRentgenPrice,
 } from "@/lib/property-rentgen/pricing";
 import { PRODUCT_CODE } from "@/lib/property-rentgen/products";
+import { track } from "@/lib/analytics/track";
 
 type PublicOrder = {
   publicId: string;
@@ -25,20 +26,20 @@ const STATUS_COPY: Record<
   { title: string; body: string }
 > = {
   READY: {
-    title: "Platba proběhla úspěšně",
-    body: "Váš Investiční rentgen je připravený ke stažení.",
+    title: "Platba byla úspěšná",
+    body: "Vaše zadání jsme přijali. Výstup je připravený ke stažení.",
   },
   AWAITING_DOCUMENTS: {
-    title: "Platba proběhla úspěšně",
-    body: "Modelový PDF výstup je připravený. Pro dokončení individuálního rozboru doplňte podklady.",
+    title: "Platba byla úspěšná",
+    body: "Vaše zadání jsme přijali. Modelový výstup je připravený — pro dokončení individuálního rozboru doplňte podklady.",
   },
   PROCESSING: {
-    title: "Připravujeme váš výstup",
-    body: "Platba je potvrzená. Generujeme model — stránku můžete nechat otevřenou.",
+    title: "Platba byla úspěšná",
+    body: "Vaše zadání jsme přijali. Připravujeme výstup podle zakoupeného balíčku.",
   },
   PAID: {
-    title: "Platba potvrzena",
-    body: "Zahajujeme zpracování objednávky.",
+    title: "Platba byla úspěšná",
+    body: "Vaše zadání jsme přijali. Zahajujeme zpracování.",
   },
   PAYMENT_PENDING: {
     title: "Platbu ještě potvrzujeme",
@@ -63,6 +64,13 @@ export function RentgenThankYouClient() {
   const [downloadPath, setDownloadPath] = useState<string | null>(null);
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!sessionId) return;
+    track("checkout_completed", {
+      tool_id: "property_rentgen",
+    });
+  }, [sessionId]);
 
   useEffect(() => {
     if (!sessionId) return;
@@ -144,9 +152,14 @@ export function RentgenThankYouClient() {
 
       {order ? (
         <div className="mt-8 rounded-2xl border border-border bg-white p-5 shadow-sm">
-          <p className="text-sm font-bold text-text-dark">{productName}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-deep-teal">
+            {productName}
+          </p>
           <p className="mt-1 text-2xl font-bold tabular-nums text-deep-teal">
             {priceLabel}
+          </p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Vaše zadání jsme přijali.
           </p>
           <dl className="mt-4 space-y-2 text-sm text-muted-foreground">
             <div className="flex justify-between gap-4">
@@ -170,6 +183,25 @@ export function RentgenThankYouClient() {
               <dd className="font-semibold text-text-dark">{order.status}</dd>
             </div>
           </dl>
+
+          <div className="mt-6 rounded-xl bg-[#f7f9f8] px-4 py-4">
+            <p className="text-xs font-bold uppercase tracking-wide text-deep-teal">
+              Co bude následovat
+            </p>
+            <ol className="mt-2 list-decimal space-y-1.5 pl-4 text-sm text-muted-foreground">
+              <li>Zpracujeme vaše vstupy.</li>
+              <li>
+                {isDigital
+                  ? "Připravíme automatický výstup Rentgenu."
+                  : "Připravíme individuální rozbor podle podkladů."}
+              </li>
+              <li>
+                {isDigital
+                  ? "PDF a odkaz ke stažení obdržíte e-mailem (a zde na této stránce)."
+                  : "Modelový výstup je dostupný ihned; individuální komentář pokračuje po doplnění podkladů."}
+              </li>
+            </ol>
+          </div>
 
           <div className="mt-6 flex flex-col gap-2">
             {downloadPath ? (

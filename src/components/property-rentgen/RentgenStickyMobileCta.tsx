@@ -2,19 +2,11 @@
 
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { routes } from "@/lib/routes";
-import {
-  formatAnalysisPrice,
-  formatDigitalRentgenPrice,
-} from "@/lib/property-rentgen/pricing";
-import { analysisPackageFromQuery } from "@/lib/property-rentgen/package-query";
+import { formatDigitalRentgenPrice } from "@/lib/property-rentgen/pricing";
 
 function StickyInner({ live }: { live: boolean }) {
-  const searchParams = useSearchParams();
   const [hidden, setHidden] = useState(true);
-  const isPremium =
-    analysisPackageFromQuery(searchParams.get("balicek")) === "premium";
 
   useEffect(() => {
     if (!live) return;
@@ -31,14 +23,8 @@ function StickyInner({ live }: { live: boolean }) {
 
   if (!live || hidden) return null;
 
-  const href = isPremium
-    ? `${routes.investicniRentgen}?balicek=4990#premium-objednavka`
-    : `${routes.investicniRentgen}?balicek=999#premium-objednavka`;
-  const title = isPremium ? "Individuální rozbor" : "Investiční rentgen";
-  const price = isPremium ? formatAnalysisPrice() : formatDigitalRentgenPrice();
-  const cta = isPremium
-    ? `Koupit rozbor – ${price}`
-    : `Získat Rentgen – ${price}`;
+  const href = `${routes.investicniRentgen}?balicek=999#premium-objednavka`;
+  const price = formatDigitalRentgenPrice();
 
   return (
     <div
@@ -49,20 +35,18 @@ function StickyInner({ live }: { live: boolean }) {
     >
       <div className="mx-auto flex max-w-lg items-center gap-3">
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-bold text-text-dark">{title}</p>
+          <p className="truncate text-sm font-bold text-text-dark">
+            Investiční rentgen
+          </p>
           <p className="text-xs text-muted-foreground">
             {price} · jednorázově
           </p>
         </div>
         <Link
           href={href}
-          className={
-            isPremium
-              ? "shrink-0 rounded-xl bg-deep-teal px-3 py-2.5 text-xs font-bold text-white"
-              : "shrink-0 rounded-xl bg-muted-gold px-3 py-2.5 text-xs font-bold text-text-dark"
-          }
+          className="shrink-0 rounded-xl bg-muted-gold px-3 py-2.5 text-xs font-bold text-text-dark"
         >
-          {cta}
+          Rentgen {price} →
         </Link>
         <button
           type="button"

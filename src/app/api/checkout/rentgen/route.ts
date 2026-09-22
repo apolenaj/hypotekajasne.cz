@@ -193,7 +193,7 @@ export async function POST(request: Request) {
       order = existing;
       const fromBody = parseOrderInputSnapshot(body, {
         requireIdentity: true,
-        requireDescription: true,
+        requireDescription: product.code === PRODUCT_CODE.INDIVIDUAL_ANALYSIS,
       });
       if (!("error" in fromBody)) {
         const existingPhotos = (
@@ -223,7 +223,7 @@ export async function POST(request: Request) {
     } else {
       const fromBody = parseOrderInputSnapshot(body, {
         requireIdentity: true,
-        requireDescription: true,
+        requireDescription: product.code === PRODUCT_CODE.INDIVIDUAL_ANALYSIS,
       });
       if ("error" in fromBody) {
         // Backward-compatible: allow legacy financial-only payloads.
@@ -437,6 +437,36 @@ export async function POST(request: Request) {
               : [],
       },
     });
+
+    // Internal ops: new assignment waiting for payment (best-effort, non-blocking).
+    try {
+      const fresh = await getOrderById(order.id);
+      if (fresh && !fresh.admin_checkout_notification_sent_at) {
+        const { sendAdminOrderEmail } = await import(
+          "@/lib/property-rentgen/send-admin-order-email"
+        );
+        const adminMail = await sendAdminOrderEmail({
+          kind: "checkout_pending",
+          order: fresh,
+          stripeSessionId: session.id,
+        });
+        if (adminMail.delivered) {
+          await updateOrder(order.id, {
+            admin_checkout_notification_sent_at: new Date().toISOString(),
+          });
+        } else {
+          console.info("[checkout/rentgen] admin checkout email skipped", {
+            orderId: order.id,
+            errorCode: adminMail.errorCode ?? null,
+          });
+        }
+      }
+    } catch (err) {
+      console.warn("[checkout/rentgen] admin checkout email failed", {
+        orderId: order.id,
+        message: err instanceof Error ? err.message : String(err),
+      });
+    }
 
     return NextResponse.json({
       url: session.url,

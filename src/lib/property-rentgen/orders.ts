@@ -59,6 +59,10 @@ export type InvestmentAnalysisOrderRow = {
   paid_at: string | null;
   processing_at: string | null;
   fulfilled_at: string | null;
+  /** Internal ops e-mail: order created / checkout session ready */
+  admin_checkout_notification_sent_at: string | null;
+  /** Internal ops e-mail: payment confirmed (idempotent) */
+  admin_payment_notification_sent_at: string | null;
   created_at: string;
   updated_at: string;
 };
