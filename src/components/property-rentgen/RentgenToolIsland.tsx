@@ -146,14 +146,21 @@ export function RentgenToolIsland({
   checkoutLive?: boolean;
 }) {
   const searchParams = useSearchParams();
+  const balicekRaw = searchParams.get("balicek");
+  const packageFromQuery = analysisPackageFromQuery(balicekRaw);
+  const shouldOpenCheckout =
+    balicekRaw === "999" ||
+    balicekRaw === "4990" ||
+    balicekRaw === "digital" ||
+    balicekRaw === "premium";
+
   const [mode, setMode] = useState<RentgenInputMode>("manual");
   const [input, setInput] = useState<ManualPropertyInput>(EMPTY_MANUAL_INPUT);
   const [ran, setRan] = useState(false);
-  const [interestPackage, setInterestPackage] = useState<AnalysisProductTierId>(
-    () => analysisPackageFromQuery(searchParams.get("balicek"))
-  );
+  const [interestPackage, setInterestPackage] =
+    useState<AnalysisProductTierId>(packageFromQuery);
   const [orderStep, setOrderStep] = useState(1);
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(shouldOpenCheckout);
   const [premiumName, setPremiumName] = useState("");
   const [premiumEmail, setPremiumEmail] = useState("");
   const [premiumPhone, setPremiumPhone] = useState("");
@@ -203,29 +210,30 @@ export function RentgenToolIsland({
   }, []);
 
   useEffect(() => {
-    setInterestPackage(analysisPackageFromQuery(searchParams.get("balicek")));
-    const balicek = searchParams.get("balicek");
-    if (balicek === "999" || balicek === "4990" || balicek === "digital" || balicek === "premium") {
+    setInterestPackage(analysisPackageFromQuery(balicekRaw));
+    if (shouldOpenCheckout) {
       setCheckoutOpen(true);
       setOrderStep(1);
     }
-  }, [searchParams]);
+  }, [balicekRaw, shouldOpenCheckout]);
 
   useEffect(() => {
-    const balicek = searchParams.get("balicek");
+    if (typeof window === "undefined") return;
     if (
-      !balicek &&
-      typeof window !== "undefined" &&
+      !shouldOpenCheckout &&
       !window.location.hash.includes("premium-objednavka")
     ) {
       return;
     }
-    if (!checkoutOpen && !balicek) return;
+    if (!checkoutOpen && !shouldOpenCheckout) return;
     const t = window.setTimeout(() => {
-      premiumBlockRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      premiumBlockRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
     }, 120);
     return () => window.clearTimeout(t);
-  }, [searchParams, checkoutOpen]);
+  }, [balicekRaw, checkoutOpen, shouldOpenCheckout]);
 
   // Prefill order form from free-preview inputs (once, then user can edit).
   useEffect(() => {
