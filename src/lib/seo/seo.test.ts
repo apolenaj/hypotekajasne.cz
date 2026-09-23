@@ -245,6 +245,28 @@ describe("indexation policy", () => {
     assert.ok(ROBOTS_DISALLOW_PATHS.includes("/dashboard"));
     assert.ok(ROBOTS_DISALLOW_PATHS.includes("/api/"));
     assert.ok(ROBOTS_DISALLOW_PATHS.includes("/transakce"));
+    assert.ok(
+      ROBOTS_DISALLOW_PATHS.includes("/investicni-rentgen/dekujeme")
+    );
+    assert.ok(
+      ROBOTS_DISALLOW_PATHS.includes("/investicni-rentgen/objednavka")
+    );
+  });
+
+  it("indexable calculators include rodinny rozpočet and odhad vs cena", () => {
+    for (const path of [
+      routes.kalkulacky.rodinnyRozpocet,
+      routes.kalkulacky.odhadVersusKupniCena,
+    ]) {
+      const entry = findStaticPageSeo(path);
+      assert.ok(entry, path);
+      assert.ok(!entry?.noIndex, path);
+    }
+    const urls = buildSitemapBucket("pages").map((e) => e.url);
+    assert.ok(urls.some((u) => u.endsWith("/kalkulacky/rodinny-rozpocet")));
+    assert.ok(
+      urls.some((u) => u.endsWith("/kalkulacky/odhad-versus-kupni-cena"))
+    );
   });
 });
 
