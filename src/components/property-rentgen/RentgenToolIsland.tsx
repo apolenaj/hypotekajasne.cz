@@ -67,8 +67,8 @@ const MODES: { id: RentgenInputMode; label: string; hint: string }[] = [
   },
   {
     id: "url",
-    label: "S odkazem na inzerát",
-    hint: "Odkaz je jen reference — obsah inzerátu automaticky nenačítáme ani neověřujeme.",
+    label: "Mám odkaz na inzerát",
+    hint: "Odkaz přiložíme k zadání. Údaje pro výpočet vyplníte níže — obsah inzerátu automaticky nenačítáme.",
   },
 ];
 
@@ -146,12 +146,21 @@ export function RentgenToolIsland({
   checkoutLive?: boolean;
 }) {
   const searchParams = useSearchParams();
+  const balicekRaw = searchParams.get("balicek");
+  const packageFromQuery = analysisPackageFromQuery(balicekRaw);
+  const shouldOpenCheckout =
+    balicekRaw === "999" ||
+    balicekRaw === "4990" ||
+    balicekRaw === "digital" ||
+    balicekRaw === "premium";
+
   const [mode, setMode] = useState<RentgenInputMode>("manual");
   const [input, setInput] = useState<ManualPropertyInput>(EMPTY_MANUAL_INPUT);
   const [ran, setRan] = useState(false);
-  const [interestPackage, setInterestPackage] = useState<AnalysisProductTierId>(
-    () => analysisPackageFromQuery(searchParams.get("balicek"))
-  );
+  const [interestPackage, setInterestPackage] =
+    useState<AnalysisProductTierId>(packageFromQuery);
+  const [orderStep, setOrderStep] = useState(1);
+  const [checkoutOpen, setCheckoutOpen] = useState(shouldOpenCheckout);
   const [premiumName, setPremiumName] = useState("");
   const [premiumEmail, setPremiumEmail] = useState("");
   const [premiumPhone, setPremiumPhone] = useState("");
@@ -201,19 +210,30 @@ export function RentgenToolIsland({
   }, []);
 
   useEffect(() => {
-    setInterestPackage(analysisPackageFromQuery(searchParams.get("balicek")));
-  }, [searchParams]);
+    setInterestPackage(analysisPackageFromQuery(balicekRaw));
+    if (shouldOpenCheckout) {
+      setCheckoutOpen(true);
+      setOrderStep(1);
+    }
+  }, [balicekRaw, shouldOpenCheckout]);
 
   useEffect(() => {
-    const balicek = searchParams.get("balicek");
-    if (!balicek && typeof window !== "undefined" && !window.location.hash.includes("premium-objednavka")) {
+    if (typeof window === "undefined") return;
+    if (
+      !shouldOpenCheckout &&
+      !window.location.hash.includes("premium-objednavka")
+    ) {
       return;
     }
+    if (!checkoutOpen && !shouldOpenCheckout) return;
     const t = window.setTimeout(() => {
-      premiumBlockRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      premiumBlockRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
     }, 120);
     return () => window.clearTimeout(t);
-  }, [searchParams]);
+  }, [balicekRaw, checkoutOpen, shouldOpenCheckout]);
 
   // Prefill order form from free-preview inputs (once, then user can edit).
   useEffect(() => {
@@ -302,6 +322,10 @@ export function RentgenToolIsland({
   useEffect(() => {
     if (startedRef.current) return;
     startedRef.current = true;
+    track("rentgen_page_view", {
+      tool_id: "property_rentgen",
+      price_band: "free",
+    });
     trackCanonical("property_xray_started", "rentgen_started", {
       tool_id: "property_rentgen",
       price_band: "free",
@@ -313,6 +337,10 @@ export function RentgenToolIsland({
   useEffect(() => {
     if (!preview || freeViewedRef.current) return;
     freeViewedRef.current = true;
+    track("free_preview_completed", {
+      tool_id: "property_rentgen",
+      price_band: "free",
+    });
     trackCanonical("property_xray_completed", "free_result_viewed", {
       tool_id: "property_rentgen",
       price_band: "free",
@@ -349,12 +377,9 @@ export function RentgenToolIsland({
   );
 
   const requestPremium = async () => {
-    if (
-      !premiumName.trim() ||
-      !premiumEmail.includes("@") ||
-      premiumPhone.trim().length < 6
-    ) {
-      setPremiumMsg("Doplňte jméno, e-mail a telefon.");
+    const isPremium = interestPackage === "premium";
+    if (!premiumName.trim() || !premiumEmail.includes("@")) {
+      setPremiumMsg("Doplňte jméno a e-mail.");
       return;
     }
 
@@ -362,7 +387,9 @@ export function RentgenToolIsland({
     const validation = validateOrderPropertyForCheckout({
       form: orderForm,
       photoCount: validPhotos.length,
-      requirePhotoWithoutListing: true,
+      requirePhotoWithoutListing: false,
+      requireDescription: isPremium,
+      requireFloorArea: true,
     });
     if (!validation.ok) {
       setPremiumMsg(validation.errors[0] || "Doplňte údaje o nemovitosti.");
@@ -370,6 +397,7 @@ export function RentgenToolIsland({
       for (const e of validation.errors) {
         if (/adres|inzerát/i.test(e)) errs.identity = e;
         else if (/popis/i.test(e)) errs.propertyDescription = e;
+        else if (/ploch/i.test(e)) errs.floorArea = e;
         else if (/kupní/i.test(e)) errs.purchasePrice = e;
         else if (/nájem/i.test(e)) errs.monthlyRent = e;
         else if (/kapitál/i.test(e)) errs.equity = e;
@@ -381,25 +409,27 @@ export function RentgenToolIsland({
     setFieldErrors({});
     setPremiumLoading(true);
     setPremiumMsg(null);
+    const band = isPremium ? "premium" : "digital";
+    track("order_started", { tool_id: "property_rentgen", price_band: band });
     track("premium_cta_clicked", {
       tool_id: "property_rentgen",
-      price_band: "premium",
+      price_band: band,
       experiment_id: "free_preview",
       variant_id: getExperimentVariant("free_preview"),
     });
+    track("checkout_started", { tool_id: "property_rentgen", price_band: band });
     track("analysis_checkout_started", {
       tool_id: "property_rentgen",
-      price_band: "premium",
+      price_band: band,
       experiment_id: "free_preview",
       variant_id: getExperimentVariant("free_preview"),
     });
 
     if (live) {
       try {
-        const productCode =
-          interestPackage === "premium"
-            ? "INDIVIDUAL_ANALYSIS"
-            : "INVESTMENT_XRAY";
+        const productCode = isPremium
+          ? "INDIVIDUAL_ANALYSIS"
+          : "INVESTMENT_XRAY";
         const snapshot = formStateToOrderSnapshot(orderForm, {
           annualRatePercent:
             input.annualRatePercent ??
@@ -417,7 +447,7 @@ export function RentgenToolIsland({
             productCode,
             email: premiumEmail.trim(),
             name: premiumName.trim(),
-            phone: premiumPhone.trim(),
+            phone: premiumPhone.trim() || undefined,
             property: snapshot,
             orderId: draftOrder?.orderId,
             resumePublicId: draftOrder?.publicId,
@@ -450,7 +480,7 @@ export function RentgenToolIsland({
           /* ignore */
         }
 
-        // 2) Upload pending photos bound to orderId
+        // 2) Upload pending photos (optional; recommended for premium)
         const uploadedRefs = [...(snapshot.photos || [])];
         const nextPhotos = [...orderPhotos];
         for (let i = 0; i < nextPhotos.length; i++) {
@@ -495,14 +525,6 @@ export function RentgenToolIsland({
           setOrderPhotos([...nextPhotos]);
         }
 
-        // Photo rule after uploads
-        const hasListing = Boolean(snapshot.listingUrl);
-        if (!hasListing && uploadedRefs.length < 1) {
-          throw new Error(
-            "Nahrajte alespoň jednu fotografii objektu, nebo vložte odkaz na inzerát."
-          );
-        }
-
         const { startRentgenCheckout } = await import(
           "@/lib/property-rentgen/start-checkout"
         );
@@ -510,7 +532,7 @@ export function RentgenToolIsland({
           productCode,
           email: premiumEmail.trim(),
           name: premiumName.trim(),
-          phone: premiumPhone.trim(),
+          phone: premiumPhone.trim() || undefined,
           orderId: credentials.orderId,
           resumePublicId: credentials.publicId,
           resumeAccess: credentials.accessToken,
@@ -521,14 +543,14 @@ export function RentgenToolIsland({
           sourceUrl:
             typeof window !== "undefined" ? window.location.href : undefined,
         });
-        track("analysis_checkout_started", {
-          tool_id: "property_rentgen",
-          price_band: "premium",
-        });
         window.location.href = result.url;
         return;
       } catch (err) {
         setPremiumLoading(false);
+        track("checkout_failed", {
+          tool_id: "property_rentgen",
+          price_band: band,
+        });
         setPremiumMsg(
           err instanceof Error
             ? err.message
@@ -541,7 +563,7 @@ export function RentgenToolIsland({
     const res = await submitLead({
       name: premiumName.trim(),
       email: premiumEmail.trim(),
-      phone: premiumPhone.trim(),
+      phone: premiumPhone.trim() || "neuvedeno",
       source: "property_analysis",
       country: input.country || undefined,
       notes: [
@@ -836,6 +858,10 @@ export function RentgenToolIsland({
               disabled={!canPreview}
               onClick={() => {
                 setRan(true);
+                track("free_preview_started", {
+                  tool_id: "property_rentgen",
+                  price_band: "free",
+                });
                 track("property_input_completed", {
                   tool_id: "property_rentgen",
                   price_band: "free",
@@ -1061,37 +1087,38 @@ export function RentgenToolIsland({
             {preview ? (
               <div className="mt-6 rounded-2xl border border-muted-gold/50 bg-muted-gold/10 p-4">
                 <p className="text-sm font-bold text-text-dark">
-                  Chcete znát skutečné cash flow, rizika a scénáře této
-                  nemovitosti?
+                  Chcete zjistit, kolik vám po nákladech a splátce skutečně zbude?
                 </p>
                 <div className="mt-3 flex flex-col gap-2 sm:flex-row">
                   <a
                     href="#premium-objednavka"
-                    onClick={() => setInterestPackage("digital")}
+                    onClick={() => {
+                      setInterestPackage("digital");
+                      setCheckoutOpen(true);
+                      setOrderStep(1);
+                      track("free_to_paid_click", {
+                        tool_id: "property_rentgen",
+                        price_band: "digital",
+                      });
+                    }}
                     className="inline-flex flex-1 items-center justify-center rounded-xl bg-muted-gold px-4 py-2.5 text-sm font-bold text-text-dark"
                   >
-                    Odemknout celý Rentgen – {formatDigitalRentgenPrice()}
+                    Dopočítat celý Rentgen – {formatDigitalRentgenPrice()}
                   </a>
                   <a
                     href="#premium-objednavka"
-                    onClick={() => setInterestPackage("premium")}
+                    onClick={() => {
+                      setInterestPackage("premium");
+                      setCheckoutOpen(true);
+                      setOrderStep(1);
+                    }}
                     className="inline-flex flex-1 items-center justify-center rounded-xl border border-deep-teal/30 px-4 py-2.5 text-sm font-bold text-deep-teal"
                   >
                     Individuální rozbor – {formatAnalysisPrice()}
                   </a>
                 </div>
                 <p className="mt-2 text-xs text-muted-foreground">
-                  Potřebujete hlubší rozbor podkladů a lokality? Zvolte
-                  individuální rozbor.
-                </p>
-                <p className="mt-3 text-xs text-muted-foreground">
-                  30letý modelář:{" "}
-                  <Link
-                    href={routes.investicniRentgenModelar}
-                    className="font-semibold text-deep-teal underline"
-                  >
-                    Otevřít modelář
-                  </Link>
+                  Vyplněná čísla z náhledu přeneseme do objednávky.
                 </p>
               </div>
             ) : (
@@ -1099,6 +1126,10 @@ export function RentgenToolIsland({
                 Chcete placený výstup?{" "}
                 <a
                   href="#premium-objednavka"
+                  onClick={() => {
+                    setCheckoutOpen(true);
+                    setInterestPackage("digital");
+                  }}
                   className="font-semibold text-deep-teal underline-offset-2 hover:underline"
                 >
                   Přejít na objednávku
@@ -1113,6 +1144,49 @@ export function RentgenToolIsland({
           id="premium-objednavka"
           className="mt-10 scroll-mt-28 rounded-2xl border border-deep-teal/20 bg-white p-5 shadow-sm sm:p-7"
         >
+          {!checkoutOpen ? (
+            <div className="text-center">
+              <h3 className="font-heading text-xl font-bold text-text-dark">
+                Objednávka placené analýzy
+              </h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Vyberte balíček — formulář otevřeme až po volbě produktu.
+              </p>
+              <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setInterestPackage("digital");
+                    setCheckoutOpen(true);
+                    setOrderStep(1);
+                    track("pricing_999_click", {
+                      tool_id: "property_rentgen",
+                      price_band: "digital",
+                    });
+                  }}
+                  className="rounded-xl bg-muted-gold px-5 py-3 text-sm font-bold text-text-dark"
+                >
+                  Rentgen – {formatDigitalRentgenPrice()}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setInterestPackage("premium");
+                    setCheckoutOpen(true);
+                    setOrderStep(1);
+                    track("pricing_4990_click", {
+                      tool_id: "property_rentgen",
+                      price_band: "premium",
+                    });
+                  }}
+                  className="rounded-xl bg-deep-teal px-5 py-3 text-sm font-bold text-white"
+                >
+                  Rozbor – {formatAnalysisPrice()}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
@@ -1122,7 +1196,10 @@ export function RentgenToolIsland({
                   ? "bg-deep-teal text-white"
                   : "border border-border bg-[#f7f9f8] text-muted-foreground"
               )}
-              onClick={() => setInterestPackage("digital")}
+              onClick={() => {
+                setInterestPackage("digital");
+                setOrderStep(1);
+              }}
             >
               Rentgen {formatDigitalRentgenPrice()}
             </button>
@@ -1134,7 +1211,10 @@ export function RentgenToolIsland({
                   ? "bg-deep-teal text-white"
                   : "border border-border bg-[#f7f9f8] text-muted-foreground"
               )}
-              onClick={() => setInterestPackage("premium")}
+              onClick={() => {
+                setInterestPackage("premium");
+                setOrderStep(1);
+              }}
             >
               Rozbor {formatAnalysisPrice()}
             </button>
@@ -1146,23 +1226,11 @@ export function RentgenToolIsland({
                 Individuální rozbor
               </h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                Hlubší analýza konkrétní nemovitosti s individuálním zpracováním.
+                Finanční model + individuální práce s podklady.
               </p>
               <p className="mt-4 font-heading text-3xl font-bold tabular-nums text-deep-teal">
                 {formatAnalysisPrice()}
               </p>
-              <p className="text-xs text-muted-foreground">
-                jednorázově / 1 nemovitost · Bez předplatného
-              </p>
-              <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-                <li>✓ Kompletní Investiční rentgen</li>
-                <li>✓ Rozbor dodaných podkladů</li>
-                <li>✓ Kontrola finančních předpokladů</li>
-                <li>✓ Dohledání relevantních veřejných dat a nabídek</li>
-                <li>✓ Individuální komentář</li>
-                <li>✓ Rizika a oblasti k dalšímu prověření</li>
-                <li>✓ Výstup v PDF</li>
-              </ul>
             </>
           ) : (
             <>
@@ -1170,229 +1238,242 @@ export function RentgenToolIsland({
                 Investiční rentgen
               </h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                Automatický model cash flow, scénářů a bodu zvratu pro jednu
-                nemovitost.
+                Automatický model z vašich vstupů — bez zbytečných polí.
               </p>
               <p className="mt-4 font-heading text-3xl font-bold tabular-nums text-deep-teal">
                 {formatDigitalRentgenPrice()}
               </p>
-              <p className="text-xs text-muted-foreground">
-                jednorázově / 1 nemovitost · Bez předplatného
-              </p>
-              <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-                <li>✓ Vlastní hotovost a cash flow</li>
-                <li>✓ Scénáře a stress test</li>
-                <li>✓ Bod zvratu</li>
-                <li>✓ Interaktivní výstup a PDF</li>
-              </ul>
             </>
           )}
 
+          {/* Step indicator */}
+          <ol className="mt-5 flex flex-wrap gap-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            {(interestPackage === "premium"
+              ? ["Nemovitost", "Finance", "Podklady", "Kontakt", "Rekapitulace"]
+              : ["Nemovitost", "Finance", "Kontakt", "Rekapitulace"]
+            ).map((label, i) => {
+              const n = i + 1;
+              return (
+                <li
+                  key={label}
+                  className={cn(
+                    "rounded-full px-2.5 py-1",
+                    orderStep === n
+                      ? "bg-deep-teal text-white"
+                      : orderStep > n
+                        ? "bg-deep-teal/10 text-deep-teal"
+                        : "bg-[#f0f2f1]"
+                  )}
+                >
+                  {n}. {label}
+                </li>
+              );
+            })}
+          </ol>
+
           <div className="mt-6 space-y-6">
-            <RentgenOrderPropertyFields
-              form={orderForm}
-              onChange={(patchForm) =>
-                setOrderForm((prev) => ({ ...prev, ...patchForm }))
-              }
-              photos={orderPhotos}
-              onPhotosChange={setOrderPhotos}
-              isPremium={interestPackage === "premium"}
-              fieldErrors={fieldErrors}
-            />
-            <p className="text-[11px] text-muted-foreground">
-              Pokud jste už vyplnili náhled výše, údaje se použijí automaticky —
-              zde je můžete upravit nebo doplnit.
-            </p>
+            {(() => {
+              const isPremiumPkg = interestPackage === "premium";
+              const maxStep = isPremiumPkg ? 5 : 4;
+              const propertyStep = 1;
+              const financeStep = 2;
+              const docsStep = isPremiumPkg ? 3 : -1;
+              const contactStep = isPremiumPkg ? 4 : 3;
+              const recapStep = isPremiumPkg ? 5 : 4;
 
-            <section className="rounded-2xl border border-border bg-white p-5 sm:p-6">
-              <h4 className="font-heading text-lg font-bold text-text-dark">
-                Kontaktní údaje
-              </h4>
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                <TextField
-                  label="Jméno"
-                  value={premiumName}
-                  onChange={setPremiumName}
-                  placeholder="Jan Novák"
-                />
-                <TextField
-                  label="E-mail"
-                  value={premiumEmail}
-                  onChange={setPremiumEmail}
-                  placeholder="jan@email.cz"
-                  inputMode="email"
-                />
-                <TextField
-                  label="Telefon"
-                  value={premiumPhone}
-                  onChange={setPremiumPhone}
-                  placeholder="+420 …"
-                  inputMode="tel"
-                />
-              </div>
-            </section>
+              return (
+                <>
+                  {orderStep === propertyStep || orderStep === financeStep || orderStep === docsStep ? (
+                    <RentgenOrderPropertyFields
+                      form={orderForm}
+                      onChange={(patchForm) =>
+                        setOrderForm((prev) => ({ ...prev, ...patchForm }))
+                      }
+                      photos={orderPhotos}
+                      onPhotosChange={setOrderPhotos}
+                      isPremium={isPremiumPkg}
+                      fieldErrors={fieldErrors}
+                      steps={
+                        orderStep === propertyStep
+                          ? ["property"]
+                          : orderStep === financeStep
+                            ? ["finance"]
+                            : ["documents"]
+                      }
+                    />
+                  ) : null}
 
-            <div className="space-y-2">
-              <FormConsentFields
-                state={consent}
-                onChange={setConsent}
-                showPartnerTransfer
-              />
-              <p className="text-[11px] text-muted-foreground">
-                Podmínky:{" "}
-                <Link
-                  href={routes.legal.placenaAnalyza}
-                  className="text-deep-teal underline"
-                >
-                  Obchodní podmínky placené analýzy
-                </Link>
-                {" · "}
-                <Link
-                  href={routes.legal.gdpr}
-                  className="text-deep-teal underline"
-                >
-                  Ochrana osobních údajů
-                </Link>
-              </p>
-            </div>
+                  {orderStep === contactStep ? (
+                    <section className="rounded-2xl border border-border bg-white p-5 sm:p-6">
+                      <h4 className="font-heading text-lg font-bold text-text-dark">
+                        Kontaktní údaje
+                      </h4>
+                      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                        <TextField
+                          label="Jméno"
+                          value={premiumName}
+                          onChange={setPremiumName}
+                          placeholder="Jan Novák"
+                        />
+                        <TextField
+                          label="E-mail"
+                          value={premiumEmail}
+                          onChange={setPremiumEmail}
+                          placeholder="jan@email.cz"
+                          inputMode="email"
+                        />
+                        <TextField
+                          label="Telefon (nepovinné)"
+                          value={premiumPhone}
+                          onChange={setPremiumPhone}
+                          placeholder="+420 …"
+                          inputMode="tel"
+                        />
+                      </div>
+                      <div className="mt-4 space-y-2">
+                        <FormConsentFields
+                          state={consent}
+                          onChange={setConsent}
+                          showPartnerTransfer
+                        />
+                      </div>
+                    </section>
+                  ) : null}
 
-            <div className="rounded-2xl border border-deep-teal/15 bg-[#f7f9f8] p-5 sm:p-6">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Souhrn objednávky
-              </p>
-              <h4 className="mt-1 font-heading text-xl font-bold text-text-dark">
-                {interestPackage === "premium"
-                  ? "Individuální rozbor"
-                  : "Investiční rentgen"}
-              </h4>
-              <dl className="mt-4 space-y-2 text-sm">
-                {(orderForm.layout ||
-                  orderForm.floorArea ||
-                  orderForm.propertyType) && (
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-muted-foreground">Nemovitost</dt>
-                    <dd className="text-right font-medium text-text-dark">
-                      {[
-                        orderForm.propertyType,
-                        orderForm.layout,
-                        orderForm.floorArea
-                          ? `${orderForm.floorArea} m²`
-                          : null,
-                      ]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </dd>
-                  </div>
-                )}
-                {(orderForm.street || orderForm.city) && (
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-muted-foreground">Adresa</dt>
-                    <dd className="text-right font-medium text-text-dark">
-                      {buildPropertyAddressLine({
-                        street: orderForm.street,
-                        city: orderForm.city,
-                        postalCode: orderForm.postalCode,
-                      })}
-                    </dd>
-                  </div>
-                )}
-                {orderForm.listingUrl.trim() ? (
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-muted-foreground">Inzerát</dt>
-                    <dd className="max-w-[60%] truncate text-right font-medium text-deep-teal">
-                      {orderForm.listingUrl}
-                    </dd>
-                  </div>
-                ) : null}
-                {parseLooseNumber(orderForm.purchasePrice) != null ? (
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-muted-foreground">Kupní cena</dt>
-                    <dd className="font-medium tabular-nums text-text-dark">
-                      {formatNumber(parseLooseNumber(orderForm.purchasePrice)!)}{" "}
-                      Kč
-                    </dd>
-                  </div>
-                ) : null}
-                {parseLooseNumber(orderForm.monthlyRent) != null ? (
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-muted-foreground">
-                      Předpokládaný nájem
-                    </dt>
-                    <dd className="font-medium tabular-nums text-text-dark">
-                      {formatNumber(parseLooseNumber(orderForm.monthlyRent)!)} Kč
-                      / měsíc
-                    </dd>
-                  </div>
-                ) : null}
-                {parseLooseNumber(orderForm.equity) != null ? (
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-muted-foreground">Vlastní kapitál</dt>
-                    <dd className="font-medium tabular-nums text-text-dark">
-                      {formatNumber(parseLooseNumber(orderForm.equity)!)} Kč
-                    </dd>
-                  </div>
-                ) : null}
-                <div className="flex justify-between gap-4">
-                  <dt className="text-muted-foreground">Fotografie</dt>
-                  <dd className="font-medium text-text-dark">
-                    {orderPhotos.filter((p) => p.status !== "error").length}{" "}
-                    nahráno
-                  </dd>
-                </div>
-                <div className="flex justify-between gap-4 border-t border-border pt-2">
-                  <dt className="font-semibold text-text-dark">Cena analýzy</dt>
-                  <dd className="font-bold tabular-nums text-deep-teal">
-                    {interestPackage === "premium"
-                      ? formatAnalysisPrice()
-                      : formatDigitalRentgenPrice()}
-                  </dd>
-                </div>
-              </dl>
-            </div>
-          </div>
-          <div className="mt-4 space-y-2">
-            {interestPackage === "premium" ? (
-              <p className="rounded-xl bg-deep-teal/5 px-3 py-2 text-xs text-deep-teal">
-                Po platbě budete moci doplnit další podklady k rozboru (půdorys,
-                PENB, dokumenty SVJ, plán rekonstrukce aj.).
-              </p>
-            ) : null}
-            <button
-              type="button"
-              disabled={
-                premiumLoading ||
-                !premiumName.trim() ||
-                !premiumEmail.includes("@") ||
-                premiumPhone.trim().length < 6
-              }
-              onClick={requestPremium}
-              className={cn(
-                "w-full rounded-xl px-4 py-3.5 text-sm font-bold disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal",
-                interestPackage === "premium"
-                  ? "bg-deep-teal text-white"
-                  : "bg-muted-gold text-text-dark"
-              )}
-            >
-              {premiumLoading
-                ? "Připravuji platbu…"
-                : live
-                  ? interestPackage === "premium"
-                    ? `Pokračovat k bezpečné platbě – ${formatAnalysisPrice()}`
-                    : `Pokračovat k bezpečné platbě – ${formatDigitalRentgenPrice()}`
-                  : rentgenPrimaryCtaLabel(
-                      interestPackage === "premium" ? "premium" : "digital"
+                  {orderStep === recapStep ? (
+                    <div className="rounded-2xl border border-deep-teal/15 bg-[#f7f9f8] p-5 sm:p-6">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        Rekapitulace
+                      </p>
+                      <h4 className="mt-1 font-heading text-xl font-bold text-text-dark">
+                        {isPremiumPkg
+                          ? "Individuální rozbor"
+                          : "Investiční rentgen"}
+                      </h4>
+                      <dl className="mt-4 space-y-2 text-sm">
+                        {(orderForm.street || orderForm.city || orderForm.listingUrl) && (
+                          <div className="flex justify-between gap-4">
+                            <dt className="text-muted-foreground">Nemovitost</dt>
+                            <dd className="max-w-[60%] truncate text-right font-medium text-text-dark">
+                              {orderForm.listingUrl.trim() ||
+                                buildPropertyAddressLine({
+                                  street: orderForm.street,
+                                  city: orderForm.city,
+                                  postalCode: orderForm.postalCode,
+                                })}
+                            </dd>
+                          </div>
+                        )}
+                        {parseLooseNumber(orderForm.purchasePrice) != null ? (
+                          <div className="flex justify-between gap-4">
+                            <dt className="text-muted-foreground">Kupní cena</dt>
+                            <dd className="font-medium tabular-nums text-text-dark">
+                              {formatNumber(parseLooseNumber(orderForm.purchasePrice)!)} Kč
+                            </dd>
+                          </div>
+                        ) : null}
+                        {parseLooseNumber(orderForm.monthlyRent) != null ? (
+                          <div className="flex justify-between gap-4">
+                            <dt className="text-muted-foreground">Nájem</dt>
+                            <dd className="font-medium tabular-nums text-text-dark">
+                              {formatNumber(parseLooseNumber(orderForm.monthlyRent)!)} Kč
+                            </dd>
+                          </div>
+                        ) : null}
+                        {parseLooseNumber(orderForm.equity) != null ? (
+                          <div className="flex justify-between gap-4">
+                            <dt className="text-muted-foreground">Vlastní kapitál</dt>
+                            <dd className="font-medium tabular-nums text-text-dark">
+                              {formatNumber(parseLooseNumber(orderForm.equity)!)} Kč
+                            </dd>
+                          </div>
+                        ) : null}
+                        <div className="flex justify-between gap-4 border-t border-border pt-2">
+                          <dt className="font-semibold text-text-dark">Cena</dt>
+                          <dd className="font-bold tabular-nums text-deep-teal">
+                            {isPremiumPkg
+                              ? formatAnalysisPrice()
+                              : formatDigitalRentgenPrice()}
+                          </dd>
+                        </div>
+                      </dl>
+                    </div>
+                  ) : null}
+
+                  <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
+                    {orderStep > 1 ? (
+                      <button
+                        type="button"
+                        className="rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-deep-teal"
+                        onClick={() => setOrderStep((s) => Math.max(1, s - 1))}
+                      >
+                        Zpět
+                      </button>
+                    ) : (
+                      <span />
                     )}
-            </button>
-            <p className="text-center text-[11px] text-muted-foreground">
-              Platba proběhne bezpečně prostřednictvím Stripe. Nejde o
-              předplatné.
-            </p>
-            {premiumMsg ? (
-              <p className="text-xs text-red-700" role="status">
-                {premiumMsg}
-              </p>
-            ) : null}
+                    {orderStep < maxStep ? (
+                      <button
+                        type="button"
+                        className="rounded-xl bg-deep-teal px-4 py-2.5 text-sm font-bold text-white"
+                        onClick={() => {
+                          track("order_step_completed", {
+                            tool_id: "property_rentgen",
+                            price_band: isPremiumPkg ? "premium" : "digital",
+                            step: orderStep,
+                          });
+                          setOrderStep((s) => Math.min(maxStep, s + 1));
+                        }}
+                      >
+                        Pokračovat
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={
+                          premiumLoading ||
+                          !premiumName.trim() ||
+                          !premiumEmail.includes("@")
+                        }
+                        onClick={requestPremium}
+                        className={cn(
+                          "rounded-xl px-4 py-3.5 text-sm font-bold disabled:opacity-40",
+                          isPremiumPkg
+                            ? "bg-deep-teal text-white"
+                            : "bg-muted-gold text-text-dark"
+                        )}
+                      >
+                        {premiumLoading
+                          ? "Připravuji platbu…"
+                          : live
+                            ? `Pokračovat k bezpečné platbě – ${
+                                isPremiumPkg
+                                  ? formatAnalysisPrice()
+                                  : formatDigitalRentgenPrice()
+                              }`
+                            : rentgenPrimaryCtaLabel(
+                                isPremiumPkg ? "premium" : "digital"
+                              )}
+                      </button>
+                    )}
+                  </div>
+                  {orderStep === recapStep && isPremiumPkg ? (
+                    <p className="rounded-xl bg-deep-teal/5 px-3 py-2 text-xs text-deep-teal">
+                      Po platbě budete moci doplnit další podklady (půdorys, PENB,
+                      dokumenty SVJ, plán rekonstrukce aj.).
+                    </p>
+                  ) : null}
+                  {premiumMsg ? (
+                    <p className="text-xs text-red-700" role="status">
+                      {premiumMsg}
+                    </p>
+                  ) : null}
+                </>
+              );
+            })()}
           </div>
+            </>
+          )}
         </div>
       </div>
     </section>

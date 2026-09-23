@@ -65,11 +65,11 @@ export function RentgenControlPreview() {
               id="preview-heading"
               className="mt-1 font-heading text-2xl font-bold text-text-dark sm:text-3xl"
             >
-              Jak vypadá výsledek u konkrétního bytu
+              Detailní modelový výstup
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Smyšlená nemovitost — ne tržní nabídka. Čísla počítá jednotný model
-              ze zadaných předpokladů.
+              Kompletní rozklad předpokladů, cash flow a scénářů — smyšlená
+              nemovitost, ne tržní nabídka.
             </p>
           </div>
           <Link

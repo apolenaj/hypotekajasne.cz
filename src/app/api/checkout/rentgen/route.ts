@@ -20,6 +20,8 @@ import type { RentgenOrderInputSnapshot } from "@/lib/property-rentgen/order-pro
 import { toCheckoutPropertySnapshot } from "@/lib/property-rentgen/order-property";
 import { isPaidAnalysisCommerciallyAvailable } from "@/lib/legal/operator";
 import {
+  claimAdminNotification,
+  clearAdminNotificationClaim,
   createDraftOrder,
   getOrderByAccess,
   getOrderById,
@@ -193,7 +195,7 @@ export async function POST(request: Request) {
       order = existing;
       const fromBody = parseOrderInputSnapshot(body, {
         requireIdentity: true,
-        requireDescription: true,
+        requireDescription: product.code === PRODUCT_CODE.INDIVIDUAL_ANALYSIS,
       });
       if (!("error" in fromBody)) {
         const existingPhotos = (
@@ -223,7 +225,7 @@ export async function POST(request: Request) {
     } else {
       const fromBody = parseOrderInputSnapshot(body, {
         requireIdentity: true,
-        requireDescription: true,
+        requireDescription: product.code === PRODUCT_CODE.INDIVIDUAL_ANALYSIS,
       });
       if ("error" in fromBody) {
         // Backward-compatible: allow legacy financial-only payloads.
@@ -437,6 +439,56 @@ export async function POST(request: Request) {
               : [],
       },
     });
+
+    // Internal ops: new assignment waiting for payment (best-effort, non-blocking).
+    // Atomic claim prevents duplicate e-mails on double-click / parallel checkout.
+    try {
+      let claimed = false;
+      try {
+        claimed = await claimAdminNotification(order.id, "checkout");
+      } catch (claimErr) {
+        // Migration not applied yet — allow one best-effort send without durable lock.
+        console.warn("[checkout/rentgen] admin checkout claim unavailable", {
+          orderId: order.id,
+          message:
+            claimErr instanceof Error ? claimErr.message : String(claimErr),
+        });
+        const fresh = await getOrderById(order.id);
+        claimed = Boolean(fresh && !fresh.admin_checkout_notification_sent_at);
+      }
+      if (claimed) {
+        const fresh = (await getOrderById(order.id)) ?? order;
+        const { sendAdminOrderEmail } = await import(
+          "@/lib/property-rentgen/send-admin-order-email"
+        );
+        const adminMail = await sendAdminOrderEmail({
+          kind: "checkout_pending",
+          order: fresh,
+          stripeSessionId: session.id,
+        });
+        if (!adminMail.delivered) {
+          try {
+            await clearAdminNotificationClaim(order.id, "checkout");
+          } catch {
+            /* ignore */
+          }
+          console.info("[checkout/rentgen] admin checkout email skipped", {
+            orderId: order.id,
+            errorCode: adminMail.errorCode ?? null,
+          });
+        }
+      }
+    } catch (err) {
+      console.warn("[checkout/rentgen] admin checkout email failed", {
+        orderId: order.id,
+        message: err instanceof Error ? err.message : String(err),
+      });
+      try {
+        await clearAdminNotificationClaim(order.id, "checkout");
+      } catch {
+        /* ignore */
+      }
+    }
 
     return NextResponse.json({
       url: session.url,

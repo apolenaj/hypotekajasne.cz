@@ -76,19 +76,26 @@ export async function POST(request: Request) {
   if (!customerName || customerName.length < 2) {
     return NextResponse.json({ error: "Zadejte jméno." }, { status: 400 });
   }
-  if (!phone || phone.length < 6) {
-    return NextResponse.json(
-      { error: "Zadejte telefonní číslo." },
-      { status: 400 }
-    );
-  }
+
+  // Phone is optional for both packages (ops can follow up by e-mail).
+  const isPremium = product.code === "INDIVIDUAL_ANALYSIS";
 
   const snapshot = parseOrderInputSnapshot(body, {
     requireIdentity: true,
-    requireDescription: true,
+    requireDescription: isPremium,
   });
   if ("error" in snapshot) {
     return NextResponse.json({ error: snapshot.error }, { status: 400 });
+  }
+
+  if (
+    product.code === "INVESTMENT_XRAY" &&
+    (snapshot.areaM2 == null || !(snapshot.areaM2 > 0))
+  ) {
+    return NextResponse.json(
+      { error: "Zadejte podlahovou plochu." },
+      { status: 400 }
+    );
   }
 
   const photosFromBody = Array.isArray(

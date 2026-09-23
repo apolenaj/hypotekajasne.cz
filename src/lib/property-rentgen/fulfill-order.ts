@@ -12,6 +12,8 @@ import {
 import { renderCustomerModelPdfBuffer } from "@/lib/property-rentgen/control-model-sample-pdf";
 import { runCustomerDigitalModelFromManual } from "@/lib/property-rentgen/customer-digital-model";
 import {
+  claimAdminNotification,
+  clearAdminNotificationClaim,
   getOrderByCheckoutSessionId,
   getOrderById,
   updateOrder,
@@ -247,6 +249,48 @@ export async function fulfillRentgenOrderFromSession(
     order.status === "AWAITING_DOCUMENTS" ||
     (order.status === "PROCESSING" && order.storage_path)
   ) {
+    // Idempotent retry path: still attempt unpaid admin payment notice once.
+    try {
+      let claimed = false;
+      try {
+        claimed = await claimAdminNotification(order.id, "payment");
+      } catch (claimErr) {
+        console.warn("[fulfill] admin payment claim unavailable", {
+          orderId: order.id,
+          message:
+            claimErr instanceof Error ? claimErr.message : String(claimErr),
+        });
+        claimed = !order.admin_payment_notification_sent_at;
+      }
+      if (claimed) {
+        const { sendAdminOrderEmail } = await import(
+          "@/lib/property-rentgen/send-admin-order-email"
+        );
+        const pi =
+          typeof session.payment_intent === "string"
+            ? session.payment_intent
+            : session.payment_intent?.id ?? order.stripe_payment_intent_id;
+        const adminMail = await sendAdminOrderEmail({
+          kind: "payment_confirmed",
+          order,
+          stripeSessionId: session.id,
+          paymentIntentId: pi,
+        });
+        if (!adminMail.delivered) {
+          try {
+            await clearAdminNotificationClaim(order.id, "payment");
+          } catch {
+            /* ignore */
+          }
+        }
+      }
+    } catch {
+      try {
+        await clearAdminNotificationClaim(order.id, "payment");
+      } catch {
+        /* best-effort */
+      }
+    }
     return {
       orderId: order.id,
       publicId: order.public_id,
@@ -297,6 +341,60 @@ export async function fulfillRentgenOrderFromSession(
         : session.customer?.id ?? order.stripe_customer_id,
     last_stripe_event_id: opts?.eventId ?? order.last_stripe_event_id,
   });
+
+  // Internal ops: payment confirmed — once per order (atomic claim).
+  // Failure must never roll back PAID / fulfillment.
+  try {
+    let claimed = false;
+    try {
+      claimed = await claimAdminNotification(order.id, "payment");
+    } catch (claimErr) {
+      console.warn("[fulfill] admin payment claim unavailable", {
+        orderId: order.id,
+        message:
+          claimErr instanceof Error ? claimErr.message : String(claimErr),
+      });
+      const paidOrder = await getOrderById(order.id);
+      claimed = Boolean(paidOrder && !paidOrder.admin_payment_notification_sent_at);
+    }
+    if (claimed) {
+      const paidOrder = (await getOrderById(order.id)) ?? order;
+      const { sendAdminOrderEmail } = await import(
+        "@/lib/property-rentgen/send-admin-order-email"
+      );
+      const pi =
+        typeof session.payment_intent === "string"
+          ? session.payment_intent
+          : session.payment_intent?.id ?? null;
+      const adminMail = await sendAdminOrderEmail({
+        kind: "payment_confirmed",
+        order: paidOrder,
+        stripeSessionId: session.id,
+        paymentIntentId: pi,
+      });
+      if (!adminMail.delivered) {
+        try {
+          await clearAdminNotificationClaim(order.id, "payment");
+        } catch {
+          /* ignore */
+        }
+        console.info("[fulfill] admin payment email skipped", {
+          orderId: order.id,
+          errorCode: adminMail.errorCode ?? null,
+        });
+      }
+    }
+  } catch (err) {
+    console.warn("[fulfill] admin payment email failed", {
+      orderId: order.id,
+      message: err instanceof Error ? err.message : String(err),
+    });
+    try {
+      await clearAdminNotificationClaim(order.id, "payment");
+    } catch {
+      /* ignore */
+    }
+  }
 
   let snap: RentgenCheckoutPropertySnapshot;
   try {

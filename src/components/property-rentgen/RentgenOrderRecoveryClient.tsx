@@ -9,6 +9,7 @@ import {
   formatDigitalRentgenPrice,
 } from "@/lib/property-rentgen/pricing";
 import { PRODUCT_CODE } from "@/lib/property-rentgen/products";
+import { track } from "@/lib/analytics/track";
 
 type PublicOrder = {
   publicId: string;
@@ -31,6 +32,11 @@ export function RentgenOrderRecoveryClient() {
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!canceled) return;
+    track("checkout_cancelled", { tool_id: "property_rentgen" });
+  }, [canceled]);
 
   useEffect(() => {
     if (!publicId || !access) return;

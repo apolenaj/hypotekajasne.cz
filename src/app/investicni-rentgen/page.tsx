@@ -10,7 +10,11 @@ import {
   RentgenHero,
   RentgenHowItWorks,
   RentgenPricing,
+  RentgenProofQuestions,
+  RentgenRevealCards,
+  RentgenSamplePreviewCards,
 } from "@/components/property-rentgen/RentgenLandingSections";
+import { RentgenMiniProof } from "@/components/property-rentgen/RentgenMiniProof";
 import { RentgenControlPreview } from "@/components/property-rentgen/RentgenControlPreview";
 import { RentgenToolIsland } from "@/components/property-rentgen/RentgenToolIsland";
 import { RentgenStickyMobileCta } from "@/components/property-rentgen/RentgenStickyMobileCta";
@@ -45,9 +49,20 @@ export default function InvesticniRentgenPage() {
         />
       </div>
 
+      {/* 1. Hero */}
       <RentgenHero />
-      <RentgenControlPreview />
+      {/* 2. Short proof questions + mini model KPIs */}
+      <RentgenProofQuestions />
+      <RentgenMiniProof />
+      {/* 3–4. Pricing + 999 vs 4990 decision */}
       <RentgenPricing />
+      {/* 5. Visual sample previews */}
+      <RentgenSamplePreviewCards />
+      {/* 6. What analysis can reveal */}
+      <RentgenRevealCards />
+      {/* 7. Full model example (moved below pricing) */}
+      <RentgenControlPreview />
+      {/* 8. Free preview + order funnel */}
       <Suspense
         fallback={
           <div className="border-b border-border bg-white py-12 text-center text-sm text-muted-foreground">
@@ -57,6 +72,7 @@ export default function InvesticniRentgenPage() {
       >
         <RentgenToolIsland checkoutLive={checkoutLive} />
       </Suspense>
+      {/* 9–12. Process, FAQ/methodology, final CTA */}
       <RentgenHowItWorks />
       <RentgenFaq />
       <RentgenBottomCta />

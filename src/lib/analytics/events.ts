@@ -70,14 +70,30 @@ export const ANALYTICS_EVENTS = [
 
   // —— INVESTMENT X-RAY (rentgen) ——
   "rentgen_started",
+  "rentgen_page_view",
   "property_xray_started",
   "property_input_completed",
   "free_result_viewed",
+  "free_preview_started",
+  "free_preview_completed",
+  "free_to_paid_click",
   "property_xray_completed",
   "premium_viewed",
   "premium_cta_clicked",
+  "hero_999_click",
+  "hero_free_click",
+  "sample_999_view",
+  "sample_4990_view",
+  "pricing_999_click",
+  "pricing_4990_click",
   "analysis_started",
   "analysis_checkout_started",
+  "order_started",
+  "order_step_completed",
+  "checkout_started",
+  "checkout_completed",
+  "checkout_cancelled",
+  "checkout_failed",
 
   // —— COPILOT ——
   "copilot_opened",
@@ -138,7 +154,7 @@ export type AnalyticsPayload = {
   source_id?: string;
   score_bucket?: "0-25" | "26-50" | "51-75" | "76-100";
   /** Coarse price band for analysis — never exact CZK */
-  price_band?: "free" | "premium";
+  price_band?: "free" | "digital" | "premium";
   path?: string;
   /** Referrer hostname only (e.g. google.com) — never full URL with query */
   referrer_host?: string;

@@ -59,6 +59,10 @@ export type InvestmentAnalysisOrderRow = {
   paid_at: string | null;
   processing_at: string | null;
   fulfilled_at: string | null;
+  /** Internal ops e-mail: order created / checkout session ready */
+  admin_checkout_notification_sent_at: string | null;
+  /** Internal ops e-mail: payment confirmed (idempotent) */
+  admin_payment_notification_sent_at: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -161,6 +165,50 @@ export async function updateOrder(
     throw new Error(`Update objednávky selhal: ${error?.message ?? "unknown"}`);
   }
   return mapRow(data);
+}
+
+type AdminNotificationKind = "checkout" | "payment";
+
+const ADMIN_NOTIFICATION_COLUMN: Record<
+  AdminNotificationKind,
+  "admin_checkout_notification_sent_at" | "admin_payment_notification_sent_at"
+> = {
+  checkout: "admin_checkout_notification_sent_at",
+  payment: "admin_payment_notification_sent_at",
+};
+
+/**
+ * Atomically claim the right to send one admin notification.
+ * Returns true only for the first successful claim (column was NULL).
+ * Requires rentgen_admin_notifications.sql migration.
+ */
+export async function claimAdminNotification(
+  orderId: string,
+  kind: AdminNotificationKind
+): Promise<boolean> {
+  const supabase = getSupabaseAdminForRentgen();
+  const column = ADMIN_NOTIFICATION_COLUMN[kind];
+  const now = new Date().toISOString();
+  const { data, error } = await supabase
+    .from("investment_analysis_orders")
+    .update({ [column]: now, updated_at: now })
+    .eq("id", orderId)
+    .is(column, null)
+    .select("id")
+    .maybeSingle();
+  if (error) {
+    throw new Error(`claimAdminNotification(${kind}): ${error.message}`);
+  }
+  return Boolean(data);
+}
+
+/** Clear claim so a failed send can be safely retried. */
+export async function clearAdminNotificationClaim(
+  orderId: string,
+  kind: AdminNotificationKind
+): Promise<void> {
+  const column = ADMIN_NOTIFICATION_COLUMN[kind];
+  await updateOrder(orderId, { [column]: null });
 }
 
 export async function getOrderById(

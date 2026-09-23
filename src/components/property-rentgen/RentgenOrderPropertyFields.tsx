@@ -32,6 +32,8 @@ type Props = {
   onPhotosChange: (photos: LocalPhotoItem[]) => void;
   isPremium: boolean;
   fieldErrors?: Record<string, string>;
+  /** Which checkout steps to render (default: all). */
+  steps?: Array<"property" | "finance" | "documents" | "all">;
 };
 
 function FieldLabel({
@@ -97,11 +99,17 @@ export function RentgenOrderPropertyFields({
   onPhotosChange,
   isPremium,
   fieldErrors = {},
+  steps = ["all"],
 }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const descCount = form.propertyDescription.length;
-  const hasListing = form.listingUrl.trim().length > 0;
+  const showAll = steps.includes("all");
+  const showProperty = showAll || steps.includes("property");
+  const showFinance = showAll || steps.includes("finance");
+  const showDocuments = showAll || steps.includes("documents");
+  const requireDescription = isPremium;
+  const requirePhotosWithoutListing = false;
 
   const addFiles = useCallback(
     (fileList: FileList | File[]) => {
@@ -153,14 +161,15 @@ export function RentgenOrderPropertyFields({
 
   return (
     <div className="space-y-6">
-      {/* 1. Analyzovaná nemovitost */}
+      {showProperty ? (
       <section className="rounded-2xl border border-deep-teal/15 bg-white p-5 sm:p-6">
         <h4 className="font-heading text-lg font-bold text-text-dark">
           Analyzovaná nemovitost
         </h4>
         <p className="mt-1.5 text-sm text-muted-foreground">
-          Zadejte konkrétní nemovitost, kterou chcete analyzovat. Čím přesnější
-          údaje dodáte, tím přesnější bude výstup.
+          {isPremium
+            ? "Zadejte konkrétní nemovitost. Čím přesnější údaje dodáte, tím kvalitnější bude individuální posouzení."
+            : "Pro automatický výpočet stačí identifikace a klíčová čísla."}
         </p>
 
         <fieldset className="mt-5">
@@ -171,7 +180,7 @@ export function RentgenOrderPropertyFields({
             {(
               [
                 ["url", "Mám odkaz na inzerát"],
-                ["address", "Znám přesnou adresu"],
+                ["address", "Znám adresu / lokalitu"],
                 ["both", "Mám obojí"],
               ] as const
             ).map(([value, label]) => (
@@ -213,7 +222,8 @@ export function RentgenOrderPropertyFields({
               <p className="mt-1 text-xs text-red-700">{fieldErrors.listingUrl}</p>
             ) : (
               <p className="mt-1 text-[11px] text-muted-foreground">
-                Např. sreality.cz, bezrealitky.cz nebo jiný veřejný inzerát.
+                Odkaz přiložíme k zadání. Údaje pro automatický výpočet vyplníte
+                níže — obsah inzerátu automaticky nenačítáme.
               </p>
             )}
           </div>
@@ -236,7 +246,7 @@ export function RentgenOrderPropertyFields({
               ) : null}
             </div>
             <div className="sm:col-span-2">
-              <FieldLabel required>Město</FieldLabel>
+              <FieldLabel required>Město / lokalita</FieldLabel>
               <input
                 type="text"
                 value={form.city}
@@ -267,34 +277,11 @@ export function RentgenOrderPropertyFields({
             {fieldErrors.identity}
           </p>
         ) : null}
-      </section>
 
-      {/* 2. Parametry */}
-      <section className="rounded-2xl border border-border bg-[#f7f9f8] p-5 sm:p-6">
-        <h4 className="font-heading text-lg font-bold text-text-dark">
-          Parametry nemovitosti
-        </h4>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <SelectField
-            label="Typ nemovitosti"
-            value={form.propertyType}
-            onChange={(v) =>
-              onChange({
-                propertyType: v as OrderPropertyFormState["propertyType"],
-              })
-            }
-            options={PROPERTY_TYPE_OPTIONS}
-          />
-          <SelectField
-            label="Dispozice"
-            value={form.layout}
-            onChange={(v) =>
-              onChange({ layout: v as OrderPropertyFormState["layout"] })
-            }
-            options={PROPERTY_LAYOUT_OPTIONS}
-          />
+        {/* Compact property params for digital; richer for premium */}
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <div>
-            <FieldLabel>Podlahová plocha</FieldLabel>
+            <FieldLabel required>Podlahová plocha</FieldLabel>
             <div className="relative">
               <input
                 type="text"
@@ -308,31 +295,184 @@ export function RentgenOrderPropertyFields({
                 m²
               </span>
             </div>
+            {fieldErrors.floorArea ? (
+              <p className="mt-1 text-xs text-red-700">{fieldErrors.floorArea}</p>
+            ) : null}
           </div>
-          <SelectField
-            label="Stav nemovitosti"
-            value={form.condition}
-            onChange={(v) =>
-              onChange({
-                condition: v as OrderPropertyFormState["condition"],
-              })
-            }
-            options={PROPERTY_CONDITION_OPTIONS}
-          />
-          <SelectField
-            label="Vlastnictví"
-            value={form.ownershipType}
-            onChange={(v) =>
-              onChange({
-                ownershipType: v as OrderPropertyFormState["ownershipType"],
-              })
-            }
-            options={OWNERSHIP_TYPE_OPTIONS}
-          />
+          {isPremium ? (
+            <>
+              <SelectField
+                label="Typ nemovitosti"
+                value={form.propertyType}
+                onChange={(v) =>
+                  onChange({
+                    propertyType: v as OrderPropertyFormState["propertyType"],
+                  })
+                }
+                options={PROPERTY_TYPE_OPTIONS}
+              />
+              <SelectField
+                label="Dispozice"
+                value={form.layout}
+                onChange={(v) =>
+                  onChange({ layout: v as OrderPropertyFormState["layout"] })
+                }
+                options={PROPERTY_LAYOUT_OPTIONS}
+              />
+            </>
+          ) : null}
         </div>
 
+        {isPremium ? (
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <SelectField
+              label="Stav nemovitosti"
+              value={form.condition}
+              onChange={(v) =>
+                onChange({
+                  condition: v as OrderPropertyFormState["condition"],
+                })
+              }
+              options={PROPERTY_CONDITION_OPTIONS}
+            />
+            <SelectField
+              label="Vlastnictví"
+              value={form.ownershipType}
+              onChange={(v) =>
+                onChange({
+                  ownershipType: v as OrderPropertyFormState["ownershipType"],
+                })
+              }
+              options={OWNERSHIP_TYPE_OPTIONS}
+            />
+          </div>
+        ) : null}
+      </section>
+      ) : null}
+
+      {showFinance ? (
+      <section className="rounded-2xl border border-border bg-[#f7f9f8] p-5 sm:p-6">
+        <h4 className="font-heading text-lg font-bold text-text-dark">
+          Financování
+        </h4>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Základní čísla pro cash flow. Pokud sazbu nebo splatnost neznáte,
+          použijeme modelový předpoklad.
+        </p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          <div>
+            <FieldLabel required>Kupní cena</FieldLabel>
+            <input
+              type="text"
+              inputMode="decimal"
+              value={form.purchasePrice}
+              onChange={(e) => onChange({ purchasePrice: e.target.value })}
+              placeholder="např. 4 500 000"
+              className="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm outline-none ring-deep-teal/30 focus:ring-2"
+            />
+            {fieldErrors.purchasePrice ? (
+              <p className="mt-1 text-xs text-red-700">
+                {fieldErrors.purchasePrice}
+              </p>
+            ) : null}
+          </div>
+          <div>
+            <FieldLabel required>Měsíční nájem</FieldLabel>
+            <input
+              type="text"
+              inputMode="decimal"
+              value={form.monthlyRent}
+              onChange={(e) => onChange({ monthlyRent: e.target.value })}
+              placeholder="např. 18 000"
+              className="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm outline-none ring-deep-teal/30 focus:ring-2"
+            />
+            {fieldErrors.monthlyRent ? (
+              <p className="mt-1 text-xs text-red-700">
+                {fieldErrors.monthlyRent}
+              </p>
+            ) : null}
+          </div>
+          <div>
+            <FieldLabel required>Vlastní kapitál</FieldLabel>
+            <input
+              type="text"
+              inputMode="decimal"
+              value={form.equity}
+              onChange={(e) => onChange({ equity: e.target.value })}
+              placeholder="např. 900 000"
+              className="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm outline-none ring-deep-teal/30 focus:ring-2"
+            />
+            {fieldErrors.equity ? (
+              <p className="mt-1 text-xs text-red-700">{fieldErrors.equity}</p>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div>
+            <FieldLabel>Úroková sazba</FieldLabel>
+            <label className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
+              <input
+                type="checkbox"
+                className="accent-deep-teal"
+                checked={form.useModelRate}
+                onChange={(e) =>
+                  onChange({ useModelRate: e.target.checked })
+                }
+              />
+              Nevím – použít modelový předpoklad (4,8 %)
+            </label>
+            {!form.useModelRate ? (
+              <input
+                type="text"
+                inputMode="decimal"
+                value={form.annualRatePercent}
+                onChange={(e) =>
+                  onChange({ annualRatePercent: e.target.value })
+                }
+                placeholder="např. 4,8"
+                className="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm outline-none ring-deep-teal/30 focus:ring-2"
+              />
+            ) : null}
+          </div>
+          <div>
+            <FieldLabel>Splatnost</FieldLabel>
+            <label className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
+              <input
+                type="checkbox"
+                className="accent-deep-teal"
+                checked={form.useModelTerm}
+                onChange={(e) =>
+                  onChange({ useModelTerm: e.target.checked })
+                }
+              />
+              Nevím – použít modelový předpoklad (30 let)
+            </label>
+            {!form.useModelTerm ? (
+              <input
+                type="text"
+                inputMode="numeric"
+                value={form.termYears}
+                onChange={(e) => onChange({ termYears: e.target.value })}
+                placeholder="např. 30"
+                className="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm outline-none ring-deep-teal/30 focus:ring-2"
+              />
+            ) : null}
+          </div>
+        </div>
+      </section>
+      ) : null}
+
+      {showDocuments && isPremium ? (
+      <>
+      <section className="rounded-2xl border border-border bg-white p-5 sm:p-6">
+        <h4 className="font-heading text-lg font-bold text-text-dark">
+          Popis a kontext
+        </h4>
         <div className="mt-4">
-          <FieldLabel required>Popis nemovitosti</FieldLabel>
+          <FieldLabel required={requireDescription}>
+            Popis nemovitosti
+          </FieldLabel>
           <textarea
             value={form.propertyDescription}
             onChange={(e) =>
@@ -343,14 +483,14 @@ export function RentgenOrderPropertyFields({
                 ),
               })
             }
-            rows={6}
-            placeholder="Byt 2+kk, 58 m², osobní vlastnictví, 3. patro s výtahem. Byt je před částečnou rekonstrukcí. Koupelna původní, kuchyň po rekonstrukci. Součástí je sklep 4 m² a balkon 6 m². Aktuálně není pronajatý."
-            className="min-h-[140px] w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm leading-relaxed outline-none ring-deep-teal/30 focus:ring-2"
+            rows={5}
+            placeholder="Byt 2+kk, stav, nájemní vztah, rekonstrukce…"
+            className="min-h-[120px] w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm leading-relaxed outline-none ring-deep-teal/30 focus:ring-2"
           />
           <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
             <p className="text-[11px] text-muted-foreground">
-              Popište nemovitost, její stav, dispozici, případnou rekonstrukci,
-              vybavení, nájemní stav nebo další důležité okolnosti.
+              Pomáhá individuálnímu posouzení — není vstupem do automatického
+              výpočtu Rentgenu.
             </p>
             <p
               className={cn(
@@ -371,32 +511,18 @@ export function RentgenOrderPropertyFields({
         </div>
       </section>
 
-      {/* 3. Fotografie */}
       <section className="rounded-2xl border border-border bg-white p-5 sm:p-6">
         <h4 className="font-heading text-lg font-bold text-text-dark">
-          Fotografie nemovitosti
-          {!hasListing ? (
-            <span className="text-deep-teal"> *</span>
-          ) : (
-            <span className="ml-2 text-xs font-normal text-muted-foreground">
-              doporučeno
-            </span>
-          )}
+          Fotografie
+          <span className="ml-2 text-xs font-normal text-muted-foreground">
+            doporučené pro kvalitnější individuální posouzení
+          </span>
         </h4>
-        {isPremium ? (
-          <p className="mt-2 rounded-xl bg-deep-teal/5 px-3 py-2 text-sm text-deep-teal">
-            Doporučujeme nahrát kompletní sadu fotografií. Pomůže nám posoudit
-            stav nemovitosti a případnou potřebu rekonstrukce.
-          </p>
-        ) : (
-          <p className="mt-1.5 text-sm text-muted-foreground">
-            Nahrajte fotografie exteriéru, interiéru a případných částí
-            vyžadujících rekonstrukci.
-            {hasListing
-              ? " Máte odkaz na inzerát — fotografie můžete doplnit volitelně."
-              : " Bez odkazu na inzerát je potřeba alespoň 1 fotografie."}
-          </p>
-        )}
+        <p className="mt-2 rounded-xl bg-deep-teal/5 px-3 py-2 text-sm text-deep-teal">
+          Fotografie neovlivňují automatický výpočet. Další dokumenty (půdorys,
+          PENB, SVJ, nájemní vztah, plán rekonstrukce) můžete doplnit i po
+          platbě.
+        </p>
 
         <div
           className={cn(
@@ -505,65 +631,11 @@ export function RentgenOrderPropertyFields({
             {fieldErrors.photos}
           </p>
         ) : null}
+        {/* silence unused — photos never required for digital */}
+        {requirePhotosWithoutListing ? null : null}
       </section>
-
-      {/* 4. Finanční předpoklady */}
-      <section className="rounded-2xl border border-border bg-[#f7f9f8] p-5 sm:p-6">
-        <h4 className="font-heading text-lg font-bold text-text-dark">
-          Finanční předpoklady
-        </h4>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Základní čísla pro cash flow, výnos a scénáře.
-        </p>
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          <div>
-            <FieldLabel required>Kupní cena</FieldLabel>
-            <input
-              type="text"
-              inputMode="decimal"
-              value={form.purchasePrice}
-              onChange={(e) => onChange({ purchasePrice: e.target.value })}
-              placeholder="např. 4 500 000"
-              className="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm outline-none ring-deep-teal/30 focus:ring-2"
-            />
-            {fieldErrors.purchasePrice ? (
-              <p className="mt-1 text-xs text-red-700">
-                {fieldErrors.purchasePrice}
-              </p>
-            ) : null}
-          </div>
-          <div>
-            <FieldLabel required>Měsíční nájem</FieldLabel>
-            <input
-              type="text"
-              inputMode="decimal"
-              value={form.monthlyRent}
-              onChange={(e) => onChange({ monthlyRent: e.target.value })}
-              placeholder="např. 18 000"
-              className="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm outline-none ring-deep-teal/30 focus:ring-2"
-            />
-            {fieldErrors.monthlyRent ? (
-              <p className="mt-1 text-xs text-red-700">
-                {fieldErrors.monthlyRent}
-              </p>
-            ) : null}
-          </div>
-          <div>
-            <FieldLabel required>Vlastní kapitál</FieldLabel>
-            <input
-              type="text"
-              inputMode="decimal"
-              value={form.equity}
-              onChange={(e) => onChange({ equity: e.target.value })}
-              placeholder="např. 900 000"
-              className="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm outline-none ring-deep-teal/30 focus:ring-2"
-            />
-            {fieldErrors.equity ? (
-              <p className="mt-1 text-xs text-red-700">{fieldErrors.equity}</p>
-            ) : null}
-          </div>
-        </div>
-      </section>
+      </>
+      ) : null}
     </div>
   );
 }

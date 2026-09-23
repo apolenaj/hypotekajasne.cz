@@ -105,6 +105,12 @@ export type OrderPropertyFormState = {
   purchasePrice: string;
   monthlyRent: string;
   equity: string;
+  /** Empty = use model default */
+  annualRatePercent: string;
+  /** Empty = use model default */
+  termYears: string;
+  useModelRate: boolean;
+  useModelTerm: boolean;
 };
 
 export const EMPTY_ORDER_PROPERTY_FORM: OrderPropertyFormState = {
@@ -122,6 +128,10 @@ export const EMPTY_ORDER_PROPERTY_FORM: OrderPropertyFormState = {
   purchasePrice: "",
   monthlyRent: "",
   equity: "",
+  annualRatePercent: "",
+  termYears: "",
+  useModelRate: true,
+  useModelTerm: true,
 };
 
 export const PROPERTY_TYPE_OPTIONS: Exclude<RentgenPropertyType, "">[] = [
@@ -204,9 +214,15 @@ export function validateOrderPropertyForCheckout(args: {
   form: OrderPropertyFormState;
   photoCount: number;
   requirePhotoWithoutListing: boolean;
+  /** Digital 999: description optional. Premium 4990: required. */
+  requireDescription?: boolean;
+  /** Digital math needs floor area. */
+  requireFloorArea?: boolean;
 }): OrderPropertyValidationResult {
   const errors: string[] = [];
   const { form } = args;
+  const requireDescription = args.requireDescription !== false;
+  const requireFloorArea = args.requireFloorArea === true;
   const mode = form.identificationMode;
   const urlOk = isValidHttpUrl(form.listingUrl);
   const addressOk = hasExactAddress(form.street, form.city);
@@ -229,16 +245,29 @@ export function validateOrderPropertyForCheckout(args: {
   }
 
   const desc = form.propertyDescription.trim();
-  if (!desc) {
-    errors.push("Vyplňte popis nemovitosti.");
-  } else if (desc.length < PROPERTY_DESCRIPTION_MIN) {
-    errors.push(
-      `Popis nemovitosti je příliš krátký (min. ${PROPERTY_DESCRIPTION_MIN} znaků).`
-    );
+  if (requireDescription) {
+    if (!desc) {
+      errors.push("Vyplňte popis nemovitosti.");
+    } else if (desc.length < PROPERTY_DESCRIPTION_MIN) {
+      errors.push(
+        `Popis nemovitosti je příliš krátký (min. ${PROPERTY_DESCRIPTION_MIN} znaků).`
+      );
+    } else if (desc.length > PROPERTY_DESCRIPTION_MAX) {
+      errors.push(
+        `Popis nemovitosti je příliš dlouhý (max. ${PROPERTY_DESCRIPTION_MAX} znaků).`
+      );
+    }
   } else if (desc.length > PROPERTY_DESCRIPTION_MAX) {
     errors.push(
       `Popis nemovitosti je příliš dlouhý (max. ${PROPERTY_DESCRIPTION_MAX} znaků).`
     );
+  }
+
+  if (requireFloorArea) {
+    const area = parseLooseNumber(form.floorArea);
+    if (area == null || area <= 0) {
+      errors.push("Zadejte podlahovou plochu.");
+    }
   }
 
   const price = parseLooseNumber(form.purchasePrice);
@@ -301,6 +330,13 @@ export function formStateToOrderSnapshot(
     ? form.listingUrl.trim()
     : undefined;
 
+  const rateFromForm = form.useModelRate
+    ? null
+    : parseLooseNumber(form.annualRatePercent);
+  const termFromForm = form.useModelTerm
+    ? null
+    : parseLooseNumber(form.termYears);
+
   return {
     label: propertyAddress || form.city.trim() || undefined,
     address: propertyAddress || undefined,
@@ -319,8 +355,14 @@ export function formStateToOrderSnapshot(
     purchasePriceCzk,
     monthlyGrossRentCzk,
     ownFundsCzk,
-    annualRatePercent: extras?.annualRatePercent ?? 4.8,
-    termYears: extras?.termYears ?? 30,
+    annualRatePercent:
+      rateFromForm != null && rateFromForm > 0
+        ? rateFromForm
+        : extras?.annualRatePercent ?? 4.8,
+    termYears:
+      termFromForm != null && termFromForm > 0
+        ? termFromForm
+        : extras?.termYears ?? 30,
     fixationYears: 5,
     capexCzk: 0,
     closingCostsCzk: 0,

@@ -158,6 +158,47 @@ describe("order property validation", () => {
     assert.equal(snap.areaM2, 58);
     assert.equal(snap.layout, "2+kk");
   });
+  it("allows digital checkout without description or photos", () => {
+    const form = {
+      ...EMPTY_ORDER_PROPERTY_FORM,
+      identificationMode: "url" as const,
+      listingUrl: "https://www.sreality.cz/detail/123",
+      propertyDescription: "",
+      floorArea: "58",
+      purchasePrice: "4500000",
+      monthlyRent: "18000",
+      equity: "900000",
+    };
+    const r = validateOrderPropertyForCheckout({
+      form,
+      photoCount: 0,
+      requirePhotoWithoutListing: false,
+      requireDescription: false,
+      requireFloorArea: true,
+    });
+    assert.equal(r.ok, true);
+  });
+
+  it("requires floor area when requireFloorArea", () => {
+    const form = {
+      ...EMPTY_ORDER_PROPERTY_FORM,
+      identificationMode: "url" as const,
+      listingUrl: "https://www.sreality.cz/detail/123",
+      purchasePrice: "4500000",
+      monthlyRent: "18000",
+      equity: "900000",
+      floorArea: "",
+    };
+    const r = validateOrderPropertyForCheckout({
+      form,
+      photoCount: 0,
+      requirePhotoWithoutListing: false,
+      requireDescription: false,
+      requireFloorArea: true,
+    });
+    assert.equal(r.ok, false);
+    if (!r.ok) assert.ok(r.errors.some((e) => /ploch/i.test(e)));
+  });
 });
 
 describe("photo buffer validation", () => {
