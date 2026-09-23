@@ -77,13 +77,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Zadejte jméno." }, { status: 400 });
   }
 
+  // Phone is optional for both packages (ops can follow up by e-mail).
   const isPremium = product.code === "INDIVIDUAL_ANALYSIS";
-  if (isPremium && (!phone || phone.length < 6)) {
-    return NextResponse.json(
-      { error: "Zadejte telefonní číslo." },
-      { status: 400 }
-    );
-  }
 
   const snapshot = parseOrderInputSnapshot(body, {
     requireIdentity: true,

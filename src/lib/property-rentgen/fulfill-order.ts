@@ -12,6 +12,8 @@ import {
 import { renderCustomerModelPdfBuffer } from "@/lib/property-rentgen/control-model-sample-pdf";
 import { runCustomerDigitalModelFromManual } from "@/lib/property-rentgen/customer-digital-model";
 import {
+  claimAdminNotification,
+  clearAdminNotificationClaim,
   getOrderByCheckoutSessionId,
   getOrderById,
   updateOrder,
@@ -248,8 +250,19 @@ export async function fulfillRentgenOrderFromSession(
     (order.status === "PROCESSING" && order.storage_path)
   ) {
     // Idempotent retry path: still attempt unpaid admin payment notice once.
-    if (!order.admin_payment_notification_sent_at) {
+    try {
+      let claimed = false;
       try {
+        claimed = await claimAdminNotification(order.id, "payment");
+      } catch (claimErr) {
+        console.warn("[fulfill] admin payment claim unavailable", {
+          orderId: order.id,
+          message:
+            claimErr instanceof Error ? claimErr.message : String(claimErr),
+        });
+        claimed = !order.admin_payment_notification_sent_at;
+      }
+      if (claimed) {
         const { sendAdminOrderEmail } = await import(
           "@/lib/property-rentgen/send-admin-order-email"
         );
@@ -263,11 +276,17 @@ export async function fulfillRentgenOrderFromSession(
           stripeSessionId: session.id,
           paymentIntentId: pi,
         });
-        if (adminMail.delivered) {
-          await updateOrder(order.id, {
-            admin_payment_notification_sent_at: new Date().toISOString(),
-          });
+        if (!adminMail.delivered) {
+          try {
+            await clearAdminNotificationClaim(order.id, "payment");
+          } catch {
+            /* ignore */
+          }
         }
+      }
+    } catch {
+      try {
+        await clearAdminNotificationClaim(order.id, "payment");
       } catch {
         /* best-effort */
       }
@@ -323,10 +342,23 @@ export async function fulfillRentgenOrderFromSession(
     last_stripe_event_id: opts?.eventId ?? order.last_stripe_event_id,
   });
 
-  // Internal ops: payment confirmed — once per order (idempotent flag).
+  // Internal ops: payment confirmed — once per order (atomic claim).
+  // Failure must never roll back PAID / fulfillment.
   try {
-    const paidOrder = await getOrderById(order.id);
-    if (paidOrder && !paidOrder.admin_payment_notification_sent_at) {
+    let claimed = false;
+    try {
+      claimed = await claimAdminNotification(order.id, "payment");
+    } catch (claimErr) {
+      console.warn("[fulfill] admin payment claim unavailable", {
+        orderId: order.id,
+        message:
+          claimErr instanceof Error ? claimErr.message : String(claimErr),
+      });
+      const paidOrder = await getOrderById(order.id);
+      claimed = Boolean(paidOrder && !paidOrder.admin_payment_notification_sent_at);
+    }
+    if (claimed) {
+      const paidOrder = (await getOrderById(order.id)) ?? order;
       const { sendAdminOrderEmail } = await import(
         "@/lib/property-rentgen/send-admin-order-email"
       );
@@ -340,11 +372,12 @@ export async function fulfillRentgenOrderFromSession(
         stripeSessionId: session.id,
         paymentIntentId: pi,
       });
-      if (adminMail.delivered) {
-        await updateOrder(order.id, {
-          admin_payment_notification_sent_at: new Date().toISOString(),
-        });
-      } else {
+      if (!adminMail.delivered) {
+        try {
+          await clearAdminNotificationClaim(order.id, "payment");
+        } catch {
+          /* ignore */
+        }
         console.info("[fulfill] admin payment email skipped", {
           orderId: order.id,
           errorCode: adminMail.errorCode ?? null,
@@ -356,6 +389,11 @@ export async function fulfillRentgenOrderFromSession(
       orderId: order.id,
       message: err instanceof Error ? err.message : String(err),
     });
+    try {
+      await clearAdminNotificationClaim(order.id, "payment");
+    } catch {
+      /* ignore */
+    }
   }
 
   let snap: RentgenCheckoutPropertySnapshot;

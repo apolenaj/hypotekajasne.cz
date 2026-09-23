@@ -382,10 +382,6 @@ export function RentgenToolIsland({
       setPremiumMsg("Doplňte jméno a e-mail.");
       return;
     }
-    if (isPremium && premiumPhone.trim().length < 6) {
-      setPremiumMsg("U individuálního rozboru doplňte telefon.");
-      return;
-    }
 
     const validPhotos = orderPhotos.filter((p) => p.status !== "error");
     const validation = validateOrderPropertyForCheckout({
@@ -1327,11 +1323,7 @@ export function RentgenToolIsland({
                           inputMode="email"
                         />
                         <TextField
-                          label={
-                            isPremiumPkg
-                              ? "Telefon"
-                              : "Telefon (nepovinné)"
-                          }
+                          label="Telefon (nepovinné)"
                           value={premiumPhone}
                           onChange={setPremiumPhone}
                           placeholder="+420 …"
@@ -1441,8 +1433,7 @@ export function RentgenToolIsland({
                         disabled={
                           premiumLoading ||
                           !premiumName.trim() ||
-                          !premiumEmail.includes("@") ||
-                          (isPremiumPkg && premiumPhone.trim().length < 6)
+                          !premiumEmail.includes("@")
                         }
                         onClick={requestPremium}
                         className={cn(
