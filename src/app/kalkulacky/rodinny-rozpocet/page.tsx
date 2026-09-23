@@ -3,15 +3,12 @@ import Link from "next/link";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { FamilyBudgetCalculator } from "@/components/family-budget/FamilyBudgetCalculator";
 import { crumbs } from "@/lib/seo/breadcrumbs";
-import { buildPageMetadata } from "@/lib/seo/metadata";
+import { getStaticPageSeo } from "@/lib/seo/pages";
 import { routes } from "@/lib/routes";
 
-export const metadata: Metadata = buildPageMetadata({
-  title: "Zvládneme hypotéku i s rodinou? — rodinný rozpočet",
-  description:
-    "Spočítejte si, kolik vám zbude na život a jak rozpočet ovlivní rodičovství, výpadek příjmu nebo vyšší splátka. Model podle vašich údajů, ne schválení banky.",
-  path: routes.kalkulacky.rodinnyRozpocet,
-});
+export const metadata: Metadata = getStaticPageSeo(
+  routes.kalkulacky.rodinnyRozpocet
+);
 
 export default function Page() {
   return (

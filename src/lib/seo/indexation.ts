@@ -45,6 +45,9 @@ export const ROBOTS_DISALLOW_PATHS = [
   "/alerty",
   "/profesionalni-portal",
   "/transakce",
+  /** Checkout / recovery utilities — already noindex; keep out of crawl budget */
+  "/investicni-rentgen/dekujeme",
+  "/investicni-rentgen/objednavka",
 ] as const;
 
 export function catalogNoIndexPaths(): string[] {

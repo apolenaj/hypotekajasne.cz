@@ -8,6 +8,11 @@ import { routes } from "@/lib/routes";
 
 const EXTRA_CALCS = [
   {
+    href: routes.kalkulacky.hypotecniKalkulacka,
+    title: "Hypoteční kalkulačka",
+    text: "Orientační měsíční splátka",
+  },
+  {
     href: routes.kalkulacky.rodinnyRozpocet,
     title: "Rodinný rozpočet",
     text: "Zvládneme hypotéku i s rodinou?",
@@ -18,14 +23,9 @@ const EXTRA_CALCS = [
     text: "Vlastní peníze při nižším odhadu",
   },
   {
-    href: routes.kalkulacky.hypotekaNaFirmu,
-    title: "Financování firmy",
-    text: "Anuita a LTV pro firemní úvěr",
-  },
-  {
-    href: routes.kalkulacky.vystavba,
-    title: "Výstavba",
-    text: "Rozpočet a čerpání",
+    href: routes.investicniRentgen,
+    title: "Investiční rentgen",
+    text: "Cash flow investiční nemovitosti",
   },
 ] as const;
 
@@ -43,7 +43,7 @@ export function KalkulackyView() {
       <div className="border-b border-border bg-[#f7f8f7]">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
           <h2 className="font-heading text-lg font-semibold text-text-dark">
-            Další kalkulačky
+            Související nástroje
           </h2>
           <ul className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {EXTRA_CALCS.map((c) => (

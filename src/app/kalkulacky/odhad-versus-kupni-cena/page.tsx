@@ -1,16 +1,14 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { AppraisalVsPriceCalculator } from "@/components/family-budget/AppraisalVsPriceCalculator";
 import { crumbs } from "@/lib/seo/breadcrumbs";
-import { buildPageMetadata } from "@/lib/seo/metadata";
+import { getStaticPageSeo } from "@/lib/seo/pages";
 import { routes } from "@/lib/routes";
 
-export const metadata: Metadata = buildPageMetadata({
-  title: "Odhad versus kupní cena",
-  description:
-    "Spočítejte potřebu financování, LTV strop z uznané hodnoty a chybějící kapitál při nižším odhadu banky.",
-  path: routes.kalkulacky.odhadVersusKupniCena,
-});
+export const metadata: Metadata = getStaticPageSeo(
+  routes.kalkulacky.odhadVersusKupniCena
+);
 
 export default function Page() {
   return (
@@ -34,6 +32,22 @@ export default function Page() {
           <p className="mt-3 text-muted-foreground">
             Kompaktní model vlastních peněz při rozdílu bankovního odhadu a
             kupní ceny. LTV strop není schválená hypotéka.
+          </p>
+          <p className="mt-3 text-sm">
+            Související:{" "}
+            <Link
+              href={routes.kalkulacky.hypotecniKalkulacka}
+              className="font-medium text-deep-teal hover:underline"
+            >
+              hypoteční kalkulačka
+            </Link>
+            {" · "}
+            <Link
+              href={`${routes.akademie}/ltv`}
+              className="font-medium text-deep-teal hover:underline"
+            >
+              Akademie: LTV
+            </Link>
           </p>
         </div>
       </div>
