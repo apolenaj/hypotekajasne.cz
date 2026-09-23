@@ -207,13 +207,9 @@ describe("metadata builder", () => {
       "summary_large_image"
     );
     assert.equal(m.manifest, "/site.webmanifest");
-    const icons = m.icons as {
-      icon?: Array<{ url?: string }>;
-      apple?: Array<{ url?: string }>;
-    };
-    assert.ok(icons.icon?.some((i) => i.url === "/favicon.ico"));
-    assert.ok(icons.icon?.some((i) => i.url === "/icons/icon-48.png"));
-    assert.ok(icons.apple?.some((i) => i.url === "/apple-icon.png"));
+    // Icons are provided by App Router files (favicon.ico / icon.png / apple-icon.png),
+    // not duplicated in metadata.icons.
+    assert.equal(m.icons, undefined);
   });
 
   it("parameterized /sazby still canonicalizes to base /sazby", () => {

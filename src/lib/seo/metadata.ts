@@ -96,15 +96,9 @@ export function buildPageMetadata(input: PageSeoInput): Metadata {
     robots: noIndex
       ? { index: false, follow: false, googleBot: { index: false, follow: false } }
       : { index: true, follow: true },
+    // Icons come from App Router file conventions (app/favicon.ico, app/icon.png,
+    // app/icon.svg, app/apple-icon.png) — do not duplicate them here.
     manifest: "/site.webmanifest",
-    icons: {
-      icon: [
-        { url: "/favicon.ico", sizes: "any" },
-        { url: "/icons/icon-48.png", sizes: "48x48", type: "image/png" },
-        { url: "/icon.svg", type: "image/svg+xml" },
-      ],
-      apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
-    },
     openGraph: {
       type: input.type ?? "website",
       locale: LOCALE_HTML_LANG[locale] === "cs" ? "cs_CZ" : "en_US",
