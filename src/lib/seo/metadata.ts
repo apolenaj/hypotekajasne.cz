@@ -96,6 +96,15 @@ export function buildPageMetadata(input: PageSeoInput): Metadata {
     robots: noIndex
       ? { index: false, follow: false, googleBot: { index: false, follow: false } }
       : { index: true, follow: true },
+    manifest: "/site.webmanifest",
+    icons: {
+      icon: [
+        { url: "/favicon.ico", sizes: "any" },
+        { url: "/icons/icon-48.png", sizes: "48x48", type: "image/png" },
+        { url: "/icon.svg", type: "image/svg+xml" },
+      ],
+      apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+    },
     openGraph: {
       type: input.type ?? "website",
       locale: LOCALE_HTML_LANG[locale] === "cs" ? "cs_CZ" : "en_US",
@@ -131,9 +140,9 @@ export function buildPageMetadata(input: PageSeoInput): Metadata {
 }
 
 export const rootMetadata = buildPageMetadata({
-  title: "HypotékaJasně | Hypotéky, bydlení a investice",
+  title: "HypotékaJasně | Hypotéky, sazby a kalkulačky",
   description:
-    "Spočítejte si hypotéku, porovnejte vlastní bydlení s nájmem a prověřte investiční nemovitost. Srozumitelně a na jednom místě.",
+    "Spočítejte splátku, porovnejte sazby bank a prověřte investiční nemovitost. Srozumitelné nástroje HypotékaJasně — modelové výpočty, ne nabídka banky.",
   path: "/",
   alternatePath: { cs: "/", en: "/en" },
 });

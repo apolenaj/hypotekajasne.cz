@@ -19,6 +19,13 @@ export function organizationJsonLd(): JsonLd {
     alternateName: SITE_DOMAIN_LABEL,
     url: absoluteUrl("/"),
     email: op.email,
+    logo: {
+      "@type": "ImageObject",
+      url: absoluteUrl("/icons/icon-512.png"),
+      width: 512,
+      height: 512,
+    },
+    image: absoluteUrl("/icons/icon-512.png"),
     address: {
       "@type": "PostalAddress",
       streetAddress: legalOperator.street,
@@ -28,7 +35,9 @@ export function organizationJsonLd(): JsonLd {
       addressCountry: "CZ",
     },
   };
-  if (op.phone) org.telephone = op.phone;
+  // Intentionally omit telephone in Organization JSON-LD so Google Search
+  // is less likely to surface the phone in SERP snippets. Phone remains
+  // visible in the footer / contact UI for users.
   // Publish legal identifiers only when identity is complete — never invent.
   if (op.isProductionReady && op.legalName) org.legalName = op.legalName;
   if (op.isProductionReady && op.ico) {

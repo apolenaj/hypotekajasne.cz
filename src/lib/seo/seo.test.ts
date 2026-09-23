@@ -190,8 +190,9 @@ describe("metadata builder", () => {
 
   it("homepage metadata uses share title, description and OG image", () => {
     const m = rootMetadata;
-    assert.equal(m.title, "HypotékaJasně | Hypotéky, bydlení a investice");
-    assert.match(String(m.description), /Spočítejte si hypotéku/);
+    assert.equal(m.title, "HypotékaJasně | Hypotéky, sazby a kalkulačky");
+    assert.match(String(m.description), /Spočítejte splátku/);
+    assert.doesNotMatch(String(m.description), /\+420|727\s*814/);
     const images = (
       m.openGraph as { images?: Array<{ url?: string; type?: string }> }
     ).images;
@@ -205,6 +206,14 @@ describe("metadata builder", () => {
       (m.twitter as { card?: string }).card,
       "summary_large_image"
     );
+    assert.equal(m.manifest, "/site.webmanifest");
+    const icons = m.icons as {
+      icon?: Array<{ url?: string }>;
+      apple?: Array<{ url?: string }>;
+    };
+    assert.ok(icons.icon?.some((i) => i.url === "/favicon.ico"));
+    assert.ok(icons.icon?.some((i) => i.url === "/icons/icon-48.png"));
+    assert.ok(icons.apple?.some((i) => i.url === "/apple-icon.png"));
   });
 
   it("parameterized /sazby still canonicalizes to base /sazby", () => {
@@ -337,6 +346,13 @@ describe("json-ld — no fake reviews", () => {
     });
     assert.equal(org.aggregateRating, undefined);
     assert.equal(org.review, undefined);
+    assert.equal(org.telephone, undefined);
+    const logo = org.logo as { "@type"?: string; url?: string };
+    assert.equal(logo?.["@type"], "ImageObject");
+    assert.equal(
+      logo?.url,
+      "https://www.hypotekajasne.cz/icons/icon-512.png"
+    );
     assert.ok(JSON.parse(JSON.stringify(org)));
   });
 

@@ -88,6 +88,7 @@ export function Footer() {
                 <li>
                   <a
                     href={siteContact.phoneHref}
+                    data-nosnippet
                     onClick={() => {
                       trackEvent("phone_click", {
                         source_page:
@@ -99,8 +100,8 @@ export function Footer() {
                     }}
                     className="inline-flex items-center gap-2 transition-colors hover:text-deep-teal"
                   >
-                    <Phone className="h-4 w-4 shrink-0" />
-                    {siteContact.phone}
+                    <Phone className="h-4 w-4 shrink-0" aria-hidden />
+                    <span data-nosnippet>{siteContact.phone}</span>
                   </a>
                 </li>
               ) : null}
