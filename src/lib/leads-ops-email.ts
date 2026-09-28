@@ -13,6 +13,8 @@ export type LeadOpsEmailPayload = {
   phone: string;
   landingPage: string;
   message?: string;
+  /** Readable partner-offer bank, if present on the lead. */
+  selectedBank?: string | null;
   /** Synthetic / Phase 6.2 test leads use the TEST subject prefix. */
   isTest: boolean;
 };
@@ -54,6 +56,7 @@ export function buildLeadOpsEmailText(payload: LeadOpsEmailPayload): string {
     `E-mail: ${payload.email}`,
     `Phone: ${payload.phone || "—"}`,
     `Landing page: ${payload.landingPage || "—"}`,
+    `Vybraná banka: ${payload.selectedBank?.trim() || "—"}`,
   ];
   if (payload.message?.trim()) {
     lines.push(`Message: ${payload.message.trim()}`);

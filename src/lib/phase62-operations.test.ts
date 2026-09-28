@@ -410,6 +410,7 @@ describe("Phase 6.2 — lead attribution + ops", () => {
       isTest: true,
     });
     assert.match(text, /Lead ID:/);
+    assert.match(text, /Vybraná banka:/);
     assert.match(text, /Business owner: Bc\. Josef Apolenář BSc\., MBA/);
     assert.match(text, /Message: optional note/);
     assert.equal(text.includes("gclid"), false);

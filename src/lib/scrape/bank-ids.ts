@@ -8,7 +8,8 @@ export type BankScraperId =
   | "csob-hypotecni-banka"
   | "raiffeisen-bank"
   | "mbank"
-  | "unicredit-bank";
+  | "unicredit-bank"
+  | "oberbank";
 
 export const BANK_NAME_TO_SCRAPER_ID: Record<string, BankScraperId> = {
   "Česká spořitelna": "ceska-sporitelna",
@@ -17,4 +18,5 @@ export const BANK_NAME_TO_SCRAPER_ID: Record<string, BankScraperId> = {
   "Raiffeisen Bank": "raiffeisen-bank",
   mBank: "mbank",
   "UniCredit Bank": "unicredit-bank",
+  Oberbank: "oberbank",
 };

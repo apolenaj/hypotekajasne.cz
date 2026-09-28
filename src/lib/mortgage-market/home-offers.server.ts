@@ -27,6 +27,6 @@ async function loadHomeOffersUncached(): Promise<GetMortgageOffersResult | null>
 /** Cached homepage offers from the verified manifest catalog. */
 export const getCachedHomeOffers = unstable_cache(
   loadHomeOffersUncached,
-  ["home-page-offers-v2-manifest"],
+  ["home-page-offers-v3-partner-offer"],
   { revalidate: 3600, tags: ["home-offers"] }
 );

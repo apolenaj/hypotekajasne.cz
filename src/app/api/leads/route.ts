@@ -8,7 +8,7 @@ import {
   type LeadPayload,
 } from "@/lib/leads";
 import { normalizeLeadIdempotencyKey } from "@/lib/leads-idempotency";
-import { sanitizeLeadAttribution } from "@/lib/leads-attribution";
+import { sanitizeLeadAttribution, formatLeadSelectedBankLabel } from "@/lib/leads-attribution";
 import {
   logLeadOps,
   notifyLeadOperatorsBestEffort,
@@ -553,6 +553,7 @@ export async function POST(request: Request) {
         phone: payload.phone,
         landingPage,
         message: payload.notes,
+        selectedBank: formatLeadSelectedBankLabel(attribution.metadata),
         testMarker,
       });
 

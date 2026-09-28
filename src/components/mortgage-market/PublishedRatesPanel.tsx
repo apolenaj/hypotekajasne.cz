@@ -20,6 +20,15 @@ import type {
   MortgageOffer,
 } from "@/lib/mortgage-market/offers";
 import {
+  PARTNER_OFFER_BANKS,
+  PARTNER_OFFER_DISCLAIMER_CS,
+  PARTNER_OFFER_FLOOR_NOTE_CS,
+  PARTNER_OFFER_FRAMING_CS,
+  PARTNER_OFFER_INQUIRY_MESSAGE,
+  PARTNER_OFFER_PUBLIC_FLOOR,
+  PARTNER_OFFER_RATE_SOURCE_URL,
+} from "@/lib/mortgage-market/partner-offer-banks";
+import {
   formatExactLtvCs,
   formatLtvBandLabel,
   rateFilterLtvFromContext,
@@ -46,6 +55,8 @@ type PublishedRatesPanelProps = {
   className?: string;
   headingId?: string;
   onSelectOffer?: (offer: MortgageOffer) => void;
+  /** CTA for banks without a publishable numeric rate. */
+  onSelectInquiryBank?: (bank: { slug: string; name: string }) => void;
   showPendingLenders?: boolean;
   /** Homepage uses shorter intro focused on date + source. */
   variant?: "default" | "home";
@@ -74,49 +85,20 @@ async function fetchOffers(
 
 function pendingCards(result: GetMortgageOffersResult | null) {
   if (!result) return [];
-  const wanted = new Map([
-    ["csob", "Veřejnou sazbu se nepodařilo ověřit"],
-    ["raiffeisenbank", "Veřejnou sazbu se nepodařilo ověřit"],
-  ]);
-  const seen = new Set<string>();
-  const cards: { slug: string; name: string; message: string; sourceUrl: string | null }[] = [];
-  for (const a of result.lenderAvailability) {
-    const msg = wanted.get(a.lenderSlug);
-    if (!msg || seen.has(a.lenderSlug)) continue;
-    if (
-      a.rateStatus === "verification_pending" ||
-      a.rateStatus === "no_matching_rate"
-    ) {
-      seen.add(a.lenderSlug);
-      cards.push({
-        slug: a.lenderSlug,
-        name: a.lenderName,
-        message: msg,
-        sourceUrl:
-          a.lenderSlug === "raiffeisenbank"
-            ? "https://www.rb.cz/osobni/hypoteky"
-            : null,
-      });
-    }
-  }
-  for (const [slug, message] of wanted) {
-    if (seen.has(slug)) continue;
-    const hasOffer =
-      result.offers.some((o) => o.lenderSlug === slug) ||
-      result.unspecifiedLtvOffers.some((o) => o.lenderSlug === slug);
-    if (!hasOffer) {
-      cards.push({
-        slug,
-        name: slug === "csob" ? "ČSOB" : "Raiffeisenbank",
-        message,
-        sourceUrl:
-          slug === "raiffeisenbank"
-            ? "https://www.rb.cz/osobni/hypoteky"
-            : null,
-      });
-    }
-  }
-  return cards;
+  const present = new Set<string>();
+  for (const o of result.offers) present.add(o.lenderSlug);
+  for (const o of result.unspecifiedLtvOffers) present.add(o.lenderSlug);
+
+  return PARTNER_OFFER_BANKS.filter((bank) => !present.has(bank.slug)).map(
+    (bank) => ({
+      slug: bank.slug,
+      name: bank.name,
+      message: PARTNER_OFFER_INQUIRY_MESSAGE[bank.slug],
+      floorNote: PARTNER_OFFER_FLOOR_NOTE_CS[bank.slug] ?? null,
+      publicFloor: PARTNER_OFFER_PUBLIC_FLOOR[bank.slug] ?? null,
+      sourceUrl: PARTNER_OFFER_RATE_SOURCE_URL[bank.slug] ?? bank.websiteUrl,
+    })
+  );
 }
 
 function queriesEqual(a: RatesQueryState, b: RatesQueryState): boolean {
@@ -131,6 +113,7 @@ export function PublishedRatesPanel({
   className,
   headingId = "published-rates-heading",
   onSelectOffer,
+  onSelectInquiryBank,
   showPendingLenders = true,
   variant = "default",
   layout = "page",
@@ -334,7 +317,7 @@ export function PublishedRatesPanel({
       >
         <div className="max-w-2xl">
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-deep-teal">
-            {variant === "home" ? "Orientační sazby" : "Zveřejněné sazby bank"}
+            {variant === "home" ? "Orientační sazby" : PARTNER_OFFER_FRAMING_CS}
           </p>
           <h2
             id={headingId}
@@ -347,7 +330,7 @@ export function PublishedRatesPanel({
           <p className={cn("mt-2 text-sm leading-relaxed text-muted-foreground", layout === "aside" && "line-clamp-2")}>
             {variant === "home"
               ? "Sazby přebíráme z veřejných sazebníků bank. U každé karty uvádíme datum posledního ověření a odkaz na oficiální zdroj."
-              : "Sazby přebíráme z veřejných sazebníků. U každé karty uvádíme datum posledního ověření a odkaz na oficiální zdroj."}
+              : PARTNER_OFFER_DISCLAIMER_CS}
           </p>
           <RatesDisclaimer className="mt-3" />
           {variant === "home" ? (
@@ -600,11 +583,14 @@ export function PublishedRatesPanel({
                                 {item.name}
                               </p>
                               <p className="text-sm font-semibold text-gray-500">
-                                Sazba není dostupná
+                                {item.publicFloor
+                                  ? item.publicFloor.headline
+                                  : item.floorNote ?? item.message}
                               </p>
                             </div>
                             <p className="mt-1 text-xs text-gray-600">
-                              Pro tuto fixaci nemáme použitelný ověřený údaj.
+                              Banka zůstává v nabídce partnera. Neřadíme ji podle
+                              smyšlené sazby.
                             </p>
                           </div>
                         </div>
@@ -683,15 +669,31 @@ export function PublishedRatesPanel({
         {pending.length > 0 && canShowRates && layout !== "aside" ? (
           <div className="mt-10">
             <h3 className="font-heading text-lg font-semibold text-text-dark">
-              Banky bez ověřené sazby pro tento filtr
+              Další banky v nabídce partnera
             </h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Tyto banky nezařazujeme do číselného žebříčku pro zvolený filtr —
+              buď nemáme ověřenou číselnou sazbu, nebo jen veřejnou sazbu „od“
+              bez plné matice parametrů.
+            </p>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               {pending.map((p) => (
                 <LenderPendingCard
                   key={p.slug}
                   lenderName={p.name}
                   message={p.message}
+                  floorNote={p.publicFloor ? null : p.floorNote}
+                  publicFloor={p.publicFloor}
                   sourceUrl={p.sourceUrl}
+                  onRequestInquiry={
+                    onSelectInquiryBank
+                      ? () =>
+                          onSelectInquiryBank({
+                            slug: p.slug,
+                            name: p.name,
+                          })
+                      : undefined
+                  }
                 />
               ))}
             </div>

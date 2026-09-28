@@ -106,6 +106,8 @@ export type LeadNotifyInput = {
   phone?: string;
   landingPage?: string;
   message?: string;
+  /** Readable partner-offer bank for ops e-mail. */
+  selectedBank?: string | null;
   /** From sanitized metadata.test_marker — never logged as free text beyond isTest. */
   testMarker?: string | null;
 };
@@ -145,6 +147,7 @@ export async function notifyLeadOperatorsBestEffort(
     phone: input.phone?.trim() || "",
     landingPage: input.landingPage?.trim() || "",
     message: input.message?.trim() || undefined,
+    selectedBank: input.selectedBank?.trim() || null,
     isTest,
   };
 

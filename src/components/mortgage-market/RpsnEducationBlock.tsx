@@ -478,10 +478,14 @@ export function RpsnEducationBlock() {
                 />
               </ul>
               <p className="mt-2 max-w-3xl text-xs leading-relaxed text-muted-foreground">
-                Reprezentativní příklad {comparison.bank === "MONETA" ? "MONETA Money Bank" : comparison.bank}, ověřeno{" "}
+                Historický reprezentativní příklad{" "}
+                {comparison.bank === "MONETA"
+                  ? "MONETA Money Bank"
+                  : comparison.bank}{" "}
+                (nejde o banku z aktuální nabídky našeho partnera), ověřeno{" "}
                 {formatCheckedDateCs(comparison.checkedAt)}. Sazba, RPSN,
                 splátka a pojištění jsou hodnoty z tohoto příkladu — ne
-                individuální nabídka a ne samostatný ceník.
+                individuální nabídka a ne aktuální srovnání sedmi bank výše.
               </p>
             </div>
 

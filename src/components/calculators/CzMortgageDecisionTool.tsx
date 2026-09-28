@@ -64,7 +64,15 @@ import type { MortgageRateStatus } from "@/lib/rates/types";
 import { useMortgageProducts } from "@/lib/mortgage-products";
 import { routes } from "@/lib/routes";
 import { DOMESTIC_BANKS } from "@/lib/banking";
+import {
+  PARTNER_OFFER_BANKS,
+  PARTNER_OFFER_INQUIRY_MESSAGE,
+  PARTNER_OFFER_PUBLIC_FLOOR,
+  PUBLIC_RATE_ON_INQUIRY_CS,
+  PUBLIC_RATE_PERSONAL_OFFER_ON_INQUIRY_CS,
+} from "@/lib/mortgage-market/partner-offer-banks";
 import { CTA_CS } from "@/lib/ux/cta";
+import Link from "next/link";
 import { ExplainDisclosure } from "@/components/ux/ExplainDisclosure";
 import { WhatNextPanel } from "@/components/ux/WhatNextPanel";
 import { cn } from "@/lib/utils";
@@ -286,9 +294,10 @@ export function CzMortgageDecisionTool() {
         : null;
       const picked = row ? pickBankRate(row, hasInsurance) : null;
       const loan = active.loanAmount;
+      const hasNumericRate = picked?.rate != null && Number.isFinite(picked.rate);
       const payment =
-        picked?.rate != null && loan > 0
-          ? Math.round(calculateAnnuityPayment(loan, picked.rate, termYears))
+        hasNumericRate && loan > 0
+          ? Math.round(calculateAnnuityPayment(loan, picked!.rate!, termYears))
           : null;
       const total =
         payment != null ? Math.round(payment * termYears * 12) : null;
@@ -296,17 +305,21 @@ export function CzMortgageDecisionTool() {
         total != null ? Math.max(0, total - loan) : null;
       return {
         bankName: bank.name,
-        rate: picked?.rate ?? null,
-        rpsn: picked?.rpsn ?? null,
+        rate: hasNumericRate ? picked!.rate! : null,
+        rpsn: hasNumericRate ? picked?.rpsn ?? null : null,
         payment,
         total,
         interest,
         updatedAt: row?.updatedAt ?? null,
         sourceUrl: row?.sourceUrl ?? null,
         badgeStatus,
+        inquiryOnly: !hasNumericRate,
       };
-    }).filter((b) => b.rate != null && b.badgeStatus != null);
+    });
   }, [bankRates, hasInsurance, active.loanAmount, termYears]);
+
+  const rankedBanks = comparisonBanks.filter((b) => !b.inquiryOnly);
+  const inquiryBanks = comparisonBanks.filter((b) => b.inquiryOnly);
 
   const filteredProducts = products
     .filter((p) =>
@@ -320,7 +333,7 @@ export function CzMortgageDecisionTool() {
     <div className="space-y-8">
       <header className="rounded-2xl border border-border bg-white p-5 sm:p-6">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-deep-teal">
-          Decision tool · ČR
+          Hypoteční kalkulačka · ČR
         </p>
         <h2 className="mt-1 font-heading text-2xl font-bold text-text-dark sm:text-3xl">
           Hypoteční rozhodovací kalkulačka
@@ -812,89 +825,150 @@ export function CzMortgageDecisionTool() {
           Srovnání produktů bank
         </h3>
         <p className="text-sm text-muted-foreground">
-          Orientační splátka a celkové náklady při výši úvěru z aktivního pohledu
-          ({fmt(active.loanAmount)}). Nejde o závaznou nabídku.
+          Orientační splátka jen u bank s ověřenou sazbou. Banky bez sazby
+          zůstávají v nabídce partnera jako poptávka — nepočítáme jim smyšlenou
+          splátku. Modelová sazba kalkulačky není nabídkou konkrétní banky.
         </p>
 
         {bankRatesLoading ? (
           <p className="text-sm text-muted-foreground">Načítám sazby…</p>
-        ) : bankRatesUnavailable || comparisonBanks.length === 0 ? (
-          <p className="text-sm text-amber-900" role="status">
-            {LIVE_RATES_UNAVAILABLE_MESSAGE}
-          </p>
         ) : (
-          <ul className="grid gap-3 sm:grid-cols-2">
-            {comparisonBanks.map((b) => (
-              <li
-                key={b.bankName}
-                className="rounded-xl border border-border bg-white p-4"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div>
-                    <p className="font-semibold text-text-dark">{b.bankName}</p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      {getBankOfferSourceLabel(b.bankName)}
-                    </p>
-                  </div>
-                  {b.badgeStatus ? (
-                    <DataStatusBadge status={b.badgeStatus} />
-                  ) : null}
-                </div>
-                <dl className="mt-3 grid grid-cols-2 gap-2 text-sm">
-                  <div>
-                    <dt className="text-xs text-muted-foreground">Sazba</dt>
-                    <dd className="font-bold tabular-nums text-deep-teal">
-                      {b.rate != null
-                        ? fmtPct(b.rate)
-                        : missingDataLabel(null)}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs text-muted-foreground">RPSN</dt>
-                    <dd className="font-semibold tabular-nums">
-                      {b.rpsn != null
-                        ? fmtPct(b.rpsn)
-                        : missingDataLabel(null)}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs text-muted-foreground">Splátka</dt>
-                    <dd className="font-semibold tabular-nums">{fmt(b.payment)}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs text-muted-foreground">
-                      Celkové náklady
-                    </dt>
-                    <dd className="font-semibold tabular-nums">{fmt(b.total)}</dd>
-                  </div>
-                </dl>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Podmínky:{" "}
-                  <span className="font-semibold text-text-dark">
-                    {hasInsurance ? "s pojištěním" : "bez pojištění"}
-                  </span>{" "}
-                  · splatnost {termYears} let · fixace v modelu{" "}
-                  {fixationYears} let
-                </p>
-                <div className="mt-2">
-                  <LastUpdated
-                    at={b.updatedAt}
-                    status={b.badgeStatus ?? "STALE"}
-                  />
-                </div>
-                {b.sourceUrl && (
-                  <a
-                    href={b.sourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-2 inline-flex text-xs font-semibold text-deep-teal underline-offset-2 hover:underline"
+          <>
+            {rankedBanks.length === 0 && !bankRatesUnavailable ? (
+              <p className="text-sm text-muted-foreground" role="status">
+                Pro srovnání splátek teď nemáme ověřené bankovní sazby. Všechny
+                banky v nabídce partnera níže můžete poptat.
+              </p>
+            ) : null}
+            {bankRatesUnavailable && rankedBanks.length === 0 ? (
+              <p className="text-sm text-amber-900" role="status">
+                {LIVE_RATES_UNAVAILABLE_MESSAGE}
+              </p>
+            ) : null}
+            {rankedBanks.length > 0 ? (
+              <ul className="grid gap-3 sm:grid-cols-2">
+                {rankedBanks.map((b) => (
+                  <li
+                    key={b.bankName}
+                    className="rounded-xl border border-border bg-white p-4"
                   >
-                    Zdroj banky →
-                  </a>
-                )}
-              </li>
-            ))}
-          </ul>
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div>
+                        <p className="font-semibold text-text-dark">
+                          {b.bankName}
+                        </p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          {getBankOfferSourceLabel(b.bankName)}
+                        </p>
+                      </div>
+                      {b.badgeStatus ? (
+                        <DataStatusBadge status={b.badgeStatus} />
+                      ) : null}
+                    </div>
+                    <dl className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                      <div>
+                        <dt className="text-xs text-muted-foreground">Sazba</dt>
+                        <dd className="font-bold tabular-nums text-deep-teal">
+                          {fmtPct(b.rate)}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs text-muted-foreground">RPSN</dt>
+                        <dd className="font-semibold tabular-nums">
+                          {b.rpsn != null
+                            ? fmtPct(b.rpsn)
+                            : missingDataLabel(null)}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs text-muted-foreground">
+                          Splátka
+                        </dt>
+                        <dd className="font-semibold tabular-nums">
+                          {fmt(b.payment)}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs text-muted-foreground">
+                          Celkové náklady
+                        </dt>
+                        <dd className="font-semibold tabular-nums">
+                          {fmt(b.total)}
+                        </dd>
+                      </div>
+                    </dl>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Podmínky:{" "}
+                      <span className="font-semibold text-text-dark">
+                        {hasInsurance ? "s pojištěním" : "bez pojištění"}
+                      </span>{" "}
+                      · splatnost {termYears} let · fixace v modelu{" "}
+                      {fixationYears} let
+                    </p>
+                    <div className="mt-2">
+                      <LastUpdated
+                        at={b.updatedAt}
+                        status={b.badgeStatus ?? "STALE"}
+                      />
+                    </div>
+                    {b.sourceUrl && (
+                      <a
+                        href={b.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-2 inline-flex text-xs font-semibold text-deep-teal underline-offset-2 hover:underline"
+                      >
+                        Zdroj banky →
+                      </a>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+
+            {inquiryBanks.length > 0 ? (
+              <div className="mt-6 space-y-3">
+                <h4 className="font-heading text-base font-semibold text-text-dark">
+                  Banky v nabídce partnera — bez ověřené číselné sazby
+                </h4>
+                <ul className="grid gap-3 sm:grid-cols-2">
+                  {inquiryBanks.map((b) => {
+                    const partner = PARTNER_OFFER_BANKS.find(
+                      (p) => p.scrapeName === b.bankName || p.name === b.bankName
+                    );
+                    const floor = partner
+                      ? PARTNER_OFFER_PUBLIC_FLOOR[partner.slug]
+                      : undefined;
+                    const inquiryLabel = floor
+                      ? `${floor.headline}. ${PUBLIC_RATE_PERSONAL_OFFER_ON_INQUIRY_CS}`
+                      : partner
+                        ? PARTNER_OFFER_INQUIRY_MESSAGE[partner.slug]
+                        : PUBLIC_RATE_ON_INQUIRY_CS;
+                    return (
+                      <li
+                        key={b.bankName}
+                        className="rounded-xl border border-dashed border-border bg-[#f7f8f7] p-4"
+                      >
+                        <p className="font-semibold text-text-dark">
+                          {b.bankName}
+                        </p>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {inquiryLabel}. Nesrovnáváme ji v číselném žebříčku a
+                          nepočítáme modelovou splátku za banku.
+                        </p>
+                        <Link
+                          href={`${routes.sazby}${partner ? `?lender=${partner.slug}` : ""}#sazby-poptavka`}
+                          className="mt-3 inline-flex h-11 min-h-11 items-center justify-center rounded-lg bg-deep-teal px-4 text-sm font-semibold text-white hover:bg-deep-teal-light"
+                        >
+                          Nezávazně poptat
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ) : null}
+          </>
         )}
 
         {!productsLoading && filteredProducts.length > 0 && (

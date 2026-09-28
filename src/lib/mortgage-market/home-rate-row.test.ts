@@ -9,7 +9,8 @@ import { getMortgageOffers } from "@/lib/mortgage-market/offers";
 
 const catalog = getCz20260809Catalog();
 const CHECKED = Date.parse("2026-09-21T12:00:00.000Z");
-const STALE = Date.parse("2026-09-19T12:00:00.000Z");
+/** >72h after catalog checkedAt (2026-09-21). */
+const STALE = Date.parse("2026-09-25T12:00:00.000Z");
 
 function offersFor(fixationMonths: number, nowMs: number) {
   const result = getMortgageOffers(catalog, {
@@ -25,13 +26,13 @@ describe("buildHomeRateRows", () => {
   it("shows the verified figure with its date when the 72h window has passed", () => {
     const rows = buildHomeRateRows(offersFor(36, STALE), 36, STALE);
     assert.ok(rows.length > 0);
-    const air = rows.find((row) => row.lenderName.includes("Air"));
-    assert.ok(air);
-    assert.equal(air!.showNumeric, true);
-    assert.match(air!.rateLabel, /% p\. a\./);
-    assert.ok(air!.ageWarning?.includes("72 hodin"));
-    assert.ok(air!.verifiedAtLabel);
-    assert.ok(air!.sourceUrl?.startsWith("https://"));
+    const kb = rows.find((row) => row.lenderSlug === "komercni-banka");
+    assert.ok(kb);
+    assert.equal(kb!.showNumeric, true);
+    assert.match(kb!.rateLabel, /% p\. a\./);
+    assert.ok(kb!.ageWarning?.includes("72 hodin"));
+    assert.ok(kb!.verifiedAtLabel);
+    assert.ok(kb!.sourceUrl?.startsWith("https://"));
   });
 
   it("does not borrow a rate from another fixation", () => {

@@ -61,7 +61,31 @@ export {
 export {
   catalogFromImportManifest,
   getCz20260809Catalog,
+  getPartnerOfferCatalog,
 } from "@/lib/mortgage-market/catalog-from-manifest";
+export {
+  PARTNER_OFFER_BANKS,
+  PARTNER_OFFER_BANK_SLUGS,
+  PARTNER_OFFER_DISCLAIMER_CS,
+  PARTNER_OFFER_FLOOR_NOTE_CS,
+  PARTNER_OFFER_FRAMING_CS,
+  PARTNER_OFFER_INQUIRY_MESSAGE,
+  PARTNER_OFFER_PUBLIC_FLOOR,
+  PUBLIC_RATE_ON_INQUIRY_CS,
+  PUBLIC_RATE_PERSONAL_OFFER_ON_INQUIRY_CS,
+  PUBLIC_RATE_VERIFY_ON_INQUIRY_CS,
+  compareRatesNullable,
+  getPartnerOfferBank,
+  isPartnerOfferBankSlug,
+  isPartnerOfferPublicRate,
+  normalizePartnerLenderSlug,
+  partnerOfferSortOrder,
+} from "@/lib/mortgage-market/partner-offer-banks";
+export type {
+  PartnerOfferBank,
+  PartnerOfferBankId,
+  PartnerOfferPublicFloor,
+} from "@/lib/mortgage-market/partner-offer-banks";
 export {
   groupOffersByLenderProduct,
   isInsuranceScenarioPair,

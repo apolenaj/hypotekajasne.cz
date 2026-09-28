@@ -12,6 +12,14 @@ import type {
   GetMortgageOffersResult,
   MortgageOffer,
 } from "@/lib/mortgage-market/offers";
+import {
+  getPartnerOfferBank,
+  normalizePartnerLenderSlug,
+  PARTNER_OFFER_INQUIRY_MESSAGE,
+  PARTNER_OFFER_PUBLIC_FLOOR,
+  PUBLIC_RATE_PERSONAL_OFFER_ON_INQUIRY_CS,
+  type PartnerOfferBankId,
+} from "@/lib/mortgage-market/partner-offer-banks";
 import { parseMortgageJourneyParams } from "@/lib/mortgage-rates/mortgage-journey-context";
 import type { LtvContext, MortgageJourneyCore } from "@/lib/mortgage-rates/ltv-context";
 import {
@@ -30,6 +38,24 @@ type SazbyExperienceProps = {
   journeyMetadata?: Record<string, unknown>;
 };
 
+type SelectedBankContext =
+  | { kind: "rate"; offer: MortgageOffer }
+  | { kind: "inquiry"; lenderSlug: PartnerOfferBankId; lenderName: string };
+
+function inquirySelectionFromSlug(
+  raw: string | null
+): SelectedBankContext | null {
+  const slug = normalizePartnerLenderSlug(raw);
+  if (!slug) return null;
+  const bank = getPartnerOfferBank(slug);
+  if (!bank) return null;
+  return {
+    kind: "inquiry",
+    lenderSlug: slug,
+    lenderName: bank.name,
+  };
+}
+
 export function SazbyExperience({
   initialOffers,
   initialQuery,
@@ -39,7 +65,9 @@ export function SazbyExperience({
   journeyMetadata: initialJourneyMetadata,
 }: SazbyExperienceProps) {
   const searchParams = useSearchParams();
-  const [selected, setSelected] = useState<MortgageOffer | null>(null);
+  const [selected, setSelected] = useState<SelectedBankContext | null>(() =>
+    inquirySelectionFromSlug(searchParams.get("lender"))
+  );
   const funnelStartedRef = useRef(false);
 
   const journeySummary = useMemo(() => {
@@ -56,15 +84,44 @@ export function SazbyExperience({
     return base;
   }, [initialJourneyMetadata, journeySummary]);
 
+  const selectedLenderSlug =
+    selected?.kind === "rate"
+      ? normalizePartnerLenderSlug(selected.offer.lenderSlug)
+      : selected?.kind === "inquiry"
+        ? selected.lenderSlug
+        : null;
+
   const metadata = {
     ...journeyMetadata,
-    selectedLender: selected?.lenderSlug,
-    selectedProduct: selected?.productSlug,
-    selectedPricingScenario: selected?.pricingScenarioKey,
-    selectedNominalRate: selected?.nominalInterestRate,
-    selectedRateScenarioCategory: selected
-      ? pricingScenarioCategory(selected.pricingScenarioKey)
-      : undefined,
+    selectedLender: selectedLenderSlug ?? undefined,
+    lenderSlug: selectedLenderSlug ?? undefined,
+    selectedProduct:
+      selected?.kind === "rate" ? selected.offer.productSlug : undefined,
+    selectedPricingScenario:
+      selected?.kind === "rate"
+        ? selected.offer.pricingScenarioKey
+        : selected?.kind === "inquiry"
+          ? "partner_offer_inquiry"
+          : undefined,
+    selectedNominalRate:
+      selected?.kind === "rate"
+        ? selected.offer.nominalInterestRate
+        : undefined,
+    selectedRateScenarioCategory:
+      selected?.kind === "rate"
+        ? pricingScenarioCategory(selected.offer.pricingScenarioKey)
+        : undefined,
+    rateAvailability:
+      selected?.kind === "inquiry"
+        ? "inquiry_only"
+        : selected
+          ? "published"
+          : undefined,
+  };
+
+  const scrollToLead = () => {
+    const el = document.getElementById("sazby-poptavka");
+    el?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   return (
@@ -75,10 +132,11 @@ export function SazbyExperience({
             Hypotéka Jasně
           </p>
           <h1 className="mt-2 font-heading text-3xl font-bold tracking-tight text-text-dark sm:text-4xl">
-            Porovnejte zveřejněné sazby bank
+            Banky v nabídce našeho hypotečního partnera
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-            Zobrazujeme ověřené sazby z oficiálních sazebníků. Část bank uvádí
+            Zobrazujeme ověřené sazby z oficiálních sazebníků sedmi bank, u
+            kterých náš hypoteční partner sjednává hypotéky. Část bank uvádí
             pásmo LTV a podmínky (účet, pojištění) — shoda LTV sama o sobě
             neznamená nárok na úvěr. Oddělujeme modelový odhad splátky od
             zveřejněné sazby; konečná nabídka a RPSN vždy závisí na vaší situaci.
@@ -94,7 +152,7 @@ export function SazbyExperience({
         initialLtvContext={ltvContext}
         initialParamErrors={initialParamErrors}
         onSelectOffer={(offer) => {
-          setSelected(offer);
+          setSelected({ kind: "rate", offer });
           if (!funnelStartedRef.current) {
             funnelStartedRef.current = true;
             trackEventOnce(
@@ -120,8 +178,23 @@ export function SazbyExperience({
               source_page: "/sazby",
             });
           }
-          const el = document.getElementById("sazby-poptavka");
-          el?.scrollIntoView({ behavior: "smooth", block: "start" });
+          scrollToLead();
+        }}
+        onSelectInquiryBank={(bank) => {
+          const slug = normalizePartnerLenderSlug(bank.slug);
+          if (!slug) return;
+          setSelected({
+            kind: "inquiry",
+            lenderSlug: slug,
+            lenderName: bank.name,
+          });
+          trackEvent("cta_click", {
+            cta_id: "sazby_select_inquiry_bank",
+            selected_lender: slug,
+            funnel_id: "phase4_conversion",
+            source_page: "/sazby",
+          });
+          scrollToLead();
         }}
       />
 
@@ -141,17 +214,25 @@ export function SazbyExperience({
               {CTA_CS.discoverSituation}
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Vybranou sazbu a parametry pošleme jako kontext poptávky. Nejde o
-              závaznou žádost u banky.
+              Vybranou banku a případnou sazbu pošleme jako kontext poptávky.
+              Nejde o závaznou žádost u banky.
             </p>
-            {selected ? (
+            {selected?.kind === "rate" ? (
               <p className="mt-3 rounded-lg border border-deep-teal/20 bg-deep-teal/5 px-3 py-2 text-sm text-text-dark">
-                Vybráno: {selected.lenderName} ·{" "}
-                {selected.nominalInterestRate.toLocaleString("cs-CZ", {
+                Vybráno: {selected.offer.lenderName} ·{" "}
+                {selected.offer.nominalInterestRate.toLocaleString("cs-CZ", {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })}
                 &nbsp;%
+              </p>
+            ) : null}
+            {selected?.kind === "inquiry" ? (
+              <p className="mt-3 rounded-lg border border-deep-teal/20 bg-deep-teal/5 px-3 py-2 text-sm text-text-dark">
+                Vybráno: {selected.lenderName} ·{" "}
+                {PARTNER_OFFER_PUBLIC_FLOOR[selected.lenderSlug]
+                  ? `${PARTNER_OFFER_PUBLIC_FLOOR[selected.lenderSlug]!.headline} — ${PUBLIC_RATE_PERSONAL_OFFER_ON_INQUIRY_CS}`
+                  : PARTNER_OFFER_INQUIRY_MESSAGE[selected.lenderSlug]}
               </p>
             ) : null}
           </div>

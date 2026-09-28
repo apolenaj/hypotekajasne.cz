@@ -454,24 +454,65 @@ export function BankRateCard({
 export function LenderPendingCard({
   lenderName,
   message,
+  floorNote,
+  publicFloor,
   sourceUrl,
+  onRequestInquiry,
 }: {
   lenderName: string;
   message?: string;
+  /** Short aside label (homepage). */
+  floorNote?: string | null;
+  /** Structured verified public “from” rate — mutually exclusive with bare inquiry copy. */
+  publicFloor?: {
+    headline: string;
+    conditions: string;
+    verifiedAtLabel: string;
+    sourceValidFromLabel: string;
+  } | null;
   sourceUrl?: string | null;
+  onRequestInquiry?: () => void;
 }) {
+  const hasPublicFloor = Boolean(publicFloor);
+
   return (
     <article className="rounded-2xl border border-dashed border-border bg-[#f7f8f7] p-4 sm:p-5">
       <h3 className="font-heading text-lg font-bold text-text-dark">
         {lenderName}
       </h3>
-      <p className="mt-2 text-sm font-medium text-gray-700">
-        {message ?? PUBLIC_RATE_UNVERIFIED_MESSAGE}
-      </p>
-      <p className="mt-1 text-xs text-muted-foreground">
-        Pro zvolenou fixaci nemáme ověřenou číselnou sazbu. Nejde o modelový odhad
-        a sazbu nenahrazujeme údajem z jiné fixace.
-      </p>
+      {hasPublicFloor && publicFloor ? (
+        <>
+          <p className="mt-2 font-heading text-xl font-semibold tabular-nums text-deep-teal">
+            {publicFloor.headline}
+          </p>
+          <p className="mt-2 text-xs leading-relaxed text-text-dark/80">
+            {publicFloor.conditions}
+          </p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Sazebník platný od {publicFloor.sourceValidFromLabel} · ověřeno{" "}
+            {publicFloor.verifiedAtLabel}. Neřadíme tuto sazbu do číselného
+            srovnání bez shody parametrů.
+          </p>
+          <p className="mt-2 text-sm font-medium text-gray-700">
+            Konkrétní nabídku ověříme na poptávku.
+          </p>
+        </>
+      ) : (
+        <>
+          <p className="mt-2 text-sm font-medium text-gray-700">
+            {message ?? PUBLIC_RATE_UNVERIFIED_MESSAGE}
+          </p>
+          {floorNote ? (
+            <p className="mt-2 text-xs leading-relaxed text-text-dark/80">
+              {floorNote}
+            </p>
+          ) : null}
+          <p className="mt-1 text-xs text-muted-foreground">
+            Pro zvolenou fixaci nemáme ověřenou číselnou sazbu. Nejde o modelový
+            odhad a sazbu nenahrazujeme údajem z jiné fixace.
+          </p>
+        </>
+      )}
       {sourceUrl ? (
         <p className="mt-2 text-xs">
           <a
@@ -483,6 +524,15 @@ export function LenderPendingCard({
             Oficiální zdroj banky
           </a>
         </p>
+      ) : null}
+      {onRequestInquiry ? (
+        <button
+          type="button"
+          onClick={onRequestInquiry}
+          className="mt-4 inline-flex h-11 min-h-11 w-full items-center justify-center rounded-lg bg-deep-teal px-4 text-sm font-semibold text-white transition-colors hover:bg-deep-teal-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal focus-visible:ring-offset-2 sm:w-auto"
+        >
+          Nezávazně poptat tuto banku
+        </button>
       ) : null}
     </article>
   );

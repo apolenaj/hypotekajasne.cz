@@ -63,15 +63,65 @@ describe("lead funnel E2E regression (safe)", () => {
     };
     const ltv = buildLtvContext(ctx);
     const meta = buildLeadMetadataFromJourney(ctx, ltv, {
-      selectedLender: "airbank",
-      selectedNominalRate: 4.79,
-      selectedPricingScenario: "air_purchase_36m",
+      selectedLender: "mbank",
+      selectedNominalRate: 5.59,
+      selectedPricingScenario: "mhypoteka_fixed_ltv_le_80",
       test_marker: "TEST-HJ-E2E-unit",
     });
-    assert.equal(meta.selectedLender, "airbank");
+    assert.equal(meta.selectedLender, "mbank");
     assert.equal(meta.exactLtv, 80);
     assert.equal(meta.ltvBand, 80);
     assert.equal(meta.utm_source, "e2e_test");
+  });
+
+  it("carries Oberbank inquiry selection without inventing a rate", () => {
+    const ctx = {
+      purpose: "purchase" as const,
+      fixationMonths: 36,
+      propertyValueCzk: 6_000_000,
+      ownFundsCzk: 1_200_000,
+      loanAmountCzk: 4_800_000,
+      termYears: 30,
+    };
+    const ltv = buildLtvContext(ctx);
+    const meta = buildLeadMetadataFromJourney(ctx, ltv, {
+      selectedLender: "oberbank",
+      lenderSlug: "oberbank",
+      rateAvailability: "inquiry_only",
+      test_marker: "TEST-HJ-E2E-oberbank",
+    });
+    assert.equal(meta.selectedLender, "oberbank");
+    assert.equal(meta.lenderSlug, "oberbank");
+    assert.equal(meta.selectedNominalRate, undefined);
+  });
+
+  it("sanitizes all seven partner banks into lead metadata and rejects historical", () => {
+    for (const slug of [
+      "komercni-banka",
+      "csob",
+      "ceska-sporitelna",
+      "mbank",
+      "unicredit",
+      "raiffeisenbank",
+      "oberbank",
+    ] as const) {
+      const out = sanitizeLeadAttribution({
+        selectedLender: slug,
+        purpose: "purchase",
+        rateAvailability: "inquiry_only",
+        test_marker: `TEST-HJ-E2E-${slug}`,
+      });
+      assert.equal(out.metadata.selectedLender, slug);
+      assert.equal(out.metadata.lenderSlug, slug);
+    }
+
+    const rejected = sanitizeLeadAttribution({
+      selectedLender: "air-bank",
+      lenderSlug: "moneta",
+      purpose: "purchase",
+    });
+    assert.equal(rejected.metadata.selectedLender, undefined);
+    assert.equal(rejected.metadata.lenderSlug, undefined);
   });
 
   it("accepts UUID idempotency keys only", () => {

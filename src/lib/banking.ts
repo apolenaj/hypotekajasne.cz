@@ -185,24 +185,26 @@ export function getBankCategoriesForMarket(
 /** @deprecated Prefer getBankCategoriesForMarket */
 export const BANK_CATEGORIES = CZ_BANK_CATEGORIES;
 
-/** České vnitrostátní banky — jen pro trh ČR */
+/** České vnitrostátní banky — nabídka hypotečního partnera (7 bank) */
 export const DOMESTIC_BANKS: BankDefinition[] = [
-  { name: "Česká spořitelna", category: "domestic" },
   { name: "Komerční banka", category: "domestic" },
   { name: "ČSOB Hypoteční banka", category: "domestic" },
-  { name: "Raiffeisen Bank", category: "domestic" },
+  { name: "Česká spořitelna", category: "domestic" },
   { name: "mBank", category: "domestic" },
   { name: "UniCredit Bank", category: "domestic" },
+  { name: "Raiffeisen Bank", category: "domestic" },
+  { name: "Oberbank", category: "domestic" },
 ];
 
-/** Americké hypotéky z ČR (české sazby) */
+/** Americké hypotéky z ČR (české sazby) — stejný partnerský okruh */
 export const AMERICAN_MORTGAGE_BANKS: BankDefinition[] = [
-  { name: "Česká spořitelna", category: "american" },
   { name: "Komerční banka", category: "american" },
   { name: "ČSOB Hypoteční banka", category: "american" },
-  { name: "Raiffeisen Bank", category: "american" },
+  { name: "Česká spořitelna", category: "american" },
   { name: "mBank", category: "american" },
   { name: "UniCredit Bank", category: "american" },
+  { name: "Raiffeisen Bank", category: "american" },
+  { name: "Oberbank", category: "american" },
 ];
 
 /** Lokální banky dané země (ne české) */

@@ -22,6 +22,19 @@ import type {
   MortgageMarketCatalog,
 } from "@/lib/mortgage-market/offers";
 import type { MortgageMarketRateType } from "@/lib/mortgage-market/types";
+import {
+  isPartnerOfferBankSlug,
+  isPartnerOfferPublicRate,
+  PARTNER_OFFER_BANKS,
+  partnerOfferSortOrder,
+} from "@/lib/mortgage-market/partner-offer-banks";
+import {
+  PARTNER_OFFER_EXT_CHECKED_AT,
+  PARTNER_OFFER_EXT_EVIDENCE,
+  PARTNER_OFFER_EXT_LENDERS,
+  PARTNER_OFFER_EXT_PRODUCTS,
+  PARTNER_OFFER_EXT_RATES,
+} from "@/lib/mortgage-market/partner-offer-extension";
 
 function mapLtv(rate: ImportRateRecord): {
   ltvMin: number | null;
@@ -220,4 +233,105 @@ export function catalogFromImportManifest(
 /** Production-mirror catalog from the verified 2026-08-09 manifest. */
 export function getCz20260809Catalog(): MortgageMarketCatalog {
   return catalogFromImportManifest(CZ_2026_08_09_MANIFEST);
+}
+
+/**
+ * Public partner-offer catalog: historical manifest + mBank/Oberbank extension,
+ * filtered to the seven banks in our mortgage partner's offer.
+ */
+export function getPartnerOfferCatalog(): MortgageMarketCatalog {
+  const base = catalogFromImportManifest(CZ_2026_08_09_MANIFEST);
+  const ext = catalogFromImportManifest({
+    manifestId: "partner-offer-extension-2026-09-28",
+    countryCode: "CZ",
+    checkedAt: PARTNER_OFFER_EXT_CHECKED_AT,
+    lenders: PARTNER_OFFER_EXT_LENDERS,
+    products: PARTNER_OFFER_EXT_PRODUCTS,
+    rates: PARTNER_OFFER_EXT_RATES,
+    fees: [],
+    representativeExamples: [],
+    eligibilityRules: [],
+    evidence: PARTNER_OFFER_EXT_EVIDENCE,
+    holdRows: [],
+  });
+
+  const lenderIds = new Set(
+    [...base.lenders, ...ext.lenders]
+      .filter((l) => isPartnerOfferBankSlug(l.slug))
+      .map((l) => l.id)
+  );
+
+  // Prefer extension lender row when slug duplicates (should not happen).
+  const lendersBySlug = new Map<string, (typeof base.lenders)[number]>();
+  for (const l of base.lenders) {
+    if (isPartnerOfferBankSlug(l.slug)) lendersBySlug.set(l.slug, l);
+  }
+  for (const l of ext.lenders) {
+    if (isPartnerOfferBankSlug(l.slug)) lendersBySlug.set(l.slug, l);
+  }
+  const lenders = [...lendersBySlug.values()].sort(
+    (a, b) => partnerOfferSortOrder(a.slug) - partnerOfferSortOrder(b.slug)
+  );
+
+  const products = [...base.products, ...ext.products].filter((p) =>
+    lenderIds.has(p.lenderId)
+  );
+  const productIds = new Set(products.map((p) => p.id));
+  const productById = new Map(products.map((p) => [p.id, p]));
+  const lenderIdToSlug = new Map(
+    [...lendersBySlug.values()].map((l) => [l.id, l.slug])
+  );
+
+  const rates = [...base.rates, ...ext.rates].filter((r) => {
+    if (!productIds.has(r.productId)) return false;
+    const product = productById.get(r.productId);
+    const lenderSlug = product
+      ? lenderIdToSlug.get(product.lenderId)
+      : undefined;
+    if (!lenderSlug) return false;
+    return isPartnerOfferPublicRate({
+      lenderSlug,
+      pricingScenarioKey: r.pricingScenarioKey,
+    });
+  });
+  const rateIds = new Set(rates.map((r) => r.id));
+  const conditions = [...base.conditions, ...ext.conditions].filter((c) =>
+    rateIds.has(c.rateVariantId)
+  );
+  const evidenceById = new Map(
+    [...base.evidence, ...ext.evidence].map((e) => [e.id, e])
+  );
+  const fees = [...base.fees, ...ext.fees].filter((f) =>
+    productIds.has(f.productId)
+  );
+  const examples = [...(base.examples ?? []), ...(ext.examples ?? [])].filter(
+    (x) => productIds.has(x.productId)
+  );
+
+  // Ensure every partner bank appears even without rates (inquiry cards).
+  for (const bank of PARTNER_OFFER_BANKS) {
+    if (!lendersBySlug.has(bank.slug)) {
+      const id = `lender-${bank.slug}`;
+      lenders.push({
+        id,
+        slug: bank.slug,
+        name: bank.name,
+        countryCode: "CZ",
+        isActive: true,
+      });
+      lendersBySlug.set(bank.slug, lenders[lenders.length - 1]!);
+    }
+  }
+
+  return {
+    lenders: [...lendersBySlug.values()].sort(
+      (a, b) => partnerOfferSortOrder(a.slug) - partnerOfferSortOrder(b.slug)
+    ),
+    products,
+    rates,
+    conditions,
+    fees,
+    evidence: [...evidenceById.values()],
+    examples,
+  };
 }
