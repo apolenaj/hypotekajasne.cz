@@ -43,6 +43,7 @@ import {
   type MortgageJourneyCore,
 } from "@/lib/mortgage-rates/ltv-context";
 import { RatesDisclaimer } from "@/components/legal/RatesDisclaimer";
+import { BankLogo } from "@/components/mortgage-market/BankLogo";
 import { buildHomeRateRows } from "@/lib/mortgage-market/home-rate-row";
 import { cn } from "@/lib/utils";
 
@@ -509,9 +510,13 @@ export function PublishedRatesPanel({
               {homeRows.map((row) => (
                 <li key={row.key} className="px-3 py-3">
                   <div className="flex items-start gap-3">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f4f6f5] text-xs font-semibold text-deep-teal">
-                      {row.lenderName.slice(0, 1)}
-                    </span>
+                    <BankLogo
+                      slugOrName={row.lenderSlug}
+                      name={row.lenderName}
+                      size="row"
+                      decorative
+                      className="mt-0.5"
+                    />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-baseline justify-between gap-3">
                         <p className="min-w-0 truncate text-sm font-semibold text-text-dark">
@@ -580,9 +585,13 @@ export function PublishedRatesPanel({
                     .map((item) => (
                       <li key={item.slug} className="px-3 py-3">
                         <div className="flex items-start gap-3">
-                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f4f6f5] text-xs font-semibold text-deep-teal">
-                            {item.name.slice(0, 1)}
-                          </span>
+                          <BankLogo
+                            slugOrName={item.slug}
+                            name={item.name}
+                            size="row"
+                            decorative
+                            className="mt-0.5"
+                          />
                           <div className="min-w-0 flex-1">
                             <div className="flex items-baseline justify-between gap-3">
                               <p className="text-sm font-semibold text-text-dark">

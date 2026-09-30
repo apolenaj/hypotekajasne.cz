@@ -15,6 +15,7 @@ import { CalculatorDisclaimer } from "@/components/calculators/CalculatorDisclai
 import { MortgageProductCard } from "@/components/trust/MortgageProductCard";
 import { DataStatusBadge } from "@/components/trust/DataStatusBadge";
 import { LastUpdated } from "@/components/trust/LastUpdated";
+import { BankLogo } from "@/components/mortgage-market/BankLogo";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -853,7 +854,14 @@ export function CzMortgageDecisionTool() {
                     className="rounded-xl border border-border bg-white p-4"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-2">
-                      <div>
+                      <div className="min-w-0">
+                        <BankLogo
+                          slugOrName={b.bankName}
+                          name={b.bankName}
+                          size="card"
+                          decorative
+                          className="mb-2"
+                        />
                         <p className="font-semibold text-text-dark">
                           {b.bankName}
                         </p>
@@ -949,6 +957,13 @@ export function CzMortgageDecisionTool() {
                         key={b.bankName}
                         className="rounded-xl border border-dashed border-border bg-[#f7f8f7] p-4"
                       >
+                        <BankLogo
+                          slugOrName={partner?.slug ?? b.bankName}
+                          name={b.bankName}
+                          size="card"
+                          decorative
+                          className="mb-2"
+                        />
                         <p className="font-semibold text-text-dark">
                           {b.bankName}
                         </p>

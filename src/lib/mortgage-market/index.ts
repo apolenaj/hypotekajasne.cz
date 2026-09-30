@@ -82,6 +82,16 @@ export {
   normalizePartnerLenderSlug,
   partnerOfferSortOrder,
 } from "@/lib/mortgage-market/partner-offer-banks";
+export {
+  BANK_LOGO_BOX_PX,
+  PARTNER_BANK_LOGO_BY_SLUG,
+  getPartnerBankLogoAsset,
+  resolvePartnerBankLogoSlug,
+} from "@/lib/mortgage-market/bank-logos";
+export type {
+  BankLogoAsset,
+  BankLogoSize,
+} from "@/lib/mortgage-market/bank-logos";
 export type {
   PartnerOfferBank,
   PartnerOfferBankId,

@@ -1,0 +1,51 @@
+[
+  {
+    "slug": "komercni-banka",
+    "file": "/images/banks/komercni-banka.svg",
+    "source": "Wikimedia Commons — extracted from official KB Results PDF (kb.cz)",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Komer%C4%8Dn%C3%AD_banka_logo.svg",
+    "bytes": 1518
+  },
+  {
+    "slug": "csob",
+    "file": "/images/banks/csob.svg",
+    "source": "Official ČSOB website logo.svg",
+    "sourceUrl": "https://www.csob.cz/documents/10710/4049264/logo.svg?v2",
+    "bytes": 2888
+  },
+  {
+    "slug": "ceska-sporitelna",
+    "file": "/images/banks/ceska-sporitelna.svg",
+    "source": "Wikimedia Commons — from official ČS PDF (colored mark for light UI; header SVG on csas.cz is white-only)",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ceska_Sporitelna.svg",
+    "bytes": 15551
+  },
+  {
+    "slug": "mbank",
+    "file": "/images/banks/mbank.svg",
+    "source": "Wikimedia Commons (source www.mbank.pl)",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mbank_logo.svg",
+    "bytes": 1781
+  },
+  {
+    "slug": "unicredit",
+    "file": "/images/banks/unicredit.svg",
+    "source": "Wikimedia Commons (UniCredit annual report logo)",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Unicredit_logo.svg",
+    "bytes": 9697
+  },
+  {
+    "slug": "raiffeisenbank",
+    "file": "/images/banks/raiffeisenbank.svg",
+    "source": "Wikimedia Commons Raiffeisen Bank 2023 logo (Giebel brand)",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Raiffeisen_Bank_2023_logo.svg",
+    "bytes": 11364
+  },
+  {
+    "slug": "oberbank",
+    "file": "/images/banks/oberbank.svg",
+    "source": "Wikimedia Commons Oberbank Logo.svg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Oberbank_Logo.svg",
+    "bytes": 13863
+  }
+]

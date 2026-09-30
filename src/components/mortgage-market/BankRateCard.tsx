@@ -25,6 +25,7 @@ import {
   evaluatePublicRateDisplay,
   PUBLIC_RATE_UNVERIFIED_MESSAGE,
 } from "@/lib/mortgage-market/public-rate-display";
+import { BankLogo } from "@/components/mortgage-market/BankLogo";
 import { cn } from "@/lib/utils";
 
 type BankRateCardProps = {
@@ -336,9 +337,17 @@ export function BankRateCard({
     >
       <header className="flex min-w-0 flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
-          <h3 className="font-heading text-lg font-bold text-text-dark">
-            {group.lenderName}
-          </h3>
+          <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+            <BankLogo
+              slugOrName={group.lenderSlug}
+              name={group.lenderName}
+              size="card"
+              decorative
+            />
+            <h3 className="font-heading text-lg font-bold text-text-dark">
+              {group.lenderName}
+            </h3>
+          </div>
           <p className="mt-0.5 text-xs text-muted-foreground">
             {fixationLabelCs(group.fixationMonths)}
             {group.financingPurpose
@@ -490,17 +499,16 @@ export function LenderPendingCard({
     ? publicFloor!.summary
     : (blurb ?? "Nabídku ověříme podle vašich požadavků.");
   const detailsLabel = hasPublicFloor ? "Podmínky a zdroj" : "Podrobnosti";
-  const initial = lenderName.trim().charAt(0).toLocaleUpperCase("cs-CZ");
 
   return (
     <article className="flex h-full flex-col rounded-xl border border-border bg-white p-4 shadow-sm">
-      <header className="flex min-w-0 items-center gap-3">
-        <span
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f4f6f5] text-sm font-semibold text-deep-teal"
-          aria-hidden
-        >
-          {initial}
-        </span>
+      <header className="flex min-w-0 flex-col gap-2">
+        <BankLogo
+          slugOrName={lenderSlug ?? lenderName}
+          name={lenderName}
+          size="card"
+          decorative
+        />
         <h3 className="min-w-0 font-heading text-base font-bold leading-snug text-text-dark">
           {lenderName}
         </h3>
