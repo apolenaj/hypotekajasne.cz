@@ -58,9 +58,9 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
   },
   {
     path: routes.kalkulacky.hypotecniKalkulacka,
-    title: "Hypoteční kalkulačka — orientační splátka",
+    title: "Hypoteční kalkulačka — výpočet splátky",
     description:
-      "Spočítejte orientační měsíční splátku podle ceny nemovitosti, vlastních prostředků a splatnosti. Modelový výpočet — nejde o nabídku banky.",
+      "Spočítejte orientační měsíční splátku hypotéky podle ceny nemovitosti, vlastních peněz a splatnosti. Modelový výpočet — nejde o nabídku banky.",
     changeFrequency: "weekly",
     priority: 0.97,
   },
@@ -345,26 +345,45 @@ export const STATIC_PAGE_SEO: StaticPageSeo[] = [
     path: routes.kalkulacky.root,
     title: "Hypoteční a investiční kalkulačky",
     description:
-      "Kalkulačky koupě vs. nájem, historický a potenciální vývoj — modelové nástroje, ne nabídka banky.",
-    priority: 0.8,
+      "Přehled hypotečních a investičních kalkulaček: splátka, koupě vs. nájem, rodinný rozpočet, výstavba i cash flow. Modelové nástroje — ne nabídka banky.",
+    changeFrequency: "weekly",
+    priority: 0.9,
   },
   {
     path: routes.kalkulacky.koupeVsNajem,
-    title: "Kalkulačka koupě vs. nájem — vlastní bydlení nebo platit nájem",
+    title: "Koupě vs. nájem — vyplatí se hypotéka?",
     description:
-      "Vyplatí se hypotéka, nebo bydlet v nájmu? Porovnejte náklady na bydlení a čisté jmění. Orientační model — ne investiční pronájem.",
-    priority: 0.75,
+      "Vyplatí se vlastní bydlení s hypotékou, nebo platit nájem? Porovnejte náklady a čisté jmění. Orientační model — ne investiční pronájem.",
+    priority: 0.85,
+  },
+  {
+    path: routes.kalkulacky.rodinnyRozpocet,
+    title: "Rodinný rozpočet a hypotéka",
+    description:
+      "Spočítejte, kolik vám zbude na život a jak rozpočet ovlivní rodičovství, výpadek příjmu nebo vyšší splátka. Model podle vašich údajů — ne schválení banky.",
+    changeFrequency: "weekly",
+    priority: 0.84,
+  },
+  {
+    path: routes.kalkulacky.odhadVersusKupniCena,
+    title: "Odhad versus kupní cena — vlastní peníze",
+    description:
+      "Spočítejte LTV strop z uznané hodnoty a chybějící kapitál, když je bankovní odhad nižší než kupní cena. Orientační model, ne schválená hypotéka.",
+    changeFrequency: "weekly",
+    priority: 0.84,
   },
   {
     path: routes.kalkulacky.historickyVyvoj,
     title: "Historický vývoj hypoték",
-    description: "Historická data a kontext sazeb — ne predikce budoucnosti.",
+    description:
+      "Historická data a kontext sazeb hypoték v ČR — orientační přehled, ne predikce budoucnosti ani nabídka banky.",
     priority: 0.7,
   },
   {
     path: routes.kalkulacky.potencialniVyvoj,
     title: "Potenciální vývoj investice",
-    description: "Scénáře potenciálního vývoje s uvedenými předpoklady modelu.",
+    description:
+      "Scénáře potenciálního vývoje nemovitostní investice s uvedenými předpoklady modelu — bez záruky výnosu.",
     priority: 0.7,
   },
   {
