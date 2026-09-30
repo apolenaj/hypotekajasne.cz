@@ -453,19 +453,26 @@ export function BankRateCard({
 
 export function LenderPendingCard({
   lenderName,
+  lenderSlug,
   message,
-  floorNote,
+  rateLabel,
+  blurb,
   publicFloor,
   sourceUrl,
   onRequestInquiry,
 }: {
   lenderName: string;
+  lenderSlug?: string;
   message?: string;
-  /** Short aside label (homepage). */
-  floorNote?: string | null;
+  /** Primary rate line when there is no verified public floor. */
+  rateLabel?: string | null;
+  /** One short supporting sentence. */
+  blurb?: string | null;
   /** Structured verified public “from” rate — mutually exclusive with bare inquiry copy. */
   publicFloor?: {
     headline: string;
+    summary: string;
+    conditionsShort: string;
     conditions: string;
     verifiedAtLabel: string;
     sourceValidFromLabel: string;
@@ -473,65 +480,118 @@ export function LenderPendingCard({
   sourceUrl?: string | null;
   onRequestInquiry?: () => void;
 }) {
+  const detailsId = useId();
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const hasPublicFloor = Boolean(publicFloor);
+  const primaryLabel = hasPublicFloor
+    ? publicFloor!.headline
+    : (rateLabel ?? message ?? PUBLIC_RATE_UNVERIFIED_MESSAGE);
+  const supportingLine = hasPublicFloor
+    ? publicFloor!.summary
+    : (blurb ?? "Nabídku ověříme podle vašich požadavků.");
+  const detailsLabel = hasPublicFloor ? "Podmínky a zdroj" : "Podrobnosti";
+  const initial = lenderName.trim().charAt(0).toLocaleUpperCase("cs-CZ");
 
   return (
-    <article className="rounded-2xl border border-dashed border-border bg-[#f7f8f7] p-4 sm:p-5">
-      <h3 className="font-heading text-lg font-bold text-text-dark">
-        {lenderName}
-      </h3>
-      {hasPublicFloor && publicFloor ? (
-        <>
-          <p className="mt-2 font-heading text-xl font-semibold tabular-nums text-deep-teal">
-            {publicFloor.headline}
-          </p>
-          <p className="mt-2 text-xs leading-relaxed text-text-dark/80">
-            {publicFloor.conditions}
-          </p>
-          <p className="mt-2 text-xs text-muted-foreground">
-            Sazebník platný od {publicFloor.sourceValidFromLabel} · ověřeno{" "}
-            {publicFloor.verifiedAtLabel}. Neřadíme tuto sazbu do číselného
-            srovnání bez shody parametrů.
-          </p>
-          <p className="mt-2 text-sm font-medium text-gray-700">
-            Konkrétní nabídku ověříme na poptávku.
-          </p>
-        </>
-      ) : (
-        <>
-          <p className="mt-2 text-sm font-medium text-gray-700">
-            {message ?? PUBLIC_RATE_UNVERIFIED_MESSAGE}
-          </p>
-          {floorNote ? (
-            <p className="mt-2 text-xs leading-relaxed text-text-dark/80">
-              {floorNote}
-            </p>
-          ) : null}
-          <p className="mt-1 text-xs text-muted-foreground">
-            Pro zvolenou fixaci nemáme ověřenou číselnou sazbu. Nejde o modelový
-            odhad a sazbu nenahrazujeme údajem z jiné fixace.
-          </p>
-        </>
-      )}
-      {sourceUrl ? (
-        <p className="mt-2 text-xs">
-          <a
-            href={sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-medium text-deep-teal underline underline-offset-2"
-          >
-            Oficiální zdroj banky
-          </a>
+    <article className="flex h-full flex-col rounded-xl border border-border bg-white p-4 shadow-sm">
+      <header className="flex min-w-0 items-center gap-3">
+        <span
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f4f6f5] text-sm font-semibold text-deep-teal"
+          aria-hidden
+        >
+          {initial}
+        </span>
+        <h3 className="min-w-0 font-heading text-base font-bold leading-snug text-text-dark">
+          {lenderName}
+        </h3>
+      </header>
+
+      <div className="mt-3 flex min-h-0 flex-1 flex-col">
+        <p
+          className={cn(
+            "font-heading font-semibold text-deep-teal",
+            hasPublicFloor
+              ? "text-xl tabular-nums tracking-tight"
+              : "text-base"
+          )}
+        >
+          {primaryLabel}
         </p>
-      ) : null}
+        <p className="mt-1 text-sm leading-snug text-muted-foreground">
+          {supportingLine}
+        </p>
+
+        {hasPublicFloor && publicFloor ? (
+          <p className="mt-2 text-xs leading-relaxed text-text-dark/75">
+            {publicFloor.conditionsShort}
+          </p>
+        ) : null}
+
+        <div className="mt-2">
+          <button
+            type="button"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-deep-teal underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal focus-visible:ring-offset-2"
+            aria-expanded={detailsOpen}
+            aria-controls={detailsId}
+            onClick={() => setDetailsOpen((open) => !open)}
+          >
+            {detailsLabel}
+            <ChevronDown
+              className={cn(
+                "h-3.5 w-3.5 transition-transform",
+                detailsOpen && "rotate-180"
+              )}
+              aria-hidden
+            />
+          </button>
+          {detailsOpen ? (
+            <div
+              id={detailsId}
+              className="mt-2 space-y-1.5 rounded-lg bg-[#f7f8f7] px-3 py-2 text-xs leading-relaxed text-text-dark/80"
+            >
+              {hasPublicFloor && publicFloor ? (
+                <>
+                  <p>{publicFloor.conditions}</p>
+                  <p className="text-muted-foreground">
+                    Sazebník platný od {publicFloor.sourceValidFromLabel} ·
+                    ověřeno {publicFloor.verifiedAtLabel}.
+                  </p>
+                  <p className="text-muted-foreground">
+                    Veřejnou sazbu „od“ neřadíme do číselného srovnání nejlevnější
+                    nabídky.
+                  </p>
+                </>
+              ) : (
+                <p>
+                  Pro zvolené parametry nemáme ověřenou číselnou sazbu. Konkrétní
+                  nabídku ověří hypoteční partner na poptávku
+                  {lenderSlug ? ` u banky ${lenderName}` : ""}.
+                </p>
+              )}
+              {sourceUrl ? (
+                <p>
+                  <a
+                    href={sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-deep-teal underline underline-offset-2"
+                  >
+                    Oficiální zdroj banky
+                  </a>
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      </div>
+
       {onRequestInquiry ? (
         <button
           type="button"
           onClick={onRequestInquiry}
-          className="mt-4 inline-flex h-11 min-h-11 w-full items-center justify-center rounded-lg bg-deep-teal px-4 text-sm font-semibold text-white transition-colors hover:bg-deep-teal-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal focus-visible:ring-offset-2 sm:w-auto"
+          className="mt-4 inline-flex h-10 min-h-10 w-full items-center justify-center rounded-lg bg-deep-teal px-4 text-sm font-semibold text-white transition-colors hover:bg-deep-teal-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal focus-visible:ring-offset-2"
         >
-          Nezávazně poptat tuto banku
+          Zjistit nabídku
         </button>
       ) : null}
     </article>

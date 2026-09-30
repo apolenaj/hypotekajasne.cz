@@ -122,7 +122,13 @@ export const PARTNER_OFFER_INQUIRY_MESSAGE: Record<
  * ČS: official pomůcka sazeb (platnost od 11. 9. 2026), ověřeno 28. 9. 2026.
  */
 export type PartnerOfferPublicFloor = {
+  /** Customer-facing rate line, e.g. „Od 5,39 % p. a.“ */
   headline: string;
+  /** One short supporting sentence under the rate. */
+  summary: string;
+  /** Always-visible essentials: LTV, fixation, conditional discounts. */
+  conditionsShort: string;
+  /** Fuller conditions for the expandable panel. */
   conditions: string;
   /** Human-readable successful verification date (not a mere check attempt). */
   verifiedAtLabel: string;
@@ -133,11 +139,37 @@ export const PARTNER_OFFER_PUBLIC_FLOOR: Partial<
   Record<PartnerOfferBankId, PartnerOfferPublicFloor>
 > = {
   "ceska-sporitelna": {
-    headline: "Veřejná sazba od 5,39 % p. a.",
+    headline: "Od 5,39 % p. a.",
+    summary: "Veřejná sazba při splnění podmínek.",
+    conditionsShort:
+      "LTV do 80 % · fixace 1–3 roky · sleva při účtu ČS, pojištění schopnosti splácet a Hypotéce pro budoucnost",
     conditions:
-      "LTV do 80 %, fixace 1–3 roky, při slevách účet u ČS + pojištění schopnosti splácet + Hypotéka pro budoucnost. Nejde o individuální nabídku ani o matici všech fixací a LTV.",
+      "Veřejná sazba „od“ při LTV do 80 % a fixaci 1–3 roky. Podmíněné slevy: účet u ČS, pojištění schopnosti splácet a Hypotéka pro budoucnost. Nejde o individuální nabídku klientovi.",
     verifiedAtLabel: "28. 9. 2026",
     sourceValidFromLabel: "11. 9. 2026",
+  },
+};
+
+/** Short customer-facing copy for pending (inquiry) cards without a numeric floor. */
+export type PartnerOfferPendingCardCopy = {
+  rateLabel: string;
+  blurb: string;
+};
+
+export const PARTNER_OFFER_PENDING_CARD_COPY: Partial<
+  Record<PartnerOfferBankId, PartnerOfferPendingCardCopy>
+> = {
+  csob: {
+    rateLabel: "Sazba na poptávku",
+    blurb: "Ověříme nabídku pro vaše parametry.",
+  },
+  raiffeisenbank: {
+    rateLabel: "Individuální sazba",
+    blurb: "Konkrétní sazbu zjistíme na poptávku.",
+  },
+  oberbank: {
+    rateLabel: "Individuální sazba",
+    blurb: "Konkrétní sazbu zjistíme na poptávku.",
   },
 };
 
@@ -146,7 +178,7 @@ export const PARTNER_OFFER_FLOOR_NOTE_CS: Partial<
   Record<PartnerOfferBankId, string>
 > = {
   "ceska-sporitelna":
-    "Veřejná sazba od 5,39 % p. a. (s podmínkami). Konkrétní nabídku ověříme na poptávku.",
+    "Od 5,39 % p. a. (s podmínkami). Konkrétní nabídku ověříme na poptávku.",
 };
 
 /** Official rate-source URLs for inquiry cards (not marketing Homepages). */

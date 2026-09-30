@@ -69,19 +69,27 @@ async function checkPage(page, label, url, opts = {}) {
     !body.includes("historický") &&
     !body.includes("Historický");
   const hasCsFloor =
-    body.includes("Veřejná sazba od 5,39") || body.includes("od 5,39 %");
+    body.includes("Od 5,39 %") ||
+    body.includes("od 5,39 %") ||
+    body.includes("Veřejná sazba od 5,39");
+  const internalCopyLeaks = [
+    "plná matice",
+    "číselného žebříčku",
+    "bez scrapu",
+  ].filter((w) => body.toLowerCase().includes(w.toLowerCase()));
   // Stale ČS 5.09 must not appear as ČS current offer (KB/UC may still show 5.09).
   const hasStaleCsAsCurrent =
     /Česká spořitelna[\s\S]{0,240}5[,.]09\s*%/.test(body) ||
     /5[,.]09\s*%[\s\S]{0,240}Česká spořitelna/.test(body);
   const shot = join(OUT, `${label}.png`);
   await page.screenshot({ path: shot, fullPage: true });
+  const allLeaks = [...internalLeaks, ...internalCopyLeaks];
   return {
     label,
     url,
     status,
     missing,
-    internalLeaks,
+    internalLeaks: allLeaks,
     airInOffer,
     hasCsFloor,
     hasStaleCsAsCurrent,
@@ -90,7 +98,7 @@ async function checkPage(page, label, url, opts = {}) {
       status >= 200 &&
       status < 400 &&
       missing.length === 0 &&
-      internalLeaks.length === 0 &&
+      allLeaks.length === 0 &&
       !airInOffer &&
       !hasStaleCsAsCurrent,
   };

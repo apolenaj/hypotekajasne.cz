@@ -70,6 +70,7 @@ export {
   PARTNER_OFFER_FLOOR_NOTE_CS,
   PARTNER_OFFER_FRAMING_CS,
   PARTNER_OFFER_INQUIRY_MESSAGE,
+  PARTNER_OFFER_PENDING_CARD_COPY,
   PARTNER_OFFER_PUBLIC_FLOOR,
   PUBLIC_RATE_ON_INQUIRY_CS,
   PUBLIC_RATE_PERSONAL_OFFER_ON_INQUIRY_CS,
@@ -84,6 +85,7 @@ export {
 export type {
   PartnerOfferBank,
   PartnerOfferBankId,
+  PartnerOfferPendingCardCopy,
   PartnerOfferPublicFloor,
 } from "@/lib/mortgage-market/partner-offer-banks";
 export {

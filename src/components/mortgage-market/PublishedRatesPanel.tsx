@@ -25,6 +25,7 @@ import {
   PARTNER_OFFER_FLOOR_NOTE_CS,
   PARTNER_OFFER_FRAMING_CS,
   PARTNER_OFFER_INQUIRY_MESSAGE,
+  PARTNER_OFFER_PENDING_CARD_COPY,
   PARTNER_OFFER_PUBLIC_FLOOR,
   PARTNER_OFFER_RATE_SOURCE_URL,
 } from "@/lib/mortgage-market/partner-offer-banks";
@@ -90,14 +91,19 @@ function pendingCards(result: GetMortgageOffersResult | null) {
   for (const o of result.unspecifiedLtvOffers) present.add(o.lenderSlug);
 
   return PARTNER_OFFER_BANKS.filter((bank) => !present.has(bank.slug)).map(
-    (bank) => ({
-      slug: bank.slug,
-      name: bank.name,
-      message: PARTNER_OFFER_INQUIRY_MESSAGE[bank.slug],
-      floorNote: PARTNER_OFFER_FLOOR_NOTE_CS[bank.slug] ?? null,
-      publicFloor: PARTNER_OFFER_PUBLIC_FLOOR[bank.slug] ?? null,
-      sourceUrl: PARTNER_OFFER_RATE_SOURCE_URL[bank.slug] ?? bank.websiteUrl,
-    })
+    (bank) => {
+      const cardCopy = PARTNER_OFFER_PENDING_CARD_COPY[bank.slug];
+      return {
+        slug: bank.slug,
+        name: bank.name,
+        message: PARTNER_OFFER_INQUIRY_MESSAGE[bank.slug],
+        rateLabel: cardCopy?.rateLabel ?? null,
+        blurb: cardCopy?.blurb ?? null,
+        floorNote: PARTNER_OFFER_FLOOR_NOTE_CS[bank.slug] ?? null,
+        publicFloor: PARTNER_OFFER_PUBLIC_FLOOR[bank.slug] ?? null,
+        sourceUrl: PARTNER_OFFER_RATE_SOURCE_URL[bank.slug] ?? bank.websiteUrl,
+      };
+    }
   );
 }
 
@@ -669,20 +675,21 @@ export function PublishedRatesPanel({
         {pending.length > 0 && canShowRates && layout !== "aside" ? (
           <div className="mt-10">
             <h3 className="font-heading text-lg font-semibold text-text-dark">
-              Další banky v nabídce partnera
+              Nabídky dalších bank
             </h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Tyto banky nezařazujeme do číselného žebříčku pro zvolený filtr —
-              buď nemáme ověřenou číselnou sazbu, nebo jen veřejnou sazbu „od“
-              bez plné matice parametrů.
+            <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
+              U těchto bank vám náš hypoteční partner ověří nabídku podle vašich
+              požadavků.
             </p>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div className="mt-4 grid auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
               {pending.map((p) => (
                 <LenderPendingCard
                   key={p.slug}
                   lenderName={p.name}
+                  lenderSlug={p.slug}
                   message={p.message}
-                  floorNote={p.publicFloor ? null : p.floorNote}
+                  rateLabel={p.rateLabel}
+                  blurb={p.blurb}
                   publicFloor={p.publicFloor}
                   sourceUrl={p.sourceUrl}
                   onRequestInquiry={
@@ -697,6 +704,9 @@ export function PublishedRatesPanel({
                 />
               ))}
             </div>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Konkrétní sazba závisí na parametrech hypotéky a posouzení banky.
+            </p>
           </div>
         ) : null}
 
