@@ -37,8 +37,6 @@ const KB_AMERICAN_PRODUCT =
   "https://www.kb.cz/cs/obcane/pujcky/hypoteky/americka-hypoteka";
 const CS_AMERICAN_PRODUCT =
   "https://www.csas.cz/cs/osobni-finance/hypoteky/americka-hypoteka";
-const MONETA_AMERICAN_PRODUCT =
-  "https://www.moneta.cz/hypoteky/americka-hypoteka";
 const UC_RATE_SHEET =
   "https://www.unicreditbank.cz/cs/ostatni/urokove-sazby.html";
 
@@ -796,13 +794,11 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
         paragraphs: [
           "Níže jsou ověřené údaje z oficiálních stránek bank (stav kontroly 11. 8. 2026). Nejde o individuální nabídku ani o kompletní srovnávač — jen o to, co banka veřejně uvádí.",
           "Komerční banka (produktová stránka Americká hypotéka): sazba od 5,59 % p. a., LTV až 70 % ceny nemovitosti, splatnost až 20 let. Reprezentativní příklad na stránce používá pevnou sazbu 5,59 % p. a. s fixací 3 roky.",
-          "MONETA Money Bank (produktová stránka): neúčelový úvěr zajištěný nemovitostí, LTV až 70 % odhadní ceny, výše od 300 000 Kč, splatnost až 20 let; stránka uvádí sazbu od 4,79 % ročně. Konkrétní sazbu dle fixace ověřte v aktuálním úrokovém lístku banky.",
           "UniCredit Bank na oficiálním sazebníku zveřejňuje samostatný sloupec Hypotéka neúčelová (odlišný od účelové hypotéky): např. fixace 2 roky od 5,09 %, 3 roky od 5,19 %, 5 let od 5,59 % — sazby platí při pojištění schopnosti splácet a aktivitě na účtu dle podmínek banky.",
           "Česká spořitelna na produktové stránce uvádí LTV až 70 % odhadní ceny a splatnost až 20 let. Konkrétní zveřejněnou sazbu této banky pro americkou hypotéku právě ověřujeme — neuvádíme ji jako srovnatelnou nabídku.",
         ],
         bullets: [
           "KB: od 5,59 % p. a.; LTV až 70 %; splatnost až 20 let.",
-          "MONETA: od 4,79 % p. a. (headline); LTV až 70 %; splatnost až 20 let.",
           "UniCredit: samostatná neúčelová sazba dle fixace (viz sazebník).",
           "ČS: LTV/splatnost zveřejněny; sazbu právě ověřujeme.",
         ],
@@ -861,7 +857,7 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
       {
         question: "Jaké LTV banka poskytne?",
         answer:
-          "Záleží na bance, nemovitosti a bonitě. Některé banky veřejně uvádějí např. až 70 % (KB, MONETA, ČS) — bez individuální nabídky neplánujte optimisticky.",
+          "Záleží na bance, nemovitosti a bonitě. Některé banky veřejně uvádějí např. až 70 % (KB, ČS) — bez individuální nabídky neplánujte optimisticky.",
       },
       {
         question: "Máte sazby všech bank?",
@@ -873,10 +869,6 @@ const wave1CommercialLandings: Wave1CommercialLanding[] = [
       {
         label: "KB — Americká hypotéka (produktová stránka)",
         url: KB_AMERICAN_PRODUCT,
-      },
-      {
-        label: "MONETA — Americká hypotéka",
-        url: MONETA_AMERICAN_PRODUCT,
       },
       {
         label: "UniCredit — úrokové sazby (Hypotéka neúčelová)",

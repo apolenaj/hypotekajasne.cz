@@ -10,7 +10,6 @@ import { HomeRentgenBand } from "@/components/home/HomeRentgenBand";
 import { HomeSituationSelector } from "@/components/home/HomeSituationSelector";
 import { HomeToolsGrid } from "@/components/home/HomeToolsGrid";
 import { HomeTrustStrip } from "@/components/home/HomeTrustStrip";
-import { RpsnEducationBlock } from "@/components/mortgage-market/RpsnEducationBlock";
 import type { GetMortgageOffersResult } from "@/lib/mortgage-market/offers";
 import type { MortgageJourneyParseResult } from "@/lib/mortgage-rates/mortgage-journey-context";
 import {
@@ -64,7 +63,6 @@ export function HomeExperience({
           />
         </div>
       </section>
-      <RpsnEducationBlock />
       <HomePracticeTeaser />
       <HomeToolsGrid />
       <HomeRentgenBand />

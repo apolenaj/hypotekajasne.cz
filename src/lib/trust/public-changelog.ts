@@ -23,7 +23,7 @@ export const PUBLIC_CHANGELOG: PublicChangelogEntry[] = [
     date: "2026-08-12",
     area: "Sazby a důkazy",
     summary:
-      "Doplnili jsme oficiální odkazy ke zveřejněným sazbám Air Bank, UniCredit a MONETA. Sazba bez dohledatelného primárního zdroje se veřejně neoznačuje jako ověřená.",
+      "Doplnili jsme oficiální odkazy ke zveřejněným sazbám vybraných bank včetně UniCredit. Sazba bez dohledatelného primárního zdroje se veřejně neoznačuje jako ověřená.",
     href: routes.sazby,
   },
   {

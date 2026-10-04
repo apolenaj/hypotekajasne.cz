@@ -1,19 +1,11 @@
 /**
- * Fixation-period cost comparison for the public “celková cena” section.
+ * Fixation-period cost comparison helpers.
  *
  * Costs = interest + insurance + stated fees during fixation.
  * Repaid principal is tracked separately: it builds equity, it is not a cost.
- *
- * Published bank examples keep their stated payment, rate, RPSN and insurance.
  * Missing fees stay zero — they are not invented. RPSN is never recalculated.
  */
 
-import { CZ_MANIFEST_CHECKED_AT } from "@/lib/mortgage-market/import";
-import { getCz20260809Catalog } from "@/lib/mortgage-market/catalog-from-manifest";
-import type {
-  CatalogRepresentativeExample,
-  MortgageMarketCatalog,
-} from "@/lib/mortgage-market/offers";
 import {
   amortizeKnownMonthlyPayment,
   roundMoney,
@@ -21,12 +13,6 @@ import {
 
 export const FIXATION_COST_INCLUDES =
   "Úroky za dobu fixace, pojištění a poplatky uvedené v příkladu. Splacená jistina mezi náklady nepatří.";
-
-/** Verified representative examples. Not a live price list. */
-export const MONETA_EDUCATION_EXAMPLE_IDS = [
-  "moneta-rpsn-with-ppi",
-  "moneta-rpsn-without-ppi",
-] as const;
 
 export type FixationVariantInput = {
   id: string;
@@ -239,76 +225,4 @@ export function fixationVerdictHeadline(
     return "V tomto příkladu je nižší úrok i levnější";
   }
   return "Nižší úrok ≠ levnější hypotéka";
-}
-
-function publicBankLabel(name: string): string {
-  const trimmed = name.trim();
-  if (trimmed.toLocaleLowerCase("cs").startsWith("moneta")) return "MONETA";
-  return trimmed;
-}
-
-function variantLabel(example: CatalogRepresentativeExample): string {
-  if (example.insuranceIncluded === true) return "S pojištěním";
-  if (example.insuranceIncluded === false) return "Bez pojištění";
-  return "Varianta";
-}
-
-function lenderName(
-  catalog: MortgageMarketCatalog,
-  example: CatalogRepresentativeExample
-): string | null {
-  const product = catalog.products.find(
-    (item) => item.id === example.productId
-  );
-  if (!product) return null;
-  return catalog.lenders.find((item) => item.id === product.lenderId)?.name ?? null;
-}
-
-/**
- * MONETA pair from the verified catalog. Insurance is the amount stated in
- * the representative example, not a recomputed price list. Fees the example
- * does not itemise stay at zero. LTV stays null.
- */
-export function buildMonetaRepresentativeComparison(
-  catalog: MortgageMarketCatalog = getCz20260809Catalog(),
-  checkedAt: string = CZ_MANIFEST_CHECKED_AT
-): FixationComparison | null {
-  const examples = MONETA_EDUCATION_EXAMPLE_IDS.map((id) =>
-    catalog.examples?.find((example) => example.id === id && example.isActive)
-  );
-  if (examples.some((example) => example == null)) return null;
-
-  const snapshots = examples.flatMap((example) => {
-    if (
-      !example ||
-      example.nominalRate == null ||
-      example.rpsn == null ||
-      example.monthlyPayment == null ||
-      example.fixationMonths == null
-    ) {
-      return [];
-    }
-    const bankName = lenderName(catalog, example);
-    if (!bankName) return [];
-    return [
-      buildFixationVariantSnapshot({
-        id: example.id,
-        bank: publicBankLabel(bankName),
-        variant: variantLabel(example),
-        ratePercent: example.nominalRate,
-        aprPercent: example.rpsn,
-        principalCzk: example.loanAmount,
-        termYears: example.termYears,
-        fixationMonths: example.fixationMonths,
-        ltvPercent: null,
-        monthlyMortgagePaymentCzk: example.monthlyPayment,
-        monthlyInsuranceCzk: example.insuranceCost ?? 0,
-        monthlyAdditionalCostsCzk: 0,
-        oneOffCostsCzk: 0,
-      }),
-    ];
-  });
-
-  if (snapshots.length !== 2) return null;
-  return compareFixationVariants(snapshots, checkedAt);
 }

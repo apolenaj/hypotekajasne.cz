@@ -1,5 +1,5 @@
 /**
- * Fixation cost math: published MONETA example, synthetic fees, CZK rounding.
+ * Fixation cost math: synthetic fees, CZK rounding, comparison helpers.
  */
 
 import assert from "node:assert/strict";
@@ -7,14 +7,11 @@ import { describe, it } from "node:test";
 
 import {
   amortizeKnownMonthlyPayment,
-  calculateAnnuityPayment,
   roundMoney,
 } from "@/lib/finance-math/core";
 import { formatMoney } from "@/lib/money";
-import { CZ_MANIFEST_CHECKED_AT } from "@/lib/mortgage-market/import";
 import {
   buildFixationVariantSnapshot,
-  buildMonetaRepresentativeComparison,
   compareFixationVariants,
   fixationVerdictHeadline,
   type FixationVariantInput,
@@ -110,82 +107,6 @@ describe("amortizeKnownMonthlyPayment", () => {
     assert.equal(result.principalPaidCzk, 9);
     assert.equal(result.remainingPrincipalCzk, 91);
     assert.equal(result.paymentsAppliedCzk, 10);
-  });
-});
-
-describe("MONETA representative comparison", () => {
-  const comparison = buildMonetaRepresentativeComparison();
-
-  it("uses the published example, not a recalculated annuity or invented LTV", () => {
-    assert.ok(comparison);
-    assert.equal(comparison.checkedAt, CZ_MANIFEST_CHECKED_AT);
-    assert.equal(comparison.parametersMatch, true);
-    assert.equal(comparison.assumptions.principalCzk, 2_500_000);
-    assert.equal(comparison.assumptions.termYears, 30);
-    assert.equal(comparison.assumptions.fixationMonths, 36);
-    assert.equal(comparison.assumptions.ltvPercent, null);
-
-    const withInsurance = comparison.variants.find(
-      (variant) => variant.id === "moneta-rpsn-with-ppi"
-    );
-    const withoutInsurance = comparison.variants.find(
-      (variant) => variant.id === "moneta-rpsn-without-ppi"
-    );
-    assert.ok(withInsurance);
-    assert.ok(withoutInsurance);
-
-    assert.equal(withInsurance.rate, 4.99);
-    assert.equal(withInsurance.apr, 6.11);
-    assert.equal(withInsurance.monthlyMortgagePayment, 13_405);
-    assert.equal(withInsurance.monthlyInsurance, 1_474);
-    assert.equal(withInsurance.monthlyAdditionalCosts, 0);
-    assert.equal(withInsurance.oneOffCosts, 0);
-    assert.equal(withInsurance.insuranceDuringFixation, 1_474 * 36);
-
-    assert.equal(withoutInsurance.rate, 5.19);
-    assert.equal(withoutInsurance.apr, 5.33);
-    assert.equal(withoutInsurance.monthlyMortgagePayment, 13_712);
-    assert.equal(withoutInsurance.monthlyInsurance, 0);
-    assert.equal(withoutInsurance.insuranceDuringFixation, 0);
-
-    const recalculated = roundMoney(
-      calculateAnnuityPayment(2_500_000, 4.99, 30)
-    );
-    assert.equal(recalculated, withInsurance.monthlyMortgagePayment);
-    assert.equal(withoutInsurance.monthlyMortgagePayment, 13_712);
-    assertScheduleIdentity(withInsurance, true);
-    assertScheduleIdentity(withoutInsurance, true);
-  });
-
-  it("computes the cheaper variant instead of hardcoding a winner", () => {
-    assert.ok(comparison);
-    const [first, second] = comparison.variants;
-    const expectedCheaper =
-      first.totalCostDuringFixation === second.totalCostDuringFixation
-        ? null
-        : first.totalCostDuringFixation < second.totalCostDuringFixation
-          ? first.id
-          : second.id;
-    assert.equal(comparison.cheaperId, expectedCheaper);
-    assert.equal(
-      comparison.fixationCostDeltaCzk,
-      Math.abs(
-        first.totalCostDuringFixation - second.totalCostDuringFixation
-      )
-    );
-    assert.equal(
-      comparison.monthlyOutflowDeltaCzk,
-      Math.abs(first.totalMonthlyOutflow - second.totalMonthlyOutflow)
-    );
-    assert.equal(comparison.rpsnDeltaPercentagePoints, 0.78);
-    assert.equal(comparison.lowerRateId, "moneta-rpsn-with-ppi");
-    assert.equal(comparison.cheaperId, "moneta-rpsn-without-ppi");
-    assert.equal(comparison.lowerRateIsCheaper, false);
-    assert.equal(
-      fixationVerdictHeadline(comparison),
-      "Nižší úrok ≠ levnější hypotéka"
-    );
-    assert.ok(comparison.fixationCostDeltaCzk > 0);
   });
 });
 
