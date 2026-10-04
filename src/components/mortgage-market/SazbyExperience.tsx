@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation";
 import { LeadCaptureForm } from "@/components/forms/LeadCaptureForm";
 import { MortgageCalculationSummary } from "@/components/mortgage-market/MortgageCalculationSummary";
 import { PublishedRatesPanel } from "@/components/mortgage-market/PublishedRatesPanel";
-import { RpsnEducationBlock } from "@/components/mortgage-market/RpsnEducationBlock";
 import { pricingScenarioCategory } from "@/lib/analytics/bands";
 import { trackEvent, trackEventOnce } from "@/lib/analytics/track-event";
 import type {
@@ -197,8 +196,6 @@ export function SazbyExperience({
           scrollToLead();
         }}
       />
-
-      <RpsnEducationBlock />
 
       <section
         id="sazby-poptavka"
