@@ -32,10 +32,11 @@ export function buildSitemapBucket(
   const now = new Date();
 
   if (id === "pages") {
+    // Omit lastModified unless we have a real content date — fake "now"
+    // on every deploy does not help freshness signals and can look spammy.
     return STATIC_PAGE_SEO.filter((p) => !p.noIndex && p.path !== "/dekujeme").map(
       (p) => ({
         url: absoluteUrl(p.path),
-        lastModified: now,
         changeFrequency: p.changeFrequency ?? "weekly",
         priority: p.priority ?? 0.5,
       })
