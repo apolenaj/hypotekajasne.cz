@@ -2,6 +2,7 @@ import { getStaticPageSeo } from "@/lib/seo/pages";
 import Link from "next/link";
 import { TrustPageShell } from "@/components/trust/TrustPageShell";
 import { LegalOperatorIdentity } from "@/components/legal/LegalOperatorIdentity";
+import { HeinzkePartnerProfile } from "@/components/trust/HeinzkePartnerProfile";
 import {
   legalOperator,
   PLATFORM_SAFE_DESCRIPTION_CS,
@@ -10,7 +11,6 @@ import {
 import { COMPENSATION_DISCLOSURE } from "@/lib/legal/partner-config";
 import { HEINZKE_PARTNER_PUBLIC } from "@/lib/trust/heinzke-partner-public";
 import { routes } from "@/lib/routes";
-import { CTA_CS, PRIMARY_PRODUCT_CTA } from "@/lib/ux/cta";
 
 export const metadata = getStaticPageSeo("/partneri");
 
@@ -38,8 +38,6 @@ const ROLE_BLOCKS = [
 ] as const;
 
 export default function PartneriPage() {
-  const partner = HEINZKE_PARTNER_PUBLIC;
-
   return (
     <TrustPageShell
       currentPath="/partneri"
@@ -66,30 +64,13 @@ export default function PartneriPage() {
         </p>
       </section>
 
-      <section className="rounded-2xl border border-border p-5 sm:p-6">
+      <section>
         <h2 className="font-heading text-lg font-bold text-text-dark">
           Partner pro hypoteční řešení
         </h2>
-        <h3 className="mt-4 font-heading text-xl font-bold text-text-dark">
-          {partner.personName}
-        </h3>
-        <p className="mt-1 text-sm font-semibold text-deep-teal">
-          {partner.roleOnPlatform}
-        </p>
-        <p className="mt-3 text-sm leading-relaxed text-text-dark">
-          {partner.summary}
-        </p>
-        <ul className="mt-4 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-          {partner.focusAreas.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
-        <Link
-          href={PRIMARY_PRODUCT_CTA.href}
-          className="mt-5 inline-flex min-h-11 items-center justify-center rounded-lg bg-deep-teal px-4 text-sm font-semibold text-white hover:bg-deep-teal-light"
-        >
-          {CTA_CS.discoverSituation}
-        </Link>
+        <div className="mt-4">
+          <HeinzkePartnerProfile variant="trust" nameAs="h3" />
+        </div>
       </section>
 
       <section>

@@ -140,7 +140,7 @@ export function getCookiePolicyDeploymentNotes(): string[] {
   );
 
   notes.push(
-    "Microsoft Clarity, PostHog, Plausible, Sentry ani Vercel Analytics v kódu nejsou."
+    "Microsoft Clarity, PostHog, Plausible ani Sentry v kódu nejsou. Vercel Web Analytics je zapojený přes @vercel/analytics (bez reklamních cookies)."
   );
 
   return notes;

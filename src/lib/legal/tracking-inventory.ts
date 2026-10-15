@@ -9,13 +9,14 @@
  *
  * Found active / supported:
  * - Google Analytics gtag — only if NEXT_PUBLIC_GA_MEASUREMENT_ID; after analytics consent
+ * - Vercel Web Analytics — @vercel/analytics in root layout (page views; no ad cookies)
  * - First-party analytics storage (attribution/visitor/session) — after analytics consent
  * - sessionStorage hj-analytics-utm-pending — may stage before consent (no third-party send)
  * - A/B hj_exp_* — after analytics consent only
  * - Cookie preference hj_cookie_consent_v1 — necessary, after choice
  *
  * Not present in codebase: GTM container, Clarity, PostHog, Plausible, Sentry,
- * Vercel Analytics, Hotjar, LinkedIn Insight, TikTok Pixel, document.cookie / Set-Cookie
+ * Hotjar, LinkedIn Insight, TikTok Pixel, document.cookie / Set-Cookie
  * for tracking, Meta fbq (env stub only — no Pixel script).
  */
 

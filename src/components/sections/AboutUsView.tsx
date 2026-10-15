@@ -2,10 +2,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Building2, Cpu, Handshake, ShieldCheck } from "lucide-react";
 import { TrustNav } from "@/components/trust/TrustPageShell";
+import { HeinzkePartnerProfile } from "@/components/trust/HeinzkePartnerProfile";
 import { COMPENSATION_DISCLOSURE, TEAM_MEMBERS } from "@/lib/trust";
 import { HEINZKE_PARTNER_PUBLIC } from "@/lib/trust/heinzke-partner-public";
 import { routes } from "@/lib/routes";
-import { CTA_CS, PRIMARY_PRODUCT_CTA } from "@/lib/ux/cta";
 import {
   formatCompactOfficeAddress,
   legalOperator,
@@ -75,8 +75,8 @@ export function AboutUsView() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
-            <article className="flex h-full flex-col rounded-3xl border border-border bg-white p-5 shadow-sm sm:p-6">
+          <div className="space-y-10">
+            <article className="mx-auto flex max-w-3xl flex-col rounded-3xl border border-border bg-white p-5 shadow-sm sm:p-6">
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-[11rem_1fr] md:grid-cols-[13rem_1fr]">
                 <div className="relative flex aspect-[4/5] w-full items-center justify-center overflow-hidden rounded-2xl bg-slate-100">
                   <Image
@@ -118,42 +118,12 @@ export function AboutUsView() {
               </div>
             </article>
 
-            <article className="flex h-full flex-col rounded-3xl border border-border bg-white p-5 shadow-sm sm:p-6">
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-[11rem_1fr] md:grid-cols-[13rem_1fr]">
-                <div className="relative flex aspect-[4/5] w-full items-center justify-center overflow-hidden rounded-2xl bg-slate-100">
-                  <Image
-                    src={partner.photoUrl}
-                    alt={partner.photoAlt}
-                    width={partner.photoWidth}
-                    height={partner.photoHeight}
-                    className="h-auto max-h-full w-full object-contain"
-                    sizes="(max-width: 640px) 100vw, 13rem"
-                  />
-                </div>
-                <div>
-                  <h3 className="font-heading text-xl font-bold text-gray-900 md:text-2xl">
-                    {partner.personName}
-                  </h3>
-                  <p className="mt-1 text-sm font-semibold text-deep-teal">
-                    {partner.roleOnPlatform}
-                  </p>
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                    {partner.summary}
-                  </p>
-                  <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-gray-600">
-                    {partner.focusAreas.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                  <Link
-                    href={PRIMARY_PRODUCT_CTA.href}
-                    className="mt-4 inline-flex min-h-11 items-center text-sm font-semibold text-deep-teal underline underline-offset-2"
-                  >
-                    {CTA_CS.discoverSituation}
-                  </Link>
-                </div>
-              </div>
-            </article>
+            <div>
+              <p className="mb-4 text-center text-sm font-bold tracking-widest text-deep-teal uppercase">
+                Hypoteční partner
+              </p>
+              <HeinzkePartnerProfile variant="page" nameAs="h3" />
+            </div>
           </div>
         </div>
       </div>

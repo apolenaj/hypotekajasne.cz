@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { Inter, Playfair_Display } from "next/font/google";
 import { headers } from "next/headers";
 import { Suspense } from "react";
@@ -56,6 +57,7 @@ export default async function RootLayout({
           </main>
           <Footer />
         </Providers>
+        <Analytics />
       </body>
     </html>
   );
