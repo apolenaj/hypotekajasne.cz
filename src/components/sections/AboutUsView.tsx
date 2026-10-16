@@ -1,10 +1,22 @@
-import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Building2, Cpu, Handshake, ShieldCheck } from "lucide-react";
+import {
+  ArrowRight,
+  Building2,
+  Cpu,
+  Handshake,
+  Home,
+  RefreshCw,
+  ShieldCheck,
+  Wallet,
+  type LucideIcon,
+} from "lucide-react";
 import { TrustNav } from "@/components/trust/TrustPageShell";
-import { HeinzkePartnerProfile } from "@/components/trust/HeinzkePartnerProfile";
+import { PersonProfileCard } from "@/components/trust/PersonProfileCard";
 import { COMPENSATION_DISCLOSURE, TEAM_MEMBERS } from "@/lib/trust";
-import { HEINZKE_PARTNER_PUBLIC } from "@/lib/trust/heinzke-partner-public";
+import {
+  HEINZKE_PARTNER_PUBLIC,
+  type HeinzkeFocusArea,
+} from "@/lib/trust/heinzke-partner-public";
 import { routes } from "@/lib/routes";
 import {
   formatCompactOfficeAddress,
@@ -15,6 +27,13 @@ import {
 
 const josef = TEAM_MEMBERS[0]!;
 const partner = HEINZKE_PARTNER_PUBLIC;
+
+const FOCUS_ICONS: Record<HeinzkeFocusArea["icon"], LucideIcon> = {
+  home: Home,
+  building: Building2,
+  refresh: RefreshCw,
+  wallet: Wallet,
+};
 
 const collaboration = [
   {
@@ -75,55 +94,78 @@ export function AboutUsView() {
             </h2>
           </div>
 
-          <div className="space-y-10">
-            <article className="mx-auto flex max-w-3xl flex-col rounded-3xl border border-border bg-white p-5 shadow-sm sm:p-6">
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-[11rem_1fr] md:grid-cols-[13rem_1fr]">
-                <div className="relative flex aspect-[4/5] w-full items-center justify-center overflow-hidden rounded-2xl bg-slate-100">
-                  <Image
-                    src={josef.photoUrl!}
-                    alt={josef.photoAlt}
-                    width={josef.photoWidth ?? 800}
-                    height={josef.photoHeight ?? 800}
-                    className="h-auto max-h-full w-full object-contain"
-                    sizes="(max-width: 640px) 100vw, 13rem"
-                  />
+          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2 lg:gap-8">
+            <PersonProfileCard
+              name={projectFounder.name}
+              role={`Zakladatel HypotékaJasně.cz · jednatel ${legalOperator.companyName}`}
+              photoUrl={josef.photoUrl!}
+              photoAlt={josef.photoAlt}
+              photoWidth={josef.photoWidth ?? 800}
+              photoHeight={josef.photoHeight ?? 800}
+              photoObjectPosition="center 12%"
+              paragraphs={[
+                "Stojí za konceptem a produktem, vývojem platformy, digitálními nástroji, kalkulačkami, uživatelskou zkušeností a rozvojem projektu.",
+                "Není hypotečním specialistou, finančním poradcem ani regulovaným hypotečním zprostředkovatelem.",
+              ]}
+              nameAs="h3"
+              priority
+              footer={
+                <div className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-gray-700">
+                  <p className="text-xs font-bold tracking-wide text-muted-foreground uppercase">
+                    Vzdělání
+                  </p>
+                  <ul className="mt-1 list-disc space-y-1 pl-5">
+                    {josef.education.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
                 </div>
-                <div>
-                  <h3 className="font-heading text-xl font-bold text-gray-900 md:text-2xl">
-                    {projectFounder.name}
-                  </h3>
-                  <p className="mt-1 text-sm font-semibold text-deep-teal">
-                    Zakladatel HypotékaJasně.cz · jednatel {legalOperator.companyName}
-                  </p>
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                    Stojí za konceptem a produktem, vývojem platformy, digitálními
-                    nástroji, kalkulačkami, uživatelskou zkušeností a rozvojem
-                    projektu.
-                  </p>
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                    Není hypotečním specialistou, finančním poradcem ani regulovaným
-                    hypotečním zprostředkovatelem.
-                  </p>
-                </div>
-              </div>
-              <div className="mt-6 rounded-xl bg-slate-50 px-4 py-3 text-sm text-gray-700">
-                <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
-                  Vzdělání
-                </p>
-                <ul className="mt-1 list-disc space-y-1 pl-5">
-                  {josef.education.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            </article>
+              }
+            />
 
-            <div>
-              <p className="mb-4 text-center text-sm font-bold tracking-widest text-deep-teal uppercase">
-                Hypoteční partner
-              </p>
-              <HeinzkePartnerProfile variant="page" nameAs="h3" />
-            </div>
+            <PersonProfileCard
+              name={partner.personName}
+              role={partner.roleOnPlatform}
+              eyebrow="Hypoteční partner"
+              photoUrl={partner.photoUrl}
+              photoAlt={partner.photoAlt}
+              photoWidth={partner.photoWidth}
+              photoHeight={partner.photoHeight}
+              photoObjectPosition="center 18%"
+              paragraphs={partner.summaryParagraphs}
+              nameAs="h3"
+              priority
+              footer={
+                <div className="space-y-3">
+                  <p className="rounded-xl border border-deep-teal/10 bg-deep-teal/[0.04] px-4 py-3 text-sm text-deep-teal">
+                    <span className="font-heading text-lg font-bold tabular-nums text-text-dark">
+                      {partner.experienceYears}
+                    </span>{" "}
+                    <span className="font-semibold">
+                      let zkušeností ve financích
+                    </span>
+                  </p>
+                  <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    {partner.focusAreas.map((area) => {
+                      const Icon = FOCUS_ICONS[area.icon];
+                      return (
+                        <li
+                          key={area.id}
+                          className="flex items-start gap-2.5 rounded-xl border border-border bg-slate-50 px-3 py-2.5"
+                        >
+                          <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg bg-deep-teal/10 text-deep-teal">
+                            <Icon className="size-3.5" aria-hidden />
+                          </span>
+                          <span className="pt-0.5 text-sm font-medium leading-snug text-text-dark">
+                            {area.label}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              }
+            />
           </div>
         </div>
       </div>
